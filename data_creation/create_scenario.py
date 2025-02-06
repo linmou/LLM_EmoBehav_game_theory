@@ -63,7 +63,7 @@ if __name__ == "__main__":
     
     participants = ["Alice", "Bob"]
     generator = ScenarioGenerator(stag_hunt_game, participants, "config/OAI_CONFIG_LIST")
-    generator.generate_scenarios(12, 4)
+    generator.generate_scenarios(36, 4)
 
     # # Example for Prisoner's Dilemma game
     # pd_game = Game(

@@ -4,7 +4,9 @@ from pathlib import Path
 import instructor
 from openai import OpenAI
 from typing import List, Tuple, Type, Union
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from constants import Emotions
 from games.game import Game, GameScenario, GameDecision
 from games.prisoner_delimma import PrisonerDilemmaScenario, PrisionerDelimmaDecision
 from games.stag_hunt import StagHuntScenario, StagHuntDecision
@@ -28,14 +30,13 @@ class TestResult:
         }
 
 class GameTheoryTest:
-    def __init__(self, model: str = "gpt-4o", base_url: str = None, api_key: str = None):
+    def __init__(self, llm_config: dict, generation_config: dict):
         """Initialize the game theory test engine with OpenAI client."""
         client = OpenAI(
-            base_url=base_url or "https://api.openai.com/v1",
-            api_key=api_key,
+           **llm_config
         )
         self.client = instructor.patch(client)
-        self.model = model
+        self.generation_config = generation_config
 
     def load_scenarios(self, game: Game) -> List[Tuple[GameScenario, Type[GameDecision]]]:
         """Load scenarios from JSON files in the specified folder."""
@@ -58,8 +59,7 @@ class GameTheoryTest:
     def test_scenario(self, 
                      scenario: GameScenario,
                      decision_class: Type[GameDecision],
-                     system_message: str = None,
-                     temperature: float = 0.7) -> GameDecision:
+                     system_message: str = None) -> GameDecision:
         """Test a single scenario with the AI model."""
         default_system_message = (
             "You are Alice, an average American."
@@ -78,11 +78,11 @@ class GameTheoryTest:
         
         try:
             response = self.client.chat.completions.create(
-                model=self.model,
                 messages=messages,
-                temperature=temperature,
-                response_model=decision_class
+                response_model=decision_class,
+                **self.generation_config
             )
+        
             # Validate the decision
             category = scenario.find_behavior_from_decision(response.decision)
             if category is None:
@@ -94,34 +94,53 @@ class GameTheoryTest:
             print(f"Error processing scenario: {str(e)}")
             raise
 
+def process_scenario(engine, scenario, decision_class, emotion, system_message):
+    """Helper function to process a single scenario."""
+    try:
+        result = engine.test_scenario(
+            scenario,
+            decision_class,
+            system_message=system_message
+        )
+        print(f"\nScenario: {scenario.scenario}")
+        print(f"Emotion: {emotion}")
+        print(f"Category: {result.decision_category}")
+        print(f"Decision: {result.decision.decision}")
+        print(f"Rationale: {result.decision.rational}")
+        print("-" * 50)
+        return result
+    except Exception as e:
+        print(f"Failed to process scenario {scenario.scenario}: {str(e)}")
+        return None
 
-
-def run_tests(game: Game, config: dict, output_dir: str, emotion: str, system_message: str = "You are Alice, an average American."):
-    """Example usage of the GameTheoryTest engine."""
+def run_tests(game: Game, llm_config: dict, generation_config: dict, output_dir: str, emotion: str, system_message: str = "You are Alice, an average American.", max_workers: int = 4):
+    """Example usage of the GameTheoryTest engine with parallel processing."""
     
-    engine = GameTheoryTest(**config)
+    engine = GameTheoryTest(llm_config, generation_config)
     results = []
 
-    # Load and test scenarios for each game
+    # Load scenarios
     print(f"\nTesting {game.name} scenarios:")
     scenarios = engine.load_scenarios(game)
     
-    for scenario, decision_class in scenarios:
-        try:
-            result = engine.test_scenario(
-                scenario,
-                decision_class,
-                system_message=system_message
-            )
-            results.append(result)
-            print(f"\nScenario: {scenario.scenario}")
-            print(f"Emotion: {emotion}")
-            print(f"Category: {result.decision_category}")
-            print(f"Decision: {result.decision.decision}")
-            print(f"Rationale: {result.decision.rational}")
-            print("-" * 50)
-        except Exception as e:
-            print(f"Failed to process scenario {scenario.scenario}: {str(e)}")
+    # Process scenarios in parallel
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_scenario = {
+            executor.submit(
+                process_scenario, 
+                engine, 
+                scenario, 
+                decision_class, 
+                emotion, 
+                system_message
+            ): (scenario, decision_class) 
+            for scenario, decision_class in scenarios
+        }
+        
+        for future in as_completed(future_to_scenario):
+            result = future.result()
+            if result is not None:
+                results.append(result)
     
     # Save results to JSON file
     if not Path(output_dir).exists():
@@ -133,7 +152,7 @@ def run_tests(game: Game, config: dict, output_dir: str, emotion: str, system_me
 
 
 if __name__ == "__main__":
-    from api_configs import GPT4O_CONFIG
+    from api_configs import OAI_CONFIG
     game_name = "Stag_Hunt"
     sh_game = Game(
         name=game_name,
@@ -141,7 +160,7 @@ if __name__ == "__main__":
         decision_class=StagHuntDecision,
         payoff_matrix=stag_hunt
     )
-    emotion = "sadness"
+    emotion = Emotions.SADNESS
     stimulus = emotion2stimulus[emotion]
     system_message = f"You are Alice, an average American. You feel {emotion} because {stimulus}. Hold this emotion and make a decision."
-    run_tests(sh_game, config=GPT4O_CONFIG, output_dir=f"results/{game_name}", emotion=emotion, system_message=system_message)
+    run_tests(sh_game, llm_config=OAI_CONFIG, generation_config={"model": "gpt-4o-mini", "temperature": 0.7, "seed": 43}, output_dir=f"results/{game_name}", emotion=emotion, system_message=system_message)
