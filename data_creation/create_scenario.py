@@ -54,16 +54,26 @@ class ScenarioGenerator:
 
 if __name__ == "__main__":
     # Example for Stag Hunt game
-    stag_hunt_game = Game(
-        name="Stag_Hunt",
-        scenario_class=StagHuntScenario,
-        decision_class=StagHuntDecision,
-        payoff_matrix=stag_hunt
-    )
-    
-    participants = ["Alice", "Bob"]
-    generator = ScenarioGenerator(stag_hunt_game, participants, "config/OAI_CONFIG_LIST")
-    generator.generate_scenarios(36, 4)
+    participants = ["You", "Bob"]
+    from games.game_configs import get_game_config, GAME_CONFIGS
+    from pathlib import Path
+    total_num = 36
+    for game_name in GAME_CONFIGS.keys():
+        game_cfg = get_game_config(game_name)
+        game = Game(name=game_name, **game_cfg)
+        folder_path = Path(f'groupchat/scenarios/{game_name}')
+        folder_path.mkdir(parents=True, exist_ok=True)
+        # Count existing scenarios for this game
+        existing_scenarios = len(list(folder_path.glob('*.json')))
+        to_gen_num = total_num - existing_scenarios  # Target 36 total scenarios
+        
+        if to_gen_num <= 0:
+            print(f"Skipping {game_name} - already has {existing_scenarios} scenarios")
+            continue
+        print(f"Generating {to_gen_num} scenarios for {game_name}")
+        
+        generator = ScenarioGenerator(game, participants, "config/OAI_CONFIG_LIST")
+        generator.generate_scenarios(ttl_number=to_gen_num, batch_size=4)
 
     # # Example for Prisoner's Dilemma game
     # pd_game = Game(

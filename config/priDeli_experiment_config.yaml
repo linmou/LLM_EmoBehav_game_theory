@@ -16,6 +16,11 @@ experiment:
       temperature: 0.7
       seed: 43
 
+  # Template for system message with placeholders
+  system_message_template: "You are Alice, an average American. You feel 90% {emotion}, because {stimulus}."
+
+  repeat: 1
+
   emotions:
     - "anger"
     - "happiness"

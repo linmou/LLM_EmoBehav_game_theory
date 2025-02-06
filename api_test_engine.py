@@ -113,41 +113,44 @@ def process_scenario(engine, scenario, decision_class, emotion, system_message):
         print(f"Failed to process scenario {scenario.scenario}: {str(e)}")
         return None
 
-def run_tests(game: Game, llm_config: dict, generation_config: dict, output_dir: str, emotion: str, system_message: str = "You are Alice, an average American.", max_workers: int = 4):
+def run_tests(game: Game, llm_config: dict, generation_config: dict, output_dir: str, emotion: str, system_message: str = "You are Alice, an average American.", max_workers: int = 8, repeat: int = 1):
     """Example usage of the GameTheoryTest engine with parallel processing."""
     
     engine = GameTheoryTest(llm_config, generation_config)
-    results = []
+    all_results = []
 
     # Load scenarios
     print(f"\nTesting {game.name} scenarios:")
     scenarios = engine.load_scenarios(game)
     
-    # Process scenarios in parallel
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_scenario = {
-            executor.submit(
-                process_scenario, 
-                engine, 
-                scenario, 
-                decision_class, 
-                emotion, 
-                system_message
-            ): (scenario, decision_class) 
-            for scenario, decision_class in scenarios
-        }
-        
-        for future in as_completed(future_to_scenario):
-            result = future.result()
-            if result is not None:
-                results.append(result)
+    # Run scenarios repeat times
+    for repeat_num in range(repeat):
+        print(f"\nRunning iteration {repeat_num + 1}/{repeat}")
+        # Process scenarios in parallel
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_scenario = {
+                executor.submit(
+                    process_scenario, 
+                    engine, 
+                    scenario, 
+                    decision_class, 
+                    emotion, 
+                    system_message
+                ): (scenario, decision_class, repeat_num) 
+                for scenario, decision_class in scenarios
+            }
+            
+            for future in as_completed(future_to_scenario):
+                result = future.result()
+                if result is not None:
+                    all_results.append((result, repeat_num))
     
     # Save results to JSON file
     if not Path(output_dir).exists():
         Path(output_dir).mkdir(parents=True, exist_ok=True)
     output_file = Path(output_dir) / f"{game.name}_{emotion}_results.json"
     with open(output_file, 'w') as f:
-        json.dump([{**r.to_dict(), "emotion": emotion} for r in results], f, indent=2)
+        json.dump([{**r.to_dict(), "emotion": emotion, "repeat_num": rep} for r, rep in all_results], f, indent=2)
     print(f"\nResults saved to {output_file}")
 
 
@@ -160,7 +163,7 @@ if __name__ == "__main__":
         decision_class=StagHuntDecision,
         payoff_matrix=stag_hunt
     )
-    emotion = Emotions.SADNESS
-    stimulus = emotion2stimulus[emotion]
+    emotion = 'sad'
+    stimulus = emotion2stimulus[Emotions.from_string(emotion)]
     system_message = f"You are Alice, an average American. You feel {emotion} because {stimulus}. Hold this emotion and make a decision."
     run_tests(sh_game, llm_config=OAI_CONFIG, generation_config={"model": "gpt-4o-mini", "temperature": 0.7, "seed": 43}, output_dir=f"results/{game_name}", emotion=emotion, system_message=system_message)

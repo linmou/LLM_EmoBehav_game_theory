@@ -791,7 +791,7 @@ odd_even_game = {
         },
 }   
 
-wait_go_game = {
+wait_go = {
     'Alice': 
         {
             'choice_1': 
@@ -840,7 +840,7 @@ payoff_matrix = {
     'stag_hunt_very_small':stag_hunt_very_small,
     'stag_hunt_very_large':stag_hunt_very_large,
     'game_of_chicken': game_of_chicken,
-    'wait_go_game': wait_go_game
+    'wait_go': wait_go
     }
 
 

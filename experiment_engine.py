@@ -1,5 +1,6 @@
 import os
 import yaml
+import shutil
 from pathlib import Path
 from typing import Dict, Any
 import logging
@@ -24,11 +25,22 @@ logger = logging.getLogger(__name__)
 class ExperimentEngine:
     def __init__(self, config_path: str):
         """Initialize the experiment engine with configuration from YAML."""
+        self.config_path = config_path
         self.config = self._load_config(config_path)
         self.experiment_id = f"{self.config['experiment']['name']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.output_dir = Path(self.config['experiment']['output']['base_dir']) / self.experiment_id
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
+        # Save the experiment config file
+        self._save_experiment_config()
+        
+    def _save_experiment_config(self):
+        """Save a copy of the experiment configuration file with the results."""
+        config_filename = Path(self.config_path).name
+        dest_path = self.output_dir / config_filename
+        shutil.copy2(self.config_path, dest_path)
+        logger.info(f"Saved experiment configuration to {dest_path}")
+    
     def _load_config(self, config_path: str) -> Dict[str, Any]:
         """Load and validate configuration from YAML file."""
         with open(config_path, 'r') as f:
@@ -100,16 +112,17 @@ class ExperimentEngine:
         
         game = self._get_game_instance()
         llm_config = self.config['experiment']['llm']
-        print(llm_config)
+        
         for emotion_str in self.config['experiment']['emotions']:
             emotion = Emotions.from_string(emotion_str)
             stimulus = emotion2stimulus[emotion]
             
             logger.info(f"Testing scenarios with emotion: {emotion.value}")
             
-            system_message = (
-                f"You are Alice, an average American. "
-                f"You feel {emotion.value} because {stimulus}. "
+            # Use system message template from config
+            system_message = self.config['experiment']['system_message_template'].format(
+                emotion=emotion.value,
+                stimulus=stimulus
             )
             
             run_tests(
@@ -118,7 +131,8 @@ class ExperimentEngine:
                 generation_config=llm_config['generation_config'],
                 output_dir=self.output_dir,
                 emotion=emotion.value,
-                system_message=system_message
+                system_message=system_message,
+                repeat=self.config['experiment']['repeat']
             )
     
     def run_statistical_analysis(self):
@@ -156,6 +170,6 @@ class ExperimentEngine:
             raise
 
 if __name__ == "__main__":
-    engine = ExperimentEngine("/home/jjl7137/game_theory/config/priDeli_experiment_config.yaml")
+    engine = ExperimentEngine("/home/jjl7137/game_theory/config/stagHunt_experiment_config.yaml")
     # engine = ExperimentEngine("/home/jjl7137/game_theory/config/priDeli_experiment_config.yaml")
     engine.run_experiment() 
