@@ -33,6 +33,7 @@ class DuopolisticCompetitionScenario(GameScenario):
     participants: List[Dict[str, Any]]
     behavior_choices: DuopolyBehaviorChoices
     payoff_matrix: Dict[str, Any]
+    game_name: str = "Duopolistic_Competition"
 
     def find_behavior_from_decision(self, decision: str) -> str:
         if decision == self.behavior_choices.high_price:
@@ -48,8 +49,6 @@ class DuopolisticCompetitionScenario(GameScenario):
             "description": self.description
         }
     
-    def get_participants(self) -> list[str]:
-        return [participant['name'] for participant in self.participants]
     
     def get_behavior_choices(self) -> DuopolyBehaviorChoices:
         return self.behavior_choices

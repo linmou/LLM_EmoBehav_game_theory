@@ -32,10 +32,8 @@ class GameScenario(BaseModel, ABC):
         """Get the scenario information"""
         pass
     
-    @abstractmethod
-    def get_participants(self) -> list[str]:
-        """Get the participants"""
-        pass
+    def get_participants(self) -> list[dict]:
+        return self.participants
     
     @abstractmethod
     def get_behavior_choices(self) -> BehaviorChoices:
@@ -69,7 +67,14 @@ class GameDecision(BaseModel, ABC):
     def validate_decision(self, decision: str) -> bool:
         """Validate if a decision is valid for the current scenario"""
         pass
-
+    
+    @staticmethod
+    def example() -> dict:
+        return {
+            "rational": "<rational for the decision>",
+            "decision": "<decision>"
+        }
+        
 class Game:
     """Main class to handle different types of games"""
     def __init__(

@@ -74,7 +74,9 @@ class ExperimentEngine:
         
         return Game(
             name=game_name,
-            **game_config
+            scenario_class=game_config['scenario_class'],
+            decision_class=game_config['decision_class'],
+            payoff_matrix=game_config['payoff_matrix']
         )
     
     def should_generate_data(self) -> bool:

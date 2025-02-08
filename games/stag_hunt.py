@@ -30,6 +30,7 @@ class StagHuntScenario(GameScenario):
     participants: List[Dict[str, Any]]
     behavior_choices: StagHuntBehaviors
     payoff_matrix: Dict[str, Any]
+    game_name: str = "Stag_Hunt"
 
     def find_behavior_from_decision(self, decision: str) -> str:
         if decision == self.behavior_choices.cooperate:
@@ -45,8 +46,6 @@ class StagHuntScenario(GameScenario):
             "description": self.description
         }
     
-    def get_participants(self) -> list[str]:
-        return [participant['name'] for participant in self.participants]
     
     def get_behavior_choices(self) -> StagHuntBehaviors:
         return self.behavior_choices

@@ -60,7 +60,11 @@ if __name__ == "__main__":
     total_num = 36
     for game_name in GAME_CONFIGS.keys():
         game_cfg = get_game_config(game_name)
-        game = Game(name=game_name, **game_cfg)
+        game = Game(name=game_name, 
+                    scenario_class=game_cfg['scenario_class'],
+                    decision_class=game_cfg['decision_class'],
+                    payoff_matrix=game_cfg['payoff_matrix']
+                    )
         folder_path = Path(f'groupchat/scenarios/{game_name}')
         folder_path.mkdir(parents=True, exist_ok=True)
         # Count existing scenarios for this game

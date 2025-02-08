@@ -33,7 +33,8 @@ class PrisonerDilemmaScenario(GameScenario):
     participants: List[Dict[str, Any]]
     behavior_choices: PDBehaviorChoice
     payoff_matrix: Dict[str, Any]
-
+    game_name: str = "Prisoners_Dilemma"
+    
     def find_behavior_from_decision(self, decision: str) -> str:
         if decision == self.behavior_choices.cooperate:
             return 'cooperate'
@@ -49,7 +50,7 @@ class PrisonerDilemmaScenario(GameScenario):
         }
     
     def get_participants(self) -> list[str]:
-        return [participant['name'] for participant in self.participants]
+        return self.participants
     
     def get_behavior_choices(self) -> PDBehaviorChoice:
         return self.behavior_choices

@@ -33,6 +33,7 @@ class BattleOfSexesScenario(GameScenario):
     participants: List[Dict[str, Any]]
     behavior_choices: BOSBehaviorChoices
     payoff_matrix: Dict[str, Any]
+    game_name: str = "Battle_Of_Sexes"
 
     def find_behavior_from_decision(self, decision: str) -> str:
         if decision == self.behavior_choices.option_a:
@@ -48,8 +49,6 @@ class BattleOfSexesScenario(GameScenario):
             "description": self.description
         }
     
-    def get_participants(self) -> list[str]:
-        return [participant['name'] for participant in self.participants]
     
     def get_behavior_choices(self) -> BOSBehaviorChoices:
         return self.behavior_choices

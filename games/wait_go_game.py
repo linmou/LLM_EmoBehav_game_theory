@@ -33,6 +33,7 @@ class WaitGoScenario(GameScenario):
     participants: List[Dict[str, Any]]
     behavior_choices: WaitGoBehaviorChoices
     payoff_matrix: Dict[str, Any]
+    game_name: str = "Wait_Go"
 
     def find_behavior_from_decision(self, decision: str) -> str:
         if decision == self.behavior_choices.wait:
@@ -47,9 +48,6 @@ class WaitGoScenario(GameScenario):
             "scenario": self.scenario,
             "description": self.description
         }
-    
-    def get_participants(self) -> list[str]:
-        return [participant['name'] for participant in self.participants]
     
     def get_behavior_choices(self) -> WaitGoBehaviorChoices:
         return self.behavior_choices

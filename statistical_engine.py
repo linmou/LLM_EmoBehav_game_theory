@@ -39,7 +39,7 @@ class BehaviorAnalyzer:
                        condition2_counts: Dict[str, int]) -> Tuple[float, float]:
         """
         Perform chi-square test of independence between two conditions.
-        If counts are too low or contain zeros, returns (0.0, 1.0) to indicate no significant difference.
+        Uses Fisher's exact test when counts are low or contain zeros.
         """
         # Create contingency table
         contingency = np.array([
@@ -47,12 +47,18 @@ class BehaviorAnalyzer:
             [condition2_counts['cooperate'], condition2_counts['defect']]
         ])
         
-        # Check if we have any zeros or very low counts
-        if np.any(contingency == 0) or np.any(contingency < 5):
-            # Return no-effect values when chi-square test is not appropriate
-            return 0.0, 1.0
-            
         try:
+            # Use Fisher's exact test when we have zeros or low counts
+            if np.any(contingency == 0) or np.any(contingency < 5):
+                _, p_value = stats.fisher_exact(contingency)
+                # Calculate Cramer's V as effect size (similar scale to chi-square)
+                n = np.sum(contingency)
+                min_dim = min(contingency.shape) - 1
+                v = np.sqrt(p_value * n / (n * min_dim))
+                chi2 = v * n  # Convert to chi-square-like scale
+                return chi2, p_value
+            
+            # Use chi-square test for larger counts
             chi2, p_value = stats.chi2_contingency(contingency)[:2]
             return chi2, p_value
         except ValueError:
@@ -211,18 +217,18 @@ class BehaviorAnalyzer:
                 emotion_data[emotion2]['counts']
             )
             pairwise_comparisons[f"{emotion1}_vs_{emotion2}"] = {
-                'chi_square': chi2,
-                'p_value': p_value,
-                'significant': p_value < 0.05
+                'chi_square': float(chi2),
+                'p_value': float(p_value),
+                'significant': bool(p_value < 0.05)
             }
         
         # Prepare comprehensive results
         results = {
             'individual_conditions': emotion_data,
             'overall_test': {
-                'chi_square': overall_chi2,
-                'p_value': overall_p_value,
-                'significant': overall_p_value < 0.05
+                'chi_square': float(overall_chi2),
+                'p_value': float(overall_p_value),
+                'significant': bool(overall_p_value < 0.05)
             },
             'pairwise_comparisons': pairwise_comparisons
         }
@@ -333,7 +339,7 @@ def compare_multiple_emotions(emotion_files: Dict[str, str]) -> Dict:
         emotion_files: Dictionary mapping emotion names to their JSON file paths
                       e.g., {'happy': 'happy.json', 'angry': 'angry.json', ...}
         
-    Returns:    engine = ExperimentEngine("/home/jjl7137/game_theory/config/priDeli_experiment_config.yaml")
+    Returns:
         Dictionary containing comprehensive statistical analysis results
     """
     analyzer = BehaviorAnalyzer()
@@ -344,12 +350,19 @@ def compare_multiple_emotions(emotion_files: Dict[str, str]) -> Dict:
 if __name__ == "__main__":
     # Example usage
     emotion_files = {
-        'anger': '/home/jjl7137/game_theory/results/Stag_Hunt/Stag_Hunt_angry_results.json',
-        'happy': '/home/jjl7137/game_theory/results/Stag_Hunt/Stag_Hunt_happiness_results.json',
-        'sad': '/home/jjl7137/game_theory/results/Stag_Hunt/Stag_Hunt_sadness_results.json'
+        'anger': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_anger_results.json',
+        'happy': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_happiness_results.json',
+        'sad': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_sadness_results.json',
+        'fear': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_fear_results.json',
+        'disgust': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_disgust_results.json',
+        'surprise': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_surprise_results.json'
     }
     
 
     results = compare_multiple_emotions(emotion_files)
     from pprint import pprint
     pprint(results)
+    
+    # save results to json file
+    with open('results/emotion_game_theory_20250206_193232/analysis_results.json', 'w') as f:
+        json.dump(results, f, indent=4)
