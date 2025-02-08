@@ -1,0 +1,18 @@
+{
+    "scenario": "Space Exploration Race",
+    "description": "Two space agencies are competing to establish a base on Mars. Each can choose between a high-budget mission or a cost-effective mission. If both choose high-budget, they share the success and prestige. If one chooses cost-effective while the other goes high-budget, the cost-effective mission gains more public support. If both choose cost-effective, both achieve modest success.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Agency A Director"
+        },
+        {
+            "name": "Bob",
+            "profile": "Agency B Director"
+        }
+    ],
+    "behavior_choices": {
+        "high_budget": "High-Budget Mission",
+        "cost_effective": "Cost-Effective Mission"
+    }
+}

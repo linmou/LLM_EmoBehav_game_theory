@@ -1,0 +1,18 @@
+{
+    "scenario": "Space Mission",
+    "description": "Two astronauts must decide whether to work together to repair a major spacecraft malfunction or individually handle minor issues. If both repair the malfunction, they succeed and receive commendations. If one repairs the malfunction while the other handles minor issues, the major repair fails while the minor task is completed. If both handle minor issues, they both receive modest recognition.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Veteran astronaut"
+        },
+        {
+            "name": "Bob",
+            "profile": "Technical expert"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Major Repair",
+        "defect": "Fix Minor Issues Alone"
+    }
+}

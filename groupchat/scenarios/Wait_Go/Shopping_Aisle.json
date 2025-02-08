@@ -1,0 +1,18 @@
+{
+    "scenario": "Shopping Aisle",
+    "description": "Two shoppers reach a narrow aisle in a supermarket at the same time. Each must decide whether to let the other pass first or go themselves. If both wait, there's a shopping delay. If both go, their carts collide. If one waits while the other goes, shopping continues smoothly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Shopper with a full cart"
+        },
+        {
+            "name": "Bob",
+            "profile": "Shopper with a basket"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait",
+        "go": "Pass"
+    }
+}

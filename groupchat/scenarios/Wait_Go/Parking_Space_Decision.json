@@ -1,0 +1,18 @@
+{
+    "scenario": "Parking Space Decision",
+    "description": "Two drivers spot the same parking space at the same time. Each must decide whether to wait for another space or park in the current one. If both wait, they face a minor delay. If both park, there's a risk of collision. If one waits while the other parks, parking is hassle-free.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Driver in a compact car"
+        },
+        {
+            "name": "Bob",
+            "profile": "Driver in an SUV"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for another space",
+        "go": "Park in the current space"
+    }
+}

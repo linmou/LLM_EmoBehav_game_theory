@@ -1,0 +1,18 @@
+{
+    "scenario": "Academic Group Project",
+    "description": "Two students are assigned a group project. Each student must decide whether to contribute equally or let the other do most of the work. If both contribute equally, they receive a high grade and praise from the professor. If one contributes more while the other slacks, the hard worker feels exploited while the slacker enjoys free time. If neither contributes, the project is mediocre, and they receive a low grade.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Student"
+        },
+        {
+            "name": "Bob",
+            "profile": "Student"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Slack",
+        "defect": "Contribute Equally"
+    }
+}

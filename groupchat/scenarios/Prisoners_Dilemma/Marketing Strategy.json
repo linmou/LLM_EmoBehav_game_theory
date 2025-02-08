@@ -1,0 +1,18 @@
+{
+    "scenario": "Marketing Strategy",
+    "description": "Two marketing managers are tasked with launching a new product. Each must decide whether to share their market research with the other. If both share, they can create a comprehensive strategy and achieve high sales. If one shares while the other doesn't, the sharer feels exploited while the non-sharer gains an edge. If neither shares, they achieve average sales.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Marketing Manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Marketing Manager"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Share Research",
+        "defect": "Withhold Research"
+    }
+}

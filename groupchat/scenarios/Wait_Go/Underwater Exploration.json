@@ -1,0 +1,18 @@
+{
+    "scenario": "Underwater Exploration",
+    "description": "Two submarine teams are exploring a newly discovered underwater cave. Each must decide whether to wait for more data or proceed with exploration. If both wait, exploration is delayed. If both proceed, there's a risk of disorientation. If one waits while the other proceeds, exploration is conducted smoothly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Submarine captain from the north entrance"
+        },
+        {
+            "name": "Bob",
+            "profile": "Submarine captain from the south entrance"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for more data",
+        "go": "Proceed with exploration"
+    }
+}

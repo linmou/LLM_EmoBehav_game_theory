@@ -1,0 +1,18 @@
+{
+    "scenario": "Tech_Innovation",
+    "description": "Two engineers must decide whether to collaborate on a breakthrough technology or individually develop small gadgets. If both work on the breakthrough, they succeed and revolutionize the industry. If one works on the breakthrough while the other develops gadgets, the breakthrough engineer fails while the gadget engineer achieves small success. If both develop gadgets, they both achieve moderate success.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Experienced engineer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Experienced engineer"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Breakthrough Technology",
+        "defect": "Solo Gadget Development"
+    }
+}

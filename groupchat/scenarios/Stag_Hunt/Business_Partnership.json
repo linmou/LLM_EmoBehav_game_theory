@@ -1,0 +1,18 @@
+{
+    "scenario": "Business_Partnership",
+    "description": "Two entrepreneurs must decide whether to partner on a large project or pursue smaller individual ventures. If both partner on the project, they succeed and share large profits. If one partners while the other pursues an individual venture, the partner fails while the individual gains small profits. If both pursue individual ventures, they both get moderate profits.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Experienced entrepreneur"
+        },
+        {
+            "name": "Bob",
+            "profile": "Experienced entrepreneur"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Partner on large project",
+        "defect": "Pursue individual venture"
+    }
+}

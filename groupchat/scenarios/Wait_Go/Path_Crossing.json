@@ -1,0 +1,18 @@
+{
+    "scenario": "Path Crossing",
+    "description": "Two hikers meet at a narrow bridge. Each must decide whether to let the other cross first or go themselves. If both wait, there's no movement. If both go, they block each other. If one waits while the other goes, crossing occurs without issue.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Hiker coming from the north"
+        },
+        {
+            "name": "Bob",
+            "profile": "Hiker coming from the south"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait",
+        "go": "Cross"
+    }
+}

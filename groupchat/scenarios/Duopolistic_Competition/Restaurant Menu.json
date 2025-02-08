@@ -1,0 +1,18 @@
+{
+    "scenario": "Restaurant Menu",
+    "description": "Two restaurants are updating their menus. Each can choose to offer vegan dishes or gourmet dishes. If both choose vegan, they share the health-conscious market. If one chooses gourmet while the other offers vegan, the gourmet restaurant attracts food enthusiasts. If both choose gourmet, they compete for the same luxury dining audience and earn lower profits.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Restaurant A Chef"
+        },
+        {
+            "name": "Bob",
+            "profile": "Restaurant B Chef"
+        }
+    ],
+    "behavior_choices": {
+        "vegan": "Offer Vegan Dishes",
+        "gourmet": "Offer Gourmet Dishes"
+    }
+}

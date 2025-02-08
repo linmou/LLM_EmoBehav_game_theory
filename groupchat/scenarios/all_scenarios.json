@@ -1,0 +1,2035 @@
+[
+    {
+        "scenario": "Treasure_Diving",
+        "description": "Two divers must decide whether to collaborate on retrieving a large treasure chest from the ocean floor or individually collect small trinkets. If both retrieve the chest, they succeed and share a large reward. If one retrieves the chest while the other collects trinkets, the chest retriever fails while the trinket collector gets a small reward. If both collect trinkets, they both get moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Certified diver"
+            },
+            {
+                "name": "Bob",
+                "profile": "Certified diver"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Chest",
+            "defect": "Solo Trinket Collection"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Software_Development",
+        "description": "Two software developers must decide whether to collaborate on a major feature or individually work on minor bug fixes. If both work on the feature, they succeed and receive a large reward. If one works on the feature while the other works on bug fixes, the feature fails while the bug fixer gets a small reward. If both work on bug fixes, they both receive moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Software developer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Software developer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on major feature",
+            "defect": "Fix minor bugs"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Environmental_Conservation",
+        "description": "Two conservationists must decide whether to collaborate on a large conservation project or focus on smaller individual initiatives. If both collaborate, they succeed and achieve significant environmental impact. If one collaborates while the other focuses individually, the collaborator fails while the individual achieves minor impact. If both focus individually, they both achieve moderate impact.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Dedicated conservationist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Dedicated conservationist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on large project",
+            "defect": "Focus on individual initiative"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Treasure_Hunt",
+        "description": "Two treasure hunters must decide whether to collaborate on finding a hidden treasure chest or individually search for smaller treasures. If both collaborate, they succeed and share a large treasure. If one collaborates while the other searches individually, the collaborator fails while the solo hunter finds a small treasure. If both search individually, they both find moderate treasures.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Adventurous explorer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Seasoned navigator"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate for the hidden treasure",
+            "defect": "Search for smaller treasures individually"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Urban_Development",
+        "description": "Two city planners must decide whether to collaborate on a major infrastructure project or work individually on smaller urban improvements. If both work on the infrastructure project, they succeed and enhance the city's connectivity. If one works on the project while the other focuses on smaller improvements, the project planner fails while the other achieves small urban enhancements. If both focus on smaller improvements, they both achieve moderate urban enhancements.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Skilled city planner"
+            },
+            {
+                "name": "Bob",
+                "profile": "Skilled city planner"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on infrastructure project",
+            "defect": "Work on smaller urban improvements"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Environmental_Cleanup",
+        "description": "Two community leaders must decide whether to organize a large-scale cleanup event or focus on smaller, individual efforts. If both organize the event, they succeed and receive community recognition. If one organizes while the other focuses on individual efforts, the organizer fails while the individual worker gains local support. If both focus on individual efforts, they receive moderate support.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Community leader with environmental advocacy experience"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community leader with environmental advocacy experience"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Organize Large-Scale Event",
+            "defect": "Focus on Individual Efforts"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Treasure Expedition",
+        "description": "Two explorers must decide whether to collaborate on finding a hidden treasure or individually collect smaller artifacts. If both work together on the treasure, they succeed and share a large reward. If one goes for the treasure while the other collects artifacts, the treasure seeker fails while the artifact collector gets a small reward. If both collect artifacts, they both get moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced explorer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Skilled navigator"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Team up for Treasure",
+            "defect": "Solo Artifact Collection"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Startup_Venture",
+        "description": "Two entrepreneurs must decide whether to collaborate on developing a groundbreaking product or work on smaller projects individually. If both collaborate, they succeed and share substantial profits. If one collaborates while the other works solo, the collaborator fails while the solo entrepreneur earns small profits. If both work solo, they both earn moderate profits.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Innovative thinker"
+            },
+            {
+                "name": "Bob",
+                "profile": "Strategic planner"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on groundbreaking product",
+            "defect": "Work on smaller projects individually"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Business_Partnership",
+        "description": "Two entrepreneurs must decide whether to partner on a large project or pursue smaller individual ventures. If both partner on the project, they succeed and share large profits. If one partners while the other pursues an individual venture, the partner fails while the individual gains small profits. If both pursue individual ventures, they both get moderate profits.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced entrepreneur"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced entrepreneur"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Partner on large project",
+            "defect": "Pursue individual venture"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Tech_Startup",
+        "description": "Two tech entrepreneurs must decide whether to collaborate on a groundbreaking AI project or individually develop smaller apps. If both work on the AI, they succeed and lead the market. If one works on AI while the other on apps, the AI developer fails while the app developer sees moderate success. If both choose apps, both achieve small successes.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Tech entrepreneur with a background in AI"
+            },
+            {
+                "name": "Bob",
+                "profile": "Tech entrepreneur with a focus on mobile apps"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on AI",
+            "defect": "Develop Apps"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Corporate Project",
+        "description": "Two project managers must decide whether to collaborate on a high-risk, high-reward project or work on smaller, individual tasks. If both work on the high-reward project, they succeed and receive promotions. If one works on the high-reward project while the other focuses on smaller tasks, the high-reward project fails while the smaller tasks are completed. If both work on smaller tasks, they both receive satisfactory evaluations.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Senior project manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Project coordinator"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Joint High-Risk Project",
+            "defect": "Individual Task Management"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Expedition_to_Mars",
+        "description": "Two astronauts must decide whether to collaborate on a mission to Mars or conduct separate space research. If both collaborate, they succeed and achieve significant scientific breakthroughs. If one collaborates while the other works solo, the collaborator fails while the solo astronaut gains minor insights. If both work solo, they both achieve moderate insights.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Astrophysicist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Engineer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Mars mission",
+            "defect": "Conduct separate space research"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Space Mission",
+        "description": "Two astronauts must decide whether to work together to repair a major spacecraft malfunction or individually handle minor issues. If both repair the malfunction, they succeed and receive commendations. If one repairs the malfunction while the other handles minor issues, the major repair fails while the minor task is completed. If both handle minor issues, they both receive modest recognition.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Veteran astronaut"
+            },
+            {
+                "name": "Bob",
+                "profile": "Technical expert"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Major Repair",
+            "defect": "Fix Minor Issues Alone"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Urban_Planning",
+        "description": "Two urban planners must decide whether to collaborate on designing a sustainable city or focus on individual neighborhood projects. If both collaborate, they create a model city and gain recognition. If one collaborates while the other focuses on individual projects, the collaborator risks failure while the individualist achieves moderate success. If both focus on individual projects, they achieve moderate improvements but miss the larger goal.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Urban planner with expertise in sustainable design"
+            },
+            {
+                "name": "Bob",
+                "profile": "Urban planner with a focus on transportation systems"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on designing a sustainable city",
+            "defect": "Focus on individual neighborhood projects"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Art Collaboration",
+        "description": "Two artists, You and Bob, must decide whether to collaborate on a masterpiece or create individual artworks. If both collaborate on the masterpiece, they succeed and share widespread acclaim. If one works on the masterpiece while the other creates individual artworks, the masterpiece artist fails while the individual artist gains minor recognition. If both create individual artworks, they both receive moderate recognition.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Accomplished artist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Accomplished artist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Masterpiece",
+            "defect": "Solo Individual Artworks"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Agricultural_Planning",
+        "description": "Two farmers must decide whether to collaborate on growing a high-yield crop or individually work on low-yield crops. If both grow the high-yield crop, they succeed and receive a large reward. If one grows the high-yield crop while the other grows low-yield crops, the high-yield crop fails while the low-yield crop farmer gets a small reward. If both grow low-yield crops, they both receive moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Farmer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Farmer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Grow high-yield crop",
+            "defect": "Grow low-yield crops"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Farm Harvest",
+        "description": "Two farmers must decide whether to collaborate on harvesting a large, profitable crop or individually harvest smaller, less profitable crops. If both harvest the large crop, they succeed and share a substantial profit. If one harvests the large crop while the other focuses on smaller crops, the large crop is lost while the smaller crops are harvested. If both harvest smaller crops, they both earn a modest income.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced farmer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Agricultural specialist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Large Harvest",
+            "defect": "Solo Small Crop Harvest"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Wildlife_Conservation",
+        "description": "Two conservationists must decide whether to collaborate on a major wildlife sanctuary or individually work on small local projects. If both work on the sanctuary, they succeed and save numerous species. If one works on the sanctuary while the other focuses on local projects, the sanctuary conservationist fails while the local project worker achieves minor success. If both work on local projects, they both achieve moderate success.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Dedicated conservationist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Dedicated conservationist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Wildlife Sanctuary",
+            "defect": "Solo Local Project"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Archaeological_Expedition",
+        "description": "Two archaeologists must decide whether to collaborate on excavating a large artifact or individually work on smaller, less significant digs. If both excavate the artifact, they succeed and share a large reward. If one excavates the artifact while the other works on smaller digs, the excavator fails while the individual worker gets a small reward. If both work on smaller digs, they both get moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced archaeologist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced archaeologist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Artifact",
+            "defect": "Solo Dig"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Environmental_Project",
+        "description": "Two environmentalists must decide whether to collaborate on a large conservation project or work on smaller initiatives individually. If both collaborate, they succeed and make a significant environmental impact. If one collaborates while the other works solo, the collaborator fails while the solo environmentalist achieves small successes. If both work solo, they both achieve moderate successes.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Ecologist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Conservationist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on large conservation project",
+            "defect": "Work on smaller initiatives individually"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Space_Exploration",
+        "description": "Two astronauts must decide whether to collaborate on a mission to explore a distant planet or individually conduct research on their own. If both explore the planet, they succeed and gather valuable data. If one explores while the other conducts individual research, the explorer fails while the individual researcher gains some insights. If both conduct individual research, they both get moderate insights.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Trained astronaut"
+            },
+            {
+                "name": "Bob",
+                "profile": "Trained astronaut"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on planet exploration",
+            "defect": "Conduct individual research"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Scientific Research",
+        "description": "Two scientists, You and Bob, must decide whether to collaborate on a groundbreaking experiment or conduct smaller experiments individually. If both work on the groundbreaking experiment, they succeed and share a significant discovery. If one works on the groundbreaking experiment while the other conducts smaller experiments, the groundbreaking experiment scientist fails while the small experiment scientist gets a minor discovery. If both conduct smaller experiments, they both achieve moderate discoveries.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Renowned scientist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Renowned scientist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Groundbreaking Experiment",
+            "defect": "Solo Small Experiments"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Corporate Project",
+        "description": "Two project managers, You and Bob, must decide whether to collaborate on a major project or work on smaller projects individually. If both work on the major project, they succeed and share a large bonus. If one works on the major project while the other works on smaller projects, the major project worker fails while the smaller project worker gets a small bonus. If both work on smaller projects, they both get moderate bonuses.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced project manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced project manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Major Project",
+            "defect": "Solo Small Projects"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Academic_Research",
+        "description": "Two researchers must decide whether to work together on a groundbreaking study or conduct smaller individual experiments. If both work together, they succeed and publish a high-impact paper. If one works together while the other conducts individual experiments, the collaborator fails while the individual publishes a minor paper. If both conduct individual experiments, they both publish moderate papers.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced researcher"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced researcher"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on groundbreaking study",
+            "defect": "Conduct individual experiments"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Treasure Expedition",
+        "description": "Two explorers, You and Bob, must decide whether to collaborate on digging for a hidden treasure or search for smaller treasures individually. If both dig for the hidden treasure, they succeed and share a large reward. If one digs for the hidden treasure while the other searches for smaller treasures, the hidden treasure digger fails while the small treasure searcher gets a small reward. If both search for smaller treasures, they both get moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Seasoned explorer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Seasoned explorer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Hidden Treasure",
+            "defect": "Solo Small Treasure Search"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Corporate_Innovation",
+        "description": "Two managers must decide whether to collaborate on developing a new innovative product or work individually on smaller projects. If both develop the product, they succeed and share a large market share. If one develops the product while the other works on smaller projects, the product developer fails while the other gains a small market share. If both work on smaller projects, they both gain moderate market shares.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on product development",
+            "defect": "Work on individual projects"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Tech_Innovation",
+        "description": "Two engineers must decide whether to collaborate on a breakthrough technology or individually develop small gadgets. If both work on the breakthrough, they succeed and revolutionize the industry. If one works on the breakthrough while the other develops gadgets, the breakthrough engineer fails while the gadget engineer achieves small success. If both develop gadgets, they both achieve moderate success.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced engineer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced engineer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Breakthrough Technology",
+            "defect": "Solo Gadget Development"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Water Conservation",
+        "description": "Two farmers with adjacent lands must decide whether to conserve water during a drought or use as much as they need. If both conserve, the water lasts longer for both. If one conserves while the other doesn't, the non-conserver benefits while the conserver risks crop loss. If neither conserves, the water runs out quickly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Farmer with adjacent land"
+            },
+            {
+                "name": "Bob",
+                "profile": "Farmer with adjacent land"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Conserve water",
+            "defect": "Use as much as needed"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Resource Sharing in Space",
+        "description": "Two astronauts on a space station must decide whether to share their limited supply of oxygen or hoard it. If both share, they can last until resupply. If one hoards while the other shares, the hoarder survives longer while the sharer risks running out. If both hoard, both face severe oxygen shortages.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Astronaut on the space station"
+            },
+            {
+                "name": "Bob",
+                "profile": "Astronaut on the space station"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share oxygen",
+            "defect": "Hoard oxygen"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Environmental Conservation",
+        "description": "Two neighboring farmers, You and Bob, must decide whether to adopt environmentally friendly practices or continue using conventional methods. If both adopt eco-friendly practices, they receive a grant for sustainable farming. If one adopts while the other doesn't, the adopter bears higher costs while the other benefits from lower expenses. If neither adopts, they maintain current profits but miss out on the grant.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Farmer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Farmer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Adopt Eco-Friendly Practices",
+            "defect": "Use Conventional Methods"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Environmental Policy",
+        "description": "Two neighboring countries must decide on carbon emission policies. Each country can choose to reduce emissions or continue at current levels. If both reduce, global warming effects are mitigated. If one reduces while the other doesn't, the reducer bears economic costs. If both continue at current levels, environmental damage accelerates.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Environmental Minister"
+            },
+            {
+                "name": "Bob",
+                "profile": "Environmental Minister"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Reduce Emissions",
+            "defect": "Continue Emissions"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Neighborhood Watch Program",
+        "description": "Two neighbors are part of a neighborhood watch program. Each neighbor must decide whether to actively patrol at night or stay at home. If both patrol, the neighborhood is safer, and they receive community recognition. If one patrols while the other stays home, the patroller feels burdened while the other enjoys a peaceful night. If neither patrols, the neighborhood remains vulnerable to crime.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Neighbor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Neighbor"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Stay at Home",
+            "defect": "Patrol"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Environmental Conservation Effort",
+        "description": "Two park rangers are tasked with conserving a local forest. Each ranger must decide whether to implement strict conservation measures or allow limited logging. If both implement conservation measures, the forest thrives, and they receive environmental awards. If one implements conservation while the other allows logging, the conservationist feels undermined while the logger benefits economically. If neither conserves, the forest degrades over time.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Park Ranger"
+            },
+            {
+                "name": "Bob",
+                "profile": "Park Ranger"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Allow Logging",
+            "defect": "Conserve"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Community Event Planning",
+        "description": "Two community organizers, You and Bob, are planning a local festival. They must decide whether to invest more in entertainment or stick to the planned budget. If both invest more, the festival is a hit but funds are depleted. If one invests more while the other doesn't, the investor gains more recognition. If neither invests more, the festival is modest but within budget.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Community Organizer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community Organizer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Stick to Budget",
+            "defect": "Invest More in Entertainment"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Resource Allocation",
+        "description": "Two project managers must decide how to allocate resources between their projects. If both allocate heavily to their own projects, they strain the company resources but maximize their project's output. If one allocates heavily while the other does not, the former gains more success while the latter's project suffers. If neither allocates heavily, both projects proceed steadily but without exceptional results.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Project Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Project Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Balanced Allocation",
+            "defect": "Heavy Allocation"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Research Collaboration",
+        "description": "Two researchers are working on a joint paper. They must decide whether to share their latest findings or hold back for individual recognition. If both share openly, they produce a groundbreaking paper. If one shares while the other holds back, the sharer feels exploited while the other gains recognition. If neither shares, the paper is mediocre.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Researcher"
+            },
+            {
+                "name": "Bob",
+                "profile": "Researcher"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share Findings",
+            "defect": "Hold Back"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Office Supplies Management",
+        "description": "Two office managers are responsible for ordering supplies for their respective departments. Each manager must decide whether to order in bulk or order only as needed. If both order in bulk, they save money for the company and receive commendations. If one orders in bulk and the other doesn't, the one ordering in bulk risks overstocking while the other maintains a lean inventory. If neither orders in bulk, they meet basic needs but miss out on cost savings.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Office Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Office Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Order as Needed",
+            "defect": "Order in Bulk"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Fishing Quota Management",
+        "description": "Two fishermen must decide whether to stick to their agreed fishing quota or exceed it. If both stick to the quota, the fish population remains sustainable. If one exceeds the quota, they gain a larger catch while the other suffers. If both exceed the quota, the fish population collapses.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Fisherman in the local community"
+            },
+            {
+                "name": "Bob",
+                "profile": "Fisherman in the local community"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Stick to quota",
+            "defect": "Exceed quota"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Marketing Strategy",
+        "description": "Two marketing managers are tasked with launching a new product. Each must decide whether to share their market research with the other. If both share, they can create a comprehensive strategy and achieve high sales. If one shares while the other doesn't, the sharer feels exploited while the non-sharer gains an edge. If neither shares, they achieve average sales.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Marketing Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Marketing Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share Research",
+            "defect": "Withhold Research"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Resource Allocation in a Community Garden",
+        "description": "You and Bob are members of a community garden. Each member must decide whether to contribute extra resources (time, seeds, fertilizers) to improve the garden's yield. If both contribute, the garden flourishes, and they both receive an abundant harvest. If one contributes while the other doesn't, the one who contributes feels their efforts are taken advantage of, while the other enjoys the benefits without extra work. If neither contributes, the garden produces a minimal yield, just enough to sustain them without any surplus.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Member of the community garden."
+            },
+            {
+                "name": "Bob",
+                "profile": "Member of the community garden."
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Contribute extra resources.",
+            "defect": "Contribute no extra resources."
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Neighborhood Security",
+        "description": "Two neighbors must decide whether to contribute to a shared security system or rely on the other to pay. If both contribute, the neighborhood is secure. If one contributes while the other doesn't, the non-contributor benefits without cost. If neither contributes, the neighborhood becomes unsafe.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Resident of the neighborhood"
+            },
+            {
+                "name": "Bob",
+                "profile": "Resident of the neighborhood"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Contribute to security",
+            "defect": "Do not contribute"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Academic Collaboration",
+        "description": "Two researchers, You and Bob, are working on a joint paper. They must decide whether to share their latest findings or hold back some data. If both share, the paper is groundbreaking. If one shares while the other doesn't, the sharer risks their data being used without equal contribution. If neither shares, the paper is less impactful.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Researcher"
+            },
+            {
+                "name": "Bob",
+                "profile": "Researcher"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share Latest Findings",
+            "defect": "Hold Back Some Data"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Team Presentation",
+        "description": "Two team members must decide whether to prepare thoroughly for a joint presentation or rely on the other to do the work. If both prepare, the presentation is excellent. If one prepares while the other doesn't, the non-preparer benefits while the preparer works harder. If neither prepares, the presentation fails.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team member for the presentation"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team member for the presentation"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Prepare thoroughly",
+            "defect": "Rely on the other"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Office Resource Management",
+        "description": "Two colleagues, You and Bob, are responsible for managing shared office resources. They must decide whether to order extra supplies or stick to the current budget. If both order extra, resources are abundant but the budget is exceeded. If one orders extra while the other doesn't, the one ordering extra faces scrutiny for overspending. If neither orders, resources are limited but the budget is maintained.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Office Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Office Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Stick to Budget",
+            "defect": "Order Extra Supplies"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Marketing Campaign",
+        "description": "Two marketing managers must decide whether to launch an aggressive campaign or a standard one. If both choose aggressive, they gain market share but at a high cost. If one chooses aggressive while the other does not, the aggressive one gains significantly while the other loses ground. If neither chooses aggressive, they maintain their current market position.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Marketing Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Marketing Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Standard Campaign",
+            "defect": "Aggressive Campaign"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Treasure Hunt Expedition",
+        "description": "You and Bob are part of an adventurous treasure hunt expedition. They have uncovered a clue leading them to an ancient crypt containing the treasure. To access the treasure, both need to input a code simultaneously into their respective devices. Each device can either activate a security bypass or a security alarm. If both choose the security bypass, they successfully access the treasure and share the profits. If one chooses the bypass while the other triggers the alarm, the treasure remains inaccessible, but the one triggering the alarm secures exclusive rights and rewards from the expedition sponsors for thwarting a security threat. If both trigger the alarm, they remain stuck, and the treasure remains hidden, with no additional benefits to either of them.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Participant in the treasure hunt, equipped with a code input device."
+            },
+            {
+                "name": "Bob",
+                "profile": "Participant in the treasure hunt, equipped with a code input device."
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Activate the security bypass",
+            "defect": "Trigger the security alarm"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Community Project",
+        "description": "Two community leaders must decide whether to invest in a joint community project or focus on their individual initiatives. If both invest in the joint project, the community benefits greatly. If one invests while the other focuses on individual initiatives, the investor feels taken advantage of while the other gains individual accolades. If neither invests, the community project fails to launch.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Community Leader"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community Leader"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Joint Investment",
+            "defect": "Individual Focus"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Community Event",
+        "description": "Two community leaders are planning a local event. Each must decide whether to contribute their volunteers. If both contribute, the event is a success. If one contributes while the other doesn't, the contributor feels overburdened. If neither contributes, the event is mediocre.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Community Leader"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community Leader"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Contribute Volunteers",
+            "defect": "Withhold Volunteers"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Academic Group Project",
+        "description": "Two students are assigned a group project. Each student must decide whether to contribute equally or let the other do most of the work. If both contribute equally, they receive a high grade and praise from the professor. If one contributes more while the other slacks, the hard worker feels exploited while the slacker enjoys free time. If neither contributes, the project is mediocre, and they receive a low grade.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Student"
+            },
+            {
+                "name": "Bob",
+                "profile": "Student"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Slack",
+            "defect": "Contribute Equally"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Research Grant Allocation",
+        "description": "Two senior researchers, You and Bob, have applied for a shared research grant. They must now decide whether to transparently share their initial research data or keep it private while the grant committee reviews their applications. If both share their data transparently, the committee views them as highly cooperative, and they both receive equal portions of the grant funding. If one shares their data while the other withholds theirs, the one withholding data gets a higher individual grant as their work looks more unique, while the one sharing loses credibility for 'lack of originality.' If both withhold their data, the committee perceives their proposals as lacking transparency, and funding is significantly reduced for both.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Senior researcher applying for the grant"
+            },
+            {
+                "name": "Bob",
+                "profile": "Senior researcher applying for the grant"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share data transparently",
+            "defect": "Withhold data"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Team Project",
+        "description": "Two colleagues are working on a project. One prefers using a creative approach while the other prefers a structured method. They both want to work together but have different ideas on how to proceed.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Creative thinker"
+            },
+            {
+                "name": "Bob",
+                "profile": "Methodical planner"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Creative Approach",
+            "option_b": "Structured Method"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Charity Event",
+        "description": "Two organizers are planning a charity event. One wants to host a gala, while the other prefers a sports event. They both prioritize hosting the event together over hosting separately, but have different event preferences.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Gala organizer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Sports event planner"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Gala",
+            "option_b": "Sports Event"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Holiday Celebration",
+        "description": "Family members are deciding on how to spend the holiday. One prefers a traditional dinner at home, while the other prefers going out for a festive show. They both cherish family time over their individual preferences.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Homebody"
+            },
+            {
+                "name": "Bob",
+                "profile": "Social butterfly"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Dinner at Home",
+            "option_b": "Festive Show"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Team Building Activity",
+        "description": "Colleagues need to decide on a team-building activity. One prefers a cooking class, while the other prefers an escape room. They both value team bonding over individual preferences.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Culinary explorer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Puzzle solver"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Cooking Class",
+            "option_b": "Escape Room"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Weekend Getaway",
+        "description": "Two friends are planning a weekend getaway. One prefers hiking in the mountains, while the other enjoys relaxing at the beach. They both prefer spending the weekend together rather than apart but have different preferred activities.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Nature lover"
+            },
+            {
+                "name": "Bob",
+                "profile": "Beach enthusiast"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Hiking",
+            "option_b": "Beach"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Project Collaboration",
+        "description": "Two project partners need to decide on a collaboration tool. One prefers using Slack while the other prefers Microsoft Teams. They both prefer to collaborate using the same tool over using different tools, but each has a different preference.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Slack user"
+            },
+            {
+                "name": "Bob",
+                "profile": "Teams user"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Slack",
+            "option_b": "Microsoft Teams"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Holiday Celebration",
+        "description": "Two family members need to decide on how to celebrate a holiday. One prefers a traditional family dinner, while the other prefers a party with friends. They both value celebrating together over celebrating apart, but have different celebration preferences.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Family tradition enthusiast"
+            },
+            {
+                "name": "Bob",
+                "profile": "Social butterfly"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Family Dinner",
+            "option_b": "Party with Friends"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Team Project",
+        "description": "Two colleagues need to choose a project for their team. One wants to work on a tech innovation project, while the other prefers a community service project. They both prioritize working together on a project over working separately, but have different project preferences.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Tech innovator"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community advocate"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Tech Innovation",
+            "option_b": "Community Service"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Corporate Team Building",
+        "description": "A team is deciding on a corporate team-building activity. One member prefers a cooking class, while another prefers a paintball match. Both value team bonding but have different ideas of fun.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Culinary adventurer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Action seeker"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Cooking class",
+            "option_b": "Paintball match"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Dinner Choice",
+        "description": "Two roommates need to decide on what to order for dinner. One prefers Italian cuisine while the other prefers Chinese. They both prefer eating the same meal together over eating separately, but each has a different preferred cuisine.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Italian food lover"
+            },
+            {
+                "name": "Bob",
+                "profile": "Chinese food lover"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Italian cuisine",
+            "option_b": "Chinese cuisine"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Weekend Getaway",
+        "description": "Two friends are planning a weekend getaway. One prefers the mountains for hiking, while the other prefers the beach for relaxation. They both value spending time together over being apart, but have different preferences for the destination.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Outdoor enthusiast"
+            },
+            {
+                "name": "Bob",
+                "profile": "Beach lover"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Mountains",
+            "option_b": "Beach"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Holiday Decoration",
+        "description": "Neighbors are deciding on holiday decorations for their street. One prefers a traditional theme, while the other prefers a modern theme. Both want the street to look festive but have different tastes.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Traditionalist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Modernist"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Traditional theme",
+            "option_b": "Modern theme"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Team Building Activity",
+        "description": "Two colleagues need to decide on a team-building activity. One prefers a cooking class while the other prefers a sports event. They both prefer participating together over separately, but each has a different preferred activity.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Cooking enthusiast"
+            },
+            {
+                "name": "Bob",
+                "profile": "Sports fan"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Cooking class",
+            "option_b": "Sports event"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Charity Event",
+        "description": "Two organizers need to decide on the main event for a charity fundraiser. One prefers a silent auction, while the other prefers a live concert. They both aim to raise as much money as possible for the cause.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Auction enthusiast"
+            },
+            {
+                "name": "Bob",
+                "profile": "Music lover"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Silent Auction",
+            "option_b": "Live Concert"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Dinner Plans",
+        "description": "Two roommates are deciding on dinner plans. One prefers cooking at home while the other prefers dining out. They both value spending the evening together but have different preferences for dinner.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Enjoys cooking"
+            },
+            {
+                "name": "Bob",
+                "profile": "Enjoys dining out"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Cook at Home",
+            "option_b": "Dine Out"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Weekend Activity",
+        "description": "Two siblings are planning a weekend activity. One prefers going to a sports event while the other prefers a cultural festival. They both want to spend the day together but have different activity preferences.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Sports enthusiast"
+            },
+            {
+                "name": "Bob",
+                "profile": "Culture enthusiast"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Sports Event",
+            "option_b": "Cultural Festival"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Charity Event Planning",
+        "description": "Two organizers are planning a charity event. One prefers a gala dinner, while the other prefers a fun run. Both aim to raise funds but have different visions for the event.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Formal event planner"
+            },
+            {
+                "name": "Bob",
+                "profile": "Sporting event coordinator"
+            }
+        ],
+        "behavior_choices": {
+            "option_a": "Gala dinner",
+            "option_b": "Fun run"
+        },
+        "game_name": "Battle_Of_Sexes"
+    },
+    {
+        "scenario": "Conference Room Booking",
+        "description": "Two teams want to book the same conference room for a meeting. Each must decide whether to wait for another slot or proceed with booking. If both wait, they miss the room. If both book, there's a double booking conflict. If one waits and the other books, the room is successfully reserved.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team leader for Project A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team leader for Project B"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for another slot",
+            "go": "Proceed with booking"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Coffee Machine Usage",
+        "description": "Two colleagues arrive at the coffee machine at the same time. Each must decide whether to wait for the other to finish or proceed to make coffee. If both wait, there's a delay in getting coffee. If both proceed, the machine jams. If one waits and the other proceeds, coffee is made smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Employee in the marketing department"
+            },
+            {
+                "name": "Bob",
+                "profile": "Employee in the sales department"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the other",
+            "go": "Proceed to make coffee"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Parking Spot Decision",
+        "description": "Two drivers spot a parking space at the same time. Each must decide whether to wait for the other to park or go find another spot. If both wait, there's a minor delay. If both go, they miss the spot. If one waits while the other goes, they park smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Driver with a sedan"
+            },
+            {
+                "name": "Bob",
+                "profile": "Driver with an SUV"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the other to park",
+            "go": "Find another spot"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Email Response",
+        "description": "Two colleagues receive an email requiring a response. Each must decide whether to reply immediately or wait for the other to respond. If both wait, the email remains unanswered. If both reply, there's redundancy. If one waits while the other replies, the task is completed efficiently.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team member working remotely"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team member in the office"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the other to reply",
+            "go": "Reply immediately"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Elevator Dilemma",
+        "description": "Two people arrive at an elevator simultaneously. Each must decide whether to wait for the other to enter first or go in themselves. If both wait, they miss the elevator. If both go, they awkwardly bump into each other. If one waits while the other goes, they enter smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Person waiting on the 5th floor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Person waiting on the 5th floor"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait",
+            "go": "Enter"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Island Rescue",
+        "description": "Two rescue teams arrive at a stranded island simultaneously. Each must decide whether to wait for backup or go ahead with the rescue. If both wait, there's a delay in rescue. If both go, they risk overlapping efforts and confusion. If one waits while the other goes, the rescue is coordinated smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Rescue team leader approaching from the west"
+            },
+            {
+                "name": "Bob",
+                "profile": "Rescue team leader approaching from the east"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for backup",
+            "go": "Proceed with rescue"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Meeting Room Booking",
+        "description": "Two teams try to book the same meeting room. Each must decide whether to wait for the room to be free or go to another room. If both wait, there's a scheduling conflict. If both go, they find no rooms available. If one waits while the other goes, they get a room.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team leader of the product development team"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team leader of the design team"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the room to be free",
+            "go": "Find another room"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Path Crossing",
+        "description": "Two hikers meet at a narrow bridge. Each must decide whether to let the other cross first or go themselves. If both wait, there's no movement. If both go, they block each other. If one waits while the other goes, crossing occurs without issue.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Hiker coming from the north"
+            },
+            {
+                "name": "Bob",
+                "profile": "Hiker coming from the south"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait",
+            "go": "Cross"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Conference Call Entry",
+        "description": "Two team leaders are about to join a conference call. Each must decide whether to join silently or announce their presence. If both join silently, there's a lack of engagement. If both announce, there's confusion. If one joins silently while the other announces, the call starts smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team leader from the marketing department"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team leader from the sales department"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Join silently",
+            "go": "Announce presence"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Elevator Decision",
+        "description": "Two individuals arrive at an elevator simultaneously on different floors. Each must decide whether to hold the elevator for the other or proceed to their destination. If both hold, there's a slight delay. If both proceed, they miss the chance to ride together. If one holds while the other proceeds, the elevator ride is efficient.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Person on the 5th floor waiting for the elevator"
+            },
+            {
+                "name": "Bob",
+                "profile": "Person on the 3rd floor waiting for the elevator"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Hold the elevator",
+            "go": "Proceed to destination"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Shopping Aisle",
+        "description": "Two shoppers reach a narrow aisle in a supermarket at the same time. Each must decide whether to let the other pass first or go themselves. If both wait, there's a shopping delay. If both go, their carts collide. If one waits while the other goes, shopping continues smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Shopper with a full cart"
+            },
+            {
+                "name": "Bob",
+                "profile": "Shopper with a basket"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait",
+            "go": "Pass"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Mountain Expedition",
+        "description": "Two expedition teams reach a narrow mountain pass. Each must decide whether to wait for the weather to clear or proceed. If both wait, progress is delayed. If both proceed, there's a risk of an avalanche. If one waits while the other proceeds, the path is cleared safely.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Expedition leader from the northern route"
+            },
+            {
+                "name": "Bob",
+                "profile": "Expedition leader from the southern route"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for weather clearance",
+            "go": "Proceed through the pass"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Coffee Shop Queue",
+        "description": "Two customers arrive at the coffee shop counter simultaneously. Each must decide whether to wait for a few minutes or place their order immediately. If both wait, there's a minor delay. If both order, there's confusion at the counter. If one waits while the other orders, the service is smooth.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Customer with a mobile order"
+            },
+            {
+                "name": "Bob",
+                "profile": "Walk-in customer"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for a few minutes",
+            "go": "Place order immediately"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Underwater Exploration",
+        "description": "Two submarine teams are exploring a newly discovered underwater cave. Each must decide whether to wait for more data or proceed with exploration. If both wait, exploration is delayed. If both proceed, there's a risk of disorientation. If one waits while the other proceeds, exploration is conducted smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Submarine captain from the north entrance"
+            },
+            {
+                "name": "Bob",
+                "profile": "Submarine captain from the south entrance"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for more data",
+            "go": "Proceed with exploration"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Space Shuttle Docking",
+        "description": "Two space shuttles are attempting to dock at a space station. Each must decide whether to wait for clearance or proceed to dock. If both wait, docking is delayed. If both proceed, there's a risk of collision. If one waits while the other proceeds, docking is successful.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Shuttle commander approaching from quadrant A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Shuttle commander approaching from quadrant B"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for clearance",
+            "go": "Proceed to dock"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Library Book Checkout",
+        "description": "Two students arrive at the library checkout with the same book. Each must decide whether to wait for another copy or proceed to checkout. If both wait, they miss the book. If both proceed, there's a checkout conflict. If one waits and the other proceeds, the book is checked out smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Student in the literature class"
+            },
+            {
+                "name": "Bob",
+                "profile": "Student in the history class"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for another copy",
+            "go": "Proceed to checkout"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Elevator Decision",
+        "description": "Two people arrive at an elevator simultaneously. Each must decide whether to wait for the next one or enter. If both wait, they miss the current elevator. If both enter, the elevator exceeds weight capacity. If one waits and the other enters, the elevator operates smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Person on the 5th floor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Person on the 5th floor"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the next elevator",
+            "go": "Enter the elevator"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Library Checkout",
+        "description": "Two students arrive at the library checkout desk at the same time. Each must decide whether to let the other check out first or proceed themselves. If both wait, there's a delay. If both go, they clash at the counter. If one waits while the other goes, the checkout happens smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Student with a stack of books"
+            },
+            {
+                "name": "Bob",
+                "profile": "Student with a single book"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait",
+            "go": "Proceed"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Parking Space Decision",
+        "description": "Two drivers spot the same parking space at the same time. Each must decide whether to wait for another space or park in the current one. If both wait, they face a minor delay. If both park, there's a risk of collision. If one waits while the other parks, parking is hassle-free.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Driver in a compact car"
+            },
+            {
+                "name": "Bob",
+                "profile": "Driver in an SUV"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for another space",
+            "go": "Park in the current space"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Coffee Machine Usage",
+        "description": "Two employees reach the office coffee machine simultaneously. Each must decide whether to let the other use it first or proceed to make their coffee. If both wait, there's a brief standstill. If both proceed, there's a spill. If one waits while the other proceeds, coffee is made without incident.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Employee from the finance department"
+            },
+            {
+                "name": "Bob",
+                "profile": "Employee from the HR department"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Let the other go first",
+            "go": "Make coffee now"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Tech Startup Launch",
+        "description": "Two tech startups are launching their new apps. Each can focus on either user experience or innovative features. If both focus on user experience, they gain a stable user base and moderate success. If one focuses on user experience while the other on innovation, the innovative app attracts more attention. If both focus on innovation, they struggle to retain users and see lower profits.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Startup A Founder"
+            },
+            {
+                "name": "Bob",
+                "profile": "Startup B Founder"
+            }
+        ],
+        "behavior_choices": {
+            "experience": "Focus on User Experience",
+            "innovation": "Focus on Innovative Features"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Culinary Showdown",
+        "description": "Two chefs, You and Bob, compete in a high-stakes culinary competition. Each can choose to prepare either a traditional dish or a fusion dish. If both choose fusion, they impress the judges with creativity and share the spotlight. If one chooses fusion while the other chooses traditional, the fusion chef steals the show. If both choose traditional, they face a tough critique for lack of innovation.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Chef A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Chef B"
+            }
+        ],
+        "behavior_choices": {
+            "fusion": "Fusion Dish",
+            "traditional": "Traditional Dish"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Tech Innovation Challenge",
+        "description": "Two tech companies are racing to develop the next breakthrough gadget. They can choose to innovate radically or incrementally. Radical innovation can lead to market dominance but risks failure. Incremental innovation ensures steady progress. If both innovate radically, they face high R&D costs.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Tech Company CEO"
+            },
+            {
+                "name": "Bob",
+                "profile": "Tech Company CEO"
+            }
+        ],
+        "behavior_choices": {
+            "radical": "Radical Innovation",
+            "incremental": "Incremental Innovation"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Renewable Energy Investment",
+        "description": "Two energy companies are investing in renewable energy projects. Each can choose between solar and wind energy. If both invest in solar, they share the solar market. If one invests in wind while the other invests in solar, the wind investor gains a competitive edge. If both invest in wind, they both face lower returns.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Energy Company A Investor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Energy Company B Investor"
+            }
+        ],
+        "behavior_choices": {
+            "solar": "Solar Energy",
+            "wind": "Wind Energy"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Tech Gadget Launch",
+        "description": "Two tech companies, You and Bob, are launching new gadgets. Each can choose to focus on innovation or reliability. If both choose innovation, they capture the tech enthusiasts' market and share moderate success. If one chooses innovation while the other chooses reliability, the innovative company attracts more attention. If both choose reliability, they maintain a steady but less exciting market presence.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Tech Company A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Tech Company B"
+            }
+        ],
+        "behavior_choices": {
+            "innovation": "Innovative Features",
+            "reliability": "Reliable Features"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Food Festival",
+        "description": "Two food vendors at a festival must choose between serving gourmet dishes or street food. If both serve gourmet, they cater to a smaller crowd and share decent profits. If one serves gourmet while the other serves street food, the street food vendor attracts more festival-goers. If both serve street food, they compete directly and earn less.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Vendor A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Vendor B"
+            }
+        ],
+        "behavior_choices": {
+            "gourmet": "Serve Gourmet Dishes",
+            "street": "Serve Street Food"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Tech Conference",
+        "description": "Two tech companies are sponsoring a conference. Each can choose to focus on AI or Blockchain. If both choose AI, they attract the same tech enthusiasts and share sponsorship benefits. If one chooses Blockchain while the other stays with AI, the Blockchain sponsor attracts more niche interest. If both choose Blockchain, they compete for the same niche market and achieve lower returns.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Tech Company A Executive"
+            },
+            {
+                "name": "Bob",
+                "profile": "Tech Company B Executive"
+            }
+        ],
+        "behavior_choices": {
+            "AI": "Focus on AI",
+            "Blockchain": "Focus on Blockchain"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Art Exhibition",
+        "description": "Two artists, You and Bob, are invited to an exclusive art exhibition where they must decide how to display their artwork. Each can choose either an avant-garde or a classic style. If both choose avant-garde, they attract a niche audience and share moderate fame. If one chooses avant-garde while the other chooses classic, the avant-garde artist becomes the talk of the town. If both choose classic, they enjoy a steady but unremarkable reception.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Artist A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Artist B"
+            }
+        ],
+        "behavior_choices": {
+            "avant-garde": "Avant-garde Style",
+            "classic": "Classic Style"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Autonomous Vehicle Development",
+        "description": "Two tech companies are developing autonomous vehicles. Each can choose between urban-focused or highway-focused designs. If both choose urban, they share the urban market. If one chooses highway while the other stays urban, the highway design captures a new market. If both choose highway, they both face stiff competition.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Tech Company A Engineer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Tech Company B Engineer"
+            }
+        ],
+        "behavior_choices": {
+            "urban": "Urban-Focused Design",
+            "highway": "Highway-Focused Design"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Galactic Resource Allocation",
+        "description": "Two space agencies are tasked with mining resources from a newly discovered planet. Each can choose to mine aggressively or conservatively. If both choose aggressively, they deplete the resources quickly, leading to low yields. If one chooses aggressively while the other mines conservatively, the aggressive miner gains more resources. If both mine conservatively, they maintain a steady resource flow.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Space Agency Director"
+            },
+            {
+                "name": "Bob",
+                "profile": "Space Agency Director"
+            }
+        ],
+        "behavior_choices": {
+            "aggressive": "Aggressive Mining",
+            "conservative": "Conservative Mining"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Eco-Friendly Packaging",
+        "description": "Two companies are deciding on their packaging strategy. Each can choose recyclable materials or biodegradable materials. If both choose recyclable, they share the eco-conscious market. If one chooses biodegradable while the other sticks to recyclable, the biodegradable packager attracts more eco-conscious consumers. If both choose biodegradable, they face higher costs and lower profits.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Packaging Company A Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Packaging Company B Manager"
+            }
+        ],
+        "behavior_choices": {
+            "recyclable": "Use Recyclable Materials",
+            "biodegradable": "Use Biodegradable Materials"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Urban Development Race",
+        "description": "Two real estate developers are competing to build the tallest skyscraper in a bustling city. Each can choose to build rapidly or sustainably. Rapid building can lead to quick profits but risks structural issues. Sustainable building ensures long-term success. If both build rapidly, they face regulatory penalties.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Real Estate Developer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Real Estate Developer"
+            }
+        ],
+        "behavior_choices": {
+            "rapid": "Rapid Building",
+            "sustainable": "Sustainable Building"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Art Exhibition",
+        "description": "Two artists are showcasing their work in a prominent gallery. Each can choose to exhibit either modern art or classical art. If both choose modern art, they attract a niche audience and share moderate profits. If one chooses modern while the other opts for classical, the classical artist gains more attention and higher sales. If both choose classical art, they compete for the same audience and end up with lower sales.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Artist A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Artist B"
+            }
+        ],
+        "behavior_choices": {
+            "modern": "Exhibit Modern Art",
+            "classical": "Exhibit Classical Art"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Space Exploration Race",
+        "description": "Two space agencies are competing to establish a base on Mars. Each can choose between a high-budget mission or a cost-effective mission. If both choose high-budget, they share the success and prestige. If one chooses cost-effective while the other goes high-budget, the cost-effective mission gains more public support. If both choose cost-effective, both achieve modest success.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Agency A Director"
+            },
+            {
+                "name": "Bob",
+                "profile": "Agency B Director"
+            }
+        ],
+        "behavior_choices": {
+            "high_budget": "High-Budget Mission",
+            "cost_effective": "Cost-Effective Mission"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Restaurant Menu",
+        "description": "Two restaurants are updating their menus. Each can choose to offer vegan dishes or gourmet dishes. If both choose vegan, they share the health-conscious market. If one chooses gourmet while the other offers vegan, the gourmet restaurant attracts food enthusiasts. If both choose gourmet, they compete for the same luxury dining audience and earn lower profits.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Restaurant A Chef"
+            },
+            {
+                "name": "Bob",
+                "profile": "Restaurant B Chef"
+            }
+        ],
+        "behavior_choices": {
+            "vegan": "Offer Vegan Dishes",
+            "gourmet": "Offer Gourmet Dishes"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Eco-Friendly Product Launch",
+        "description": "Two companies are launching eco-friendly products. Each can choose between a luxury design or a budget-friendly design. If both choose luxury, they share the niche market. If one chooses budget-friendly while the other stays luxury, the budget-friendly product captures more market share. If both choose budget-friendly, they both earn moderate profits.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Company A Product Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Company B Product Manager"
+            }
+        ],
+        "behavior_choices": {
+            "luxury": "Luxury Design",
+            "budget_friendly": "Budget-Friendly Design"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Fashion Trendsetting",
+        "description": "Two fashion houses are vying to set the next big trend. They can choose to launch a bold new line or refine a classic. A bold line can capture the market but risks backlash. Refining a classic maintains steady sales. If both launch bold lines, they saturate the market.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Fashion House Creative Director"
+            },
+            {
+                "name": "Bob",
+                "profile": "Fashion House Creative Director"
+            }
+        ],
+        "behavior_choices": {
+            "bold": "Bold Line",
+            "classic": "Classic Refinement"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Fashion Show",
+        "description": "Two designers are participating in a fashion show. Each can choose to showcase either avant-garde designs or classic styles. If both choose avant-garde, they appeal to a limited audience and share moderate acclaim. If one chooses avant-garde while the other opts for classic, the classic designer gains more media coverage. If both choose classic styles, they compete for the same audience and receive less recognition.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Designer A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Designer B"
+            }
+        ],
+        "behavior_choices": {
+            "avant-garde": "Showcase Avant-Garde Designs",
+            "classic": "Showcase Classic Styles"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Fashion Show",
+        "description": "Two fashion designers, You and Bob, are showcasing their collections. Each can choose to present either a bold design or a safe design. If both choose bold, they capture the audience's attention and share the limelight. If one chooses bold while the other chooses safe, the bold designer becomes the highlight of the show. If both choose safe, they receive a lukewarm response.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Designer A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Designer B"
+            }
+        ],
+        "behavior_choices": {
+            "bold": "Bold Design",
+            "safe": "Safe Design"
+        },
+        "game_name": "Duopolistic_Competition"
+    },
+    {
+        "scenario": "Art Gallery Exhibition",
+        "description": "Two art galleries are planning their upcoming exhibitions. Each can choose to feature modern art or classical art. If both choose modern art, they attract a similar audience and share profits. If one chooses modern while the other opts for classical, the gallery with classical art attracts a unique audience and gains more visitors. If both choose classical art, they compete for the same niche audience and earn lower profits.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Gallery A Curator"
+            },
+            {
+                "name": "Bob",
+                "profile": "Gallery B Curator"
+            }
+        ],
+        "behavior_choices": {
+            "modern_art": "Feature Modern Art",
+            "classical_art": "Feature Classical Art"
+        },
+        "game_name": "Duopolistic_Competition"
+    }
+]

@@ -1,0 +1,18 @@
+{
+    "scenario": "Expedition_to_Mars",
+    "description": "Two astronauts must decide whether to collaborate on a mission to Mars or conduct separate space research. If both collaborate, they succeed and achieve significant scientific breakthroughs. If one collaborates while the other works solo, the collaborator fails while the solo astronaut gains minor insights. If both work solo, they both achieve moderate insights.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Astrophysicist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Engineer"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Mars mission",
+        "defect": "Conduct separate space research"
+    }
+}

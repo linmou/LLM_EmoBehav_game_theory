@@ -1,0 +1,18 @@
+{
+    "scenario": "Treasure_Hunt",
+    "description": "Two treasure hunters must decide whether to collaborate on finding a hidden treasure chest or individually search for smaller treasures. If both collaborate, they succeed and share a large treasure. If one collaborates while the other searches individually, the collaborator fails while the solo hunter finds a small treasure. If both search individually, they both find moderate treasures.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Adventurous explorer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Seasoned navigator"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate for the hidden treasure",
+        "defect": "Search for smaller treasures individually"
+    }
+}

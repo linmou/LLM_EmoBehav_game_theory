@@ -1,0 +1,18 @@
+{
+    "scenario": "Corporate Project",
+    "description": "Two project managers must decide whether to collaborate on a high-risk, high-reward project or work on smaller, individual tasks. If both work on the high-reward project, they succeed and receive promotions. If one works on the high-reward project while the other focuses on smaller tasks, the high-reward project fails while the smaller tasks are completed. If both work on smaller tasks, they both receive satisfactory evaluations.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Senior project manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Project coordinator"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Joint High-Risk Project",
+        "defect": "Individual Task Management"
+    }
+}

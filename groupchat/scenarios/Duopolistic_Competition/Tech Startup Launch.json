@@ -1,0 +1,18 @@
+{
+    "scenario": "Tech Startup Launch",
+    "description": "Two tech startups are launching their new apps. Each can focus on either user experience or innovative features. If both focus on user experience, they gain a stable user base and moderate success. If one focuses on user experience while the other on innovation, the innovative app attracts more attention. If both focus on innovation, they struggle to retain users and see lower profits.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Startup A Founder"
+        },
+        {
+            "name": "Bob",
+            "profile": "Startup B Founder"
+        }
+    ],
+    "behavior_choices": {
+        "experience": "Focus on User Experience",
+        "innovation": "Focus on Innovative Features"
+    }
+}

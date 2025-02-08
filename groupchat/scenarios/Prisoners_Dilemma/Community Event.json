@@ -1,0 +1,18 @@
+{
+    "scenario": "Community Event",
+    "description": "Two community leaders are planning a local event. Each must decide whether to contribute their volunteers. If both contribute, the event is a success. If one contributes while the other doesn't, the contributor feels overburdened. If neither contributes, the event is mediocre.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Community Leader"
+        },
+        {
+            "name": "Bob",
+            "profile": "Community Leader"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Contribute Volunteers",
+        "defect": "Withhold Volunteers"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Startup_Venture",
+    "description": "Two entrepreneurs must decide whether to collaborate on developing a groundbreaking product or work on smaller projects individually. If both collaborate, they succeed and share substantial profits. If one collaborates while the other works solo, the collaborator fails while the solo entrepreneur earns small profits. If both work solo, they both earn moderate profits.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Innovative thinker"
+        },
+        {
+            "name": "Bob",
+            "profile": "Strategic planner"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on groundbreaking product",
+        "defect": "Work on smaller projects individually"
+    }
+}

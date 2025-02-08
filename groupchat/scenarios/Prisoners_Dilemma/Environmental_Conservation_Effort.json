@@ -1,0 +1,18 @@
+{
+    "scenario": "Environmental Conservation Effort",
+    "description": "Two park rangers are tasked with conserving a local forest. Each ranger must decide whether to implement strict conservation measures or allow limited logging. If both implement conservation measures, the forest thrives, and they receive environmental awards. If one implements conservation while the other allows logging, the conservationist feels undermined while the logger benefits economically. If neither conserves, the forest degrades over time.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Park Ranger"
+        },
+        {
+            "name": "Bob",
+            "profile": "Park Ranger"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Allow Logging",
+        "defect": "Conserve"
+    }
+}

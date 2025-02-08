@@ -1,0 +1,18 @@
+{
+    "scenario": "Weekend Activity",
+    "description": "Two siblings are planning a weekend activity. One prefers going to a sports event while the other prefers a cultural festival. They both want to spend the day together but have different activity preferences.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Sports enthusiast"
+        },
+        {
+            "name": "Bob",
+            "profile": "Culture enthusiast"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Sports Event",
+        "option_b": "Cultural Festival"
+    }
+}

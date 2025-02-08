@@ -1,0 +1,18 @@
+{
+    "scenario": "Academic_Research",
+    "description": "Two researchers must decide whether to work together on a groundbreaking study or conduct smaller individual experiments. If both work together, they succeed and publish a high-impact paper. If one works together while the other conducts individual experiments, the collaborator fails while the individual publishes a minor paper. If both conduct individual experiments, they both publish moderate papers.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Experienced researcher"
+        },
+        {
+            "name": "Bob",
+            "profile": "Experienced researcher"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on groundbreaking study",
+        "defect": "Conduct individual experiments"
+    }
+}

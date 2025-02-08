@@ -1,0 +1,18 @@
+{
+    "scenario": "Software_Development",
+    "description": "Two software developers must decide whether to collaborate on a major feature or individually work on minor bug fixes. If both work on the feature, they succeed and receive a large reward. If one works on the feature while the other works on bug fixes, the feature fails while the bug fixer gets a small reward. If both work on bug fixes, they both receive moderate rewards.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Software developer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Software developer"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on major feature",
+        "defect": "Fix minor bugs"
+    }
+}

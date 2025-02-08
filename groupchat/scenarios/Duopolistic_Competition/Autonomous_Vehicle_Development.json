@@ -1,0 +1,18 @@
+{
+    "scenario": "Autonomous Vehicle Development",
+    "description": "Two tech companies are developing autonomous vehicles. Each can choose between urban-focused or highway-focused designs. If both choose urban, they share the urban market. If one chooses highway while the other stays urban, the highway design captures a new market. If both choose highway, they both face stiff competition.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Tech Company A Engineer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Tech Company B Engineer"
+        }
+    ],
+    "behavior_choices": {
+        "urban": "Urban-Focused Design",
+        "highway": "Highway-Focused Design"
+    }
+}

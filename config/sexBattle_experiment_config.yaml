@@ -29,6 +29,6 @@ experiment:
   repeat: 4
 
   output:
-    base_dir: "results"
+    base_dir: "results/prompt_experiment"
     save_plots: true
     plot_format: "png" 

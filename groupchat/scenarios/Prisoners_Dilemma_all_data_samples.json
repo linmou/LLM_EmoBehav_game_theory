@@ -1,0 +1,439 @@
+[
+    {
+        "scenario": "Water Conservation",
+        "description": "Two farmers with adjacent lands must decide whether to conserve water during a drought or use as much as they need. If both conserve, the water lasts longer for both. If one conserves while the other doesn't, the non-conserver benefits while the conserver risks crop loss. If neither conserves, the water runs out quickly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Farmer with adjacent land"
+            },
+            {
+                "name": "Bob",
+                "profile": "Farmer with adjacent land"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Conserve water",
+            "defect": "Use as much as needed"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Resource Sharing in Space",
+        "description": "Two astronauts on a space station must decide whether to share their limited supply of oxygen or hoard it. If both share, they can last until resupply. If one hoards while the other shares, the hoarder survives longer while the sharer risks running out. If both hoard, both face severe oxygen shortages.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Astronaut on the space station"
+            },
+            {
+                "name": "Bob",
+                "profile": "Astronaut on the space station"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share oxygen",
+            "defect": "Hoard oxygen"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Environmental Conservation",
+        "description": "Two neighboring farmers, You and Bob, must decide whether to adopt environmentally friendly practices or continue using conventional methods. If both adopt eco-friendly practices, they receive a grant for sustainable farming. If one adopts while the other doesn't, the adopter bears higher costs while the other benefits from lower expenses. If neither adopts, they maintain current profits but miss out on the grant.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Farmer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Farmer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Adopt Eco-Friendly Practices",
+            "defect": "Use Conventional Methods"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Environmental Policy",
+        "description": "Two neighboring countries must decide on carbon emission policies. Each country can choose to reduce emissions or continue at current levels. If both reduce, global warming effects are mitigated. If one reduces while the other doesn't, the reducer bears economic costs. If both continue at current levels, environmental damage accelerates.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Environmental Minister"
+            },
+            {
+                "name": "Bob",
+                "profile": "Environmental Minister"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Reduce Emissions",
+            "defect": "Continue Emissions"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Neighborhood Watch Program",
+        "description": "Two neighbors are part of a neighborhood watch program. Each neighbor must decide whether to actively patrol at night or stay at home. If both patrol, the neighborhood is safer, and they receive community recognition. If one patrols while the other stays home, the patroller feels burdened while the other enjoys a peaceful night. If neither patrols, the neighborhood remains vulnerable to crime.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Neighbor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Neighbor"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Patrol",
+            "defect": "Stay at Home"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Environmental Conservation Effort",
+        "description": "Two park rangers are tasked with conserving a local forest. Each ranger must decide whether to implement strict conservation measures or allow limited logging. If both implement conservation measures, the forest thrives, and they receive environmental awards. If one implements conservation while the other allows logging, the conservationist feels undermined while the logger benefits economically. If neither conserves, the forest degrades over time.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Park Ranger"
+            },
+            {
+                "name": "Bob",
+                "profile": "Park Ranger"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Conserve",
+            "defect": "Allow Logging"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Community Event Planning",
+        "description": "Two community organizers, You and Bob, are planning a local festival. They must decide whether to invest more in entertainment or stick to the planned budget. If both invest more, the festival is a hit but funds are depleted. If one invests more while the other doesn't, the investor gains more recognition. If neither invests more, the festival is modest but within budget.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Community Organizer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community Organizer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Stick to Budget",
+            "defect": "Invest More in Entertainment"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Resource Allocation",
+        "description": "Two project managers must decide how to allocate resources between their projects. If both allocate heavily to their own projects, they strain the company resources but maximize their project's output. If one allocates heavily while the other does not, the former gains more success while the latter's project suffers. If neither allocates heavily, both projects proceed steadily but without exceptional results.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Project Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Project Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Balanced Allocation",
+            "defect": "Heavy Allocation"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Research Collaboration",
+        "description": "Two researchers are working on a joint paper. They must decide whether to share their latest findings or hold back for individual recognition. If both share openly, they produce a groundbreaking paper. If one shares while the other holds back, the sharer feels exploited while the other gains recognition. If neither shares, the paper is mediocre.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Researcher"
+            },
+            {
+                "name": "Bob",
+                "profile": "Researcher"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share Findings",
+            "defect": "Hold Back"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Office Supplies Management",
+        "description": "Two office managers are responsible for ordering supplies for their respective departments. Each manager must decide whether to order in bulk or order only as needed. If both order in bulk, they save money for the company and receive commendations. If one orders in bulk and the other doesn't, the one ordering in bulk risks overstocking while the other maintains a lean inventory. If neither orders in bulk, they meet basic needs but miss out on cost savings.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Office Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Office Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Order as Needed",
+            "defect": "Order in Bulk"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Fishing Quota Management",
+        "description": "Two fishermen must decide whether to stick to their agreed fishing quota or exceed it. If both stick to the quota, the fish population remains sustainable. If one exceeds the quota, they gain a larger catch while the other suffers. If both exceed the quota, the fish population collapses.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Fisherman in the local community"
+            },
+            {
+                "name": "Bob",
+                "profile": "Fisherman in the local community"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Stick to quota",
+            "defect": "Exceed quota"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Marketing Strategy",
+        "description": "Two marketing managers are tasked with launching a new product. Each must decide whether to share their market research with the other. If both share, they can create a comprehensive strategy and achieve high sales. If one shares while the other doesn't, the sharer feels exploited while the non-sharer gains an edge. If neither shares, they achieve average sales.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Marketing Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Marketing Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share Research",
+            "defect": "Withhold Research"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Resource Allocation in a Community Garden",
+        "description": "You and Bob are members of a community garden. Each member must decide whether to contribute extra resources (time, seeds, fertilizers) to improve the garden's yield. If both contribute, the garden flourishes, and they both receive an abundant harvest. If one contributes while the other doesn't, the one who contributes feels their efforts are taken advantage of, while the other enjoys the benefits without extra work. If neither contributes, the garden produces a minimal yield, just enough to sustain them without any surplus.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Member of the community garden."
+            },
+            {
+                "name": "Bob",
+                "profile": "Member of the community garden."
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Contribute extra resources.",
+            "defect": "Contribute no extra resources."
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Neighborhood Security",
+        "description": "Two neighbors must decide whether to contribute to a shared security system or rely on the other to pay. If both contribute, the neighborhood is secure. If one contributes while the other doesn't, the non-contributor benefits without cost. If neither contributes, the neighborhood becomes unsafe.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Resident of the neighborhood"
+            },
+            {
+                "name": "Bob",
+                "profile": "Resident of the neighborhood"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Contribute to security",
+            "defect": "Do not contribute"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Academic Collaboration",
+        "description": "Two researchers, You and Bob, are working on a joint paper. They must decide whether to share their latest findings or hold back some data. If both share, the paper is groundbreaking. If one shares while the other doesn't, the sharer risks their data being used without equal contribution. If neither shares, the paper is less impactful.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Researcher"
+            },
+            {
+                "name": "Bob",
+                "profile": "Researcher"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share Latest Findings",
+            "defect": "Hold Back Some Data"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Team Presentation",
+        "description": "Two team members must decide whether to prepare thoroughly for a joint presentation or rely on the other to do the work. If both prepare, the presentation is excellent. If one prepares while the other doesn't, the non-preparer benefits while the preparer works harder. If neither prepares, the presentation fails.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team member for the presentation"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team member for the presentation"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Prepare thoroughly",
+            "defect": "Rely on the other"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Office Resource Management",
+        "description": "Two colleagues, You and Bob, are responsible for managing shared office resources. They must decide whether to order extra supplies or stick to the current budget. If both order extra, resources are abundant but the budget is exceeded. If one orders extra while the other doesn't, the one ordering extra faces scrutiny for overspending. If neither orders, resources are limited but the budget is maintained.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Office Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Office Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Stick to Budget",
+            "defect": "Order Extra Supplies"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Marketing Campaign",
+        "description": "Two marketing managers must decide whether to launch an aggressive campaign or a standard one. If both choose aggressive, they gain market share but at a high cost. If one chooses aggressive while the other does not, the aggressive one gains significantly while the other loses ground. If neither chooses aggressive, they maintain their current market position.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Marketing Manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Marketing Manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Standard Campaign",
+            "defect": "Aggressive Campaign"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Treasure Hunt Expedition",
+        "description": "You and Bob are part of an adventurous treasure hunt expedition. They have uncovered a clue leading them to an ancient crypt containing the treasure. To access the treasure, both need to input a code simultaneously into their respective devices. Each device can either activate a security bypass or a security alarm. If both choose the security bypass, they successfully access the treasure and share the profits. If one chooses the bypass while the other triggers the alarm, the treasure remains inaccessible, but the one triggering the alarm secures exclusive rights and rewards from the expedition sponsors for thwarting a security threat. If both trigger the alarm, they remain stuck, and the treasure remains hidden, with no additional benefits to either of them.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Participant in the treasure hunt, equipped with a code input device."
+            },
+            {
+                "name": "Bob",
+                "profile": "Participant in the treasure hunt, equipped with a code input device."
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Activate the security bypass",
+            "defect": "Trigger the security alarm"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Community Project",
+        "description": "Two community leaders must decide whether to invest in a joint community project or focus on their individual initiatives. If both invest in the joint project, the community benefits greatly. If one invests while the other focuses on individual initiatives, the investor feels taken advantage of while the other gains individual accolades. If neither invests, the community project fails to launch.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Community Leader"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community Leader"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Joint Investment",
+            "defect": "Individual Focus"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Community Event",
+        "description": "Two community leaders are planning a local event. Each must decide whether to contribute their volunteers. If both contribute, the event is a success. If one contributes while the other doesn't, the contributor feels overburdened. If neither contributes, the event is mediocre.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Community Leader"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community Leader"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Contribute Volunteers",
+            "defect": "Withhold Volunteers"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Academic Group Project",
+        "description": "Two students are assigned a group project. Each student must decide whether to contribute equally or let the other do most of the work. If both contribute equally, they receive a high grade and praise from the professor. If one contributes more while the other slacks, the hard worker feels exploited while the slacker enjoys free time. If neither contributes, the project is mediocre, and they receive a low grade.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Student"
+            },
+            {
+                "name": "Bob",
+                "profile": "Student"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Contribute Equally",
+            "defect": "Slack"
+        },
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Research Grant Allocation",
+        "description": "Two senior researchers, You and Bob, have applied for a shared research grant. They must now decide whether to transparently share their initial research data or keep it private while the grant committee reviews their applications. If both share their data transparently, the committee views them as highly cooperative, and they both receive equal portions of the grant funding. If one shares their data while the other withholds theirs, the one withholding data gets a higher individual grant as their work looks more unique, while the one sharing loses credibility for 'lack of originality.' If both withhold their data, the committee perceives their proposals as lacking transparency, and funding is significantly reduced for both.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Senior researcher applying for the grant"
+            },
+            {
+                "name": "Bob",
+                "profile": "Senior researcher applying for the grant"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share data transparently",
+            "defect": "Withhold data"
+        },
+        "game_name": "Prisoners_Dilemma"
+    }
+]

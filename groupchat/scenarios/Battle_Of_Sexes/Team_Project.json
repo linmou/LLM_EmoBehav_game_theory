@@ -1,0 +1,18 @@
+{
+    "scenario": "Team Project",
+    "description": "Two colleagues are working on a project. One prefers using a creative approach while the other prefers a structured method. They both want to work together but have different ideas on how to proceed.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Creative thinker"
+        },
+        {
+            "name": "Bob",
+            "profile": "Methodical planner"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Creative Approach",
+        "option_b": "Structured Method"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Parking Spot Decision",
+    "description": "Two drivers spot a parking space at the same time. Each must decide whether to wait for the other to park or go find another spot. If both wait, there's a minor delay. If both go, they miss the spot. If one waits while the other goes, they park smoothly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Driver with a sedan"
+        },
+        {
+            "name": "Bob",
+            "profile": "Driver with an SUV"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for the other to park",
+        "go": "Find another spot"
+    }
+}

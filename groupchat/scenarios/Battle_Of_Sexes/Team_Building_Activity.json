@@ -1,0 +1,18 @@
+{
+    "scenario": "Team Building Activity",
+    "description": "Colleagues need to decide on a team-building activity. One prefers a cooking class, while the other prefers an escape room. They both value team bonding over individual preferences.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Culinary explorer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Puzzle solver"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Cooking Class",
+        "option_b": "Escape Room"
+    }
+}

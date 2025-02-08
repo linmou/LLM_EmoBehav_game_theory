@@ -1,0 +1,18 @@
+{
+    "scenario": "Renewable Energy Investment",
+    "description": "Two energy companies are investing in renewable energy projects. Each can choose between solar and wind energy. If both invest in solar, they share the solar market. If one invests in wind while the other invests in solar, the wind investor gains a competitive edge. If both invest in wind, they both face lower returns.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Energy Company A Investor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Energy Company B Investor"
+        }
+    ],
+    "behavior_choices": {
+        "solar": "Solar Energy",
+        "wind": "Wind Energy"
+    }
+}

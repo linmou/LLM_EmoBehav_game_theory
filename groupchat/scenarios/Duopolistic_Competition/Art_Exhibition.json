@@ -1,0 +1,18 @@
+{
+    "scenario": "Art Exhibition",
+    "description": "Two artists, You and Bob, are invited to an exclusive art exhibition where they must decide how to display their artwork. Each can choose either an avant-garde or a classic style. If both choose avant-garde, they attract a niche audience and share moderate fame. If one chooses avant-garde while the other chooses classic, the avant-garde artist becomes the talk of the town. If both choose classic, they enjoy a steady but unremarkable reception.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Artist A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Artist B"
+        }
+    ],
+    "behavior_choices": {
+        "avant-garde": "Avant-garde Style",
+        "classic": "Classic Style"
+    }
+}

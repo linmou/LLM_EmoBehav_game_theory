@@ -11,7 +11,6 @@ def get_repe_eng_config(model_name):
         'block_name': "decoder_block",
         'control_method': "reading_vec",
         'acc_threshold': 0.,
-        'batch_size': 32,
         'rebuild': False,
         'n_difference': 1,
         'direction_method': 'pca',

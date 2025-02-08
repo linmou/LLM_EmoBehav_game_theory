@@ -1,0 +1,18 @@
+{
+    "scenario": "Conference Call Entry",
+    "description": "Two team leaders are about to join a conference call. Each must decide whether to join silently or announce their presence. If both join silently, there's a lack of engagement. If both announce, there's confusion. If one joins silently while the other announces, the call starts smoothly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Team leader from the marketing department"
+        },
+        {
+            "name": "Bob",
+            "profile": "Team leader from the sales department"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Join silently",
+        "go": "Announce presence"
+    }
+}

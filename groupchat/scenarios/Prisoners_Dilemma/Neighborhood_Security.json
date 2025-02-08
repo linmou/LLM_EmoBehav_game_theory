@@ -1,0 +1,18 @@
+{
+    "scenario": "Neighborhood Security",
+    "description": "Two neighbors must decide whether to contribute to a shared security system or rely on the other to pay. If both contribute, the neighborhood is secure. If one contributes while the other doesn't, the non-contributor benefits without cost. If neither contributes, the neighborhood becomes unsafe.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Resident of the neighborhood"
+        },
+        {
+            "name": "Bob",
+            "profile": "Resident of the neighborhood"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Contribute to security",
+        "defect": "Do not contribute"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Charity Event Planning",
+    "description": "Two organizers are planning a charity event. One prefers a gala dinner, while the other prefers a fun run. Both aim to raise funds but have different visions for the event.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Formal event planner"
+        },
+        {
+            "name": "Bob",
+            "profile": "Sporting event coordinator"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Gala dinner",
+        "option_b": "Fun run"
+    }
+}

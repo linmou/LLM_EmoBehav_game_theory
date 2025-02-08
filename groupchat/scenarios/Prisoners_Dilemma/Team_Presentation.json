@@ -1,0 +1,18 @@
+{
+    "scenario": "Team Presentation",
+    "description": "Two team members must decide whether to prepare thoroughly for a joint presentation or rely on the other to do the work. If both prepare, the presentation is excellent. If one prepares while the other doesn't, the non-preparer benefits while the preparer works harder. If neither prepares, the presentation fails.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Team member for the presentation"
+        },
+        {
+            "name": "Bob",
+            "profile": "Team member for the presentation"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Prepare thoroughly",
+        "defect": "Rely on the other"
+    }
+}

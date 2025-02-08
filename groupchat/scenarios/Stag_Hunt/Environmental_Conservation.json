@@ -1,0 +1,18 @@
+{
+    "scenario": "Environmental_Conservation",
+    "description": "Two conservationists must decide whether to collaborate on a large conservation project or focus on smaller individual initiatives. If both collaborate, they succeed and achieve significant environmental impact. If one collaborates while the other focuses individually, the collaborator fails while the individual achieves minor impact. If both focus individually, they both achieve moderate impact.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Dedicated conservationist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Dedicated conservationist"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on large project",
+        "defect": "Focus on individual initiative"
+    }
+}

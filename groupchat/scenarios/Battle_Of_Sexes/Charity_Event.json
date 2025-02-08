@@ -1,0 +1,18 @@
+{
+    "scenario": "Charity Event",
+    "description": "Two organizers need to decide on the main event for a charity fundraiser. One prefers a silent auction, while the other prefers a live concert. They both aim to raise as much money as possible for the cause.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Auction enthusiast"
+        },
+        {
+            "name": "Bob",
+            "profile": "Music lover"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Silent Auction",
+        "option_b": "Live Concert"
+    }
+}

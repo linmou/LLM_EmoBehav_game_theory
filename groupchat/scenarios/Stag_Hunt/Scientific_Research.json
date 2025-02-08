@@ -1,0 +1,18 @@
+{
+    "scenario": "Scientific Research",
+    "description": "Two scientists, You and Bob, must decide whether to collaborate on a groundbreaking experiment or conduct smaller experiments individually. If both work on the groundbreaking experiment, they succeed and share a significant discovery. If one works on the groundbreaking experiment while the other conducts smaller experiments, the groundbreaking experiment scientist fails while the small experiment scientist gets a minor discovery. If both conduct smaller experiments, they both achieve moderate discoveries.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Renowned scientist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Renowned scientist"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Groundbreaking Experiment",
+        "defect": "Solo Small Experiments"
+    }
+}

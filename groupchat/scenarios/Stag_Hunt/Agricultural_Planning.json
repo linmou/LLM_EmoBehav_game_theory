@@ -1,0 +1,18 @@
+{
+    "scenario": "Agricultural_Planning",
+    "description": "Two farmers must decide whether to collaborate on growing a high-yield crop or individually work on low-yield crops. If both grow the high-yield crop, they succeed and receive a large reward. If one grows the high-yield crop while the other grows low-yield crops, the high-yield crop fails while the low-yield crop farmer gets a small reward. If both grow low-yield crops, they both receive moderate rewards.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Farmer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Farmer"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Grow high-yield crop",
+        "defect": "Grow low-yield crops"
+    }
+}

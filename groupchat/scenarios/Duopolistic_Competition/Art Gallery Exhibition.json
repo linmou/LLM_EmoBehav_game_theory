@@ -1,0 +1,18 @@
+{
+    "scenario": "Art Gallery Exhibition",
+    "description": "Two art galleries are planning their upcoming exhibitions. Each can choose to feature modern art or classical art. If both choose modern art, they attract a similar audience and share profits. If one chooses modern while the other opts for classical, the gallery with classical art attracts a unique audience and gains more visitors. If both choose classical art, they compete for the same niche audience and earn lower profits.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Gallery A Curator"
+        },
+        {
+            "name": "Bob",
+            "profile": "Gallery B Curator"
+        }
+    ],
+    "behavior_choices": {
+        "modern_art": "Feature Modern Art",
+        "classical_art": "Feature Classical Art"
+    }
+}

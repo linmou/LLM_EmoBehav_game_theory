@@ -1,0 +1,18 @@
+{
+    "scenario": "Weekend Getaway",
+    "description": "Two friends are planning a weekend getaway. One prefers hiking in the mountains, while the other enjoys relaxing at the beach. They both prefer spending the weekend together rather than apart but have different preferred activities.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Nature lover"
+        },
+        {
+            "name": "Bob",
+            "profile": "Beach enthusiast"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Hiking",
+        "option_b": "Beach"
+    }
+}

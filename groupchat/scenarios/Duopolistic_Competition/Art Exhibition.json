@@ -1,0 +1,18 @@
+{
+    "scenario": "Art Exhibition",
+    "description": "Two artists are showcasing their work in a prominent gallery. Each can choose to exhibit either modern art or classical art. If both choose modern art, they attract a niche audience and share moderate profits. If one chooses modern while the other opts for classical, the classical artist gains more attention and higher sales. If both choose classical art, they compete for the same audience and end up with lower sales.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Artist A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Artist B"
+        }
+    ],
+    "behavior_choices": {
+        "modern": "Exhibit Modern Art",
+        "classical": "Exhibit Classical Art"
+    }
+}

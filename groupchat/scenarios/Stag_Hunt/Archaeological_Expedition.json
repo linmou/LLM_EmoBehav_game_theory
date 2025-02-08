@@ -1,0 +1,18 @@
+{
+    "scenario": "Archaeological_Expedition",
+    "description": "Two archaeologists must decide whether to collaborate on excavating a large artifact or individually work on smaller, less significant digs. If both excavate the artifact, they succeed and share a large reward. If one excavates the artifact while the other works on smaller digs, the excavator fails while the individual worker gets a small reward. If both work on smaller digs, they both get moderate rewards.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Experienced archaeologist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Experienced archaeologist"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Artifact",
+        "defect": "Solo Dig"
+    }
+}

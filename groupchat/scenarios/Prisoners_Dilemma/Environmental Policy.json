@@ -1,0 +1,18 @@
+{
+    "scenario": "Environmental Policy",
+    "description": "Two neighboring countries must decide on carbon emission policies. Each country can choose to reduce emissions or continue at current levels. If both reduce, global warming effects are mitigated. If one reduces while the other doesn't, the reducer bears economic costs. If both continue at current levels, environmental damage accelerates.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Environmental Minister"
+        },
+        {
+            "name": "Bob",
+            "profile": "Environmental Minister"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Reduce Emissions",
+        "defect": "Continue Emissions"
+    }
+}

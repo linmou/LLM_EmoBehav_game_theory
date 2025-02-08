@@ -1,0 +1,382 @@
+[
+    {
+        "scenario": "Conference Room Booking",
+        "description": "Two teams want to book the same conference room for a meeting. Each must decide whether to wait for another slot or proceed with booking. If both wait, they miss the room. If both book, there's a double booking conflict. If one waits and the other books, the room is successfully reserved.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team leader for Project A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team leader for Project B"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for another slot",
+            "go": "Proceed with booking"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Coffee Machine Usage",
+        "description": "Two colleagues arrive at the coffee machine at the same time. Each must decide whether to wait for the other to finish or proceed to make coffee. If both wait, there's a delay in getting coffee. If both proceed, the machine jams. If one waits and the other proceeds, coffee is made smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Employee in the marketing department"
+            },
+            {
+                "name": "Bob",
+                "profile": "Employee in the sales department"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the other",
+            "go": "Proceed to make coffee"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Parking Spot Decision",
+        "description": "Two drivers spot a parking space at the same time. Each must decide whether to wait for the other to park or go find another spot. If both wait, there's a minor delay. If both go, they miss the spot. If one waits while the other goes, they park smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Driver with a sedan"
+            },
+            {
+                "name": "Bob",
+                "profile": "Driver with an SUV"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the other to park",
+            "go": "Find another spot"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Email Response",
+        "description": "Two colleagues receive an email requiring a response. Each must decide whether to reply immediately or wait for the other to respond. If both wait, the email remains unanswered. If both reply, there's redundancy. If one waits while the other replies, the task is completed efficiently.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team member working remotely"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team member in the office"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the other to reply",
+            "go": "Reply immediately"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Elevator Dilemma",
+        "description": "Two people arrive at an elevator simultaneously. Each must decide whether to wait for the other to enter first or go in themselves. If both wait, they miss the elevator. If both go, they awkwardly bump into each other. If one waits while the other goes, they enter smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Person waiting on the 5th floor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Person waiting on the 5th floor"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait",
+            "go": "Enter"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Island Rescue",
+        "description": "Two rescue teams arrive at a stranded island simultaneously. Each must decide whether to wait for backup or go ahead with the rescue. If both wait, there's a delay in rescue. If both go, they risk overlapping efforts and confusion. If one waits while the other goes, the rescue is coordinated smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Rescue team leader approaching from the west"
+            },
+            {
+                "name": "Bob",
+                "profile": "Rescue team leader approaching from the east"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for backup",
+            "go": "Proceed with rescue"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Meeting Room Booking",
+        "description": "Two teams try to book the same meeting room. Each must decide whether to wait for the room to be free or go to another room. If both wait, there's a scheduling conflict. If both go, they find no rooms available. If one waits while the other goes, they get a room.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team leader of the product development team"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team leader of the design team"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the room to be free",
+            "go": "Find another room"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Path Crossing",
+        "description": "Two hikers meet at a narrow bridge. Each must decide whether to let the other cross first or go themselves. If both wait, there's no movement. If both go, they block each other. If one waits while the other goes, crossing occurs without issue.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Hiker coming from the north"
+            },
+            {
+                "name": "Bob",
+                "profile": "Hiker coming from the south"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait",
+            "go": "Cross"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Conference Call Entry",
+        "description": "Two team leaders are about to join a conference call. Each must decide whether to join silently or announce their presence. If both join silently, there's a lack of engagement. If both announce, there's confusion. If one joins silently while the other announces, the call starts smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team leader from the marketing department"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team leader from the sales department"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Join silently",
+            "go": "Announce presence"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Elevator Decision",
+        "description": "Two individuals arrive at an elevator simultaneously on different floors. Each must decide whether to hold the elevator for the other or proceed to their destination. If both hold, there's a slight delay. If both proceed, they miss the chance to ride together. If one holds while the other proceeds, the elevator ride is efficient.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Person on the 5th floor waiting for the elevator"
+            },
+            {
+                "name": "Bob",
+                "profile": "Person on the 3rd floor waiting for the elevator"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Hold the elevator",
+            "go": "Proceed to destination"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Shopping Aisle",
+        "description": "Two shoppers reach a narrow aisle in a supermarket at the same time. Each must decide whether to let the other pass first or go themselves. If both wait, there's a shopping delay. If both go, their carts collide. If one waits while the other goes, shopping continues smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Shopper with a full cart"
+            },
+            {
+                "name": "Bob",
+                "profile": "Shopper with a basket"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait",
+            "go": "Pass"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Mountain Expedition",
+        "description": "Two expedition teams reach a narrow mountain pass. Each must decide whether to wait for the weather to clear or proceed. If both wait, progress is delayed. If both proceed, there's a risk of an avalanche. If one waits while the other proceeds, the path is cleared safely.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Expedition leader from the northern route"
+            },
+            {
+                "name": "Bob",
+                "profile": "Expedition leader from the southern route"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for weather clearance",
+            "go": "Proceed through the pass"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Coffee Shop Queue",
+        "description": "Two customers arrive at the coffee shop counter simultaneously. Each must decide whether to wait for a few minutes or place their order immediately. If both wait, there's a minor delay. If both order, there's confusion at the counter. If one waits while the other orders, the service is smooth.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Customer with a mobile order"
+            },
+            {
+                "name": "Bob",
+                "profile": "Walk-in customer"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for a few minutes",
+            "go": "Place order immediately"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Underwater Exploration",
+        "description": "Two submarine teams are exploring a newly discovered underwater cave. Each must decide whether to wait for more data or proceed with exploration. If both wait, exploration is delayed. If both proceed, there's a risk of disorientation. If one waits while the other proceeds, exploration is conducted smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Submarine captain from the north entrance"
+            },
+            {
+                "name": "Bob",
+                "profile": "Submarine captain from the south entrance"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for more data",
+            "go": "Proceed with exploration"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Space Shuttle Docking",
+        "description": "Two space shuttles are attempting to dock at a space station. Each must decide whether to wait for clearance or proceed to dock. If both wait, docking is delayed. If both proceed, there's a risk of collision. If one waits while the other proceeds, docking is successful.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Shuttle commander approaching from quadrant A"
+            },
+            {
+                "name": "Bob",
+                "profile": "Shuttle commander approaching from quadrant B"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for clearance",
+            "go": "Proceed to dock"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Library Book Checkout",
+        "description": "Two students arrive at the library checkout with the same book. Each must decide whether to wait for another copy or proceed to checkout. If both wait, they miss the book. If both proceed, there's a checkout conflict. If one waits and the other proceeds, the book is checked out smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Student in the literature class"
+            },
+            {
+                "name": "Bob",
+                "profile": "Student in the history class"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for another copy",
+            "go": "Proceed to checkout"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Elevator Decision",
+        "description": "Two people arrive at an elevator simultaneously. Each must decide whether to wait for the next one or enter. If both wait, they miss the current elevator. If both enter, the elevator exceeds weight capacity. If one waits and the other enters, the elevator operates smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Person on the 5th floor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Person on the 5th floor"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for the next elevator",
+            "go": "Enter the elevator"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Library Checkout",
+        "description": "Two students arrive at the library checkout desk at the same time. Each must decide whether to let the other check out first or proceed themselves. If both wait, there's a delay. If both go, they clash at the counter. If one waits while the other goes, the checkout happens smoothly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Student with a stack of books"
+            },
+            {
+                "name": "Bob",
+                "profile": "Student with a single book"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait",
+            "go": "Proceed"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Parking Space Decision",
+        "description": "Two drivers spot the same parking space at the same time. Each must decide whether to wait for another space or park in the current one. If both wait, they face a minor delay. If both park, there's a risk of collision. If one waits while the other parks, parking is hassle-free.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Driver in a compact car"
+            },
+            {
+                "name": "Bob",
+                "profile": "Driver in an SUV"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Wait for another space",
+            "go": "Park in the current space"
+        },
+        "game_name": "Wait_Go"
+    },
+    {
+        "scenario": "Coffee Machine Usage",
+        "description": "Two employees reach the office coffee machine simultaneously. Each must decide whether to let the other use it first or proceed to make their coffee. If both wait, there's a brief standstill. If both proceed, there's a spill. If one waits while the other proceeds, coffee is made without incident.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Employee from the finance department"
+            },
+            {
+                "name": "Bob",
+                "profile": "Employee from the HR department"
+            }
+        ],
+        "behavior_choices": {
+            "wait": "Let the other go first",
+            "go": "Make coffee now"
+        },
+        "game_name": "Wait_Go"
+    }
+]

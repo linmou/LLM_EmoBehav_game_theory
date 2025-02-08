@@ -1,0 +1,18 @@
+{
+    "scenario": "Charity Event",
+    "description": "Two organizers are planning a charity event. One wants to host a gala, while the other prefers a sports event. They both prioritize hosting the event together over hosting separately, but have different event preferences.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Gala organizer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Sports event planner"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Gala",
+        "option_b": "Sports Event"
+    }
+}

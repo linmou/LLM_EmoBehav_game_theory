@@ -1,0 +1,18 @@
+{
+    "scenario": "Holiday Decoration",
+    "description": "Neighbors are deciding on holiday decorations for their street. One prefers a traditional theme, while the other prefers a modern theme. Both want the street to look festive but have different tastes.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Traditionalist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Modernist"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Traditional theme",
+        "option_b": "Modern theme"
+    }
+}

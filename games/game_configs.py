@@ -5,31 +5,43 @@ from games.wait_go_game import WaitGoScenario, WaitGoDecision
 from games.duopolistic_competition import DuopolisticCompetitionScenario, DuopolisticCompetitionDecision
 from payoff_matrix import stag_hunt, prisoner_dilemma, battle_of_sexes, wait_go, duopolistic_competition
 
+data_path_format = 'groupchat/scenarios/{}_all_data_samples.json'
+
 GAME_CONFIGS = {
     "Stag_Hunt": {
+        "game_name": "Stag_Hunt",
         "scenario_class": StagHuntScenario,
         "decision_class": StagHuntDecision,
-        "payoff_matrix": stag_hunt,
+        "payoff_matrix": stag_hunt, 
+        "data_path": data_path_format.format('Stag_Hunt'),
     },
     "Prisoners_Dilemma": {
+        "game_name": "Prisoners_Dilemma",
         "scenario_class": PrisonerDilemmaScenario,
         "decision_class": PrisionerDelimmaDecision,
         "payoff_matrix": prisoner_dilemma,
+        "data_path": data_path_format.format('Prisoners_Dilemma'),
     },
     "Battle_Of_Sexes": {
+        "game_name": "Battle_Of_Sexes",
         "scenario_class": BattleOfSexesScenario,
         "decision_class": BattleOfSexesDecision,
         "payoff_matrix": battle_of_sexes,
+        "data_path": data_path_format.format('Battle_Of_Sexes'),
     },
     "Wait_Go": {
+        "game_name": "Wait_Go",
         "scenario_class": WaitGoScenario,
         "decision_class": WaitGoDecision,
         "payoff_matrix": wait_go,
+        "data_path": data_path_format.format('Wait_Go'),
     },
     "Duopolistic_Competition": {
+        "game_name": "Duopolistic_Competition",
         "scenario_class": DuopolisticCompetitionScenario,
         "decision_class": DuopolisticCompetitionDecision,
         "payoff_matrix": duopolistic_competition,
+        "data_path": data_path_format.format('Duopolistic_Competition'),
     }
 }
 

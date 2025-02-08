@@ -1,0 +1,18 @@
+{
+    "scenario": "Coffee Machine Usage",
+    "description": "Two employees reach the office coffee machine simultaneously. Each must decide whether to let the other use it first or proceed to make their coffee. If both wait, there's a brief standstill. If both proceed, there's a spill. If one waits while the other proceeds, coffee is made without incident.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Employee from the finance department"
+        },
+        {
+            "name": "Bob",
+            "profile": "Employee from the HR department"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Let the other go first",
+        "go": "Make coffee now"
+    }
+}

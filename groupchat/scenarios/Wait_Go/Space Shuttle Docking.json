@@ -1,0 +1,18 @@
+{
+    "scenario": "Space Shuttle Docking",
+    "description": "Two space shuttles are attempting to dock at a space station. Each must decide whether to wait for clearance or proceed to dock. If both wait, docking is delayed. If both proceed, there's a risk of collision. If one waits while the other proceeds, docking is successful.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Shuttle commander approaching from quadrant A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Shuttle commander approaching from quadrant B"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for clearance",
+        "go": "Proceed to dock"
+    }
+}

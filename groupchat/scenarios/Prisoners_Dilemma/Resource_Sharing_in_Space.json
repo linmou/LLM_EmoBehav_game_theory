@@ -1,0 +1,18 @@
+{
+    "scenario": "Resource Sharing in Space",
+    "description": "Two astronauts on a space station must decide whether to share their limited supply of oxygen or hoard it. If both share, they can last until resupply. If one hoards while the other shares, the hoarder survives longer while the sharer risks running out. If both hoard, both face severe oxygen shortages.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Astronaut on the space station"
+        },
+        {
+            "name": "Bob",
+            "profile": "Astronaut on the space station"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Share oxygen",
+        "defect": "Hoard oxygen"
+    }
+}

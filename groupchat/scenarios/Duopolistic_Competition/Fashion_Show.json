@@ -1,0 +1,18 @@
+{
+    "scenario": "Fashion Show",
+    "description": "Two fashion designers, You and Bob, are showcasing their collections. Each can choose to present either a bold design or a safe design. If both choose bold, they capture the audience's attention and share the limelight. If one chooses bold while the other chooses safe, the bold designer becomes the highlight of the show. If both choose safe, they receive a lukewarm response.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Designer A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Designer B"
+        }
+    ],
+    "behavior_choices": {
+        "bold": "Bold Design",
+        "safe": "Safe Design"
+    }
+}

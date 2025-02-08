@@ -1,0 +1,18 @@
+{
+    "scenario": "Team Building Activity",
+    "description": "Two colleagues need to decide on a team-building activity. One prefers a cooking class while the other prefers a sports event. They both prefer participating together over separately, but each has a different preferred activity.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Cooking enthusiast"
+        },
+        {
+            "name": "Bob",
+            "profile": "Sports fan"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Cooking class",
+        "option_b": "Sports event"
+    }
+}

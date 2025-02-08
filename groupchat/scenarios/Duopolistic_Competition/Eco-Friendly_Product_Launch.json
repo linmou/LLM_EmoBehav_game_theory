@@ -1,0 +1,18 @@
+{
+    "scenario": "Eco-Friendly Product Launch",
+    "description": "Two companies are launching eco-friendly products. Each can choose between a luxury design or a budget-friendly design. If both choose luxury, they share the niche market. If one chooses budget-friendly while the other stays luxury, the budget-friendly product captures more market share. If both choose budget-friendly, they both earn moderate profits.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Company A Product Manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Company B Product Manager"
+        }
+    ],
+    "behavior_choices": {
+        "luxury": "Luxury Design",
+        "budget_friendly": "Budget-Friendly Design"
+    }
+}

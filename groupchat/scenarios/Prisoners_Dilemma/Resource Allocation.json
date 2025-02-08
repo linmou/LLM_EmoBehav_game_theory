@@ -1,0 +1,18 @@
+{
+    "scenario": "Resource Allocation",
+    "description": "Two project managers must decide how to allocate resources between their projects. If both allocate heavily to their own projects, they strain the company resources but maximize their project's output. If one allocates heavily while the other does not, the former gains more success while the latter's project suffers. If neither allocates heavily, both projects proceed steadily but without exceptional results.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Project Manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Project Manager"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Balanced Allocation",
+        "defect": "Heavy Allocation"
+    }
+}

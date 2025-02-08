@@ -1,0 +1,18 @@
+{
+    "scenario": "Office Supplies Management",
+    "description": "Two office managers are responsible for ordering supplies for their respective departments. Each manager must decide whether to order in bulk or order only as needed. If both order in bulk, they save money for the company and receive commendations. If one orders in bulk and the other doesn't, the one ordering in bulk risks overstocking while the other maintains a lean inventory. If neither orders in bulk, they meet basic needs but miss out on cost savings.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Office Manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Office Manager"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Order as Needed",
+        "defect": "Order in Bulk"
+    }
+}

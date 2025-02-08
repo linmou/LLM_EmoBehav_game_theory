@@ -1,0 +1,18 @@
+{
+    "scenario": "Academic Collaboration",
+    "description": "Two researchers, You and Bob, are working on a joint paper. They must decide whether to share their latest findings or hold back some data. If both share, the paper is groundbreaking. If one shares while the other doesn't, the sharer risks their data being used without equal contribution. If neither shares, the paper is less impactful.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Researcher"
+        },
+        {
+            "name": "Bob",
+            "profile": "Researcher"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Share Latest Findings",
+        "defect": "Hold Back Some Data"
+    }
+}

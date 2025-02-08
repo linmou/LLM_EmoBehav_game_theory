@@ -1,0 +1,18 @@
+{
+    "scenario": "Treasure Expedition",
+    "description": "Two explorers must decide whether to collaborate on finding a hidden treasure or individually collect smaller artifacts. If both work together on the treasure, they succeed and share a large reward. If one goes for the treasure while the other collects artifacts, the treasure seeker fails while the artifact collector gets a small reward. If both collect artifacts, they both get moderate rewards.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Experienced explorer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Skilled navigator"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Team up for Treasure",
+        "defect": "Solo Artifact Collection"
+    }
+}

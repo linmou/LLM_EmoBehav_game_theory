@@ -1,0 +1,18 @@
+{
+    "scenario": "Office Resource Management",
+    "description": "Two colleagues, You and Bob, are responsible for managing shared office resources. They must decide whether to order extra supplies or stick to the current budget. If both order extra, resources are abundant but the budget is exceeded. If one orders extra while the other doesn't, the one ordering extra faces scrutiny for overspending. If neither orders, resources are limited but the budget is maintained.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Office Manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Office Manager"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Stick to Budget",
+        "defect": "Order Extra Supplies"
+    }
+}

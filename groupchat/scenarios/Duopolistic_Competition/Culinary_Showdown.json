@@ -1,0 +1,18 @@
+{
+    "scenario": "Culinary Showdown",
+    "description": "Two chefs, You and Bob, compete in a high-stakes culinary competition. Each can choose to prepare either a traditional dish or a fusion dish. If both choose fusion, they impress the judges with creativity and share the spotlight. If one chooses fusion while the other chooses traditional, the fusion chef steals the show. If both choose traditional, they face a tough critique for lack of innovation.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Chef A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Chef B"
+        }
+    ],
+    "behavior_choices": {
+        "fusion": "Fusion Dish",
+        "traditional": "Traditional Dish"
+    }
+}

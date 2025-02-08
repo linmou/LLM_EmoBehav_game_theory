@@ -1,5 +1,5 @@
-from pydantic import BaseModel
 from neuro_manipulation.prompt_formats import PromptFormat
+from games.game import GameDecision
 
 
 class PromptWrapper:
@@ -26,7 +26,7 @@ class ReactionPromptWrapper(PromptWrapper):
 class GameReactPromptWrapper(PromptWrapper):
     system_prompt_format = "You are Alice, an average American. You are in the following situation: {event}. "
     
-    def __init__(self, prompt_format: PromptFormat, response_format: BaseModel):
+    def __init__(self, prompt_format: PromptFormat, response_format: GameDecision):
         super().__init__(prompt_format)
         self.response_format = response_format
         assert hasattr(response_format, 'example') and callable(getattr(response_format, 'example')), f"response_format should have an example method"

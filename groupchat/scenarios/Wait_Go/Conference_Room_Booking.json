@@ -1,0 +1,18 @@
+{
+    "scenario": "Conference Room Booking",
+    "description": "Two teams want to book the same conference room for a meeting. Each must decide whether to wait for another slot or proceed with booking. If both wait, they miss the room. If both book, there's a double booking conflict. If one waits and the other books, the room is successfully reserved.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Team leader for Project A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Team leader for Project B"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for another slot",
+        "go": "Proceed with booking"
+    }
+}

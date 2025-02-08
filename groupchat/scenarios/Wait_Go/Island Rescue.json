@@ -1,0 +1,18 @@
+{
+    "scenario": "Island Rescue",
+    "description": "Two rescue teams arrive at a stranded island simultaneously. Each must decide whether to wait for backup or go ahead with the rescue. If both wait, there's a delay in rescue. If both go, they risk overlapping efforts and confusion. If one waits while the other goes, the rescue is coordinated smoothly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Rescue team leader approaching from the west"
+        },
+        {
+            "name": "Bob",
+            "profile": "Rescue team leader approaching from the east"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for backup",
+        "go": "Proceed with rescue"
+    }
+}

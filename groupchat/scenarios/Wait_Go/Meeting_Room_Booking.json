@@ -1,0 +1,18 @@
+{
+    "scenario": "Meeting Room Booking",
+    "description": "Two teams try to book the same meeting room. Each must decide whether to wait for the room to be free or go to another room. If both wait, there's a scheduling conflict. If both go, they find no rooms available. If one waits while the other goes, they get a room.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Team leader of the product development team"
+        },
+        {
+            "name": "Bob",
+            "profile": "Team leader of the design team"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for the room to be free",
+        "go": "Find another room"
+    }
+}

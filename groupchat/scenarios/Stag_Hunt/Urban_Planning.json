@@ -1,0 +1,18 @@
+{
+    "scenario": "Urban_Planning",
+    "description": "Two urban planners must decide whether to collaborate on designing a sustainable city or focus on individual neighborhood projects. If both collaborate, they create a model city and gain recognition. If one collaborates while the other focuses on individual projects, the collaborator risks failure while the individualist achieves moderate success. If both focus on individual projects, they achieve moderate improvements but miss the larger goal.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Urban planner with expertise in sustainable design"
+        },
+        {
+            "name": "Bob",
+            "profile": "Urban planner with a focus on transportation systems"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on designing a sustainable city",
+        "defect": "Focus on individual neighborhood projects"
+    }
+}

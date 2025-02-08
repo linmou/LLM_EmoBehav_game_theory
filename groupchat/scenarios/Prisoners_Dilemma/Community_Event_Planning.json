@@ -1,0 +1,18 @@
+{
+    "scenario": "Community Event Planning",
+    "description": "Two community organizers, You and Bob, are planning a local festival. They must decide whether to invest more in entertainment or stick to the planned budget. If both invest more, the festival is a hit but funds are depleted. If one invests more while the other doesn't, the investor gains more recognition. If neither invests more, the festival is modest but within budget.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Community Organizer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Community Organizer"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Stick to Budget",
+        "defect": "Invest More in Entertainment"
+    }
+}

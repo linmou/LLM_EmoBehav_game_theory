@@ -1,0 +1,18 @@
+{
+    "scenario": "Community Project",
+    "description": "Two community leaders must decide whether to invest in a joint community project or focus on their individual initiatives. If both invest in the joint project, the community benefits greatly. If one invests while the other focuses on individual initiatives, the investor feels taken advantage of while the other gains individual accolades. If neither invests, the community project fails to launch.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Community Leader"
+        },
+        {
+            "name": "Bob",
+            "profile": "Community Leader"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Joint Investment",
+        "defect": "Individual Focus"
+    }
+}

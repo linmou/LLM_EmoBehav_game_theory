@@ -1,0 +1,18 @@
+{
+    "scenario": "Urban Development Race",
+    "description": "Two real estate developers are competing to build the tallest skyscraper in a bustling city. Each can choose to build rapidly or sustainably. Rapid building can lead to quick profits but risks structural issues. Sustainable building ensures long-term success. If both build rapidly, they face regulatory penalties.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Real Estate Developer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Real Estate Developer"
+        }
+    ],
+    "behavior_choices": {
+        "rapid": "Rapid Building",
+        "sustainable": "Sustainable Building"
+    }
+}

@@ -1,29 +1,30 @@
 import json
 import os
-from pathlib import Path
 import numpy as np
-from pydantic import BaseModel, Field
-from typing import ClassVar, Optional
+
 
 from torch.utils.data import Dataset
 
-from games.prisoner_delimma import PrisonerDilemmaScenario
-from payoff_matrix import prisoner_dilemma
+from games.game import GameScenario
 
-class PrisonerDelimmaDataset(Dataset):
-    def __init__(self, data_path, prompt_wrapper, sample_num=None, payoff_matrix=None):
-        
+class GameScenarioDataset(Dataset):
+    def __init__(self, game_config, prompt_wrapper, sample_num=None, ):
+        self.game_config = game_config
+        data_path = game_config['data_path']
         assert os.path.exists(data_path), f'data_path: {data_path} does not exist'
         assert data_path.endswith('.json'), f'data_path: {data_path} should be a csv file'
+        
+        
         
         with open(data_path, 'r') as f:
             self.raw_data = json.load(f)
         
-        self.data: list[PrisonerDilemmaScenario] = []
+        scenario_class = self.game_config['scenario_class']
+        self.data: list[GameScenario] = []
         for item in self.raw_data:
             if 'payoff_matrix' not in item:
-                item['payoff_matrix'] = payoff_matrix
-                item = PrisonerDilemmaScenario(**item)
+                item['payoff_matrix'] = self.game_config['payoff_matrix']
+                item = scenario_class(**item)
                 self.data.append(item)
         if sample_num is not None:
             self.data = np.random.permutation(self.data)[:sample_num]
@@ -34,13 +35,15 @@ class PrisonerDelimmaDataset(Dataset):
         return len(self.data)
     
     def __getitem__(self, idx):
-        item: PrisonerDilemmaScenario = self.data[idx]
-        options = [ f'Option {i+1}. {opt}' for i, opt in enumerate(item.behavior_choices.get_choices())]
+        item: GameScenario = self.data[idx]
+        options = [ f'Option {i+1}. {opt}' for i, opt in enumerate(item.get_behavior_choices().get_choices())]
         event = str(item)
         return {
             "prompt": self.prompt_wrapper(event=event, options=options),
             "options": options,
-            'behavior_choices': str(item.behavior_choices)
+            'behavior_choices': str(item.get_behavior_choices()),
+            'scenario': item.get_scenario_info()['scenario'],
+            'description': item.get_scenario_info()['description'],
         }
         
 
@@ -117,13 +120,14 @@ class PrisonerDelimmaDataset(Dataset):
 
 if __name__ == "__main__":
     from games.game_configs import get_game_config
+    game_name = 'Stag_Hunt'
+    game_config = get_game_config(game_name)
     
     def prompt_wrapper(event, options):
         return f"Scenario: {event}\nOptions: {options}"
     
     
-    emo_dataset = PrisonerDelimmaDataset('groupchat/scenarios/Prisoners_Dilemma_all_data_samples.json', 
+    emo_dataset = GameScenarioDataset(game_config, 
                                     prompt_wrapper=prompt_wrapper, 
-                                    sample_num=200,
-                                    payoff_matrix=prisoner_dilemma)
+                                    sample_num=200)
     print(emo_dataset[0])

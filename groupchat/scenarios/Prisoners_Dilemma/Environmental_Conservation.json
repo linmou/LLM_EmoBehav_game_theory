@@ -1,0 +1,18 @@
+{
+    "scenario": "Environmental Conservation",
+    "description": "Two neighboring farmers, You and Bob, must decide whether to adopt environmentally friendly practices or continue using conventional methods. If both adopt eco-friendly practices, they receive a grant for sustainable farming. If one adopts while the other doesn't, the adopter bears higher costs while the other benefits from lower expenses. If neither adopts, they maintain current profits but miss out on the grant.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Farmer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Farmer"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Adopt Eco-Friendly Practices",
+        "defect": "Use Conventional Methods"
+    }
+}

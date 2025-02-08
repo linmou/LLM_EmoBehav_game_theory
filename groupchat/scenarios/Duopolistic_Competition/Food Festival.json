@@ -1,0 +1,18 @@
+{
+    "scenario": "Food Festival",
+    "description": "Two food vendors at a festival must choose between serving gourmet dishes or street food. If both serve gourmet, they cater to a smaller crowd and share decent profits. If one serves gourmet while the other serves street food, the street food vendor attracts more festival-goers. If both serve street food, they compete directly and earn less.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Vendor A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Vendor B"
+        }
+    ],
+    "behavior_choices": {
+        "gourmet": "Serve Gourmet Dishes",
+        "street": "Serve Street Food"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Environmental_Cleanup",
+    "description": "Two community leaders must decide whether to organize a large-scale cleanup event or focus on smaller, individual efforts. If both organize the event, they succeed and receive community recognition. If one organizes while the other focuses on individual efforts, the organizer fails while the individual worker gains local support. If both focus on individual efforts, they receive moderate support.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Community leader with environmental advocacy experience"
+        },
+        {
+            "name": "Bob",
+            "profile": "Community leader with environmental advocacy experience"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Organize Large-Scale Event",
+        "defect": "Focus on Individual Efforts"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Tech Innovation Challenge",
+    "description": "Two tech companies are racing to develop the next breakthrough gadget. They can choose to innovate radically or incrementally. Radical innovation can lead to market dominance but risks failure. Incremental innovation ensures steady progress. If both innovate radically, they face high R&D costs.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Tech Company CEO"
+        },
+        {
+            "name": "Bob",
+            "profile": "Tech Company CEO"
+        }
+    ],
+    "behavior_choices": {
+        "radical": "Radical Innovation",
+        "incremental": "Incremental Innovation"
+    }
+}

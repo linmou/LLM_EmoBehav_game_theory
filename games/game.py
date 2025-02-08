@@ -60,6 +60,15 @@ class GameScenario(BaseModel, ABC):
         Behavior Choices: {self.get_behavior_choices().get_choices()}
         """
 
+class SequentialGameScenario(GameScenario, ABC):
+    """Base class for sequential game scenarios"""
+    
+    @abstractmethod
+    def get_previous_actions(self) -> list[str]:
+        """Get the previous actions"""
+        pass
+    
+    
 class GameDecision(BaseModel, ABC):
     """Abstract base class for game decisions"""
     

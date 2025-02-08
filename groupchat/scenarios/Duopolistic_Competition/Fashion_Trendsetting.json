@@ -1,0 +1,18 @@
+{
+    "scenario": "Fashion Trendsetting",
+    "description": "Two fashion houses are vying to set the next big trend. They can choose to launch a bold new line or refine a classic. A bold line can capture the market but risks backlash. Refining a classic maintains steady sales. If both launch bold lines, they saturate the market.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Fashion House Creative Director"
+        },
+        {
+            "name": "Bob",
+            "profile": "Fashion House Creative Director"
+        }
+    ],
+    "behavior_choices": {
+        "bold": "Bold Line",
+        "classic": "Classic Refinement"
+    }
+}

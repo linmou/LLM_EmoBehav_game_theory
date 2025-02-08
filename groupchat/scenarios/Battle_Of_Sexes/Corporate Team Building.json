@@ -1,0 +1,18 @@
+{
+    "scenario": "Corporate Team Building",
+    "description": "A team is deciding on a corporate team-building activity. One member prefers a cooking class, while another prefers a paintball match. Both value team bonding but have different ideas of fun.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Culinary adventurer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Action seeker"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Cooking class",
+        "option_b": "Paintball match"
+    }
+}

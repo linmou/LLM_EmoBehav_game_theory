@@ -1,0 +1,18 @@
+{
+    "scenario": "Neighborhood Watch Program",
+    "description": "Two neighbors are part of a neighborhood watch program. Each neighbor must decide whether to actively patrol at night or stay at home. If both patrol, the neighborhood is safer, and they receive community recognition. If one patrols while the other stays home, the patroller feels burdened while the other enjoys a peaceful night. If neither patrols, the neighborhood remains vulnerable to crime.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Neighbor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Neighbor"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Stay at Home",
+        "defect": "Patrol"
+    }
+}

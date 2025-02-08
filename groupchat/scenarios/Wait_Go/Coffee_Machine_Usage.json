@@ -1,0 +1,18 @@
+{
+    "scenario": "Coffee Machine Usage",
+    "description": "Two colleagues arrive at the coffee machine at the same time. Each must decide whether to wait for the other to finish or proceed to make coffee. If both wait, there's a delay in getting coffee. If both proceed, the machine jams. If one waits and the other proceeds, coffee is made smoothly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Employee in the marketing department"
+        },
+        {
+            "name": "Bob",
+            "profile": "Employee in the sales department"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for the other",
+        "go": "Proceed to make coffee"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Dinner Plans",
+    "description": "Two roommates are deciding on dinner plans. One prefers cooking at home while the other prefers dining out. They both value spending the evening together but have different preferences for dinner.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Enjoys cooking"
+        },
+        {
+            "name": "Bob",
+            "profile": "Enjoys dining out"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Cook at Home",
+        "option_b": "Dine Out"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Wildlife_Conservation",
+    "description": "Two conservationists must decide whether to collaborate on a major wildlife sanctuary or individually work on small local projects. If both work on the sanctuary, they succeed and save numerous species. If one works on the sanctuary while the other focuses on local projects, the sanctuary conservationist fails while the local project worker achieves minor success. If both work on local projects, they both achieve moderate success.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Dedicated conservationist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Dedicated conservationist"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Wildlife Sanctuary",
+        "defect": "Solo Local Project"
+    }
+}

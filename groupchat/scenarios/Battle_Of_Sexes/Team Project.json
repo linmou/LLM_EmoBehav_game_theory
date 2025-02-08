@@ -1,0 +1,18 @@
+{
+    "scenario": "Team Project",
+    "description": "Two colleagues need to choose a project for their team. One wants to work on a tech innovation project, while the other prefers a community service project. They both prioritize working together on a project over working separately, but have different project preferences.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Tech innovator"
+        },
+        {
+            "name": "Bob",
+            "profile": "Community advocate"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Tech Innovation",
+        "option_b": "Community Service"
+    }
+}

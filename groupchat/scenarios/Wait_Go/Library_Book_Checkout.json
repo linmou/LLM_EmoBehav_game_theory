@@ -1,0 +1,18 @@
+{
+    "scenario": "Library Book Checkout",
+    "description": "Two students arrive at the library checkout with the same book. Each must decide whether to wait for another copy or proceed to checkout. If both wait, they miss the book. If both proceed, there's a checkout conflict. If one waits and the other proceeds, the book is checked out smoothly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Student in the literature class"
+        },
+        {
+            "name": "Bob",
+            "profile": "Student in the history class"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for another copy",
+        "go": "Proceed to checkout"
+    }
+}

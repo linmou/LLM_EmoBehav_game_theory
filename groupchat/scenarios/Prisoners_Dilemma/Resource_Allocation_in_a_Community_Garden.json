@@ -1,0 +1,18 @@
+{
+    "scenario": "Resource Allocation in a Community Garden",
+    "description": "You and Bob are members of a community garden. Each member must decide whether to contribute extra resources (time, seeds, fertilizers) to improve the garden's yield. If both contribute, the garden flourishes, and they both receive an abundant harvest. If one contributes while the other doesn't, the one who contributes feels their efforts are taken advantage of, while the other enjoys the benefits without extra work. If neither contributes, the garden produces a minimal yield, just enough to sustain them without any surplus.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Member of the community garden."
+        },
+        {
+            "name": "Bob",
+            "profile": "Member of the community garden."
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Contribute extra resources.",
+        "defect": "Contribute no extra resources."
+    }
+}

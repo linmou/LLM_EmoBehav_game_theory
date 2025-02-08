@@ -1,0 +1,18 @@
+{
+    "scenario": "Treasure Expedition",
+    "description": "Two explorers, You and Bob, must decide whether to collaborate on digging for a hidden treasure or search for smaller treasures individually. If both dig for the hidden treasure, they succeed and share a large reward. If one digs for the hidden treasure while the other searches for smaller treasures, the hidden treasure digger fails while the small treasure searcher gets a small reward. If both search for smaller treasures, they both get moderate rewards.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Seasoned explorer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Seasoned explorer"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Hidden Treasure",
+        "defect": "Solo Small Treasure Search"
+    }
+}

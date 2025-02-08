@@ -1,0 +1,18 @@
+{
+    "scenario": "Tech Gadget Launch",
+    "description": "Two tech companies, You and Bob, are launching new gadgets. Each can choose to focus on innovation or reliability. If both choose innovation, they capture the tech enthusiasts' market and share moderate success. If one chooses innovation while the other chooses reliability, the innovative company attracts more attention. If both choose reliability, they maintain a steady but less exciting market presence.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Tech Company A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Tech Company B"
+        }
+    ],
+    "behavior_choices": {
+        "innovation": "Innovative Features",
+        "reliability": "Reliable Features"
+    }
+}

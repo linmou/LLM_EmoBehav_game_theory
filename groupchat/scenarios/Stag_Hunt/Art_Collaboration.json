@@ -1,0 +1,18 @@
+{
+    "scenario": "Art Collaboration",
+    "description": "Two artists, You and Bob, must decide whether to collaborate on a masterpiece or create individual artworks. If both collaborate on the masterpiece, they succeed and share widespread acclaim. If one works on the masterpiece while the other creates individual artworks, the masterpiece artist fails while the individual artist gains minor recognition. If both create individual artworks, they both receive moderate recognition.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Accomplished artist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Accomplished artist"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Masterpiece",
+        "defect": "Solo Individual Artworks"
+    }
+}

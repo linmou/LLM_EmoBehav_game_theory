@@ -1,23 +1,34 @@
 from datetime import datetime
+import json
 import torch
 from torch.utils.data import DataLoader
 from transformers import pipeline
 import pandas as pd
 from functools import partial
 from openai import OpenAI
+from pydantic import BaseModel
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from threading import Thread
+import re
+from pathlib import Path
 
-from neuro_manipulation.datasets.prisoner_delimma_dataset import PrisonerDelimmaDataset
+from neuro_manipulation.datasets.game_scenario_dataset import GameScenarioDataset
 from neuro_manipulation.prompt_wrapper import GameReactPromptWrapper
 from neuro_manipulation.model_utils import setup_model_and_tokenizer, load_emotion_readers
 from neuro_manipulation.utils import oai_response
 from api_configs import OAI_CONFIG
+from statistical_engine import analyze_emotion_and_intensity_effects
+
+class ExtractedResult(BaseModel):
+    option_id: int
+    rationale: str
+    decision: str
+        
 
 class EmotionGameExperiment:
-    def __init__(self, repe_eng_config, model_config, game_config, sample_num=None, batch_size=None, repeat=1):
+    def __init__(self, repe_eng_config, model_config, game_config, batch_size, sample_num=None,  repeat=1):
         # Setup logging
         logging.basicConfig(
             level=logging.INFO,
@@ -68,6 +79,8 @@ class EmotionGameExperiment:
         self.cur_emotion = None
         self.cur_coeff = None
         
+        self.output_dir = f"results/RePEng/{self.game_config['game_name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}"
+        
         self.llm_client = OpenAI(**OAI_CONFIG)
 
     def run_experiment(self):
@@ -79,13 +92,12 @@ class EmotionGameExperiment:
             rep_reader = self.emotion_rep_readers[emotion]
             self.cur_emotion = emotion
             
-            self.logger.info(f"Creating dataset with sample_num={self.sample_num}")
-            emo_dataset = PrisonerDelimmaDataset(
-                'groupchat/scenarios/Prisoners_Dilemma_all_data_samples.json',
+            self.logger.info(f"Creating dataset with sample_num={self.sample_num if self.sample_num is not None else 'all'}")
+            emo_dataset = GameScenarioDataset(
+                self.game_config,
                 partial(self.reaction_prompt_wrapper.__call__, 
                        user_messages="Remember you are Alice, an average American. What is your option? Choose one option shown above."),
                 sample_num=self.sample_num,
-                payoff_matrix=self.game_config['payoff_matrix']
             )
             
             data_loader = DataLoader(emo_dataset, batch_size=self.repe_eng_config['batch_size'], shuffle=False)
@@ -115,12 +127,16 @@ class EmotionGameExperiment:
     def _forward_dataloader(self, data_loader, activations):
         batch_results = []
         pipeline_queue = Queue(maxsize=2)  # Control memory usage
-        
+         
         def pipeline_worker():
             for batch in data_loader:
-                # Process current batch and put in queue
+                # Repeat each list in the batch dictionary
+                repeat_batch = {
+                    key: [item for item in value for _ in range(self.repeat)]
+                    for key, value in batch.items()
+                }
                 control_outputs = self.rep_control_pipeline(
-                    batch['prompt'] * self.repeat,
+                    repeat_batch['prompt'],
                     activations=activations,
                     batch_size=self.repe_eng_config['batch_size'],
                     max_new_tokens=self.repe_eng_config['max_new_tokens'],
@@ -167,62 +183,109 @@ class EmotionGameExperiment:
         
         # Process outputs in parallel
         with ThreadPoolExecutor(max_workers=min(len(output_data), 8)) as executor:
-            option_ids = list(executor.map(self._post_process_single_output, output_data))
+            extracted_reses = list(executor.map(self._post_process_single_output, output_data))
         
         # Combine results
-        for i, (option_id, (generated_text, options)) in enumerate(zip(option_ids, output_data)):
+        for i, (extracted_res, generated_text) in enumerate(zip(extracted_reses, output_data)):
             results.append({
                 'emotion': self.cur_emotion,
-                'coefficient': self.cur_coeff,
+                'intensity': self.cur_coeff,
+                'scenario': batch['scenario'][i % batch_size],
+                'description': batch['description'][i % batch_size],
+                # 'options': batch['options'][i % batch_size],
                 'input': batch['prompt'][i % batch_size],
-                'options': options,
                 'output': generated_text,
-                'option_id': option_id,
-                'repeat_idx': i // batch_size
+                'rationale': extracted_res['rationale'],
+                'decision': extracted_res['decision'],
+                'category': extracted_res['option_id'],
+                'repeat_num': i // batch_size
             })
         
         return results
 
     def _post_process_single_output(self, output_data):
         generated_text, options = output_data
-        self.logger.info(f"Generated text: {generated_text}")
         
         try:
             option_id = [j+1 for j, o in enumerate(options) if o.lower() in generated_text.lower()][0]
-            self.logger.info(f"Found option_id {option_id} directly from text")
-        except:
-            self.logger.info("Using LLM to determine option_id")
-            option_id = self._get_option_id_from_llm(generated_text, options)
-            self.logger.info(f"Got option_id from LLM: {option_id}")
+            # Extract rationale and decision using regex
+            rationale = re.search(r'"rational"\s*:\s*"([^"]*)"', generated_text)
+            decision = re.search(r'"decision"\s*:\s*"([^"]*)"', generated_text)
             
-        return option_id
+            if not rationale or not decision:
+                raise ValueError("Failed to extract rationale or decision")
+                
+            rationale = rationale.group(1)
+            decision = decision.group(1)
+            
+            extracted_res = {
+                'category': option_id,
+                'rationale': rationale,
+                'decision': decision
+            }
+            
+            self.logger.info(f"Found option_id {option_id} directly from text")
+        
+        except Exception as e:
+            self.logger.info(f"Extraction failed: {str(e)}. Using LLM to determine option_id")
+            extracted_res = self._get_option_id_from_llm(generated_text, options)
+            self.logger.info(f"LLM extracted res sucessfully")
+            
+        return extracted_res
 
     def _get_option_id_from_llm(self, generated_text, options):
         prompt = f"Given the options {[ 'option ' + str(oid+1) + ' : ' + opt for oid, opt in enumerate(options)]}. "
-        prompt += f"What is the option id for the following generated text: {generated_text}. "
-        prompt += f"Only return the option id number, no other text. If the generated text is not in the options, return -1. Option ranges from 1 to {len(options)}."
+        prompt += f"Extract the decision, the rationale, and the option id for the following generated text: {generated_text}. "
+        prompt += f"If the generated text is not in the options, return -1. Option ranges from 1 to {len(options)}."
+        prompt += f"Response in the following format. {{'decision': <decision>, 'rationale': <rationale>, 'option_id': <option_id>}}"
         
         for _ in range(3):
             try:
-                option_id = oai_response(prompt, model="gpt-4o-mini", client=self.llm_client)
-                return int(option_id)
+                res = oai_response(prompt, model="gpt-4o-mini", client=self.llm_client, response_format=ExtractedResult)
+                return json.loads(res)
             except Exception as e:
-                self.logger.info(f"Error getting option_id from LLM: {e}")
+                self.logger.info(f"Error getting post-processed response from LLM: {e}")
                 prompt = f"In previous run, there is an error: {e}. Please try again.\n\n{prompt}"
-                option_id = oai_response(prompt, model="gpt-4o-mini", client=self.llm_client)
-                return int(option_id)
+                res = oai_response(prompt, model="gpt-4o-mini", client=self.llm_client, response_format=ExtractedResult)
+                return json.loads(res)
         
-        raise ValueError("Failed to get option_id from LLM")
+        raise ValueError("Failed to get post-processed response from LLM")
 
     def _save_results(self, results):
         self.logger.info("Saving experiment results")
-        df = pd.DataFrame(results)
-        correlation = df['option_id'].corr(df['coefficient'])
-        self.logger.info(f"Correlation coefficient between option_id and coefficient: {correlation}")
+        
+        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"prisoner_delimma_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}_exp_results_{timestamp}.csv"
+        json_filename = f"{self.output_dir}/exp_results_{timestamp}.json"
+        with open(json_filename, "w") as f:
+            json.dump(results, f, indent=2)
+        self.logger.info(f"Results saved to {json_filename}")
         
-        df.to_csv(filename, index=False)
-        self.logger.info(f"Results saved to {filename}")
-        return df 
+        df = pd.DataFrame(results)
+        csv_filename = f"{self.output_dir}/exp_results_{timestamp}.csv"
+        df.to_csv(csv_filename, index=False)
+        self.logger.info(f"Results saved to {csv_filename}")
+        return df
+
+
+
+
+    
+    def run_statistical_analysis(self):
+        self.logger.info("Running statistical analysis")
+        
+        emotion_files = {
+            emotion: str(self.output_dir / f"{self.game_config['game_name']}_{emotion}_results.json")
+            for emotion in self.repe_eng_config['emotions'] + ['None']
+        }
+        
+        results = analyze_emotion_and_intensity_effects(emotion_files)
+        
+        # Save analysis results
+        analysis_output = self.output_dir / "analysis_results.json"
+        with open(analysis_output, 'w') as f:
+            import json
+            json.dump(results, f, indent=2)
+            
+        self.logger.info(f"Analysis results saved to {analysis_output}")

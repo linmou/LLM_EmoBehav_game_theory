@@ -1,0 +1,18 @@
+{
+    "scenario": "Elevator Decision",
+    "description": "Two people arrive at an elevator simultaneously. Each must decide whether to wait for the next one or enter. If both wait, they miss the current elevator. If both enter, the elevator exceeds weight capacity. If one waits and the other enters, the elevator operates smoothly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Person on the 5th floor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Person on the 5th floor"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for the next elevator",
+        "go": "Enter the elevator"
+    }
+}

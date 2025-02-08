@@ -1,0 +1,18 @@
+{
+    "scenario": "Fashion Show",
+    "description": "Two designers are participating in a fashion show. Each can choose to showcase either avant-garde designs or classic styles. If both choose avant-garde, they appeal to a limited audience and share moderate acclaim. If one chooses avant-garde while the other opts for classic, the classic designer gains more media coverage. If both choose classic styles, they compete for the same audience and receive less recognition.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Designer A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Designer B"
+        }
+    ],
+    "behavior_choices": {
+        "avant-garde": "Showcase Avant-Garde Designs",
+        "classic": "Showcase Classic Styles"
+    }
+}

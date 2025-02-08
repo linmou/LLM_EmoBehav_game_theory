@@ -1,0 +1,18 @@
+{
+    "scenario": "Fishing Quota Management",
+    "description": "Two fishermen must decide whether to stick to their agreed fishing quota or exceed it. If both stick to the quota, the fish population remains sustainable. If one exceeds the quota, they gain a larger catch while the other suffers. If both exceed the quota, the fish population collapses.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Fisherman in the local community"
+        },
+        {
+            "name": "Bob",
+            "profile": "Fisherman in the local community"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Stick to quota",
+        "defect": "Exceed quota"
+    }
+}

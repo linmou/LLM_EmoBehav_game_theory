@@ -1,0 +1,18 @@
+{
+    "scenario": "Eco-Friendly Packaging",
+    "description": "Two companies are deciding on their packaging strategy. Each can choose recyclable materials or biodegradable materials. If both choose recyclable, they share the eco-conscious market. If one chooses biodegradable while the other sticks to recyclable, the biodegradable packager attracts more eco-conscious consumers. If both choose biodegradable, they face higher costs and lower profits.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Packaging Company A Manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Packaging Company B Manager"
+        }
+    ],
+    "behavior_choices": {
+        "recyclable": "Use Recyclable Materials",
+        "biodegradable": "Use Biodegradable Materials"
+    }
+}

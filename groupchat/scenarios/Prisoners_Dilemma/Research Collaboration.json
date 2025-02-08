@@ -1,0 +1,18 @@
+{
+    "scenario": "Research Collaboration",
+    "description": "Two researchers are working on a joint paper. They must decide whether to share their latest findings or hold back for individual recognition. If both share openly, they produce a groundbreaking paper. If one shares while the other holds back, the sharer feels exploited while the other gains recognition. If neither shares, the paper is mediocre.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Researcher"
+        },
+        {
+            "name": "Bob",
+            "profile": "Researcher"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Share Findings",
+        "defect": "Hold Back"
+    }
+}

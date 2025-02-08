@@ -1,0 +1,515 @@
+[
+    {
+        "scenario": "Treasure_Diving",
+        "description": "Two divers must decide whether to collaborate on retrieving a large treasure chest from the ocean floor or individually collect small trinkets. If both retrieve the chest, they succeed and share a large reward. If one retrieves the chest while the other collects trinkets, the chest retriever fails while the trinket collector gets a small reward. If both collect trinkets, they both get moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Certified diver"
+            },
+            {
+                "name": "Bob",
+                "profile": "Certified diver"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Chest",
+            "defect": "Solo Trinket Collection"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Software_Development",
+        "description": "Two software developers must decide whether to collaborate on a major feature or individually work on minor bug fixes. If both work on the feature, they succeed and receive a large reward. If one works on the feature while the other works on bug fixes, the feature fails while the bug fixer gets a small reward. If both work on bug fixes, they both receive moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Software developer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Software developer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on major feature",
+            "defect": "Fix minor bugs"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Environmental_Conservation",
+        "description": "Two conservationists must decide whether to collaborate on a large conservation project or focus on smaller individual initiatives. If both collaborate, they succeed and achieve significant environmental impact. If one collaborates while the other focuses individually, the collaborator fails while the individual achieves minor impact. If both focus individually, they both achieve moderate impact.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Dedicated conservationist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Dedicated conservationist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on large project",
+            "defect": "Focus on individual initiative"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Treasure_Hunt",
+        "description": "Two treasure hunters must decide whether to collaborate on finding a hidden treasure chest or individually search for smaller treasures. If both collaborate, they succeed and share a large treasure. If one collaborates while the other searches individually, the collaborator fails while the solo hunter finds a small treasure. If both search individually, they both find moderate treasures.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Adventurous explorer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Seasoned navigator"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate for the hidden treasure",
+            "defect": "Search for smaller treasures individually"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Urban_Development",
+        "description": "Two city planners must decide whether to collaborate on a major infrastructure project or work individually on smaller urban improvements. If both work on the infrastructure project, they succeed and enhance the city's connectivity. If one works on the project while the other focuses on smaller improvements, the project planner fails while the other achieves small urban enhancements. If both focus on smaller improvements, they both achieve moderate urban enhancements.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Skilled city planner"
+            },
+            {
+                "name": "Bob",
+                "profile": "Skilled city planner"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on infrastructure project",
+            "defect": "Work on smaller urban improvements"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Environmental_Cleanup",
+        "description": "Two community leaders must decide whether to organize a large-scale cleanup event or focus on smaller, individual efforts. If both organize the event, they succeed and receive community recognition. If one organizes while the other focuses on individual efforts, the organizer fails while the individual worker gains local support. If both focus on individual efforts, they receive moderate support.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Community leader with environmental advocacy experience"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community leader with environmental advocacy experience"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Organize Large-Scale Event",
+            "defect": "Focus on Individual Efforts"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Treasure Expedition",
+        "description": "Two explorers must decide whether to collaborate on finding a hidden treasure or individually collect smaller artifacts. If both work together on the treasure, they succeed and share a large reward. If one goes for the treasure while the other collects artifacts, the treasure seeker fails while the artifact collector gets a small reward. If both collect artifacts, they both get moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced explorer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Skilled navigator"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Team up for Treasure",
+            "defect": "Solo Artifact Collection"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Startup_Venture",
+        "description": "Two entrepreneurs must decide whether to collaborate on developing a groundbreaking product or work on smaller projects individually. If both collaborate, they succeed and share substantial profits. If one collaborates while the other works solo, the collaborator fails while the solo entrepreneur earns small profits. If both work solo, they both earn moderate profits.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Innovative thinker"
+            },
+            {
+                "name": "Bob",
+                "profile": "Strategic planner"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on groundbreaking product",
+            "defect": "Work on smaller projects individually"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Business_Partnership",
+        "description": "Two entrepreneurs must decide whether to partner on a large project or pursue smaller individual ventures. If both partner on the project, they succeed and share large profits. If one partners while the other pursues an individual venture, the partner fails while the individual gains small profits. If both pursue individual ventures, they both get moderate profits.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced entrepreneur"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced entrepreneur"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Partner on large project",
+            "defect": "Pursue individual venture"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Tech_Startup",
+        "description": "Two tech entrepreneurs must decide whether to collaborate on a groundbreaking AI project or individually develop smaller apps. If both work on the AI, they succeed and lead the market. If one works on AI while the other on apps, the AI developer fails while the app developer sees moderate success. If both choose apps, both achieve small successes.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Tech entrepreneur with a background in AI"
+            },
+            {
+                "name": "Bob",
+                "profile": "Tech entrepreneur with a focus on mobile apps"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on AI",
+            "defect": "Develop Apps"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Corporate Project",
+        "description": "Two project managers must decide whether to collaborate on a high-risk, high-reward project or work on smaller, individual tasks. If both work on the high-reward project, they succeed and receive promotions. If one works on the high-reward project while the other focuses on smaller tasks, the high-reward project fails while the smaller tasks are completed. If both work on smaller tasks, they both receive satisfactory evaluations.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Senior project manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Project coordinator"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Joint High-Risk Project",
+            "defect": "Individual Task Management"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Expedition_to_Mars",
+        "description": "Two astronauts must decide whether to collaborate on a mission to Mars or conduct separate space research. If both collaborate, they succeed and achieve significant scientific breakthroughs. If one collaborates while the other works solo, the collaborator fails while the solo astronaut gains minor insights. If both work solo, they both achieve moderate insights.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Astrophysicist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Engineer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Mars mission",
+            "defect": "Conduct separate space research"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Space Mission",
+        "description": "Two astronauts must decide whether to work together to repair a major spacecraft malfunction or individually handle minor issues. If both repair the malfunction, they succeed and receive commendations. If one repairs the malfunction while the other handles minor issues, the major repair fails while the minor task is completed. If both handle minor issues, they both receive modest recognition.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Veteran astronaut"
+            },
+            {
+                "name": "Bob",
+                "profile": "Technical expert"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Major Repair",
+            "defect": "Fix Minor Issues Alone"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Urban_Planning",
+        "description": "Two urban planners must decide whether to collaborate on designing a sustainable city or focus on individual neighborhood projects. If both collaborate, they create a model city and gain recognition. If one collaborates while the other focuses on individual projects, the collaborator risks failure while the individualist achieves moderate success. If both focus on individual projects, they achieve moderate improvements but miss the larger goal.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Urban planner with expertise in sustainable design"
+            },
+            {
+                "name": "Bob",
+                "profile": "Urban planner with a focus on transportation systems"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on designing a sustainable city",
+            "defect": "Focus on individual neighborhood projects"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Art Collaboration",
+        "description": "Two artists, You and Bob, must decide whether to collaborate on a masterpiece or create individual artworks. If both collaborate on the masterpiece, they succeed and share widespread acclaim. If one works on the masterpiece while the other creates individual artworks, the masterpiece artist fails while the individual artist gains minor recognition. If both create individual artworks, they both receive moderate recognition.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Accomplished artist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Accomplished artist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Masterpiece",
+            "defect": "Solo Individual Artworks"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Agricultural_Planning",
+        "description": "Two farmers must decide whether to collaborate on growing a high-yield crop or individually work on low-yield crops. If both grow the high-yield crop, they succeed and receive a large reward. If one grows the high-yield crop while the other grows low-yield crops, the high-yield crop fails while the low-yield crop farmer gets a small reward. If both grow low-yield crops, they both receive moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Farmer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Farmer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Grow high-yield crop",
+            "defect": "Grow low-yield crops"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Farm Harvest",
+        "description": "Two farmers must decide whether to collaborate on harvesting a large, profitable crop or individually harvest smaller, less profitable crops. If both harvest the large crop, they succeed and share a substantial profit. If one harvests the large crop while the other focuses on smaller crops, the large crop is lost while the smaller crops are harvested. If both harvest smaller crops, they both earn a modest income.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced farmer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Agricultural specialist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Large Harvest",
+            "defect": "Solo Small Crop Harvest"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Wildlife_Conservation",
+        "description": "Two conservationists must decide whether to collaborate on a major wildlife sanctuary or individually work on small local projects. If both work on the sanctuary, they succeed and save numerous species. If one works on the sanctuary while the other focuses on local projects, the sanctuary conservationist fails while the local project worker achieves minor success. If both work on local projects, they both achieve moderate success.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Dedicated conservationist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Dedicated conservationist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Wildlife Sanctuary",
+            "defect": "Solo Local Project"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Archaeological_Expedition",
+        "description": "Two archaeologists must decide whether to collaborate on excavating a large artifact or individually work on smaller, less significant digs. If both excavate the artifact, they succeed and share a large reward. If one excavates the artifact while the other works on smaller digs, the excavator fails while the individual worker gets a small reward. If both work on smaller digs, they both get moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced archaeologist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced archaeologist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Artifact",
+            "defect": "Solo Dig"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Environmental_Project",
+        "description": "Two environmentalists must decide whether to collaborate on a large conservation project or work on smaller initiatives individually. If both collaborate, they succeed and make a significant environmental impact. If one collaborates while the other works solo, the collaborator fails while the solo environmentalist achieves small successes. If both work solo, they both achieve moderate successes.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Ecologist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Conservationist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on large conservation project",
+            "defect": "Work on smaller initiatives individually"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Space_Exploration",
+        "description": "Two astronauts must decide whether to collaborate on a mission to explore a distant planet or individually conduct research on their own. If both explore the planet, they succeed and gather valuable data. If one explores while the other conducts individual research, the explorer fails while the individual researcher gains some insights. If both conduct individual research, they both get moderate insights.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Trained astronaut"
+            },
+            {
+                "name": "Bob",
+                "profile": "Trained astronaut"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on planet exploration",
+            "defect": "Conduct individual research"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Scientific Research",
+        "description": "Two scientists, You and Bob, must decide whether to collaborate on a groundbreaking experiment or conduct smaller experiments individually. If both work on the groundbreaking experiment, they succeed and share a significant discovery. If one works on the groundbreaking experiment while the other conducts smaller experiments, the groundbreaking experiment scientist fails while the small experiment scientist gets a minor discovery. If both conduct smaller experiments, they both achieve moderate discoveries.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Renowned scientist"
+            },
+            {
+                "name": "Bob",
+                "profile": "Renowned scientist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Groundbreaking Experiment",
+            "defect": "Solo Small Experiments"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Corporate Project",
+        "description": "Two project managers, You and Bob, must decide whether to collaborate on a major project or work on smaller projects individually. If both work on the major project, they succeed and share a large bonus. If one works on the major project while the other works on smaller projects, the major project worker fails while the smaller project worker gets a small bonus. If both work on smaller projects, they both get moderate bonuses.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced project manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced project manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Major Project",
+            "defect": "Solo Small Projects"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Academic_Research",
+        "description": "Two researchers must decide whether to work together on a groundbreaking study or conduct smaller individual experiments. If both work together, they succeed and publish a high-impact paper. If one works together while the other conducts individual experiments, the collaborator fails while the individual publishes a minor paper. If both conduct individual experiments, they both publish moderate papers.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced researcher"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced researcher"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on groundbreaking study",
+            "defect": "Conduct individual experiments"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Treasure Expedition",
+        "description": "Two explorers, You and Bob, must decide whether to collaborate on digging for a hidden treasure or search for smaller treasures individually. If both dig for the hidden treasure, they succeed and share a large reward. If one digs for the hidden treasure while the other searches for smaller treasures, the hidden treasure digger fails while the small treasure searcher gets a small reward. If both search for smaller treasures, they both get moderate rewards.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Seasoned explorer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Seasoned explorer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Hidden Treasure",
+            "defect": "Solo Small Treasure Search"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Corporate_Innovation",
+        "description": "Two managers must decide whether to collaborate on developing a new innovative product or work individually on smaller projects. If both develop the product, they succeed and share a large market share. If one develops the product while the other works on smaller projects, the product developer fails while the other gains a small market share. If both work on smaller projects, they both gain moderate market shares.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced manager"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced manager"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on product development",
+            "defect": "Work on individual projects"
+        },
+        "game_name": "Stag_Hunt"
+    },
+    {
+        "scenario": "Tech_Innovation",
+        "description": "Two engineers must decide whether to collaborate on a breakthrough technology or individually develop small gadgets. If both work on the breakthrough, they succeed and revolutionize the industry. If one works on the breakthrough while the other develops gadgets, the breakthrough engineer fails while the gadget engineer achieves small success. If both develop gadgets, they both achieve moderate success.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Experienced engineer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Experienced engineer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on Breakthrough Technology",
+            "defect": "Solo Gadget Development"
+        },
+        "game_name": "Stag_Hunt"
+    }
+]

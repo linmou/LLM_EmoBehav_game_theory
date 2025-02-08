@@ -1,0 +1,18 @@
+{
+    "scenario": "Coffee Shop Queue",
+    "description": "Two customers arrive at the coffee shop counter simultaneously. Each must decide whether to wait for a few minutes or place their order immediately. If both wait, there's a minor delay. If both order, there's confusion at the counter. If one waits while the other orders, the service is smooth.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Customer with a mobile order"
+        },
+        {
+            "name": "Bob",
+            "profile": "Walk-in customer"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for a few minutes",
+        "go": "Place order immediately"
+    }
+}

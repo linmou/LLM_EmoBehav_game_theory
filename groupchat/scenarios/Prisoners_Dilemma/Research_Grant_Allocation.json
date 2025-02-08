@@ -1,0 +1,18 @@
+{
+    "scenario": "Research Grant Allocation",
+    "description": "Two senior researchers, You and Bob, have applied for a shared research grant. They must now decide whether to transparently share their initial research data or keep it private while the grant committee reviews their applications. If both share their data transparently, the committee views them as highly cooperative, and they both receive equal portions of the grant funding. If one shares their data while the other withholds theirs, the one withholding data gets a higher individual grant as their work looks more unique, while the one sharing loses credibility for 'lack of originality.' If both withhold their data, the committee perceives their proposals as lacking transparency, and funding is significantly reduced for both.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Senior researcher applying for the grant"
+        },
+        {
+            "name": "Bob",
+            "profile": "Senior researcher applying for the grant"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Share data transparently",
+        "defect": "Withhold data"
+    }
+}

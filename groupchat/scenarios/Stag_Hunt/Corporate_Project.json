@@ -1,0 +1,18 @@
+{
+    "scenario": "Corporate Project",
+    "description": "Two project managers, You and Bob, must decide whether to collaborate on a major project or work on smaller projects individually. If both work on the major project, they succeed and share a large bonus. If one works on the major project while the other works on smaller projects, the major project worker fails while the smaller project worker gets a small bonus. If both work on smaller projects, they both get moderate bonuses.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Experienced project manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Experienced project manager"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Major Project",
+        "defect": "Solo Small Projects"
+    }
+}

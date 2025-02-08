@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 import yaml
 import shutil
 from pathlib import Path
@@ -7,8 +8,8 @@ import logging
 from datetime import datetime
 
 from data_creation.create_scenario import ScenarioGenerator
-from api_test_engine import run_tests
-from statistical_engine import compare_multiple_emotions
+from api_infer_engine import run_tests
+from statistical_engine import analyze_emotion_and_intensity_effects
 from games.game import Game
 from games.game_configs import get_game_config
 from constants import Emotions
@@ -22,7 +23,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class ExperimentEngine:
+class PromptExperiment:
     def __init__(self, config_path: str):
         """Initialize the experiment engine with configuration from YAML."""
         self.config_path = config_path
@@ -36,8 +37,7 @@ class ExperimentEngine:
         
     def _save_experiment_config(self):
         """Save a copy of the experiment configuration file with the results."""
-        config_filename = Path(self.config_path).name
-        dest_path = self.output_dir / config_filename
+        dest_path = self.output_dir / 'exp_cfg.yaml'
         shutil.copy2(self.config_path, dest_path)
         logger.info(f"Saved experiment configuration to {dest_path}")
     
@@ -159,7 +159,18 @@ class ExperimentEngine:
             for emotion in self.config['experiment']['emotions'] + ['None']
         }
         
-        results = compare_multiple_emotions(emotion_files)
+        output_samples = []
+        for emotion in (self.config['experiment']['emotions'] + ['None']):
+            with open(emotion_files[emotion], 'r') as f:
+                output_samples.append(json.load(f))
+                
+        df = pd.DataFrame(output_samples)
+        df.to_csv(self.output_dir / "all_output_samples.csv", index=False)
+        
+        results = analyze_emotion_and_intensity_effects(
+            self.output_dir / "all_output_samples.csv",
+            self.output_dir
+        )
         
         # Save analysis results
         analysis_output = self.output_dir / "analysis_results.json"
@@ -184,6 +195,6 @@ class ExperimentEngine:
             raise
 
 if __name__ == "__main__":
-    engine = ExperimentEngine("/home/jjl7137/game_theory/config/sexBattle_experiment_config.yaml")
+    engine = PromptExperiment("/home/jjl7137/game_theory/config/sexBattle_experiment_config.yaml")
     # engine = ExperimentEngine("/home/jjl7137/game_theory/config/priDeli_experiment_config.yaml")
     engine.run_experiment() 

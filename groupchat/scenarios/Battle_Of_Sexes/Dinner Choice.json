@@ -1,0 +1,18 @@
+{
+    "scenario": "Dinner Choice",
+    "description": "Two roommates need to decide on what to order for dinner. One prefers Italian cuisine while the other prefers Chinese. They both prefer eating the same meal together over eating separately, but each has a different preferred cuisine.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Italian food lover"
+        },
+        {
+            "name": "Bob",
+            "profile": "Chinese food lover"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Italian cuisine",
+        "option_b": "Chinese cuisine"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Email Response",
+    "description": "Two colleagues receive an email requiring a response. Each must decide whether to reply immediately or wait for the other to respond. If both wait, the email remains unanswered. If both reply, there's redundancy. If one waits while the other replies, the task is completed efficiently.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Team member working remotely"
+        },
+        {
+            "name": "Bob",
+            "profile": "Team member in the office"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait for the other to reply",
+        "go": "Reply immediately"
+    }
+}

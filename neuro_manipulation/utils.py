@@ -213,7 +213,7 @@ def dict_to_unique_code(dictionary):
     return unique_code
 
 def oai_response(prompt, client, model="gpt-4o", response_format=None, ):
-    response = client.chat.completions.create(
+    response = client.beta.chat.completions.parse(
         model=model,
         messages=[
                 # {'role': 'system', 'content': 'You are an avereage American.'},

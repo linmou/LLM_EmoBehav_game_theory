@@ -1,0 +1,18 @@
+{
+    "scenario": "Water Conservation",
+    "description": "Two farmers with adjacent lands must decide whether to conserve water during a drought or use as much as they need. If both conserve, the water lasts longer for both. If one conserves while the other doesn't, the non-conserver benefits while the conserver risks crop loss. If neither conserves, the water runs out quickly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Farmer with adjacent land"
+        },
+        {
+            "name": "Bob",
+            "profile": "Farmer with adjacent land"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Conserve water",
+        "defect": "Use as much as needed"
+    }
+}

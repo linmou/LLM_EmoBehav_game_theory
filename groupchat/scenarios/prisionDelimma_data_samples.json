@@ -1,0 +1,146 @@
+[
+    {
+        "scenario": "Water Conservation",
+        "description": "Two farmers with adjacent lands must decide whether to conserve water during a drought or use as much as they need. If both conserve, the water lasts longer for both. If one conserves while the other doesn't, the non-conserver benefits while the conserver risks crop loss. If neither conserves, the water runs out quickly.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Farmer with adjacent land"
+            },
+            {
+                "name": "Bob",
+                "profile": "Farmer with adjacent land"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Conserve water",
+            "defect": "Use as much as needed"
+        }
+    },
+    {
+        "scenario": "Resource Sharing in Space",
+        "description": "Two astronauts on a space station must decide whether to share their limited supply of oxygen or hoard it. If both share, they can last until resupply. If one hoards while the other shares, the hoarder survives longer while the sharer risks running out. If both hoard, both face severe oxygen shortages.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Astronaut on the space station"
+            },
+            {
+                "name": "Bob",
+                "profile": "Astronaut on the space station"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share oxygen",
+            "defect": "Hoard oxygen"
+        }
+    },
+    {
+        "scenario": "Fishing Quota Management",
+        "description": "Two fishermen must decide whether to stick to their agreed fishing quota or exceed it. If both stick to the quota, the fish population remains sustainable. If one exceeds the quota, they gain a larger catch while the other suffers. If both exceed the quota, the fish population collapses.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Fisherman in the local community"
+            },
+            {
+                "name": "Bob",
+                "profile": "Fisherman in the local community"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Stick to quota",
+            "defect": "Exceed quota"
+        }
+    },
+    {
+        "scenario": "Resource Allocation in a Community Garden",
+        "description": "You and Bob are members of a community garden. Each member must decide whether to contribute extra resources (time, seeds, fertilizers) to improve the garden's yield. If both contribute, the garden flourishes, and they both receive an abundant harvest. If one contributes while the other doesn't, the one who contributes feels their efforts are taken advantage of, while the other enjoys the benefits without extra work. If neither contributes, the garden produces a minimal yield, just enough to sustain them without any surplus.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Member of the community garden."
+            },
+            {
+                "name": "Bob",
+                "profile": "Member of the community garden."
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Contribute extra resources.",
+            "defect": "Contribute no extra resources."
+        }
+    },
+    {
+        "scenario": "Neighborhood Security",
+        "description": "Two neighbors must decide whether to contribute to a shared security system or rely on the other to pay. If both contribute, the neighborhood is secure. If one contributes while the other doesn't, the non-contributor benefits without cost. If neither contributes, the neighborhood becomes unsafe.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Resident of the neighborhood"
+            },
+            {
+                "name": "Bob",
+                "profile": "Resident of the neighborhood"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Contribute to security",
+            "defect": "Do not contribute"
+        }
+    },
+    {
+        "scenario": "Team Presentation",
+        "description": "Two team members must decide whether to prepare thoroughly for a joint presentation or rely on the other to do the work. If both prepare, the presentation is excellent. If one prepares while the other doesn't, the non-preparer benefits while the preparer works harder. If neither prepares, the presentation fails.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Team member for the presentation"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team member for the presentation"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Prepare thoroughly",
+            "defect": "Rely on the other"
+        }
+    },
+    {
+        "scenario": "Treasure Hunt Expedition",
+        "description": "You and Bob are part of an adventurous treasure hunt expedition. They have uncovered a clue leading them to an ancient crypt containing the treasure. To access the treasure, both need to input a code simultaneously into their respective devices. Each device can either activate a security bypass or a security alarm. If both choose the security bypass, they successfully access the treasure and share the profits. If one chooses the bypass while the other triggers the alarm, the treasure remains inaccessible, but the one triggering the alarm secures exclusive rights and rewards from the expedition sponsors for thwarting a security threat. If both trigger the alarm, they remain stuck, and the treasure remains hidden, with no additional benefits to either of them.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Participant in the treasure hunt, equipped with a code input device."
+            },
+            {
+                "name": "Bob",
+                "profile": "Participant in the treasure hunt, equipped with a code input device."
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Activate the security bypass",
+            "defect": "Trigger the security alarm"
+        }
+    },
+    {
+        "scenario": "Research Grant Allocation",
+        "description": "Two senior researchers, You and Bob, have applied for a shared research grant. They must now decide whether to transparently share their initial research data or keep it private while the grant committee reviews their applications. If both share their data transparently, the committee views them as highly cooperative, and they both receive equal portions of the grant funding. If one shares their data while the other withholds theirs, the one withholding data gets a higher individual grant as their work looks more unique, while the one sharing loses credibility for 'lack of originality.' If both withhold their data, the committee perceives their proposals as lacking transparency, and funding is significantly reduced for both.",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Senior researcher applying for the grant"
+            },
+            {
+                "name": "Bob",
+                "profile": "Senior researcher applying for the grant"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share data transparently",
+            "defect": "Withhold data"
+        }
+    }
+]

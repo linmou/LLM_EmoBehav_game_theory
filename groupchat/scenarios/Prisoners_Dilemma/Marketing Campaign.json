@@ -1,0 +1,18 @@
+{
+    "scenario": "Marketing Campaign",
+    "description": "Two marketing managers must decide whether to launch an aggressive campaign or a standard one. If both choose aggressive, they gain market share but at a high cost. If one chooses aggressive while the other does not, the aggressive one gains significantly while the other loses ground. If neither chooses aggressive, they maintain their current market position.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Marketing Manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Marketing Manager"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Standard Campaign",
+        "defect": "Aggressive Campaign"
+    }
+}

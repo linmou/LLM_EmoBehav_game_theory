@@ -1,0 +1,18 @@
+{
+    "scenario": "Galactic Resource Allocation",
+    "description": "Two space agencies are tasked with mining resources from a newly discovered planet. Each can choose to mine aggressively or conservatively. If both choose aggressively, they deplete the resources quickly, leading to low yields. If one chooses aggressively while the other mines conservatively, the aggressive miner gains more resources. If both mine conservatively, they maintain a steady resource flow.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Space Agency Director"
+        },
+        {
+            "name": "Bob",
+            "profile": "Space Agency Director"
+        }
+    ],
+    "behavior_choices": {
+        "aggressive": "Aggressive Mining",
+        "conservative": "Conservative Mining"
+    }
+}

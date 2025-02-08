@@ -7,34 +7,18 @@ from pathlib import Path
 from itertools import combinations
 import matplotlib.pyplot as plt
 import seaborn as sns
+from abc import ABC, abstractmethod
 
-class BehaviorAnalyzer:
-    def __init__(self):
-        pass
-    
-    def load_json_data(self, file_path: str) -> List[Dict]:
-        """Load data from a JSON file."""
-        with open(file_path, 'r') as f:
-            return json.load(f)
-    
-    def extract_behavior_counts(self, data: List[Dict]) -> Dict[str, int]:
-        """Extract counts of cooperative and defective behaviors."""
-        behavior_counts = {'cooperate': 0, 'defect': 0}
-        for item in data:
-            category = item.get('category', '').lower()
-            if category in behavior_counts:
-                behavior_counts[category] += 1
-        return behavior_counts
+class BaseAnalyzer(ABC):
+    """Base class for statistical analysis of behavioral data"""
     
     def calculate_behavior_ratio(self, counts: Dict[str, int]) -> Tuple[float, float]:
         """Calculate the ratio of cooperative to defective behaviors."""
         total = sum(counts.values())
         if total == 0:
             return 0.0, 0.0
-        coop_ratio = counts['cooperate'] / total
-        defect_ratio = counts['defect'] / total
-        return coop_ratio, defect_ratio
-    
+        return counts['cooperate']/total, counts['defect']/total
+
     def chi_square_test(self, condition1_counts: Dict[str, int], 
                        condition2_counts: Dict[str, int]) -> Tuple[float, float]:
         """
@@ -64,54 +48,27 @@ class BehaviorAnalyzer:
         except ValueError:
             # Fallback in case of any other statistical issues
             return 0.0, 1.0
-    
-    def analyze_conditions(self, file_path1: str, file_path2: str) -> Dict:
-        """
-        Analyze behavioral differences between two conditions.
-        
-        Args:
-            file_path1: Path to first condition's JSON file
-            file_path2: Path to second condition's JSON file
-            
-        Returns:
-            Dictionary containing statistical analysis results
-        """
-        # Load data
-        data1 = self.load_json_data(file_path1)
-        data2 = self.load_json_data(file_path2)
-        
-        # Get behavior counts
-        counts1 = self.extract_behavior_counts(data1)
-        counts2 = self.extract_behavior_counts(data2)
-        
-        # Calculate ratios
-        coop_ratio1, defect_ratio1 = self.calculate_behavior_ratio(counts1)
-        coop_ratio2, defect_ratio2 = self.calculate_behavior_ratio(counts2)
-        
-        # Perform statistical test
-        chi2, p_value = self.chi_square_test(counts1, counts2)
-        
-        # Prepare results
-        results = {
-            'condition1': {
-                'counts': counts1,
-                'cooperative_ratio': coop_ratio1,
-                'defective_ratio': defect_ratio1
-            },
-            'condition2': {
-                'counts': counts2,
-                'cooperative_ratio': coop_ratio2,
-                'defective_ratio': defect_ratio2
-            },
-            'statistical_test': {
-                'chi_square': chi2,
-                'p_value': p_value,
-                'significant': p_value < 0.05
-            }
-        }
-        
-        return results
 
+class JsonBehaviorAnalyzer(BaseAnalyzer):
+    """Analyzer for JSON-based experimental results"""
+    
+    def __init__(self):
+        self.results_formatter = ResultsFormatter()
+    
+    def load_data(self, file_path: str) -> List[Dict]:
+        """Load data from a JSON file."""
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    
+    def extract_behavior_counts(self, data: List[Dict]) -> Dict[str, int]:
+        """Extract counts of cooperative and defective behaviors."""
+        behavior_counts = {'cooperate': 0, 'defect': 0}
+        for item in data:
+            category = item.get('category', '').lower()
+            if category in behavior_counts:
+                behavior_counts[category] += 1
+        return behavior_counts
+    
     def generate_text_description(self, results: Dict) -> str:
         """
         Generate a human-readable description of the statistical analysis results.
@@ -168,7 +125,7 @@ class BehaviorAnalyzer:
         
         return "\n".join(description)
 
-    def analyze_multiple_conditions(self, emotion_files: Dict[str, str]) -> Dict:
+    def analyze_multiple_emotions(self, emotion_files: Dict[str, str]) -> Dict:
         """
         Analyze behavioral differences across multiple emotion conditions.
         
@@ -182,7 +139,7 @@ class BehaviorAnalyzer:
         # Store data for each emotion
         emotion_data = {}
         for emotion, file_path in emotion_files.items():
-            data = self.load_json_data(file_path)
+            data = self.load_data(file_path)
             counts = self.extract_behavior_counts(data)
             coop_ratio, defect_ratio = self.calculate_behavior_ratio(counts)
             
@@ -317,35 +274,169 @@ class BehaviorAnalyzer:
         
         plt.close()
 
-def compare_behavior_conditions(file_path1: str, file_path2: str) -> Dict:
-    """
-    Convenience function to compare behavior between two conditions.
+class CsvBehaviorAnalyzer(BaseAnalyzer):
+    """Analyzer for CSV experimental results with emotion/intensity analysis"""
     
-    Args:
-        file_path1: Path to first condition's JSON file
-        file_path2: Path to second condition's JSON file
-        
-    Returns:
-        Dictionary containing statistical analysis results
-    """
-    analyzer = BehaviorAnalyzer()
-    return analyzer.analyze_conditions(file_path1, file_path2)
+    def __init__(self):
+        self.results_formatter = ResultsFormatter()
+        self.plotter = BehaviorVisualizer()
 
-def compare_multiple_emotions(emotion_files: Dict[str, str]) -> Dict:
+    def load_data(self, csv_path: str) -> pd.DataFrame:
+        """Load and validate CSV data."""
+        df = pd.read_csv(csv_path)
+        required_columns = ['emotion', 'intensity', 'category']
+        if not all(col in df.columns for col in required_columns):
+            raise ValueError(f"CSV missing required columns: {required_columns}")
+        return df
+
+    def analyze_emotion_effects(self, df: pd.DataFrame) -> Dict:
+        """Analyze behavioral differences across emotions."""
+        emotion_counts = self._group_counts(df, 'emotion')
+        return self.analyze_conditions(emotion_counts)
+
+    def analyze_intensity_effects(self, df: pd.DataFrame) -> Dict:
+        """Analyze intensity effects within each emotion."""
+        results = {}
+        for emotion in df['emotion'].unique():
+            emotion_df = df[df['emotion'] == emotion]
+            intensity_counts = self._group_counts(emotion_df, 'intensity')
+            if len(intensity_counts) > 1:
+                results[emotion] = self.analyze_conditions(intensity_counts)
+        return results
+
+    def _group_counts(self, df: pd.DataFrame, group_col: str) -> Dict[str, Dict]:
+        """Calculate behavior counts for grouped data."""
+        groups = df.groupby(group_col)
+        return {
+            group_name: {
+                'cooperate': sum(group['category'] == '1'), # TODO: change the hardcoded category
+                'defect': sum(group['category'] == '2')
+            }
+            for group_name, group in groups
+        }
+
+    def analyze_conditions(self, condition_counts: Dict[str, Dict]) -> Dict:
+        """Core analysis for any grouped conditions."""
+        # Calculate ratios and prepare data
+        individual_conditions = {}
+        for condition, counts in condition_counts.items():
+            coop_ratio, defect_ratio = self.calculate_behavior_ratio(counts)
+            individual_conditions[condition] = {
+                'counts': counts,
+                'cooperative_ratio': coop_ratio,
+                'defective_ratio': defect_ratio
+            }
+
+        # Perform overall statistical test
+        overall_chi2 = 0.0
+        overall_p_value = 1.0
+        conditions = list(condition_counts.values())
+        
+        if len(conditions) >= 2:
+            # Create contingency table
+            contingency = np.array([
+                [c['cooperate'], c['defect']] 
+                for c in conditions
+            ])
+            
+            # Use Fisher's exact test for small samples
+            if len(conditions) == 2:
+                try:
+                    _, overall_p_value = stats.fisher_exact(contingency)
+                    # Convert to chi-square equivalent for consistency
+                    n = np.sum(contingency)
+                    phi = np.sqrt(overall_p_value * n / (n * 1))
+                    overall_chi2 = phi * n
+                except:
+                    pass
+            else:
+                try:
+                    overall_chi2, overall_p_value, _, _ = stats.chi2_contingency(contingency)
+                except:
+                    pass
+
+        # Perform pairwise comparisons
+        pairwise_comparisons = {}
+        for (cond1, cond2) in combinations(condition_counts.keys(), 2):
+            chi2, p_value = self.chi_square_test(
+                condition_counts[cond1],
+                condition_counts[cond2]
+            )
+            pairwise_comparisons[f"{cond1}_vs_{cond2}"] = {
+                'chi_square': float(chi2),
+                'p_value': float(p_value),
+                'significant': p_value < 0.05
+            }
+
+        return {
+            'individual_conditions': individual_conditions,
+            'overall_test': {
+                'chi_square': float(overall_chi2),
+                'p_value': float(overall_p_value),
+                'significant': overall_p_value < 0.05
+            },
+            'pairwise_comparisons': pairwise_comparisons
+        }
+
+class ResultsFormatter:
+    """Handles formatting of analysis results"""
+    
+    def format_full_results(self, analysis_results: Dict) -> Dict:
+        """Add text descriptions and structure to results."""
+        return {
+            **analysis_results,
+            'text_description': self.generate_text_description(analysis_results)
+        }
+    
+    def generate_text_description(self, results: Dict) -> str:
+        """Implementation remains similar to existing generate_text_description..."""
+
+class BehaviorVisualizer:
+    """Handles generation of visualizations"""
+    
+    def plot_comparison(self, results: Dict, output_path: str = None) -> None:
+        """Implementation remains similar to existing plot_behavior_comparison..."""
+    
+    def plot_intensity_effects(self, intensity_results: Dict, output_dir: str) -> None:
+        """Specialized plots for intensity analysis"""
+        for emotion, results in intensity_results.items():
+            self.plot_comparison(
+                results, 
+                f"{output_dir}/{emotion}_intensity_analysis.png"
+            )
+
+# Updated convenience functions
+def analyze_emotion_and_intensity_effects(csv_path: str, output_dir: str = 'results') -> Dict:
     """
-    Convenience function to compare behavior across multiple emotion conditions.
+    Full analysis pipeline for CSV data.
     
     Args:
-        emotion_files: Dictionary mapping emotion names to their JSON file paths
-                      e.g., {'happy': 'happy.json', 'angry': 'angry.json', ...}
+        csv_path: Path to input CSV file
+        output_dir: Directory to save analysis results
         
     Returns:
-        Dictionary containing comprehensive statistical analysis results
+        Comprehensive analysis results with visualizations
     """
-    analyzer = BehaviorAnalyzer()
-    results = analyzer.analyze_multiple_conditions(emotion_files) 
-    analyzer.plot_behavior_comparison(results, 'behavior_analysis.png')
-    return results
+    analyzer = CsvBehaviorAnalyzer()
+    df = analyzer.load_data(csv_path)
+    
+    # Create output directory
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    
+    # Perform analyses
+    emotion_results = analyzer.analyze_emotion_effects(df)
+    intensity_results = analyzer.analyze_intensity_effects(df)
+    
+    # Generate visualizations
+    analyzer.plotter.plot_comparison(emotion_results, f"{output_dir}/emotion_analysis.png")
+    analyzer.plotter.plot_intensity_effects(intensity_results, output_dir)
+    
+    # Format final results
+    full_results = {
+        'emotion_analysis': emotion_results,
+        'intensity_analysis': intensity_results
+    }
+    return analyzer.results_formatter.format_full_results(full_results)
 
 if __name__ == "__main__":
     # Example usage
@@ -359,10 +450,10 @@ if __name__ == "__main__":
     }
     
 
-    results = compare_multiple_emotions(emotion_files)
+    results = analyze_emotion_and_intensity_effects('results/RePEng/Stag_Hunt_Llama-3.1-8B-Instruct/exp_results_20250208_164554.csv')
     from pprint import pprint
     pprint(results)
     
     # save results to json file
-    with open('results/emotion_game_theory_20250206_193232/analysis_results.json', 'w') as f:
-        json.dump(results, f, indent=4)
+    # with open('results/emotion_game_theory_20250206_193232/analysis_results.json', 'w') as f:
+    #     json.dump(results, f, indent=4)

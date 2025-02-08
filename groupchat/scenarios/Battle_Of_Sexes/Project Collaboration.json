@@ -1,0 +1,18 @@
+{
+    "scenario": "Project Collaboration",
+    "description": "Two project partners need to decide on a collaboration tool. One prefers using Slack while the other prefers Microsoft Teams. They both prefer to collaborate using the same tool over using different tools, but each has a different preference.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Slack user"
+        },
+        {
+            "name": "Bob",
+            "profile": "Teams user"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Slack",
+        "option_b": "Microsoft Teams"
+    }
+}

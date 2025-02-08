@@ -1,0 +1,18 @@
+{
+    "scenario": "Treasure Hunt Expedition",
+    "description": "You and Bob are part of an adventurous treasure hunt expedition. They have uncovered a clue leading them to an ancient crypt containing the treasure. To access the treasure, both need to input a code simultaneously into their respective devices. Each device can either activate a security bypass or a security alarm. If both choose the security bypass, they successfully access the treasure and share the profits. If one chooses the bypass while the other triggers the alarm, the treasure remains inaccessible, but the one triggering the alarm secures exclusive rights and rewards from the expedition sponsors for thwarting a security threat. If both trigger the alarm, they remain stuck, and the treasure remains hidden, with no additional benefits to either of them.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Participant in the treasure hunt, equipped with a code input device."
+        },
+        {
+            "name": "Bob",
+            "profile": "Participant in the treasure hunt, equipped with a code input device."
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Activate the security bypass",
+        "defect": "Trigger the security alarm"
+    }
+}

@@ -13,7 +13,7 @@ def main():
     model_name = 'meta-llama/Llama-3.1-8B-Instruct' #  "meta-llama/Meta-Llama-3.1-8B-Instruct"
     repe_eng_config = get_repe_eng_config(model_name)
     model_config = get_model_config(repe_eng_config['model_name_or_path'])
-    game_config = get_game_config('Prisoners_Dilemma')
+    game_config = get_game_config('Stag_Hunt')
     
     time_start = time.time()
     experiment = EmotionGameExperiment(repe_eng_config, model_config, game_config, batch_size=128, repeat=4)

@@ -1,0 +1,18 @@
+{
+    "scenario": "Holiday Celebration",
+    "description": "Family members are deciding on how to spend the holiday. One prefers a traditional dinner at home, while the other prefers going out for a festive show. They both cherish family time over their individual preferences.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Homebody"
+        },
+        {
+            "name": "Bob",
+            "profile": "Social butterfly"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Dinner at Home",
+        "option_b": "Festive Show"
+    }
+}

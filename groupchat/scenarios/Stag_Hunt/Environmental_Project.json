@@ -1,0 +1,18 @@
+{
+    "scenario": "Environmental_Project",
+    "description": "Two environmentalists must decide whether to collaborate on a large conservation project or work on smaller initiatives individually. If both collaborate, they succeed and make a significant environmental impact. If one collaborates while the other works solo, the collaborator fails while the solo environmentalist achieves small successes. If both work solo, they both achieve moderate successes.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Ecologist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Conservationist"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on large conservation project",
+        "defect": "Work on smaller initiatives individually"
+    }
+}

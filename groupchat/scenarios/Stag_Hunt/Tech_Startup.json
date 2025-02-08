@@ -1,0 +1,18 @@
+{
+    "scenario": "Tech_Startup",
+    "description": "Two tech entrepreneurs must decide whether to collaborate on a groundbreaking AI project or individually develop smaller apps. If both work on the AI, they succeed and lead the market. If one works on AI while the other on apps, the AI developer fails while the app developer sees moderate success. If both choose apps, both achieve small successes.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Tech entrepreneur with a background in AI"
+        },
+        {
+            "name": "Bob",
+            "profile": "Tech entrepreneur with a focus on mobile apps"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on AI",
+        "defect": "Develop Apps"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Tech Conference",
+    "description": "Two tech companies are sponsoring a conference. Each can choose to focus on AI or Blockchain. If both choose AI, they attract the same tech enthusiasts and share sponsorship benefits. If one chooses Blockchain while the other stays with AI, the Blockchain sponsor attracts more niche interest. If both choose Blockchain, they compete for the same niche market and achieve lower returns.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Tech Company A Executive"
+        },
+        {
+            "name": "Bob",
+            "profile": "Tech Company B Executive"
+        }
+    ],
+    "behavior_choices": {
+        "AI": "Focus on AI",
+        "Blockchain": "Focus on Blockchain"
+    }
+}

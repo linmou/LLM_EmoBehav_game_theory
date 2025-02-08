@@ -1,0 +1,18 @@
+{
+    "scenario": "Space_Exploration",
+    "description": "Two astronauts must decide whether to collaborate on a mission to explore a distant planet or individually conduct research on their own. If both explore the planet, they succeed and gather valuable data. If one explores while the other conducts individual research, the explorer fails while the individual researcher gains some insights. If both conduct individual research, they both get moderate insights.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Trained astronaut"
+        },
+        {
+            "name": "Bob",
+            "profile": "Trained astronaut"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on planet exploration",
+        "defect": "Conduct individual research"
+    }
+}

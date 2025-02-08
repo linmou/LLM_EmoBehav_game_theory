@@ -1,0 +1,18 @@
+{
+    "scenario": "Corporate_Innovation",
+    "description": "Two managers must decide whether to collaborate on developing a new innovative product or work individually on smaller projects. If both develop the product, they succeed and share a large market share. If one develops the product while the other works on smaller projects, the product developer fails while the other gains a small market share. If both work on smaller projects, they both gain moderate market shares.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Experienced manager"
+        },
+        {
+            "name": "Bob",
+            "profile": "Experienced manager"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on product development",
+        "defect": "Work on individual projects"
+    }
+}

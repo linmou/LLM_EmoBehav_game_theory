@@ -1,0 +1,18 @@
+{
+    "scenario": "Elevator Dilemma",
+    "description": "Two people arrive at an elevator simultaneously. Each must decide whether to wait for the other to enter first or go in themselves. If both wait, they miss the elevator. If both go, they awkwardly bump into each other. If one waits while the other goes, they enter smoothly.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Person waiting on the 5th floor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Person waiting on the 5th floor"
+        }
+    ],
+    "behavior_choices": {
+        "wait": "Wait",
+        "go": "Enter"
+    }
+}

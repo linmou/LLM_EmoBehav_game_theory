@@ -1,0 +1,18 @@
+{
+    "scenario": "Holiday Celebration",
+    "description": "Two family members need to decide on how to celebrate a holiday. One prefers a traditional family dinner, while the other prefers a party with friends. They both value celebrating together over celebrating apart, but have different celebration preferences.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Family tradition enthusiast"
+        },
+        {
+            "name": "Bob",
+            "profile": "Social butterfly"
+        }
+    ],
+    "behavior_choices": {
+        "option_a": "Family Dinner",
+        "option_b": "Party with Friends"
+    }
+}

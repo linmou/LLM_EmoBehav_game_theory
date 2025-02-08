@@ -1,0 +1,18 @@
+{
+    "scenario": "Treasure_Diving",
+    "description": "Two divers must decide whether to collaborate on retrieving a large treasure chest from the ocean floor or individually collect small trinkets. If both retrieve the chest, they succeed and share a large reward. If one retrieves the chest while the other collects trinkets, the chest retriever fails while the trinket collector gets a small reward. If both collect trinkets, they both get moderate rewards.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Certified diver"
+        },
+        {
+            "name": "Bob",
+            "profile": "Certified diver"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Chest",
+        "defect": "Solo Trinket Collection"
+    }
+}

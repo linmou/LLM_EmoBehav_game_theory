@@ -1,0 +1,18 @@
+{
+    "scenario": "Urban_Development",
+    "description": "Two city planners must decide whether to collaborate on a major infrastructure project or work individually on smaller urban improvements. If both work on the infrastructure project, they succeed and enhance the city's connectivity. If one works on the project while the other focuses on smaller improvements, the project planner fails while the other achieves small urban enhancements. If both focus on smaller improvements, they both achieve moderate urban enhancements.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Skilled city planner"
+        },
+        {
+            "name": "Bob",
+            "profile": "Skilled city planner"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on infrastructure project",
+        "defect": "Work on smaller urban improvements"
+    }
+}

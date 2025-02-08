@@ -1,0 +1,18 @@
+{
+    "scenario": "Farm Harvest",
+    "description": "Two farmers must decide whether to collaborate on harvesting a large, profitable crop or individually harvest smaller, less profitable crops. If both harvest the large crop, they succeed and share a substantial profit. If one harvests the large crop while the other focuses on smaller crops, the large crop is lost while the smaller crops are harvested. If both harvest smaller crops, they both earn a modest income.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Experienced farmer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Agricultural specialist"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate on Large Harvest",
+        "defect": "Solo Small Crop Harvest"
+    }
+}
