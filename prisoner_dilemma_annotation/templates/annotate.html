@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Annotate - Prisoner's Dilemma</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div id="progress" class="progress-bar"></div>
+        <div id="scenario-container">
+            <h2 id="scenario-title" class="scenario-title"></h2>
+            <p id="scenario-description" class="scenario-description"></p>
+            <div id="participants" class="participants-section"></div>
+            <div id="choices" class="choices-section"></div>
+        </div>
+        
+        <div class="annotation-form">
+            <h3>Is this a valid Prisoner's Dilemma scenario?</h3>
+            <div class="radio-group">
+                <div class="radio-option">
+                    <input type="radio" id="valid" name="validity" value="true">
+                    <label for="valid">Valid</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="invalid" name="validity" value="false">
+                    <label for="invalid">Invalid</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="comments">Comments (optional):</label>
+                <textarea id="comments" rows="4" placeholder="Enter any comments about this scenario..."></textarea>
+            </div>
+            
+            <button onclick="submitAnnotation()" class="submit-btn">Submit & Next</button>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 

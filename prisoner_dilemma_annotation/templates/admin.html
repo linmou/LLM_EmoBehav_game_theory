@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Prisoner's Dilemma Annotation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        
+        <div class="admin-panel">
+            <h2>Download Options</h2>
+            <div class="button-group">
+                <a href="{{ url_for('download_results') }}" class="button">
+                    Download All Annotations (CSV)
+                </a>
+            </div>
+            
+            <div class="stats">
+                <h2>Statistics</h2>
+                <ul>
+                    <li>Total Scenarios: {{ total_scenarios }}</li>
+                    <li>Total Annotators: {{ total_annotators }}</li>
+                    <li>Total Annotations: {{ total_annotations }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

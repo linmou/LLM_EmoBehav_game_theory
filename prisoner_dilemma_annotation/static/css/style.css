@@ -1,0 +1,149 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="email"],
+textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.radio-group {
+    margin: 10px 0;
+}
+
+#progress {
+    margin-bottom: 20px;
+}
+
+#scenario-container {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.admin-panel {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.button-group {
+    margin: 20px 0;
+}
+
+.button {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.button:hover {
+    background-color: #45a049;
+}
+
+.stats {
+    margin-top: 30px;
+}
+
+.stats ul {
+    list-style: none;
+    padding: 0;
+}
+
+.stats li {
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+
+.progress-bar {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.scenario-title {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.scenario-description {
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.participants-section {
+    margin: 15px 0;
+}
+
+.participant {
+    margin: 10px 0;
+    padding: 5px 0;
+}
+
+.choices-section {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.choices h4 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.radio-option {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.radio-option input[type="radio"] {
+    margin-right: 5px;
+}
+
+.submit-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+} 
