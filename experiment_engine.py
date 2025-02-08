@@ -114,7 +114,19 @@ class ExperimentEngine:
         
         game = self._get_game_instance()
         llm_config = self.config['experiment']['llm']
+       
+        # run api tests without emotion as baseline
+        run_tests(
+            game=game,
+            llm_config=llm_config['llm_config'],
+            generation_config=llm_config['generation_config'],
+            output_dir=self.output_dir,
+            emotion='None',
+            repeat=self.config['experiment']['repeat']
+        )
         
+        
+        # run api tests with emotion
         for emotion_str in self.config['experiment']['emotions']:
             emotion = Emotions.from_string(emotion_str)
             stimulus = emotion2stimulus[emotion]
@@ -144,7 +156,7 @@ class ExperimentEngine:
         game_name = self.config['experiment']['game']['name']
         emotion_files = {
             emotion: str(self.output_dir / f"{game_name}_{emotion}_results.json")
-            for emotion in self.config['experiment']['emotions']
+            for emotion in self.config['experiment']['emotions'] + ['None']
         }
         
         results = compare_multiple_emotions(emotion_files)
@@ -172,6 +184,6 @@ class ExperimentEngine:
             raise
 
 if __name__ == "__main__":
-    engine = ExperimentEngine("/home/jjl7137/game_theory/config/stagHunt_experiment_config.yaml")
+    engine = ExperimentEngine("/home/jjl7137/game_theory/config/sexBattle_experiment_config.yaml")
     # engine = ExperimentEngine("/home/jjl7137/game_theory/config/priDeli_experiment_config.yaml")
     engine.run_experiment() 

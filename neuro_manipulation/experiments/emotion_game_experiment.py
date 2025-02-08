@@ -95,6 +95,11 @@ class EmotionGameExperiment:
                 self.cur_coeff = coeff
                 results.extend(self._infer_with_activation(rep_reader, data_loader))
         
+        self.cur_emotion = 'None'
+        self.cur_coeff = 0
+        self.logger.info(f"Processing Null Emotion")
+        results.extend(self._infer_with_activation(rep_reader, data_loader))
+         
         return self._save_results(results)
 
     def _infer_with_activation(self, rep_reader, data_loader):
