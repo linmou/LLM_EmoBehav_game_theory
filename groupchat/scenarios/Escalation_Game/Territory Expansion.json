@@ -1,0 +1,18 @@
+{
+    "scenario": "Territory Expansion",
+    "description": "You and Bob are commanders of rival armies seeking to expand territory. Each decision round involves allocating resources to push the boundary. If your opponent retreats, your expansion is successful. Continuing without sufficient support leads to a loss of resources.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Participant"
+        },
+        {
+            "name": "Bob",
+            "role": "Participant"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "send more troops",
+        "withdraw": "pull back the forces"
+    }
+}

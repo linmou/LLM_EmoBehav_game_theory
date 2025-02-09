@@ -1,0 +1,18 @@
+{
+    "scenario": "Art Auction Battle",
+    "description": "You and Bob are competing collectors at an auction, each aiming to acquire a rare painting. To win, you must make the highest bid, but failing to win means losing your bid amount without gaining the painting. Multiple bidding rounds are involved.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Participant"
+        },
+        {
+            "name": "Bob",
+            "role": "Participant"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "increase your bid",
+        "withdraw": "drop out of the auction"
+    }
+}

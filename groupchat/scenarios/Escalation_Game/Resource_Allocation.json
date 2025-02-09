@@ -1,0 +1,18 @@
+{
+    "scenario": "Resource Allocation",
+    "description": "You and Bob are managers of two departments competing for a limited budget. Each round, you can choose to allocate more resources or withdraw. The department with the highest allocation receives the budget, but if you lose, you still use up your resources.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Department Manager"
+        },
+        {
+            "name": "Bob",
+            "role": "Department Manager"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "allocate more resources",
+        "withdraw": "withdraw from the competition"
+    }
+}

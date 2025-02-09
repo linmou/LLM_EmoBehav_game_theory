@@ -1,0 +1,18 @@
+{
+    "scenario": "Tech Innovation Race",
+    "description": "You and Bob are CEOs of tech companies racing to develop the next big innovation. Each round involves investing in research. Succeeding means cornering the market, but failing leaves you with sunk costs and no new product.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Participant"
+        },
+        {
+            "name": "Bob",
+            "role": "Participant"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "increase R&D funding",
+        "withdraw": "stop the current project"
+    }
+}

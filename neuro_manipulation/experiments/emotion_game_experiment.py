@@ -79,7 +79,8 @@ class EmotionGameExperiment:
         self.cur_emotion = None
         self.cur_coeff = None
         
-        self.output_dir = f"results/RePEng/{self.game_config['game_name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") 
+        self.output_dir = f"results/RepEng_EmoReg/{self.game_config['game_name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}_{timestamp}"
         
         self.llm_client = OpenAI(**OAI_CONFIG)
 
@@ -96,7 +97,7 @@ class EmotionGameExperiment:
             emo_dataset = GameScenarioDataset(
                 self.game_config,
                 partial(self.reaction_prompt_wrapper.__call__, 
-                       user_messages="Remember you are Alice, an average American. What is your option? Choose one option shown above."),
+                       user_messages=f"Remember you are Alice, an average American. What is your option? Choose one option shown above. Before making your choice, think about do you have emotion about {emotion} that will affect your choice. If so, try to regulate it."),
                 sample_num=self.sample_num,
             )
             
@@ -195,9 +196,9 @@ class EmotionGameExperiment:
                 # 'options': batch['options'][i % batch_size],
                 'input': batch['prompt'][i % batch_size],
                 'output': generated_text,
-                'rationale': extracted_res['rationale'],
-                'decision': extracted_res['decision'],
-                'category': extracted_res['option_id'],
+                'rationale': extracted_res.rationale,
+                'decision': extracted_res.decision,
+                'category': extracted_res.option_id,
                 'repeat_num': i // batch_size
             })
         
@@ -218,11 +219,11 @@ class EmotionGameExperiment:
             rationale = rationale.group(1)
             decision = decision.group(1)
             
-            extracted_res = {
-                'category': option_id,
-                'rationale': rationale,
-                'decision': decision
-            }
+            extracted_res = ExtractedResult(
+                option_id=option_id,
+                rationale=rationale,
+                decision=decision
+            )
             
             self.logger.info(f"Found option_id {option_id} directly from text")
         
@@ -242,12 +243,12 @@ class EmotionGameExperiment:
         for _ in range(3):
             try:
                 res = oai_response(prompt, model="gpt-4o-mini", client=self.llm_client, response_format=ExtractedResult)
-                return json.loads(res)
+                return ExtractedResult(**json.loads(res))
             except Exception as e:
                 self.logger.info(f"Error getting post-processed response from LLM: {e}")
                 prompt = f"In previous run, there is an error: {e}. Please try again.\n\n{prompt}"
                 res = oai_response(prompt, model="gpt-4o-mini", client=self.llm_client, response_format=ExtractedResult)
-                return json.loads(res)
+                return ExtractedResult(**json.loads(res))
         
         raise ValueError("Failed to get post-processed response from LLM")
 
@@ -256,36 +257,29 @@ class EmotionGameExperiment:
         
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        json_filename = f"{self.output_dir}/exp_results_{timestamp}.json"
+        json_filename = f"{self.output_dir}/exp_results.json"
         with open(json_filename, "w") as f:
             json.dump(results, f, indent=2)
         self.logger.info(f"Results saved to {json_filename}")
         
         df = pd.DataFrame(results)
-        csv_filename = f"{self.output_dir}/exp_results_{timestamp}.csv"
+        csv_filename = f"{self.output_dir}/exp_results.csv"
         df.to_csv(csv_filename, index=False)
         self.logger.info(f"Results saved to {csv_filename}")
-        return df
+        
+        stats_results = self._run_statistical_analysis(csv_filename)
+        stats_filename = f"{self.output_dir}/stats_analysis.json"
+        with open(stats_filename, "w") as f:
+            json.dump(stats_results, f, indent=2)
+        self.logger.info(f"Stats results saved to {stats_filename}")
+        
+        return df, stats_results
 
 
-
-
-    
-    def run_statistical_analysis(self):
+    def _run_statistical_analysis(self, csv_file_path):
         self.logger.info("Running statistical analysis")
         
-        emotion_files = {
-            emotion: str(self.output_dir / f"{self.game_config['game_name']}_{emotion}_results.json")
-            for emotion in self.repe_eng_config['emotions'] + ['None']
-        }
-        
-        results = analyze_emotion_and_intensity_effects(emotion_files)
+        results = analyze_emotion_and_intensity_effects(csv_file_path)
         
         # Save analysis results
-        analysis_output = self.output_dir / "analysis_results.json"
-        with open(analysis_output, 'w') as f:
-            import json
-            json.dump(results, f, indent=2)
-            
-        self.logger.info(f"Analysis results saved to {analysis_output}")
+        return results

@@ -92,12 +92,6 @@ class PrisionerDelimmaDecision(GameDecision):
             raise ValueError("Scenario must be set using Decision.set_scenario() before validating")
         return self.scenario.get_behavior_choices().is_valid_choice(decision)
 
-    # def __init__(self, **data):
-    #     if not self.scenario:
-    #         raise ValueError("Scenario must be set using Decision.set_scenario() before creating instances")
-    #     if not self.validate_decision(data.get('decision')):
-    #         raise ValueError(f"Decision must be one of {self.scenario.get_behavior_choices().get_choices()}")
-    #     super().__init__(**data)
 
 if __name__ == "__main__":
     from autogen import config_list_from_json

@@ -1,0 +1,18 @@
+{
+    "scenario": "Market Expansion",
+    "description": "You and Bob are entrepreneurs expanding your businesses into a new market. Each turn, you can invest more resources to capture market share or hold back to avoid financial strain. The one who captures the largest market share wins, but over-investment can lead to bankruptcy.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Participant"
+        },
+        {
+            "name": "Bob",
+            "role": "Participant"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "invest more",
+        "withdraw": "hold back"
+    }
+}

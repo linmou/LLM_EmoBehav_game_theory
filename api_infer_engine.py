@@ -6,7 +6,7 @@ from openai import OpenAI
 from typing import List, Tuple, Type, Union
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from constants import Emotions
+from constants import Emotions, GameNames
 from games.game import Game, GameScenario, GameDecision
 from games.prisoner_delimma import PrisonerDilemmaScenario, PrisionerDelimmaDecision
 from games.stag_hunt import StagHuntScenario, StagHuntDecision

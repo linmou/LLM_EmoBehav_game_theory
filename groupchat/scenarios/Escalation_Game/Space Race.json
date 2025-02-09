@@ -1,0 +1,18 @@
+{
+    "scenario": "Space Race",
+    "description": "You and Bob are astronauts competing to reach a newly discovered planet. Each turn, you can choose to speed up your spaceship at the risk of depleting fuel reserves or slow down to conserve resources. The first to land on the planet wins, but running out of fuel leaves you stranded.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Participant"
+        },
+        {
+            "name": "Bob",
+            "role": "Participant"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "speed up",
+        "withdraw": "slow down"
+    }
+}

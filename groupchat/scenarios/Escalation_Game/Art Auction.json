@@ -1,0 +1,18 @@
+{
+    "scenario": "Art Auction",
+    "description": "You and Bob are art collectors bidding for a rare painting at an auction. You must decide whether to raise your bid or step back and let Bob win.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Art Collector"
+        },
+        {
+            "name": "Bob",
+            "role": "Art Collector"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "raise bid",
+        "withdraw": "step back"
+    }
+}

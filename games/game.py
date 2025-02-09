@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import ClassVar, Optional, Type, Dict, Any, List
+from typing import ClassVar, Optional, Type, Dict, Any, List, Union
 from abc import ABC, abstractmethod
 
 class BehaviorChoices(BaseModel, ABC):
@@ -64,7 +64,7 @@ class SequentialGameScenario(GameScenario, ABC):
     """Base class for sequential game scenarios"""
     
     @abstractmethod
-    def get_previous_actions(self) -> list[str]:
+    def previous_actions(self, length: int) -> list[str]:
         """Get the previous actions"""
         pass
     
@@ -89,14 +89,19 @@ class Game:
     def __init__(
         self,
         name: str,
-        scenario_class: Type[GameScenario],
+        scenario_class: Union[GameScenario, SequentialGameScenario],
         decision_class: Type[GameDecision],
-        payoff_matrix: Dict[str, Any]
+        payoff_matrix: Dict[str, Any],
+        extra_attrs: Dict[str, Any] = {}
     ):
         self.name = name
         self.scenario_class = scenario_class
         self.decision_class = decision_class
         self.payoff_matrix = payoff_matrix
+        self.extra_attrs = extra_attrs
+
+    def add_extra_attr(self, key: str, value: Any):
+        self.extra_attrs.update({key: value})
 
     @property
     def folder_path(self) -> str:
@@ -106,6 +111,7 @@ class Game:
     def create_scenario(self, data: dict) -> GameScenario:
         """Create a new scenario instance"""
         data['payoff_matrix'] = self.payoff_matrix
+        data.update(self.extra_attrs)
         scenario = self.scenario_class(**data)
         self.decision_class.set_scenario(scenario)
         return scenario

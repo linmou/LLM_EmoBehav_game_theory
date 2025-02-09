@@ -1,0 +1,18 @@
+{
+    "scenario": "Treasure Hunt",
+    "description": "You and Bob are adventurers seeking a hidden treasure in a dangerous jungle. You must decide whether to venture deeper into the jungle or retreat to safety. The deeper you go, the higher the risk but also the potential reward.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Adventurer"
+        },
+        {
+            "name": "Bob",
+            "role": "Adventurer"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "venture deeper",
+        "withdraw": "retreat to safety"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Political Campaign",
+    "description": "You and Bob are candidates in a local election. Each round, you can choose to increase campaign spending or withdraw. The candidate with the highest spending wins the election, but if you lose, you still incur all campaign costs.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Candidate"
+        },
+        {
+            "name": "Bob",
+            "role": "Candidate"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "increase campaign spending",
+        "withdraw": "withdraw from the election"
+    }
+}

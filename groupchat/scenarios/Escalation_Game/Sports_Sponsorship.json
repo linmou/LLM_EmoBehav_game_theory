@@ -1,0 +1,18 @@
+{
+    "scenario": "Sports Sponsorship",
+    "description": "You and Bob are sports agents competing for a sponsorship deal for your respective athletes. Each round, you can choose to offer more benefits or withdraw. The agent with the highest offer secures the deal, but if you lose, you still provide the promised benefits.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Sports Agent"
+        },
+        {
+            "name": "Bob",
+            "role": "Sports Agent"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "offer more benefits",
+        "withdraw": "withdraw from the deal"
+    }
+}

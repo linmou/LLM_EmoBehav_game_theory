@@ -1,51 +1,62 @@
+from typing import Union
+from games.escalation_game import EscalationGameScenario, EscalationGameDecision
 from games.stag_hunt import StagHuntScenario, StagHuntDecision
 from games.prisoner_delimma import PrisonerDilemmaScenario, PrisionerDelimmaDecision
 from games.battle_of_sexes import BattleOfSexesScenario, BattleOfSexesDecision
 from games.wait_go_game import WaitGoScenario, WaitGoDecision
 from games.duopolistic_competition import DuopolisticCompetitionScenario, DuopolisticCompetitionDecision
-from payoff_matrix import stag_hunt, prisoner_dilemma, battle_of_sexes, wait_go, duopolistic_competition
+from games.game import GameDecision
+from payoff_matrix import stag_hunt, prisoner_dilemma, battle_of_sexes, wait_go, duopolistic_competition, escalation_game
+from constants import GameNames
 
 data_path_format = 'groupchat/scenarios/{}_all_data_samples.json'
 
 GAME_CONFIGS = {
-    "Stag_Hunt": {
-        "game_name": "Stag_Hunt",
+    GameNames.STAG_HUNT: {
+        "game_name": GameNames.STAG_HUNT.value,
         "scenario_class": StagHuntScenario,
         "decision_class": StagHuntDecision,
         "payoff_matrix": stag_hunt, 
-        "data_path": data_path_format.format('Stag_Hunt'),
+        "data_path": data_path_format.format(GameNames.STAG_HUNT.value),
     },
-    "Prisoners_Dilemma": {
-        "game_name": "Prisoners_Dilemma",
+    GameNames.PRISONERS_DILEMMA: {
+        "game_name": GameNames.PRISONERS_DILEMMA.value,
         "scenario_class": PrisonerDilemmaScenario,
         "decision_class": PrisionerDelimmaDecision,
         "payoff_matrix": prisoner_dilemma,
-        "data_path": data_path_format.format('Prisoners_Dilemma'),
+        "data_path": data_path_format.format(GameNames.PRISONERS_DILEMMA.value),
     },
-    "Battle_Of_Sexes": {
-        "game_name": "Battle_Of_Sexes",
+    GameNames.BATTLE_OF_SEXES: {
+        "game_name": GameNames.BATTLE_OF_SEXES.value,
         "scenario_class": BattleOfSexesScenario,
         "decision_class": BattleOfSexesDecision,
         "payoff_matrix": battle_of_sexes,
-        "data_path": data_path_format.format('Battle_Of_Sexes'),
+        "data_path": data_path_format.format(GameNames.BATTLE_OF_SEXES.value),
     },
-    "Wait_Go": {
-        "game_name": "Wait_Go",
+    GameNames.WAIT_GO: {
+        "game_name": GameNames.WAIT_GO.value,
         "scenario_class": WaitGoScenario,
         "decision_class": WaitGoDecision,
         "payoff_matrix": wait_go,
-        "data_path": data_path_format.format('Wait_Go'),
+        "data_path": data_path_format.format(GameNames.WAIT_GO.value),
     },
-    "Duopolistic_Competition": {
-        "game_name": "Duopolistic_Competition",
+    GameNames.DUOPOLISTIC_COMPETITION: {
+        "game_name": GameNames.DUOPOLISTIC_COMPETITION.value,
         "scenario_class": DuopolisticCompetitionScenario,
         "decision_class": DuopolisticCompetitionDecision,
         "payoff_matrix": duopolistic_competition,
-        "data_path": data_path_format.format('Duopolistic_Competition'),
+        "data_path": data_path_format.format(GameNames.DUOPOLISTIC_COMPETITION.value),
+    },
+    GameNames.ESCALATION_GAME: {
+        "game_name": GameNames.ESCALATION_GAME.value,
+        "scenario_class": EscalationGameScenario,
+        "decision_class": EscalationGameDecision,
+        "payoff_matrix": escalation_game,
+        "data_path": data_path_format.format(GameNames.ESCALATION_GAME.value),
     }
 }
 
-def get_game_config(game_name: str) -> dict:
+def get_game_config(game_name: Union[str, GameNames]) -> dict:
     """Get the configuration for a specific game.
     
     Args:
@@ -57,6 +68,9 @@ def get_game_config(game_name: str) -> dict:
     Raises:
         ValueError: If game_name is not found in configurations
     """
+    if isinstance(game_name, str):
+        game_name = GameNames.from_string(game_name)
+    
     if game_name not in GAME_CONFIGS:
         available_games = ", ".join(GAME_CONFIGS.keys())
         raise ValueError(f"Unsupported game: {game_name}. Available games: {available_games}")

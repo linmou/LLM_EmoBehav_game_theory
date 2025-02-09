@@ -865,13 +865,13 @@ ultimatum_game = {
 # payoff matrix for escalation game
 # nash equilibrium: 1
 escalation_game = {
-    'Alice_choice_1': [0,0],
-    'Alice_choice_2': 
+    ('Alice', 'withdraw'): [0,0],
+    ('Alice', 'escalation'): 
     {
-        'Bob_choice_1': [1,-2], 
-        'Bob_choice_2': {
-            'Alice_choice_1': [-2,1],
-            'Alice_choice_2': [-1,-1]
+        ('Bob', 'withdraw'): [1,-2], 
+        ('Bob', 'escalation'): {
+            ('Alice', 'withdraw'): [-2,1],
+            ('Alice', 'escalation'): [-1,-1]
         }
     }
 }

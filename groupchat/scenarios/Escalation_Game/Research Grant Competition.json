@@ -1,0 +1,18 @@
+{
+    "scenario": "Research Grant Competition",
+    "description": "You and Bob are scientists competing for a prestigious research grant. You must decide whether to increase your research proposal's budget to outbid the other or withdraw from the competition.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Scientist"
+        },
+        {
+            "name": "Bob",
+            "role": "Scientist"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "increase budget",
+        "withdraw": "withdraw from competition"
+    }
+}

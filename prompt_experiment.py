@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, Any
 import logging
+import json
 from datetime import datetime
 
 from data_creation.create_scenario import ScenarioGenerator
@@ -69,15 +70,20 @@ class PromptExperiment:
     
     def _get_game_instance(self) -> Game:
         """Create game instance based on configuration."""
-        game_name = self.config['experiment']['game']['name']
+        exp_game_config = self.config['experiment']['game']
+        game_name = exp_game_config['name']
         game_config = get_game_config(game_name)
         
-        return Game(
+        game = Game(
             name=game_name,
             scenario_class=game_config['scenario_class'],
             decision_class=game_config['decision_class'],
             payoff_matrix=game_config['payoff_matrix']
         )
+        for key, value in exp_game_config.items():
+            if key != 'name':
+                game.add_extra_attr(key, value)
+        return game
     
     def should_generate_data(self) -> bool:
         """Check if data generation is needed based on config."""
@@ -101,7 +107,7 @@ class PromptExperiment:
             config_path="config/OAI_CONFIG_LIST"
         )
         
-        generator.generate_scenarios(
+        generator.generate_simultaneous_scenarios(
             ttl_number=data_config['num_scenarios'],
             batch_size=data_config['batch_size']
         )
@@ -175,7 +181,6 @@ class PromptExperiment:
         # Save analysis results
         analysis_output = self.output_dir / "analysis_results.json"
         with open(analysis_output, 'w') as f:
-            import json
             json.dump(results, f, indent=2)
             
         logger.info(f"Analysis results saved to {analysis_output}")
@@ -195,6 +200,6 @@ class PromptExperiment:
             raise
 
 if __name__ == "__main__":
-    engine = PromptExperiment("/home/jjl7137/game_theory/config/sexBattle_experiment_config.yaml")
-    # engine = ExperimentEngine("/home/jjl7137/game_theory/config/priDeli_experiment_config.yaml")
+    engine = PromptExperiment("/home/jjl7137/game_theory/config/escalGame_experiment_config.yaml")
+    # engine = PromptExperiment("/home/jjl7137/game_theory/config/priDeli_experiment_config.yaml")
     engine.run_experiment() 

@@ -2,7 +2,7 @@ import json
 import numpy as np
 from scipy import stats
 import pandas as pd
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Optional, Tuple, Union
 from pathlib import Path
 from itertools import combinations
 import matplotlib.pyplot as plt
@@ -157,7 +157,7 @@ class BehaviorAnalyzer(BaseAnalyzer):
         else:
             raise ValueError("Unsupported file format. Use JSON or CSV.")
 
-    def analyze_data(self, data_source: Union[str, Dict[str, str]], output_dir: str = 'results') -> Dict:
+    def analyze_data(self, data_source: Union[str, Dict[str, str]], output_dir: Optional[str] = None) -> Dict:
         """
         Unified analysis method for both JSON and CSV data
         
@@ -168,6 +168,8 @@ class BehaviorAnalyzer(BaseAnalyzer):
         Returns:
             Comprehensive analysis results
         """
+        if output_dir is None:
+            output_dir = Path(__file__).parent / 'plots'
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         
         if isinstance(data_source, str):  # CSV case
@@ -469,15 +471,19 @@ class BehaviorVisualizer:
         # Set y-axis limits to accommodate labels
         ax.set_ylim(0, 1.2)
 
+def analyze_emotion_and_intensity_effects(csv_file_path: str) -> Dict:
+    analyzer = BehaviorAnalyzer()
+    return analyzer.analyze_data(csv_file_path)
+
 # Simplified usage
 if __name__ == "__main__":
     analyzer = BehaviorAnalyzer()
     
     # Example with CSV
     csv_results = analyzer.analyze_data(
-        'results/RePEng/Stag_Hunt_Llama-3.1-8B-Instruct/exp_results_20250208_164554.csv'
+       'results/RePEng_EmoReg/Stag_Hunt_Llama-3.1-8B-Instruct/exp_results_20250208_225136.csv' 
     )
-    
+    # 'results/RePEng/Stag_Hunt_Llama-3.1-8B-Instruct/exp_results_20250208_164554.csv'
     # Example with JSON files
     # emotion_files = {
     #     'anger': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_anger_results.json',

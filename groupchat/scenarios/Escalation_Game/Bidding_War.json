@@ -1,0 +1,18 @@
+{
+    "scenario": "Bidding War",
+    "description": "You and Bob are art collectors competing in an auction for a rare painting. Each round, you can choose to increase your bid or withdraw. The highest bidder wins the painting, but if you lose, you still pay your last bid.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Art Collector"
+        },
+        {
+            "name": "Bob",
+            "role": "Art Collector"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "increase the bid",
+        "withdraw": "withdraw from the auction"
+    }
+}
