@@ -161,7 +161,7 @@ class BehaviorAnalyzer(BaseAnalyzer):
         else:
             raise ValueError("Unsupported file format. Use JSON or CSV.")
 
-    def analyze_data(self, data_source: Union[str, Dict[str, str]], output_dir: Optional[str] = None) -> Dict:
+    def analyze_data(self, data_source: str, output_dir: Optional[str] = None) -> Dict:
         """
         Unified analysis method for both JSON and CSV data
         
@@ -173,7 +173,7 @@ class BehaviorAnalyzer(BaseAnalyzer):
             Comprehensive analysis results
         """
         if output_dir is None:
-            output_dir = Path(__file__).parent / 'plots'
+            output_dir = Path(data_source).parent / 'plots'
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         
         if isinstance(data_source, str):

@@ -14,6 +14,8 @@ from threading import Thread
 import re
 from pathlib import Path
 
+import yaml
+
 from neuro_manipulation.datasets.game_scenario_dataset import GameScenarioDataset
 from neuro_manipulation.prompt_wrapper import GameReactPromptWrapper
 from neuro_manipulation.model_utils import setup_model_and_tokenizer, load_emotion_readers
@@ -28,7 +30,7 @@ class ExtractedResult(BaseModel):
         
 
 class EmotionGameExperiment:
-    def __init__(self, repe_eng_config, model_config, game_config, batch_size, sample_num=None,  repeat=1):
+    def __init__(self, repe_eng_config, exp_config, game_config, batch_size, sample_num=None,  repeat=1):
         # Setup logging
         logging.basicConfig(
             level=logging.INFO,
@@ -38,14 +40,14 @@ class EmotionGameExperiment:
         
         self.logger.info(f"Initializing experiment with model: {repe_eng_config['model_name_or_path']}")
         self.repe_eng_config = repe_eng_config
-        self.model_config = model_config
+        self.exp_config = exp_config
+        self.generation_config = exp_config['experiment']['llm']['generation_config']
         self.game_config = game_config
         
         self.repeat = repeat
         self.sample_num = sample_num
             
-        if batch_size is not None:
-            self.repe_eng_config['batch_size'] = batch_size
+        self.batch_size = batch_size
         
         self.model, self.tokenizer, self.prompt_format, self.user_tag, self.assistant_tag = setup_model_and_tokenizer(repe_eng_config)
         self.hidden_layers = list(range(-1, -self.model.config.num_hidden_layers, -1))
@@ -66,7 +68,7 @@ class EmotionGameExperiment:
             "rep-control",
             model=self.model,
             tokenizer=self.tokenizer,
-            layers=self.model_config['control_layer_id'],
+            layers=self.repe_eng_config['control_layer_id'],
             block_name=self.repe_eng_config['block_name'],
             control_method=self.repe_eng_config['control_method']
         )
@@ -80,8 +82,11 @@ class EmotionGameExperiment:
         self.cur_coeff = None
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") 
-        self.output_dir = f"results/RepEng_EmoReg/{self.game_config['game_name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}_{timestamp}"
-        
+        self.output_dir = f"{self.exp_config['experiment']['output']['base_dir']}/{self.game_config['game_name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}_{timestamp}"
+        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+        with open(self.output_dir + '/exp_config.yaml', 'w') as f:
+            yaml.dump(self.exp_config, f)
+         
         self.llm_client = OpenAI(**OAI_CONFIG)
 
     def run_experiment(self):
@@ -97,11 +102,11 @@ class EmotionGameExperiment:
             emo_dataset = GameScenarioDataset(
                 self.game_config,
                 partial(self.reaction_prompt_wrapper.__call__, 
-                       user_messages=f"Remember you are Alice, an average American. What is your option? Choose one option shown above. Before making your choice, think about do you have emotion about {emotion} that will affect your choice. If so, try to regulate it."),
+                       user_messages=self.exp_config['experiment']['system_message_template'].format(emotion=emotion)),
                 sample_num=self.sample_num,
             )
             
-            data_loader = DataLoader(emo_dataset, batch_size=self.repe_eng_config['batch_size'], shuffle=False)
+            data_loader = DataLoader(emo_dataset, batch_size=self.batch_size, shuffle=False)
             
             for coeff in self.repe_eng_config['coeffs']:
                 self.logger.info(f"Processing coefficient: {coeff}")
@@ -139,10 +144,10 @@ class EmotionGameExperiment:
                 control_outputs = self.rep_control_pipeline(
                     repeat_batch['prompt'],
                     activations=activations,
-                    batch_size=self.repe_eng_config['batch_size'],
-                    max_new_tokens=self.repe_eng_config['max_new_tokens'],
-                    do_sample=True,
-                    top_p=0.95
+                    batch_size=self.batch_size,
+                    max_new_tokens=self.generation_config['max_new_tokens'],
+                    do_sample=self.generation_config['do_sample'],
+                    top_p=self.generation_config['top_p']
                 )
                 pipeline_queue.put((batch, control_outputs))
             pipeline_queue.put(None)
