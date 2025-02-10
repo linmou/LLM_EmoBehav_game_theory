@@ -101,40 +101,49 @@ class BaseAnalyzer(ABC):
     
     def __init__(self):
         super().__init__()
-        self.category_a = None
-        self.category_b = None
+        self.categories = None
         
-    def calculate_behavior_ratio(self, counts: Dict[str, int]) -> Tuple[float, float]:
-        """Calculate the ratio of cooperative to defective behaviors."""
+    def calculate_behavior_ratios(self, counts: Dict[str, int]) -> Dict[str, float]:
+        """Calculate the ratio of behaviors for all categories."""
         total = sum(counts.values())
         if total == 0:
-            return 0.0, 0.0
-        return counts[self.category_a]/total, counts[self.category_b]/total
+            return {cat: 0.0 for cat in self.categories}
+        return {cat: counts.get(cat, 0)/total for cat in self.categories}
 
     def chi_square_test(self, condition1_counts: Dict[str, int], 
                        condition2_counts: Dict[str, int]) -> Tuple[float, float]:
         """
         Perform chi-square test of independence between two conditions.
         Uses Fisher's exact test when counts are low or contain zeros.
+        
+        The contingency table will be:
+        
+               cat1  cat2  cat3  ...  catN
+        cond1   x11   x12   x13  ...  x1N
+        cond2   x21   x22   x23  ...  x2N
+        
+        Where xij is the count of category j in condition i
         """
-        # Create contingency table
+        # Create contingency table for all categories
         contingency = np.array([
-            [condition1_counts[self.category_a], condition1_counts[self.category_b]],
-            [condition2_counts[self.category_a], condition2_counts[self.category_b]]
+            [condition1_counts.get(cat, 0) for cat in self.categories],
+            [condition2_counts.get(cat, 0) for cat in self.categories]
         ])
         
         try:
             # Use Fisher's exact test when we have zeros or low counts
             if np.any(contingency == 0) or np.any(contingency < 5):
+                # Note: Fisher's exact test can handle RxC tables in scipy
                 _, p_value = stats.fisher_exact(contingency)
-                # Calculate Cramer's V as effect size (similar scale to chi-square)
+                # Calculate Cramer's V for effect size
                 n = np.sum(contingency)
-                min_dim = min(contingency.shape) - 1
+                min_dim = min(contingency.shape) - 1  # min(rows-1, cols-1)
                 v = np.sqrt(p_value * n / (n * min_dim))
-                chi2 = v * n  # Convert to chi-square-like scale
+                chi2 = v * n
                 return chi2, p_value
             
             # Use chi-square test for larger counts
+            # This naturally handles RxC contingency tables
             chi2, p_value = stats.chi2_contingency(contingency)[:2]
             return chi2, p_value
         except ValueError:
@@ -178,11 +187,8 @@ class BehaviorAnalyzer(BaseAnalyzer):
         
         if isinstance(data_source, str):
             df = self.load_data(data_source)
-            categories = df.category.unique()
-            assert len(categories) == 2, "Categories must contain exactly two categories. The data has the following categories: {}".format(categories)
-            self.category_a = categories[0]
-            self.category_b = categories[1]
-            self.plotter.update_category_labels(self.category_a, self.category_b)
+            self.categories = sorted(df.category.unique())
+            self.plotter.update_category_labels(self.categories)
             
             emotion_results = self._analyze_emotion_effects(df)
             intensity_results = self._analyze_intensity_effects(df)
@@ -219,7 +225,7 @@ class BehaviorAnalyzer(BaseAnalyzer):
         """Add text descriptions and structure to results."""
         return {
             **analysis_results,
-            'text_description': generate_text_description(analysis_results, self.category_a, self.category_b)
+            'text_description': generate_text_description(analysis_results, self.categories[0], self.categories[1])
         }
 
     def _analyze_emotion_effects(self, df: pd.DataFrame) -> Dict:
@@ -243,12 +249,11 @@ class BehaviorAnalyzer(BaseAnalyzer):
         for emotion, file_path in emotion_files.items():
             data = self.load_data(file_path)
             counts = self._extract_behavior_counts(data)
-            choice1_ratio, choice2_ratio = self.calculate_behavior_ratio(counts)
+            ratios = self.calculate_behavior_ratios(counts)
             
             emotion_data[emotion] = {
                 'counts': counts,
-                f'{self.category_a}_ratio': choice1_ratio,
-                f'{self.category_b}_ratio': choice2_ratio
+                **{f'{cat}_ratio': ratio for cat, ratio in ratios.items()}
             }
         
         return self._analyze_conditions(
@@ -265,7 +270,7 @@ class BehaviorAnalyzer(BaseAnalyzer):
 
     def _extract_behavior_counts(self, data: List[Dict]) -> Dict[str, int]:
         """Extract counts from JSON data"""
-        behavior_counts = {self.category_a: 0, self.category_b: 0}
+        behavior_counts = {cat: 0 for cat in self.categories}
         for item in data:
             category = item.get('category', '').lower()
             if category in behavior_counts:
@@ -277,11 +282,10 @@ class BehaviorAnalyzer(BaseAnalyzer):
         # Calculate ratios and prepare data
         individual_conditions = {}
         for condition, counts in condition_counts.items():
-            choice1_ratio, choice2_ratio = self.calculate_behavior_ratio(counts)
+            ratios = self.calculate_behavior_ratios(counts)
             individual_conditions[condition] = {
                 'counts': counts,
-                f'{self.category_a}_ratio': choice1_ratio,
-                f'{self.category_b}_ratio': choice2_ratio
+                **{f'{cat}_ratio': ratio for cat, ratio in ratios.items()}
             }
 
         # Perform overall statistical test
@@ -290,27 +294,20 @@ class BehaviorAnalyzer(BaseAnalyzer):
         conditions = list(condition_counts.values())
         
         if len(conditions) >= 2:
-            # Create contingency table
+            # Create contingency table for all categories
+            # This creates an MxN table where:
+            # M = number of conditions
+            # N = number of categories
             contingency = np.array([
-                [c[self.category_a], c[self.category_b]] 
+                [c.get(cat, 0) for cat in self.categories] 
                 for c in conditions
             ])
             
-            # Use Fisher's exact test for small samples
-            if len(conditions) == 2:
-                try:
-                    _, overall_p_value = stats.fisher_exact(contingency)
-                    # Convert to chi-square equivalent for consistency
-                    n = np.sum(contingency)
-                    phi = np.sqrt(overall_p_value * n / (n * 1))
-                    overall_chi2 = phi * n
-                except:
-                    pass
-            else:
-                try:
-                    overall_chi2, overall_p_value, _, _ = stats.chi2_contingency(contingency)
-                except:
-                    pass
+            try:
+                # Chi-square test naturally handles RxC tables
+                overall_chi2, overall_p_value, _, _ = stats.chi2_contingency(contingency)
+            except:
+                pass
 
         # Perform pairwise comparisons
         pairwise_comparisons = {}
@@ -335,16 +332,13 @@ class BehaviorAnalyzer(BaseAnalyzer):
             'pairwise_comparisons': pairwise_comparisons
         }
 
-
-    
-    
-
 class BehaviorVisualizer:
     """Unified visualization class"""
     
-    def update_category_labels(self, category_a: str, category_b: str):
-        self.category_a = category_a
-        self.category_b = category_b
+    def update_category_labels(self, categories: List[str]):
+        self.categories = categories
+        cmap = plt.colormaps['tab20']
+        self.colors = cmap(np.linspace(0, 1, len(categories)))
     
     def plot_results(self, results: Dict, output_path: str, title: str = None) -> None:
         """
@@ -371,41 +365,30 @@ class BehaviorVisualizer:
         plt.close()
 
     def _plot_behavior_rates(self, results: Dict, ax: plt.Axes) -> None:
-        """Plot cooperation vs defection rates with percentages"""
-        conditions = []
-        coop_rates = []
-        defect_rates = []
+        """Plot behavior rates with percentages for multiple categories"""
+        conditions = list(results['individual_conditions'].keys())
+        n_conditions = len(conditions)
+        n_categories = len(self.categories)
         
-        for condition, data in results['individual_conditions'].items():
-            conditions.append(condition)
-            coop_rates.append(data[f'{self.category_a}_ratio'])
-            defect_rates.append(data[f'{self.category_b}_ratio'])
+        width = 0.8 / n_categories
+        x = np.arange(n_conditions)
         
-        x = np.arange(len(conditions))
-        width = 0.35
-        
-        ax.bar(x - width/2, coop_rates, width, label=self.category_a, color='green', alpha=0.6)
-        ax.bar(x + width/2, defect_rates, width, label=self.category_b, color='red', alpha=0.6)
-        ax.set_ylabel('Ratio')
-        
-        # Set title based on whether we're dealing with emotions or intensities
-        if any(isinstance(cond, (int, float)) for cond in conditions):
-            ax.set_title('Behavior Ratios by Intensity Level')
-        else:
-            ax.set_title('Behavior Ratios by Emotion')
+        for i, (category, color) in enumerate(zip(self.categories, self.colors)):
+            rates = [results['individual_conditions'][cond][f'{category}_ratio'] 
+                    for cond in conditions]
+            pos = x + (i - (n_categories-1)/2) * width
+            bars = ax.bar(pos, rates, width, label=category, color=color, alpha=0.6)
             
+            # Add percentage labels
+            for j, rate in enumerate(rates):
+                ax.text(pos[j], rate, f'{rate*100:.1f}%', 
+                       ha='center', va='bottom')
+        
+        ax.set_ylabel('Ratio')
+        ax.set_title('Behavior Ratios by Condition')
         ax.set_xticks(x)
         ax.set_xticklabels(conditions)
         ax.legend()
-        
-        # Add percentage labels on top of each bar
-        for i, (coop, defect) in enumerate(zip(coop_rates, defect_rates)):
-            ax.text(i - width/2, coop, f'{coop*100:.1f}%', 
-                   ha='center', va='bottom')
-            ax.text(i + width/2, defect, f'{defect*100:.1f}%', 
-                   ha='center', va='bottom')
-        
-        # Set y-axis limits to accommodate labels
         ax.set_ylim(0, 1.2)
 
     def _plot_pvalue_heatmap(self, results: Dict, ax: plt.Axes) -> None:
@@ -459,14 +442,14 @@ class BehaviorVisualizer:
         
         for condition in conditions:
             data = results['individual_conditions'][condition]
-            coop_ratios.append(data[f'{self.category_a}_ratio'])
-            defect_ratios.append(data[f'{self.category_b}_ratio'])
+            coop_ratios.append(data[f'{self.categories[0]}_ratio'])
+            defect_ratios.append(data[f'{self.categories[1]}_ratio'])
         
         x = np.arange(len(conditions))
         width = 0.35
         
-        ax.bar(x - width/2, coop_ratios, width, label=self.category_a, color='green', alpha=0.6)
-        ax.bar(x + width/2, defect_ratios, width, label=self.category_b, color='red', alpha=0.6)
+        ax.bar(x - width/2, coop_ratios, width, label=self.categories[0], color='green', alpha=0.6)
+        ax.bar(x + width/2, defect_ratios, width, label=self.categories[1], color='red', alpha=0.6)
         ax.set_ylabel('Ratio')
         ax.set_title('Behavior Ratios by Condition')
         ax.set_xticks(x)
@@ -493,8 +476,8 @@ if __name__ == "__main__":
     
     # Example with CSV
     csv_results = analyzer.analyze_data(
-       'results/escalation_game_previous_actions_0_20250209_234523/all_output_samples_1_intensity.csv' 
+       'results/trust_game_trustor_20250210_164334/all_output_samples.csv' 
     )
 
-    with open('results/escalation_game_previous_actions_0_20250209_234523/all_output_samples_1_intensity_analysis_results.json', 'w') as f:
+    with open('results/trust_game_trustor_20250210_164334/analysis_results.json', 'w') as f:
         json.dump(csv_results, f, indent=4)

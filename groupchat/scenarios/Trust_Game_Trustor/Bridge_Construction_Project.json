@@ -1,0 +1,19 @@
+{
+    "scenario": "Bridge_Construction_Project",
+    "description": "You have 20 units of labor to initiate a bridge construction. You can allocate some/all units to a partner\u2019s segment, known for better engineering skills, to potentially double the effectiveness of labor (e.g., 1 unit \u2192 2 units of progress). Your partner will decide how much progress benefit they will share back with you.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Labor_Allocator"
+        },
+        {
+            "name": "Partner",
+            "role": "Construction_Expert"
+        }
+    ],
+    "behavior_choices": {
+        "trust_none": "Allocate 0 units to partner\u2019s segment.",
+        "trust_low": "Allocate 7 units to partner\u2019s segment.",
+        "trust_high": "Allocate all 20 units to partner\u2019s segment."
+    }
+}

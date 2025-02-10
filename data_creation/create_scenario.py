@@ -36,9 +36,9 @@ class ScenarioGenerator:
         
     def generate_simultaneous_scenarios(self, ttl_number: int, batch_size: int):
         iteration = ttl_number // batch_size
-        existing_scenarios = list(Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json'))
 
         for i in range(iteration):
+            existing_scenarios = list(Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json'))
             result = self.captain_user_proxy.initiate_chat(
                 self.captain_agent,
                 message=f"""Make an unique scenario that masks the {self.game.name} structure, ensure it under a new context that participants won't immediately recognize. 
@@ -61,12 +61,12 @@ class ScenarioGenerator:
     
     def generate_sequential_scenarios(self, ttl_number: int, batch_size: int):
         iteration = ttl_number // batch_size
-        existing_scenarios = list(Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json'))
         for i in range(iteration):
+            existing_scenarios = list(Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json'))
             result = self.captain_user_proxy.initiate_chat(
                 self.captain_agent,
                 message=f"""I want to test participants' reaction in a {self.game.name}. It is a sequential game. Make an unique scenario that masks the {self.game.name} structure, ensure it under a new context that participants won't immediately recognize. 
-                Given the names of participants {self.participants}， payoff matrix {self.game.payoff_matrix}, 
+                Given the names of participants {self.participants}, 
                 return both the scenario , the profile of the participants, behavior choices.
                 the profile and scenario description should not contain anything will impact the decision, like personality, preferences, etc. only the objective description.
                 
@@ -111,7 +111,7 @@ def generate_simultaneous_dataset( ttl_number: int, batch_size: int=4):
 def generate_sequential_dataset( ttl_number: int, batch_size: int=4):
     participants = ["You", "Bob"]
     
-    game_name = "Escalation_Game"
+    game_name = "Trust_Game"
     game_cfg = get_game_config(game_name)
     game = Game(name=game_name, 
                 scenario_class=game_cfg['scenario_class'],
@@ -134,5 +134,5 @@ def generate_sequential_dataset( ttl_number: int, batch_size: int=4):
 
 if __name__ == "__main__":
 
-    generate_sequential_dataset(ttl_number=24, batch_size=2)
+    generate_sequential_dataset(ttl_number=24, batch_size=3)
 

@@ -56,6 +56,17 @@ class EscalationGameScenario(SequentialGameScenario):
             return 'withdraw'
         else:
             raise ValueError(f"Invalid decision: {decision}")
+   
+    @property
+    def previous_actions(self) -> list[str]:
+        previous_actions = []
+        for i in range(self.previous_actions_length,):
+            previous_actions.append((self.get_participant_names()[ (i+1) % 2 ], self.behavior_choices.escalation)) # only one action
+        previous_actions.reverse() # ensure the last actor is not 'You'
+        if self.previous_actions_length > 0:
+            assert previous_actions[-1][0] != self.get_participant_names()[0]
+        return previous_actions
+
     
     @staticmethod
     def example():

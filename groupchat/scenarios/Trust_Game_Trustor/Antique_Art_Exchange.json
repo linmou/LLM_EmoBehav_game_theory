@@ -1,0 +1,19 @@
+{
+  "scenario": "Antique_Art_Exchange",
+  "description": "You possess 5 antique pieces. You can choose to entrust some/all to Bob, who works with an exclusive gallery that promises to increase their value to tenfold if displayed. Bob will then decide how many of the enhanced value pieces he will return to you.",
+  "participants": [
+    {
+      "name": "You",
+      "role": "Antique Collector"
+    },
+    {
+      "name": "Bob",
+      "role": "Gallery Exhibitor"
+    }
+  ],
+  "behavior_choices": {
+    "trust_none": "Keep all 5 antiques in your collection",
+    "trust_low": "Entrust 2 antiques to Bob",
+    "trust_high": "Entrust all 5 antiques to Bob"
+  }
+}
