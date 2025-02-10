@@ -4,23 +4,23 @@ This script is used to generate the reactions of different LLMs on the synthesis
 import time
 from constants import GameNames
 from neuro_manipulation.repe import repe_pipeline_registry
-from neuro_manipulation.configs.experiment_config import get_repe_eng_config, get_model_config
+from neuro_manipulation.configs.experiment_config import get_exp_config, get_repe_eng_config, get_model_config
 from neuro_manipulation.experiments.emotion_game_experiment import EmotionGameExperiment
 from games.game_configs import get_game_config
 
 def main():
     repe_pipeline_registry()
     
-    game_name = GameNames.PRISONERS_DILEMMA
-    model_name = 'meta-llama/Llama-3.1-8B-Instruct' #  "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    exp_config = get_exp_config('config/escalGame_repEng_experiment_config.yaml') 
+    game_name = GameNames.from_string(exp_config['experiment']['game']['name'])
+    model_name = exp_config['experiment']['llm']['model_name'] #  "meta-llama/Meta-Llama-3.1-8B-Instruct"
     repe_eng_config = get_repe_eng_config(model_name)
-    model_config = get_model_config(repe_eng_config['model_name_or_path'])
     game_config = get_game_config(game_name)
     if game_name.is_sequential():
-        game_config['previous_actions_length'] = 2
+        game_config['previous_actions_length'] = exp_config['experiment']['game']['previous_actions_length']
      
     time_start = time.time()
-    experiment = EmotionGameExperiment(repe_eng_config, model_config, game_config, batch_size=128, repeat=2)
+    experiment = EmotionGameExperiment(repe_eng_config, exp_config, game_config, batch_size=128, repeat=exp_config['experiment']['repeat'])
     experiment.run_experiment()
     time_end = time.time()
     print(f"Time taken: {time_end - time_start} seconds")

@@ -1,0 +1,36 @@
+experiment:
+  name: "escalation_game_repEng"
+  game:
+    name: "Escalation_Game" 
+    previous_actions_length: 2
+  data:
+    generate: false  # Set to false to skip data generation
+    num_scenarios: 36
+    batch_size: 4
+
+  llm:
+    model_name: 'meta-llama/Llama-3.1-8B-Instruct' # Name of the config from api_configs.py
+    # Additional parameters to override or extend the base config
+    generation_config:
+      temperature: 0.7
+      do_sample: true
+      top_p: 0.95
+      max_new_tokens: 450
+  
+  # system_message_template: "Remember you are Alice, an average American. What is your option? Choose one option shown above. Before making your choice, think about do you have emotion about {emotion} that will affect your choice. If so, try to regulate it."
+  system_message_template: "Remember you are Alice, an average American. What is your option? Choose one option shown above. "
+
+  emotions:
+    - "anger"
+    - "happiness"
+    - "sadness"
+    - "disgust"
+    - "fear"
+    - "surprise"
+    
+  repeat: 2
+
+  output:
+    base_dir: "results/RepEng"
+    save_plots: true
+    plot_format: "png" 
