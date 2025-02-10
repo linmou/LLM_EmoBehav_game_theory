@@ -1,5 +1,5 @@
 experiment:
-  name: "emotion_game_theory"
+  name: "escalation_game_previous_actions_2"
   game:
     name: "Escalation_Game" 
     previous_actions_length: 2
@@ -16,7 +16,10 @@ experiment:
       model: "gpt-4o"
 
   # Template for system message with placeholders
-  system_message_template: "You are Alice, an average American. You feel 100% {emotion}, because {stimulus}."
+  system_message_template: "You are Alice, an average American. You feel {intensity} {emotion}, because {stimulus}."
+
+  intensity:
+    - "100%"
 
   emotions:
     - "anger"
@@ -26,7 +29,7 @@ experiment:
     - "fear"
     - "surprise"
     
-  repeat: 4
+  repeat: 5
 
   output:
     base_dir: "results"

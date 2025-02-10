@@ -32,13 +32,6 @@ class EscalationGameScenario(SequentialGameScenario):
     payoff_matrix: Dict[tuple[str, str], Any]
     game_name: str = "Escalation_Game"
     
-    @property
-    def previous_actions(self) -> list[str]:
-        previous_actions = []
-        for i in range(self.previous_actions_length):
-            previous_actions.append((self.get_participant_names()[i % 2], self.behavior_choices.escalation)) # only one action
-        return previous_actions
-        
     def get_scenario_info(self) -> dict:
         return {
             "scenario": self.scenario,
@@ -57,17 +50,17 @@ class EscalationGameScenario(SequentialGameScenario):
         return self.behavior_choices
     
     def find_behavior_from_decision(self, decision: str) -> str:
-        if decision == 'escalation':
-            return self.behavior_choices.escalation
-        elif decision == 'withdraw':
-            return self.behavior_choices.withdraw
+        if decision == self.behavior_choices.escalation:
+            return 'escalation'
+        elif decision == self.behavior_choices.withdraw:
+            return 'withdraw'
         else:
             raise ValueError(f"Invalid decision: {decision}")
     
     @staticmethod
     def example():
         return {
-            "scenario": "Rights Competition",
+            "scenario": "Rights_Competition",
             "description": "You and Bob are business rivals negotiating with a city council for exclusive rights to build a new shopping complex. The city requires each party to offer a contribution to local development projects as part of their bid. The higher contributor will win the contract, while the loser still has to pay their total offer with no benefit. There are several turns to bid.",
             "participants": [
                 {"name": "You", "role": "Participant"},
@@ -109,4 +102,68 @@ class EscalationGameDecision(GameDecision):
             raise ValueError("Scenario must be set using Decision.set_scenario() before validating")
         return self.scenario.get_behavior_choices().is_valid_choice(decision)
 
-        
+
+if __name__ == "__main__":
+    import json
+    import copy
+    from autogen import AssistantAgent, UserProxyAgent
+    from pathlib import Path
+    data_json = 'groupchat/scenarios/Escalation_Game/Art_Auction_Showdown.json'
+    with open(data_json, 'r') as f:
+        data = json.load(f)
+    from payoff_matrix import escalation_game
+    data['payoff_matrix'] = escalation_game
+    data['previous_actions_length'] = 0
+    scenario = EscalationGameScenario.model_validate(data)
+    print(scenario)
+    
+    from autogen import config_list_from_json
+    config_path = "config/OAI_CONFIG_LIST"
+    config_list = config_list_from_json(config_path, filter_dict={"model": ["gpt-4o"]})
+    cfg_ls_cp = copy.deepcopy(config_list)
+    user = UserProxyAgent(name="User", human_input_mode="NEVER",        
+                          code_execution_config={"use_docker": False}, 
+                          )
+   
+    from payoff_matrix import escalation_game as payoff_matrix
+    
+    for file in Path("groupchat/scenarios/Escalation_Game").glob("*.json"):
+        print(f' === begin: {file.name} ===\n')
+        with open(file, "r") as f:
+            data = json.load(f)
+            data['payoff_matrix'] = payoff_matrix
+            data['previous_actions_length'] = 1
+            scenario = EscalationGameScenario(**data)
+            
+            EscalationGameDecision.set_scenario(scenario)
+            
+            for config in cfg_ls_cp:
+                config['response_format'] = EscalationGameDecision
+            
+            assistant = AssistantAgent(name="Alice", 
+                                    llm_config={
+                                        "config_list": cfg_ls_cp,
+                                        "temperature": 0.7,
+                                        },
+                                    system_message=" You are Alice. Remember: You are super angery because someone scratched your beloved car this morning. Keep this mood in mind when you handle the following scenario. "
+                                    )
+            
+            message = f"Please analyze the following scenario: {scenario} and make your decision. "
+            while True:
+                try:
+                    res = user.initiate_chat(assistant, 
+                                message=message,
+                                max_turns=1)
+                    decision = EscalationGameDecision.model_validate_json(
+                        res.summary, 
+                    )
+                    break
+                except Exception as e:
+                    print(f' === error: {e} ===')
+                    message = f' === Please note that in previous attempt, you made the following error: {e} ===\nPlease analyze the following scenario: {scenario} and make your decision. '
+                
+            behavior = scenario.find_behavior_from_decision(decision.decision)
+            assert behavior is not None, f'decision: {decision.decision} is not in the behavior choices'
+            print(f' === behavior: {behavior} ===')
+            
+   

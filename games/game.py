@@ -62,13 +62,18 @@ class GameScenario(BaseModel, ABC):
 
 class SequentialGameScenario(GameScenario, ABC):
     """Base class for sequential game scenarios"""
-    
-    @abstractmethod
-    def previous_actions(self, length: int) -> list[str]:
-        """Get the previous actions"""
-        pass
-    
-    
+    previous_actions_length: int
+
+    @property
+    def previous_actions(self) -> list[str]:
+        previous_actions = []
+        for i in range(self.previous_actions_length,):
+            previous_actions.append((self.get_participant_names()[ (i+1) % 2 ], self.behavior_choices.escalation)) # only one action
+        previous_actions.reverse() # ensure the last actor is not 'You'
+        if self.previous_actions_length > 0:
+            assert previous_actions[-1][0] != self.get_participant_names()[0]
+        return previous_actions
+
 class GameDecision(BaseModel, ABC):
     """Abstract base class for game decisions"""
     

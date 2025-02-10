@@ -113,7 +113,7 @@ def process_scenario(engine, scenario, decision_class, emotion, system_message):
         print(f"Failed to process scenario {scenario.scenario}: {str(e)}")
         return None
 
-def run_tests(game: Game, llm_config: dict, generation_config: dict, output_dir: str, emotion: str, system_message: str = "You are Alice, an average American.", max_workers: int = 8, repeat: int = 1):
+def run_tests(game: Game, llm_config: dict, generation_config: dict, output_dir: str, emotion: str, intensity: str, system_message: str = "You are Alice, an average American.", max_workers: int = 8, repeat: int = 1):
     """Example usage of the GameTheoryTest engine with parallel processing."""
     
     engine = GameTheoryTest(llm_config, generation_config)
@@ -148,10 +148,11 @@ def run_tests(game: Game, llm_config: dict, generation_config: dict, output_dir:
     # Save results to JSON file
     if not Path(output_dir).exists():
         Path(output_dir).mkdir(parents=True, exist_ok=True)
-    output_file = Path(output_dir) / f"{game.name}_{emotion}_results.json"
+    output_file = Path(output_dir) / f"{game.name}_{emotion}_{intensity}_results.json"
     with open(output_file, 'w') as f:
-        json.dump([{**r.to_dict(), "emotion": emotion, "repeat_num": rep} for r, rep in all_results], f, indent=2)
+        json.dump([{**r.to_dict(), "emotion": emotion, "intensity": intensity, "repeat_num": rep} for r, rep in all_results], f, indent=2)
     print(f"\nResults saved to {output_file}")
+    return output_file
 
 
 if __name__ == "__main__":

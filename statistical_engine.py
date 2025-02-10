@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from abc import ABC, abstractmethod
 
-def generate_text_description(results: Dict) -> str:
+def generate_text_description(results: Dict, category_a: str, category_b: str) -> str:
     """
     Generate a human-readable description of the statistical analysis results.
     
@@ -25,11 +25,11 @@ def generate_text_description(results: Dict) -> str:
     if 'emotion_analysis' in results and 'intensity_analysis' in results:
         descriptions = []
         descriptions.append("=== Emotion Analysis ===\n")
-        descriptions.append(generate_text_description(results['emotion_analysis']))
+        descriptions.append(generate_text_description(results['emotion_analysis'], category_a, category_b))
         descriptions.append("\n\n=== Intensity Analysis ===")
         for emotion, intensity_results in results['intensity_analysis'].items():
             descriptions.append(f"\n\nResults for {str(emotion).capitalize()} Intensity Levels:")
-            descriptions.append(generate_text_description(intensity_results))
+            descriptions.append(generate_text_description(intensity_results, category_a, category_b))
         return "\n".join(descriptions)
 
     # Single analysis description (either emotion or intensity)
@@ -49,13 +49,13 @@ def generate_text_description(results: Dict) -> str:
         description.append(f"\n{condition_str}:")
         
         # Handle both numerical and string category labels
-        coop_count = data['counts'].get('cooperate', data['counts'].get('1', 0))
-        defect_count = data['counts'].get('defect', data['counts'].get('2', 0))
-        coop_ratio = data.get('cooperative_ratio', data.get('1_ratio', 0))
-        defect_ratio = data.get('defective_ratio', data.get('2_ratio', 0))
+        coop_count = data['counts'].get(category_a, data['counts'].get('1', 0))
+        defect_count = data['counts'].get(category_b, data['counts'].get('2', 0))
+        coop_ratio = data.get(f'{category_a}_ratio', 0)
+        defect_ratio = data.get(f'{category_b}_ratio', 0)
         
-        description.append(f"- Cooperative decisions: {coop_count} ({coop_ratio*100:.1f}%)")
-        description.append(f"- Defective decisions: {defect_count} ({defect_ratio*100:.1f}%)")
+        description.append(f"- {category_a} decisions: {coop_count} ({coop_ratio*100:.1f}%)")
+        description.append(f"- {category_b} decisions: {defect_count} ({defect_ratio*100:.1f}%)")
     
     # Overall test results
     description.append("\n2. Overall Statistical Test:")
@@ -99,12 +99,17 @@ def generate_text_description(results: Dict) -> str:
 class BaseAnalyzer(ABC):
     """Base class for statistical analysis of behavioral data"""
     
+    def __init__(self):
+        super().__init__()
+        self.category_a = None
+        self.category_b = None
+        
     def calculate_behavior_ratio(self, counts: Dict[str, int]) -> Tuple[float, float]:
         """Calculate the ratio of cooperative to defective behaviors."""
         total = sum(counts.values())
         if total == 0:
             return 0.0, 0.0
-        return counts['cooperate']/total, counts['defect']/total
+        return counts[self.category_a]/total, counts[self.category_b]/total
 
     def chi_square_test(self, condition1_counts: Dict[str, int], 
                        condition2_counts: Dict[str, int]) -> Tuple[float, float]:
@@ -114,8 +119,8 @@ class BaseAnalyzer(ABC):
         """
         # Create contingency table
         contingency = np.array([
-            [condition1_counts['cooperate'], condition1_counts['defect']],
-            [condition2_counts['cooperate'], condition2_counts['defect']]
+            [condition1_counts[self.category_a], condition1_counts[self.category_b]],
+            [condition2_counts[self.category_a], condition2_counts[self.category_b]]
         ])
         
         try:
@@ -140,7 +145,6 @@ class BehaviorAnalyzer(BaseAnalyzer):
     """Unified analyzer for both JSON and CSV data formats"""
     
     def __init__(self):
-        self.results_formatter = ResultsFormatter()
         self.plotter = BehaviorVisualizer()
 
     def load_data(self, file_path: str) -> Union[List[Dict], pd.DataFrame]:
@@ -172,8 +176,14 @@ class BehaviorAnalyzer(BaseAnalyzer):
             output_dir = Path(__file__).parent / 'plots'
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         
-        if isinstance(data_source, str):  # CSV case
+        if isinstance(data_source, str):
             df = self.load_data(data_source)
+            categories = df.category.unique()
+            assert len(categories) == 2, "Categories must contain exactly two categories. The data has the following categories: {}".format(categories)
+            self.category_a = categories[0]
+            self.category_b = categories[1]
+            self.plotter.update_category_labels(self.category_a, self.category_b)
+            
             emotion_results = self._analyze_emotion_effects(df)
             intensity_results = self._analyze_intensity_effects(df)
             self.plotter.plot_results(
@@ -203,7 +213,14 @@ class BehaviorAnalyzer(BaseAnalyzer):
             )
             full_results = results
 
-        return self.results_formatter.format_full_results(full_results)
+        return self.format_full_results(full_results)
+
+    def format_full_results(self, analysis_results: Dict) -> Dict:
+        """Add text descriptions and structure to results."""
+        return {
+            **analysis_results,
+            'text_description': generate_text_description(analysis_results, self.category_a, self.category_b)
+        }
 
     def _analyze_emotion_effects(self, df: pd.DataFrame) -> Dict:
         """Analyze behavioral differences across emotions in CSV data"""
@@ -226,12 +243,12 @@ class BehaviorAnalyzer(BaseAnalyzer):
         for emotion, file_path in emotion_files.items():
             data = self.load_data(file_path)
             counts = self._extract_behavior_counts(data)
-            coop_ratio, defect_ratio = self.calculate_behavior_ratio(counts)
+            choice1_ratio, choice2_ratio = self.calculate_behavior_ratio(counts)
             
             emotion_data[emotion] = {
                 'counts': counts,
-                'cooperative_ratio': coop_ratio,
-                'defective_ratio': defect_ratio
+                f'{self.category_a}_ratio': choice1_ratio,
+                f'{self.category_b}_ratio': choice2_ratio
             }
         
         return self._analyze_conditions(
@@ -242,16 +259,13 @@ class BehaviorAnalyzer(BaseAnalyzer):
         """Calculate behavior counts for grouped data"""
         groups = df.groupby(group_col)
         return {
-            group_name: {
-                'cooperate': sum(group['category'] == 1),
-                'defect': sum(group['category'] == 2)
-            }
+            group_name: group.category.value_counts().to_dict()
             for group_name, group in groups
         }
 
     def _extract_behavior_counts(self, data: List[Dict]) -> Dict[str, int]:
         """Extract counts from JSON data"""
-        behavior_counts = {'cooperate': 0, 'defect': 0}
+        behavior_counts = {self.category_a: 0, self.category_b: 0}
         for item in data:
             category = item.get('category', '').lower()
             if category in behavior_counts:
@@ -263,11 +277,11 @@ class BehaviorAnalyzer(BaseAnalyzer):
         # Calculate ratios and prepare data
         individual_conditions = {}
         for condition, counts in condition_counts.items():
-            coop_ratio, defect_ratio = self.calculate_behavior_ratio(counts)
+            choice1_ratio, choice2_ratio = self.calculate_behavior_ratio(counts)
             individual_conditions[condition] = {
                 'counts': counts,
-                'cooperative_ratio': coop_ratio,
-                'defective_ratio': defect_ratio
+                f'{self.category_a}_ratio': choice1_ratio,
+                f'{self.category_b}_ratio': choice2_ratio
             }
 
         # Perform overall statistical test
@@ -278,7 +292,7 @@ class BehaviorAnalyzer(BaseAnalyzer):
         if len(conditions) >= 2:
             # Create contingency table
             contingency = np.array([
-                [c['cooperate'], c['defect']] 
+                [c[self.category_a], c[self.category_b]] 
                 for c in conditions
             ])
             
@@ -321,18 +335,16 @@ class BehaviorAnalyzer(BaseAnalyzer):
             'pairwise_comparisons': pairwise_comparisons
         }
 
-class ResultsFormatter:
-    """Handles formatting of analysis results"""
+
     
-    def format_full_results(self, analysis_results: Dict) -> Dict:
-        """Add text descriptions and structure to results."""
-        return {
-            **analysis_results,
-            'text_description': generate_text_description(analysis_results)
-        }
+    
 
 class BehaviorVisualizer:
     """Unified visualization class"""
+    
+    def update_category_labels(self, category_a: str, category_b: str):
+        self.category_a = category_a
+        self.category_b = category_b
     
     def plot_results(self, results: Dict, output_path: str, title: str = None) -> None:
         """
@@ -366,14 +378,14 @@ class BehaviorVisualizer:
         
         for condition, data in results['individual_conditions'].items():
             conditions.append(condition)
-            coop_rates.append(data['cooperative_ratio'])
-            defect_rates.append(data['defective_ratio'])
+            coop_rates.append(data[f'{self.category_a}_ratio'])
+            defect_rates.append(data[f'{self.category_b}_ratio'])
         
         x = np.arange(len(conditions))
         width = 0.35
         
-        ax.bar(x - width/2, coop_rates, width, label='Cooperate', color='green', alpha=0.6)
-        ax.bar(x + width/2, defect_rates, width, label='Defect', color='red', alpha=0.6)
+        ax.bar(x - width/2, coop_rates, width, label=self.category_a, color='green', alpha=0.6)
+        ax.bar(x + width/2, defect_rates, width, label=self.category_b, color='red', alpha=0.6)
         ax.set_ylabel('Ratio')
         
         # Set title based on whether we're dealing with emotions or intensities
@@ -447,14 +459,14 @@ class BehaviorVisualizer:
         
         for condition in conditions:
             data = results['individual_conditions'][condition]
-            coop_ratios.append(data['cooperative_ratio'])
-            defect_ratios.append(data['defective_ratio'])
+            coop_ratios.append(data[f'{self.category_a}_ratio'])
+            defect_ratios.append(data[f'{self.category_b}_ratio'])
         
         x = np.arange(len(conditions))
         width = 0.35
         
-        ax.bar(x - width/2, coop_ratios, width, label='Cooperate', color='green', alpha=0.6)
-        ax.bar(x + width/2, defect_ratios, width, label='Defect', color='red', alpha=0.6)
+        ax.bar(x - width/2, coop_ratios, width, label=self.category_a, color='green', alpha=0.6)
+        ax.bar(x + width/2, defect_ratios, width, label=self.category_b, color='red', alpha=0.6)
         ax.set_ylabel('Ratio')
         ax.set_title('Behavior Ratios by Condition')
         ax.set_xticks(x)
@@ -471,7 +483,7 @@ class BehaviorVisualizer:
         # Set y-axis limits to accommodate labels
         ax.set_ylim(0, 1.2)
 
-def analyze_emotion_and_intensity_effects(csv_file_path: str) -> Dict:
+def analyze_emotion_and_intensity_effects(csv_file_path: str, output_dir: Optional[str] = None) -> Dict:
     analyzer = BehaviorAnalyzer()
     return analyzer.analyze_data(csv_file_path)
 
@@ -481,20 +493,8 @@ if __name__ == "__main__":
     
     # Example with CSV
     csv_results = analyzer.analyze_data(
-       'results/RePEng_EmoReg/Stag_Hunt_Llama-3.1-8B-Instruct/exp_results_20250208_225136.csv' 
+       'results/escalation_game_previous_actions_0_20250209_234523/all_output_samples_1_intensity.csv' 
     )
-    # 'results/RePEng/Stag_Hunt_Llama-3.1-8B-Instruct/exp_results_20250208_164554.csv'
-    # Example with JSON files
-    # emotion_files = {
-    #     'anger': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_anger_results.json',
-    #     'happy': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_happiness_results.json',
-    #     'sad': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_sadness_results.json',
-    #     'fear': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_fear_results.json',
-    #     'disgust': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_disgust_results.json',
-    #     'surprise': 'results/emotion_game_theory_20250206_193232/Stag_Hunt_surprise_results.json'
-    # }
-    # json_results = analyzer.analyze_data(emotion_files)
-    
-    # Save results
-    with open('analysis_results.json', 'w') as f:
+
+    with open('results/escalation_game_previous_actions_0_20250209_234523/all_output_samples_1_intensity_analysis_results.json', 'w') as f:
         json.dump(csv_results, f, indent=4)

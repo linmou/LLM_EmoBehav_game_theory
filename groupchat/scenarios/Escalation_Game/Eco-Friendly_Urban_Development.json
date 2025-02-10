@@ -1,0 +1,18 @@
+{
+    "scenario": "Eco-Friendly Urban Development",
+    "description": "You and Bob are urban planners in a city competing to design a new eco-friendly district. The city council will select the plan that demonstrates the best balance of sustainability and cost-effectiveness. Both planners must submit detailed proposals, and the council will choose the winner based on environmental impact and feasibility. Failing to win still incurs the planning costs.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Participant"
+        },
+        {
+            "name": "Bob",
+            "role": "Participant"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "incorporate more green technologies at an increased cost",
+        "withdraw": "withdraw from the proposal"
+    }
+}

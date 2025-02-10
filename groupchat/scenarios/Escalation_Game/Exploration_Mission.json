@@ -1,0 +1,18 @@
+{
+    "scenario": "Exploration Mission",
+    "description": "You and Bob are explorers in a newly discovered cave system. As you delve deeper, you need to decide whether to proceed further into the cave or return back to camp due to safety concerns. Each decision point brings new challenges and potential discoveries, but also risks.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Explorer"
+        },
+        {
+            "name": "Bob",
+            "role": "Explorer"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "Proceed deeper into the cave",
+        "withdraw": "Return back to camp"
+    }
+}

@@ -25,11 +25,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class PromptExperiment:
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: str, experiment_id: str = None):
         """Initialize the experiment engine with configuration from YAML."""
         self.config_path = config_path
         self.config = self._load_config(config_path)
-        self.experiment_id = f"{self.config['experiment']['name']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        self.experiment_id = experiment_id or f"{self.config['experiment']['name']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.output_dir = Path(self.config['experiment']['output']['base_dir']) / self.experiment_id
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
@@ -122,59 +122,63 @@ class PromptExperiment:
         llm_config = self.config['experiment']['llm']
        
         # run api tests without emotion as baseline
-        run_tests(
+        output_files = []
+        output_file = run_tests(
             game=game,
             llm_config=llm_config['llm_config'],
             generation_config=llm_config['generation_config'],
             output_dir=self.output_dir,
             emotion='None',
+            intensity='None',
             repeat=self.config['experiment']['repeat']
         )
-        
+        output_files.append(output_file)
         
         # run api tests with emotion
         for emotion_str in self.config['experiment']['emotions']:
             emotion = Emotions.from_string(emotion_str)
             stimulus = emotion2stimulus[emotion]
-            
-            logger.info(f"Testing scenarios with emotion: {emotion.value}")
-            
-            # Use system message template from config
-            system_message = self.config['experiment']['system_message_template'].format(
-                emotion=emotion.value,
-                stimulus=stimulus
-            )
-            
-            run_tests(
-                game=game,
-                llm_config=llm_config['llm_config'],
-                generation_config=llm_config['generation_config'],
-                output_dir=self.output_dir,
-                emotion=emotion.value,
-                system_message=system_message,
-                repeat=self.config['experiment']['repeat']
-            )
-    
+            for intensity in self.config['experiment']['intensity']:
+                logger.info(f"Testing scenarios with emotion: {emotion.value} and intensity: {intensity}")
+                
+                # Use system message template from config
+                system_message = self.config['experiment']['system_message_template'].format(
+                    emotion=emotion.value,
+                    stimulus=stimulus,
+                    intensity=intensity
+                )
+                
+                output_file = run_tests(
+                    game=game,
+                    llm_config=llm_config['llm_config'],
+                    generation_config=llm_config['generation_config'],
+                    output_dir=self.output_dir,
+                    emotion=emotion.value,
+                    intensity=intensity,
+                    system_message=system_message,
+                    repeat=self.config['experiment']['repeat']
+                )
+                output_files.append(output_file)
+        
+        self.output_files = output_files
+        
+        return output_files
+
     def run_statistical_analysis(self):
         """Step 3: Perform statistical analysis."""
         logger.info("Step 3: Running statistical analysis")
         
-        game_name = self.config['experiment']['game']['name']
-        emotion_files = {
-            emotion: str(self.output_dir / f"{game_name}_{emotion}_results.json")
-            for emotion in self.config['experiment']['emotions'] + ['None']
-        }
-        
         output_samples = []
-        for emotion in (self.config['experiment']['emotions'] + ['None']):
-            with open(emotion_files[emotion], 'r') as f:
-                output_samples.append(json.load(f))
-                
-        df = pd.DataFrame(output_samples)
-        df.to_csv(self.output_dir / "all_output_samples.csv", index=False)
+        for output_file in self.output_files:
+            with open(output_file, 'r') as f:
+                output_samples.extend(json.load(f))
+        
+        df = pd.DataFrame(output_samples).replace('None', 'Neutral')
+        csv_output_file = self.output_dir / "all_output_samples.csv"
+        df.to_csv(csv_output_file, index=False)
         
         results = analyze_emotion_and_intensity_effects(
-            self.output_dir / "all_output_samples.csv",
+            str(csv_output_file),
             self.output_dir
         )
         
@@ -200,6 +204,6 @@ class PromptExperiment:
             raise
 
 if __name__ == "__main__":
-    engine = PromptExperiment("/home/jjl7137/game_theory/config/escalGame_experiment_config.yaml")
-    # engine = PromptExperiment("/home/jjl7137/game_theory/config/priDeli_experiment_config.yaml")
+    engine = PromptExperiment("./config/escalGame_experiment_config.yaml", )
+    # engine = PromptExperiment("./config/priDeli_experiment_config.yaml")
     engine.run_experiment() 

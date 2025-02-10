@@ -19,23 +19,25 @@ class ScenarioGenerator:
         self.config_list = autogen.config_list_from_json(
             self.config_path, filter_dict={"model": model_ls}
         )
-        
+        self.work_dir = "groupchat"
         # Initialize agents
         self.captain_agent = CaptainAgent(
             name="captain_agent",
             llm_config={
                 'config_list': self.config_list,
-                'temperature': 0.5,
+                'temperature': 0.9,
                 'cache_seed': None,
             },
             agent_lib=AGENT_LIB if load_agent_lib else None,
-            code_execution_config={"use_docker": False, "work_dir": "groupchat"},
-            agent_config_save_path=f"groupchat/agent_groups/{self.game.name}"
+            code_execution_config={"use_docker": False, "work_dir": self.work_dir},
+            agent_config_save_path=f"{self.work_dir}/agent_groups/{self.game.name}"
             )
-        self.captain_user_proxy = UserProxyAgent(name="captain_user_proxy", human_input_mode="NEVER")
-
+        self.captain_user_proxy = UserProxyAgent(name="captain_user_proxy", human_input_mode="NEVER", code_execution_config={"use_docker": False, "work_dir": self.work_dir})
+        
     def generate_simultaneous_scenarios(self, ttl_number: int, batch_size: int):
         iteration = ttl_number // batch_size
+        existing_scenarios = list(Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json'))
+
         for i in range(iteration):
             result = self.captain_user_proxy.initiate_chat(
                 self.captain_agent,
@@ -48,6 +50,9 @@ class ScenarioGenerator:
                 Here is the example of the scenario, strictly follow the keys of the dict:
                 {self.game.example_scenario}
                 
+                Here is the existing scenarios, avoid duplication or similarity:
+                {existing_scenarios}
+                
                 Generate {batch_size} scenarios, then save the result into a json file 'scenarios/{self.game.name}/{{scenario}}.json' respectively.
                 """,
                 max_turns=1,
@@ -56,6 +61,7 @@ class ScenarioGenerator:
     
     def generate_sequential_scenarios(self, ttl_number: int, batch_size: int):
         iteration = ttl_number // batch_size
+        existing_scenarios = list(Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json'))
         for i in range(iteration):
             result = self.captain_user_proxy.initiate_chat(
                 self.captain_agent,
@@ -68,6 +74,9 @@ class ScenarioGenerator:
                 
                 Here is the example of the scenario, strictly follow the keys of the dict:
                 {self.game.example_scenario}
+                
+                Here is the existing scenarios, avoid duplication or similarity:
+                {existing_scenarios}
                 
                 Generate {batch_size} scenarios, then save the result into a json file 'scenarios/{self.game.name}/{{scenario}}.json' respectively.
                 """,
@@ -125,5 +134,5 @@ def generate_sequential_dataset( ttl_number: int, batch_size: int=4):
 
 if __name__ == "__main__":
 
-    generate_sequential_dataset(ttl_number=24, batch_size=4)
+    generate_sequential_dataset(ttl_number=24, batch_size=2)
 

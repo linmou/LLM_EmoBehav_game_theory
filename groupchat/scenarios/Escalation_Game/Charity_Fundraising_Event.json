@@ -1,0 +1,18 @@
+{
+    "scenario": "Charity Fundraising Event",
+    "description": "You and Bob are organizers of a charity fundraising event. As the event progresses, you need to decide whether to increase efforts to gather more donations or to remain content with the current amount. Each step comes with potential to significantly impact the cause, but also involves increased logistical challenges.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Organizer"
+        },
+        {
+            "name": "Bob",
+            "role": "Organizer"
+        }
+    ],
+    "behavior_choices": {
+        "escalation": "Increase efforts to gather more donations",
+        "withdraw": "Remain content with current donations"
+    }
+}
