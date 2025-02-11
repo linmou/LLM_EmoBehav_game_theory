@@ -1,0 +1,19 @@
+{
+    "scenario": "Energy_Grid_Power_Sharing",
+    "description": "You manage a local power grid. During peak hours, you can share some/all of your surplus energy with another nearby grid managed by a trusted individual. The exchanged energy generates excess rewards. The neighboring grid manager then decides how much of the profit to return.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Energy_Manager"
+        },
+        {
+            "name": "Bob",
+            "role": "Grid_Partner"
+        }
+    ],
+    "behavior_choices": {
+        "trust_none": "share 0 energy units with partner",
+        "trust_low": "share some energy with partner",
+        "trust_high": "share all surplus energy with partner"
+    }
+}

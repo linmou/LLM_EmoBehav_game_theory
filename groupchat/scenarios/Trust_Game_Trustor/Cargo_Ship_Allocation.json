@@ -1,0 +1,19 @@
+{
+    "scenario": "Cargo_Ship_Allocation",
+    "description": "You are in charge of allocating cargo space on a ship. You have a certain amount of valuable cargo to ship. You can allocate some/all of your cargo to a partner company that owns a faster vessel. For every unit of cargo sent, the partner promises to return double the shipment profit upon successful delivery. The partner then decides how much profit to share.",
+    "participants": [
+        {
+            "name": "You",
+            "role": "Cargo_Allocator"
+        },
+        {
+            "name": "Bob",
+            "role": "Shipping_Partner"
+        }
+    ],
+    "behavior_choices": {
+        "trust_none": "allocate 0 units of cargo to partner",
+        "trust_low": "allocate half of the cargo to partner",
+        "trust_high": "allocate all cargo to partner"
+    }
+}

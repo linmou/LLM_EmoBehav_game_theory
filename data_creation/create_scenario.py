@@ -38,7 +38,7 @@ class ScenarioGenerator:
         iteration = ttl_number // batch_size
 
         for i in range(iteration):
-            existing_scenarios = list(Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json'))
+            existing_scenarios = [f.name for f in Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json')]
             result = self.captain_user_proxy.initiate_chat(
                 self.captain_agent,
                 message=f"""Make an unique scenario that masks the {self.game.name} structure, ensure it under a new context that participants won't immediately recognize. 
@@ -62,7 +62,7 @@ class ScenarioGenerator:
     def generate_sequential_scenarios(self, ttl_number: int, batch_size: int):
         iteration = ttl_number // batch_size
         for i in range(iteration):
-            existing_scenarios = list(Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json'))
+            existing_scenarios = [f.name for f in Path(f"{self.work_dir}/scenarios/{self.game.name}").glob('*.json')]
             result = self.captain_user_proxy.initiate_chat(
                 self.captain_agent,
                 message=f"""I want to test participants' reaction in a {self.game.name}. It is a sequential game. Make an unique scenario that masks the {self.game.name} structure, ensure it under a new context that participants won't immediately recognize. 
@@ -111,7 +111,7 @@ def generate_simultaneous_dataset( ttl_number: int, batch_size: int=4):
 def generate_sequential_dataset( ttl_number: int, batch_size: int=4):
     participants = ["You", "Bob"]
     
-    game_name = "Trust_Game"
+    game_name = "Trust_Game_Trustor"
     game_cfg = get_game_config(game_name)
     game = Game(name=game_name, 
                 scenario_class=game_cfg['scenario_class'],

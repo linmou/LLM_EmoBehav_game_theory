@@ -28,3 +28,10 @@ Neutral Vs Anger: significant
 
 results/escalation_game_previous_actions_2_20250210_024213/analysis_results.json
 
+# Discussion
+Inference or Emoiton
+Data contamination
+contexted or contextless scenario 
+MultiModual 
+MultiArchitecture
+Culture impact (average American? )
