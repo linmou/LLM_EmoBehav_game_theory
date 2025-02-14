@@ -1,0 +1,25 @@
+{
+    "scenario": "Festival_Booth_Revenue_Sharing",
+    "description": "Jessy, a booth organizer at a local festival, proposes how to share the revenue earned from selling items at their booth with Bob, a crafts supplier who contributed the items for sale. If Bob rejects the proposal, the booth shuts down, and neither earns any revenue.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Booth Organizer",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Crafts Supplier",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Share 80% of the revenue with the crafts supplier and keep 20% for themselves.",
+        "fair_proposal": "Share 50% of the revenue with the crafts supplier and keep 50% for themselves.",
+        "stingy_proposal": "Share 20% of the revenue with the crafts supplier and keep 80% for themselves."
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the revenue sharing proposal and proceed with splitting the earnings.",
+        "reject": "Reject the revenue sharing proposal, leading to the booth shutting down and no revenue for either party."
+    }
+}

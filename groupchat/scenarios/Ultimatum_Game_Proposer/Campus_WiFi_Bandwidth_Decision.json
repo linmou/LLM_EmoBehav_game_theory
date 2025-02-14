@@ -1,0 +1,25 @@
+{
+    "scenario": "Campus_WiFi_Bandwidth_Decision",
+    "description": "Jessy, the IT Department Head, proposes a plan to allocate limited Wi-Fi bandwidth among dormitories on campus during a major network outage. Bob, representing the student body, decides whether to accept or reject the proposal. If rejected, the network outage affects the entire campus, leaving everyone offline.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "IT Department Head",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Student Body Representative",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "equal_sharing": "Allocate equal bandwidth to all dormitories regardless of the number of users in each.",
+        "proportional_allocation": "Allocate bandwidth based on the number of students in each dormitory.",
+        "prioritized_dorm": "Allocate the majority of bandwidth to dormitories closer to the IT office, leaving others with minimal service."
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the bandwidth distribution plan, allowing limited connectivity to all dormitories.",
+        "reject": "Reject the plan, resulting in a complete network shutdown."
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "scenario": "Student_Club_Budget_Planning",
+    "description": "Jessy, the treasurer of a student club, proposes how to allocate the club\u2019s budget for the upcoming semester. Bob, the vice-treasurer, decides whether to agree with the proposal or reject it. If rejected, the budget remains unallocated, and the club cannot organize planned activities.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Treasurer",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Vice-Treasurer",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Jessy allocates 80% of the budget to major club events and only 20% to miscellaneous activities",
+        "fair_proposal": "Jessy allocates 60% of the budget to major club events and 40% to miscellaneous activities",
+        "stingy_proposal": "Jessy allocates only 20% of the budget to major club events and 80% to miscellaneous activities"
+    },
+    "responder_behavior_choices": {
+        "accept": "Agree with the budget allocation and proceed with organizing events",
+        "reject": "Refuse the budget allocation, leading to an unallocated budget and the club being unable to function effectively"
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "scenario": "Team_Presentation_Prep",
+    "description": "A team leader proposes how to allocate the tasks for preparing a critical client presentation, while the team member decides whether to accept or reject the proposed task division. If rejected, the presentation is unprepared, jeopardizing the project outcome.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Team Leader",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Team Member",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Take on 75% of the preparation work themselves, assigning only 25% to the team member.",
+        "fair_proposal": "Split the preparation workload equally, 50% for each.",
+        "stingy_proposal": "Assign 70% of the preparation work to the team member and keep only 30% for themselves."
+    },
+    "responder_behavior_choices": {
+        "accept": "Agree to the task allocation and proceed with the preparation.",
+        "reject": "Refuse the proposal, leaving the presentation unprepared."
+    }
+}

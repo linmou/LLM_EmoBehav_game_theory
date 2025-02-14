@@ -1,0 +1,26 @@
+{
+    "scenario": "Book_Publishing_Partnership",
+    "description": "Jessy is an author who has completed the first draft of a novel. She can decide to share some or all of her draft with Bob, a seasoned editor. Bob will refine and enhance the portions he receives. The completed sections will potentially attract more readership. Bob then chooses how much of the final edited manuscript to return to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Author",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Editor",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "Share 0 pages with the editor",
+        "trust_low": "Share 30% of the draft with the editor",
+        "trust_high": "Share the entire draft with the editor"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "Return 0 enhanced pages to the author",
+        "return_medium": "Return 40-50% of the improved manuscript to the author",
+        "return_high": "Return more than 80% of the improved manuscript to the author"
+    }
+}

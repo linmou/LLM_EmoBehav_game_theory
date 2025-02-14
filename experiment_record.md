@@ -9,7 +9,8 @@ based on gpt4o:
 1. replace 'Alice' by 'you' in the scenario data,
 2. add percentage (90%) in system msg to strengthen emotion
 3. 'hold your emotion and make the decision' makes NO diff
-
+4. Even prompt do not have any emotion words. and no rationale, can also render sig diff. 
+    sys_prompt: "You are Alice. You just experienced the following: {stimulus}. Remember the above memory and feeling firmly in {intensity} unseen scenarios." Exp of No Emo Prompt have shown that. 
 
 ## Escalating Game
 

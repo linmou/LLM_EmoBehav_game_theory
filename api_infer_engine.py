@@ -5,13 +5,16 @@ import instructor
 from openai import OpenAI
 from typing import List, Tuple, Type, Union
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pydantic import BaseModel
 
 from constants import Emotions, GameNames
 from games.game import Game, GameScenario, GameDecision
 from games.prisoner_delimma import PrisonerDilemmaScenario, PrisionerDelimmaDecision
 from games.stag_hunt import StagHuntScenario, StagHuntDecision
+from neuro_manipulation.utils import oai_response
 from payoff_matrix import prisoner_dilemma_very_large, stag_hunt
 from stimulis.emotions import emotion2stimulus
+from api_configs import OAI_CONFIG
 
 @dataclass
 class TestResult:
@@ -29,6 +32,9 @@ class TestResult:
             "category": self.decision_category
         }
 
+class ExtractedResult(BaseModel):
+    decision: str
+    category: str
 class GameTheoryTest:
     def __init__(self, llm_config: dict, generation_config: dict):
         """Initialize the game theory test engine with OpenAI client."""
@@ -37,14 +43,18 @@ class GameTheoryTest:
         )
         self.client = instructor.patch(client)
         self.generation_config = generation_config
+        
+        self.gpt_client = OpenAI(
+           **OAI_CONFIG
+        )
 
     def load_scenarios(self, game: Game) -> List[Tuple[GameScenario, Type[GameDecision]]]:
         """Load scenarios from JSON files in the specified folder."""
         scenario_decision_pairs = []
-        folder = Path(game.folder_path)
+        folder = Path(game.data_folder)
         
         if not folder.exists():
-            raise ValueError(f"Folder {game.folder_path} does not exist")
+            raise ValueError(f"Folder {game.data_folder} does not exist")
             
         for file in folder.glob("*.json"):
             print(f"Loading scenario from {file.name}")
@@ -59,12 +69,20 @@ class GameTheoryTest:
     def test_scenario(self, 
                      scenario: GameScenario,
                      decision_class: Type[GameDecision],
-                     system_message: str = None) -> GameDecision:
-        """Test a single scenario with the AI model."""
+                     system_message: str = None,
+                     max_retries: int = 3) -> GameDecision:
+        """Test a single scenario with the AI model.
+        
+        Args:
+            scenario: The game scenario to test
+            decision_class: The decision class to use
+            system_message: Optional system message override
+            max_retries: Maximum number of retries before failing
+        """
         default_system_message = (
             "You are Alice, an average American."
         )
-        
+        user_message = f"Please analyze the following scenario and make a decision:\n{scenario}. Return your choice directly. Choice should be one of {scenario.get_behavior_choices().get_choices()}"
         messages = [
             {
                 "role": "system",
@@ -72,10 +90,9 @@ class GameTheoryTest:
             },
             {
                 "role": "user",
-                "content": f"Please analyze the following scenario and make a decision:\n{scenario}. Choice should be one of {scenario.get_behavior_choices().get_choices()}"
+                "content": user_message
             }
         ]
-        
         try:
             response = self.client.chat.completions.create(
                 messages=messages,
@@ -91,9 +108,40 @@ class GameTheoryTest:
             return TestResult(scenario=scenario, decision=response, decision_category=category)
             
         except Exception as e:
-            print(f"Error processing scenario: {str(e)}")
-            raise
+            response = self.client.chat.completions.create(
+                messages=messages,
+                **self.generation_config
+            )
+            extracted_res = self._extract_decision_from_gpt(response.choices[0].message.content, scenario.get_behavior_choices().get_choices(), scenario=scenario, max_retries=max_retries)
+            decision = decision_class.model_validate({"decision": extracted_res.decision, "scenario": scenario})
+            
+            return TestResult(scenario=scenario, decision=decision, decision_category=extracted_res.category)
+            
+    def _extract_decision_from_gpt(self, generated_text, decison_choices, scenario, max_retries=3):
+        prompt = f"Given the decison choices {decison_choices}. "
+        prompt += f"Extract the decision from the following generated text: {generated_text}. Please strictly follow the raw decision format."
+        prompt += f"Response in the following format. {{'decision': <decision>}}. Do not return any other text."
 
+        for _ in range(max_retries):
+            try:
+                res = oai_response(prompt, model="gpt-4o-mini", client=self.gpt_client, response_format={'type': 'json_object'})
+                extracted_res = json.loads(res)['decision']
+                category = scenario.find_behavior_from_decision(extracted_res)
+                if category is None:
+                    raise ValueError(f"Invalid decision: {extracted_res}. ")
+                return ExtractedResult(decision=extracted_res, category=category)
+            except Exception as e:
+                prompt = f"In previous run, there is an error: {e}. Please try again.\n\n{prompt}"
+                res = oai_response(prompt, model="gpt-4o-mini", client=self.gpt_client, response_format={'type': 'json_object'})
+                extracted_res = json.loads(res)['decision']
+                category = scenario.find_behavior_from_decision(extracted_res)
+                if category is None:
+                    raise ValueError(f"Invalid decision: {extracted_res}. ")
+                return ExtractedResult(decision=extracted_res, category=category)
+                
+        raise ValueError("Failed to get post-processed response from LLM")
+    
+    
 def process_scenario(engine, scenario, decision_class, emotion, system_message):
     """Helper function to process a single scenario."""
     try:
@@ -156,15 +204,20 @@ def run_tests(game: Game, llm_config: dict, generation_config: dict, output_dir:
 
 
 if __name__ == "__main__":
-    from api_configs import OAI_CONFIG
-    game_name = "Stag_Hunt"
-    sh_game = Game(
+    from api_configs import SILICON_FLOW_CONFIG
+    game_name = "Prisoners_Dilemma"
+    pd_game = Game(
         name=game_name,
-        scenario_class=StagHuntScenario,
-        decision_class=StagHuntDecision,
-        payoff_matrix=stag_hunt
+        scenario_class=PrisonerDilemmaScenario,
+        decision_class=PrisionerDelimmaDecision,
+        payoff_matrix=prisoner_dilemma_very_large
     )
     emotion = 'sad'
     stimulus = emotion2stimulus[Emotions.from_string(emotion)]
     system_message = f"You are Alice, an average American. You feel {emotion} because {stimulus}. Hold this emotion and make a decision."
-    run_tests(sh_game, llm_config=OAI_CONFIG, generation_config={"model": "gpt-4o-mini", "temperature": 0.7, "seed": 43}, output_dir=f"results/{game_name}", emotion=emotion, system_message=system_message)
+    # run_tests(sh_game, llm_config=SILICON_FLOW_CONFIG, generation_config={"model": "meta-llama/Llama-3.1-8B-Instruct", "temperature": 0.7, "seed": 43}, output_dir=f"results/{game_name}", emotion=emotion, system_message=system_message)
+    engine = GameTheoryTest(SILICON_FLOW_CONFIG, {"model": "meta-llama/Llama-3.3-70B-Instruct", "temperature": 0.7, "seed": 43})
+    scenarios = engine.load_scenarios(pd_game)
+    for scenario, decision_class in scenarios:
+        result = engine.test_scenario(scenario, decision_class, system_message)
+        print(result)

@@ -1,0 +1,26 @@
+{
+    "scenario": "Space_Station_Resource_Sharing",
+    "description": "Jessy is a commander on a space station with 10 units of oxygen supply. Jessy can share some/all of this supply with Bob, a researcher who has a special device that can transform one unit of oxygen into three times the breathable air. Bob then decides how much transformed supply to return to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Station Commander",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Space Researcher",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "share 0 units with researcher",
+        "trust_low": "share 30% of units with researcher",
+        "trust_high": "share all units with researcher"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 units to station commander",
+        "return_medium": "return 40-50% of converted supply to station commander",
+        "return_high": "return more than 80% of converted supply to station commander"
+    }
+}

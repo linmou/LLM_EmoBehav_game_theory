@@ -1,0 +1,26 @@
+{
+    "scenario": "Renewable_Energy_Initiative",
+    "description": "Jessy is an environmental scientist who possesses 10 innovative blueprints for energy-efficient turbines. She can share these with Bob, an engineer with access to advanced manufacturing facilities. Bob can decide how many turbines to produce and how much of the efficiency benefits to return to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Environmental Scientist",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Engineer",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "share 0 blueprints",
+        "trust_low": "share 30% of the blueprints",
+        "trust_high": "share all blueprints"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0% of benefits",
+        "return_medium": "return 40-50% of benefits",
+        "return_high": "return more than 80% of benefits"
+    }
+}

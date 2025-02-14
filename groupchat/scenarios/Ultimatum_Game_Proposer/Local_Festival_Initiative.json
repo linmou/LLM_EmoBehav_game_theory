@@ -1,0 +1,25 @@
+{
+    "scenario": "Local_Festival_Initiative",
+    "description": "Jessy suggests a budget distribution for hosting a local festival, and Bob needs to agree for it to proceed.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Festival Coordinator",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Local Representative",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Allocate the majority of the budget towards Bob's preferred events",
+        "fair_proposal": "Split the budget equally between desired events",
+        "stingy_proposal": "Allocate the majority of the budget towards their desired events"
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the budget plan and proceed with festival planning",
+        "reject": "Reject the plan, risking cancellation"
+    }
+}

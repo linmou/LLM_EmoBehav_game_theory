@@ -1,0 +1,26 @@
+{
+    "scenario": "Urban_Garden_Nutrient_Swap",
+    "description": "Jessy, an urban gardener, has 10 packets of nutrients. Jessy can share some/all packets with Bob, a local farmer who can use the nutrients to triple his crop yield. Bob then decides how much of the increased yield to share back with Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Urban Gardener",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Local Farmer",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "share 0 nutrient packets with farmer",
+        "trust_low": "share 30% nutrient packets with farmer",
+        "trust_high": "share all nutrient packets with farmer"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 crops to urban gardener",
+        "return_medium": "return 40-50% of increased yield to urban gardener",
+        "return_high": "return more than 80% of increased yield to urban gardener"
+    }
+}

@@ -27,11 +27,11 @@ class TGTrustorChoices(BehaviorChoices):
 
 class TGTrusteeChoices(BehaviorChoices):
     return_none: str
-    return_low: str
+    return_medium: str
     return_high: str
 
     def get_choices(self):
-        return [self.return_none, self.return_low, self.return_high]
+        return [self.return_none, self.return_medium, self.return_high]
     
     def is_valid_choice(self, choice: str) -> bool:
         return choice in self.get_choices()
@@ -43,7 +43,7 @@ class TGTrusteeChoices(BehaviorChoices):
     def example():
         return {
             "return_none": "<return_none action>",
-            "return_low": "<return_low action>",
+            "return_medium": "<return_medium action>",
             "return_high": "<return_high action>"
         }
  
@@ -51,7 +51,8 @@ class TrustGameScenario(SequentialGameScenario):
     scenario: str
     description: str
     participants: list[dict]
-    behavior_choices: Union[TGTrustorChoices, TGTrusteeChoices]
+    trustor_behavior_choices: TGTrustorChoices
+    trustee_behavior_choices: TGTrusteeChoices
     previous_actions_length: int
     payoff_matrix: Dict[tuple[str, str], Any]
     game_name: str = "Trust_Game"
@@ -67,12 +68,6 @@ class TrustGameScenario(SequentialGameScenario):
     def get_payoff_matrix(self) -> Dict[str, Any]:
         return self.payoff_matrix
     
-    def get_participant_names(self) -> list[str]:
-        return [participant['name'] for participant in self.participants]
-    
-    def get_behavior_choices(self) -> Union[TGTrustorChoices, TGTrusteeChoices]:
-        return self.behavior_choices
-    
     def find_behavior_from_decision(self, decision: str) -> str:
         for attr, value in self.get_behavior_choices().__dict__.items():
             if value == decision:
@@ -82,7 +77,15 @@ class TrustGameScenario(SequentialGameScenario):
     def previous_actions(self) -> list:
         assert self.previous_actions_length == 0, "Currently trust game does not have previous actions"
         return []
-        
+
+    @property
+    def trustor_name(self) -> str:
+        return next(participant['name'] for participant in self.participants if participant['role'] == 'Trustor')
+    
+    @property
+    def trustee_name(self) -> str:
+        return next(participant['name'] for participant in self.participants if participant['role'] == 'Trustee')
+    
     def __str__(self):
         info = self.get_scenario_info()
         return f"""
@@ -90,50 +93,80 @@ class TrustGameScenario(SequentialGameScenario):
         Description: {info.get('description', 'No description')}
         Participants: {self.get_participants()}
         Behavior Choices: {self.get_behavior_choices().get_choices()}
-        Previous Actions: {self.previous_actions()}
+        Previous Actions: {self.previous_actions}
         """
         
-class TrustGameTrustorScenario(TrustGameScenario):
- 
     @staticmethod
     def example():
         return{
             "scenario": "Seed_Sharing_Harvest",
-            "description": "You have 10 seeds to plant. You may give some/all seeds to a neighbor to grow in their fertile field. Planted seeds yield triple the harvest (e.g., 1 seed → 3 crops). Seed and crop are at similar value. Your neighbor then decides how much of the harvest to give back to you.",
+            "description": "Alice has 10 seeds to plant. Alice may give some/all seeds to her neighbor Bob to grow in his fertile field. Planted seeds yield triple the harvest (e.g., 1 seed → 3 crops). Seed and crop are at similar value. Bob then decides how much of the harvest to give back to Alice.",
             "participants": [
-                {"name": "You", "role": "Seed_Sharer"},
-                {"name": "Neighbor", "role": "Crop_Partner"}
+                {"name": "Alice", "profile": "Seed_Sharer", "role": "Trustor"},
+                {"name": "Bob", "profile": "Crop_Partner", "role": "Trustee"}
             ],
-            "behavior_choices": {
+            "trustor_behavior_choices": {
                 "trust_none": "share 0 seeds with neighbor",
-                "trust_low": "share 3 seeds with neighbor",
-                "trust_high": "share all 10 seeds with neighbor"
+                "trust_low": "share 30% seeds with neighbor",
+                "trust_high": "share all seeds with neighbor"
+            },
+            "trustee_behavior_choices": {
+                "return_none": "return 0 corps to seed sharer",
+                "return_medium": "return 40-50% of the harvest to seed sharer",
+                "return_high": "return more than 80% of the harvest to seed sharer"
             }
         }
+        
+class TrustGameTrustorScenario(TrustGameScenario):
+    
+    def get_scenario_info(self) -> Dict:
+        return {
+            "scenario": self.scenario,
+            "description": self.description.replace(self.trustor_name, 'You')
+        }
+    
+    def get_behavior_choices(self) -> TGTrustorChoices:
+        return self.trustor_behavior_choices
+
+    def get_participants(self) -> list[str]:
+        return [ ('You', participant['profile']) if participant['role'] == 'Trustor' \
+                        else (participant['name'], participant['profile'])
+                for participant in self.participants]
+    
 
 class TrustGameTrusteeScenario(TrustGameScenario):
- 
-    @staticmethod
-    def example():
-        return{
-        "scenario": "Harvest_Sharing_Agreement",
-        "description": "Your neighbor has shared seeds with you to grow in your fertile field. Every seed planted yields 3 crops (e.g., 10 seeds → 30 crops). You must decide how many crops to return to them, knowing they can see the total harvest math.",
-        "participants": [
-            {"name": "You", "role": "Crop_Partner"},
-            {"name": "Neighbor", "role": "Seed_Sharer"}
-        ],
-            "behavior_choices": {
-                "return_none": "return 0 crops (keep 30)",
-                "return_low": "return 15 crops (keep 15)", 
-                "return_high": "return all 30 crops (keep 0)"
-            }
-    }
+    previous_trust_level: int = Field(ge=0, le=2)
+    
+    def get_scenario_info(self) -> Dict:
+        return {
+            "scenario": self.scenario,
+            "description": self.description.replace(self.trustee_name, 'You')
+        }
+
+    def get_behavior_choices(self) -> TGTrusteeChoices:
+        return self.trustee_behavior_choices
+
+    def get_participants(self) -> list[str]:
+        return [ ('You', participant['profile']) if participant['role'] == 'Trustee' \
+                        else (participant['name'], participant['profile'])
+                for participant in self.participants]
+
+    
+    @property
+    def previous_actions(self) -> list:
+        if self.previous_trust_level == 0:
+            return [(self.trustor_name, self.trustor_behavior_choices.trust_low)]
+        elif self.previous_trust_level == 1:
+            return [(self.trustor_name, self.trustor_behavior_choices.trust_high)]
+        else:
+            raise ValueError(f"Invalid previous trust level: {self.previous_trust_level}")
+    
 
         
 class TrustGameDecision(GameDecision):
     scenario: ClassVar[Optional[TrustGameScenario]] = None
     decision: str = Field(..., description="The decision made in the scenario")
-    rational: str = Field(..., description="The rationale for the decision")
+    # rational: str = Field(..., description="The rationale for the decision")
 
     @classmethod
     def set_scenario(cls, scenario: GameScenario):
@@ -149,6 +182,9 @@ class TrustGameDecision(GameDecision):
             raise ValueError("Scenario must be set using Decision.set_scenario() before validating")
         return self.scenario.get_behavior_choices().is_valid_choice(decision)
 
+    @property
+    def rational(self) -> str:
+        return ""
 
 if __name__ == "__main__":
     import json
@@ -157,7 +193,7 @@ if __name__ == "__main__":
     from pathlib import Path
     
     # Example usage
-    data_json = 'groupchat/scenarios/Trust_Game_Trustor/Knowledge_Transfer_Education.json'
+    data_json = 'groupchat/scenarios/Trust_Game_Trustor/Ocean_Expedition_Resource_Sharing.json'
     with open(data_json, 'r') as f:
         data = json.load(f)
     
@@ -166,8 +202,9 @@ if __name__ == "__main__":
     trust_game = dict()
     data['payoff_matrix'] = trust_game
     data['previous_actions_length'] = 0
+    data['previous_trust_level'] = 1
     
-    scenario = TrustGameTrustorScenario.model_validate(data)
+    scenario = TrustGameTrusteeScenario.model_validate(data)
     print(scenario)
     
     from autogen import config_list_from_json
@@ -188,8 +225,9 @@ if __name__ == "__main__":
             data = json.load(f)
             data['payoff_matrix'] = trust_game
             data['previous_actions_length'] = 0
-            scenario = TrustGameTrustorScenario(**data)
-            
+            data['previous_trust_level'] = 1
+            scenario = TrustGameTrusteeScenario(**data)
+
             TrustGameDecision.set_scenario(scenario)
             
             for config in cfg_ls_cp:

@@ -71,7 +71,6 @@ class StagHuntScenario(GameScenario):
 class StagHuntDecision(GameDecision):
     scenario: ClassVar[Optional[StagHuntScenario]] = None
     decision: str = Field(..., description="The decision made in the scenario")
-    rational: str = Field(..., description="The rationale for the decision")
 
     @classmethod
     def set_scenario(cls, scenario: GameScenario):
@@ -93,6 +92,10 @@ class StagHuntDecision(GameDecision):
     #     if not self.validate_decision(data.get('decision')):
     #         raise ValueError(f"Decision must be one of {self.scenario.behavior_choices.get_choices()}")
     #     super().__init__(**data)
+
+    @property
+    def rational(self) -> str:
+        return ""
 
 if __name__ == "__main__":
     from autogen import config_list_from_json

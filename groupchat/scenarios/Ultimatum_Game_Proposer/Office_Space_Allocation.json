@@ -1,0 +1,25 @@
+{
+    "scenario": "Office_Space_Allocation",
+    "description": "Jessy, the Facilities Manager, proposes a new seating arrangement in an open office space and Bob, an Employee, decides whether to accept or reject the allocation. If rejected, the seating plan is delayed, and no changes are made.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Facilities Manager",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Employee",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "unequal_large": "Allocate a larger and more private space for themselves and a smaller space for the employee",
+        "moderate": "Allocate a moderately-sized space for themselves and a slightly smaller space for the employee",
+        "equal_split": "Allocate equal-sized spaces for both parties"
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the space allocation and move to the new setup",
+        "reject": "Reject the proposed allocation, resulting in maintaining the current setup"
+    }
+}

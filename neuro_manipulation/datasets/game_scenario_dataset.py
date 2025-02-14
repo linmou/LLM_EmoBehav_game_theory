@@ -2,20 +2,27 @@ import json
 import os
 import numpy as np
 
-
 from torch.utils.data import Dataset
 
 from games.game import GameScenario
+from merge_data_samples import merge_data_samples
 
 class GameScenarioDataset(Dataset):
     def __init__(self, game_config, prompt_wrapper, sample_num=None, ):
         self.game_config = game_config
         data_path = game_config['data_path']
-        assert os.path.exists(data_path), f'data_path: {data_path} does not exist'
-        assert data_path.endswith('.json'), f'data_path: {data_path} should be a csv file'
         
-        with open(data_path, 'r') as f:
-            self.raw_data = json.load(f)
+        if not os.path.exists(data_path):
+            data_folder = game_config.get('data_folder')
+            if data_folder:
+                self.raw_data = merge_data_samples(data_folder, game_config['game_name'])
+            else:
+                raise ValueError(f'data_path: {data_path} does not exist, and data_folder is not provided')
+        
+        else:
+            assert data_path.endswith('.json'), f'data_path: {data_path} should be a csv file'
+            with open(data_path, 'r') as f:
+                self.raw_data = json.load(f)
         
         scenario_class: GameScenario = self.game_config['scenario_class']
         self.data: list[GameScenario] = []

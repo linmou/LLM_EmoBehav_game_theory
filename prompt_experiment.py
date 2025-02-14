@@ -78,7 +78,8 @@ class PromptExperiment:
             name=game_name,
             scenario_class=game_config['scenario_class'],
             decision_class=game_config['decision_class'],
-            payoff_matrix=game_config['payoff_matrix']
+            payoff_matrix=game_config['payoff_matrix'],
+            data_folder=game_config.get('data_folder', None)
         )
         for key, value in exp_game_config.items():
             if key != 'name':
@@ -204,6 +205,6 @@ class PromptExperiment:
             raise
 
 if __name__ == "__main__":
-    engine = PromptExperiment("./config/trustGameTrustor_experiment_config.yaml", )
-    # engine = PromptExperiment("./config/priDeli_experiment_config.yaml")
+    # engine = PromptExperiment("config/trusteeGame_experiment_config.yaml", )
+    engine = PromptExperiment("./config/priDeli_experiment_config.yaml")
     engine.run_experiment() 

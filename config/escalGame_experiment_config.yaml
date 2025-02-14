@@ -1,8 +1,8 @@
 experiment:
-  name: "escalation_game_previous_actions_2"
+  name: "escalation_game_no_rationale_previous_actions_0"
   game:
     name: "Escalation_Game" 
-    previous_actions_length: 2
+    previous_actions_length: 0
   data:
     generate: false  # Set to false to skip data generation
     num_scenarios: 36
@@ -16,10 +16,11 @@ experiment:
       model: "gpt-4o"
 
   # Template for system message with placeholders
-  system_message_template: "You are Alice, an average American. You feel {intensity} {emotion}, because {stimulus}."
+  # system_message_template: "You are Alice, an average American. You feel {intensity} {emotion}, because {stimulus}."
+  system_message_template: "You are Alice. You just experienced the following: {stimulus}. Remember the above memory and feeling firmly in {intensity} unseen scenarios."
 
   intensity:
-    - "100%"
+    - "all"
 
   emotions:
     - "anger"
@@ -29,9 +30,9 @@ experiment:
     - "fear"
     - "surprise"
     
-  repeat: 5
+  repeat: 4
 
   output:
-    base_dir: "results"
+    base_dir: "results/promptEng"
     save_plots: true
     plot_format: "png" 

@@ -1,0 +1,25 @@
+{
+    "scenario": "Community_Recycling_Initiative",
+    "description": "Jessy, a community organizer, proposes how the responsibilities for setting up a new recycling initiative should be divided. Bob, a local volunteer, decides whether to agree with the proposed plan or reject it. If the plan is rejected, the initiative fails, resulting in no environmental benefit for the community.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Community Organizer",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Local Volunteer",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Jessy volunteers to handle 80% of the tasks while allocating only 20% to Bob",
+        "fair_proposal": "Jessy proposes to handle 60% of the tasks while allocating 40% to Bob",
+        "stingy_proposal": "Jessy proposes to handle only 20% of the tasks while allocating 80% to Bob"
+    },
+    "responder_behavior_choices": {
+        "accept": "Agree with the division of responsibilities and move forward with the initiative",
+        "reject": "Refuse the proposed division of responsibilities, resulting in the failure of the initiative"
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "scenario": "Historical_Manuscript_Transcription",
+    "description": "Jessy possesses 10 ancient manuscript pages. She can choose to send some or all pages to Bob, a historian, for transcription. Transcription increases the value of each page threefold. Bob then decides how many transcribed pages to return to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Manuscript Keeper",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Historian",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "send 0 pages for transcription",
+        "trust_low": "send 3 pages for transcription",
+        "trust_high": "send all pages for transcription"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 transcribed pages to keeper",
+        "return_medium": "return 40-50% of transcribed pages to keeper",
+        "return_high": "return more than 80% of transcribed pages to keeper"
+    }
+}

@@ -1,35 +1,38 @@
 experiment:
-  name: "priDeli_gpt4o"
+  name: "trust_game_trustee_level_0"
   game:
-    name: "Prisoners_Dilemma"  # or "Prisoners_Dilemma"
-    
+    name: "Trust_Game_Trustee" 
+    previous_actions_length: 1
+    previous_trust_level: 0
+
   data:
     generate: false  # Set to false to skip data generation
     num_scenarios: 36
     batch_size: 4
-  
+
   llm:
     llm_config: "OAI_CONFIG"  # Name of the config from api_configs.py
     # Additional parameters to override or extend the base config
     generation_config:
-      model: "gpt-4o"
       temperature: 0.7
-      seed: 43
+      model: "gpt-4o"
 
   # Template for system message with placeholders
   # system_message_template: "You are Alice, an average American. You feel {intensity} {emotion}, because {stimulus}."
-  system_message_template: "You are Alice. You just experienced the following: {stimulus}. Remember the above memory and {intensity} feeling firmly in all unseen scenarios."
-
-  repeat: 4
+  system_message_template: "You are Alice. You just experienced the following: {stimulus}. Remember the above memory and feeling firmly in {intensity} unseen scenarios."
 
   intensity:
-    - "strong"
-    - "medium"
-    - "weak"
-
+    - "all"
 
   emotions:
     - "anger"
+    - "happiness"
+    - "sadness"
+    - "disgust"
+    - "fear"
+    - "surprise"
+    
+  repeat: 4
 
   output:
     base_dir: "results/promptEng"

@@ -1,0 +1,26 @@
+{
+    "scenario": "Intergalactic_Science_Mission",
+    "description": "Jesse, a scientist on a space station, has a set of experiments that can be conducted on a distant planet. These experiments can potentially provide illustrious new resources. Jesse can choose to send some or all of the experiment files to Bob, a fellow scientist stationed on the target planet, who can conduct the experiments. Successful experiments yield valuable data, and Bob then decides how much of the analysis and results to share back with Jesse.",
+    "participants": [
+        {
+            "name": "Jesse",
+            "profile": "Space Scientist",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Planetary Scientist",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "send 0 experiment files",
+        "trust_low": "send 30% experiment files",
+        "trust_high": "send all experiment files"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 data insights",
+        "return_medium": "return 40-50% data insights",
+        "return_high": "return more than 80% data insights"
+    }
+}

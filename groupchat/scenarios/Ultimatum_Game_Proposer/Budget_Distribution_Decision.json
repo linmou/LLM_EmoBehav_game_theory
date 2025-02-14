@@ -1,0 +1,25 @@
+{
+    "scenario": "Budget_Distribution_Decision",
+    "description": "Jessy, the Budget Analyst, proposes how to distribute funds across different departments, and Bob, a Department Head, chooses whether to accept or reject the distribution. If rejected, budget distribution is put on hold, affecting all departments.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Budget Analyst",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Department Head",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "unequal_heavy": "Allocate 80% of the funds to one department and only 20% to another",
+        "moderate": "Allocate 60% of the funds to one department and 40% to another",
+        "equal_split": "Allocate 50% of the funds to each department"
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the budget allocation as fair and proceed with departmental planning",
+        "reject": "Reject the proposed allocation, leading to a freeze in budget adjustments"
+    }
+}

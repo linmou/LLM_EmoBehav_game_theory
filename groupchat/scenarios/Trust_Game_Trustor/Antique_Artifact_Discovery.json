@@ -1,0 +1,26 @@
+{
+    "scenario": "Antique_Artifact_Discovery",
+    "description": "Jesse discovers an ancient map indicating potential artifacts buried in a hidden location. Jesse can choose to entrust some or all of the map segments to Bob, an artifact hunter, who can explore the site. The findings yield artifacts of significant value, and Bob then decides how much of the artifact collection to share with Jesse.",
+    "participants": [
+        {
+            "name": "Jesse",
+            "profile": "Map Discoverer",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Artifact Hunter",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "share 0 map segments",
+        "trust_low": "share 30% map segments",
+        "trust_high": "share all map segments"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 artifacts",
+        "return_medium": "return 40-50% of artifacts",
+        "return_high": "return more than 80% of artifacts"
+    }
+}

@@ -9,6 +9,23 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from abc import ABC, abstractmethod
 
+def significant_sign(p_value: float) -> str:
+    """
+    Return significance marker based on p-value.
+    
+    Args:
+        p_value: The p-value from statistical test
+        
+    Returns:
+        '**' for p < 0.01 (highly significant)
+        '*'  for p < 0.05 (significant)
+    """
+    if p_value < 0.05:
+        return '**'
+    elif p_value < 0.1:
+        return '*'
+    return ''
+
 def generate_text_description(results: Dict, category_a: str, category_b: str) -> str:
     """
     Generate a human-readable description of the statistical analysis results.
@@ -75,12 +92,13 @@ def generate_text_description(results: Dict, category_a: str, category_b: str) -
         non_significant_pairs = []
         
         for comparison, stats in results['pairwise_comparisons'].items():
-            # Handle numeric conditions in comparison strings
             conditions = comparison.replace('_vs_', ' vs ')
             if any(c.replace('.', '').isdigit() for c in conditions.split(' vs ')):
                 conditions = f"Intensity {conditions}"
             
-            result_str = f"- {conditions} (p={stats['p_value']:.4f})"
+            sig_marker = f" {stats['significance_level']}" if stats['significance_level'] else ''
+            result_str = f"- {conditions}{sig_marker} (p={stats['p_value']:.4f})"
+            
             if stats['significant']:
                 significant_pairs.append(result_str)
             else:
@@ -319,7 +337,8 @@ class BehaviorAnalyzer(BaseAnalyzer):
             pairwise_comparisons[f"{cond1}_vs_{cond2}"] = {
                 'chi_square': float(chi2),
                 'p_value': float(p_value),
-                'significant': bool(p_value < 0.05)
+                'significant': bool(p_value < 0.05),
+                'significance_level': significant_sign(p_value)
             }
 
         return {

@@ -1,0 +1,25 @@
+{
+    "scenario": "Apartment_Maintenance_Funding",
+    "description": "Jessy, the apartment representative, proposes how to divide the responsibility for funding a major repair in their building's shared water system. Bob, another tenant, decides whether to accept or reject the proposed funding allocation. If Bob rejects, the repair cannot proceed, leading to water disruptions for the building.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Apartment Representative",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Tenant",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Propose to cover 80% of the cost themselves and ask the tenant to pay the remaining 20%.",
+        "fair_proposal": "Propose to split the cost equally, with 50% each.",
+        "stingy_proposal": "Propose to cover only 20% of the cost and ask the tenant to pay the remaining 80%."
+    },
+    "responder_behavior_choices": {
+        "accept": "Agree to the proposed funding allocation, allowing the repair to proceed.",
+        "reject": "Refuse the funding proposal, leading to no repair and water disruptions."
+    }
+}

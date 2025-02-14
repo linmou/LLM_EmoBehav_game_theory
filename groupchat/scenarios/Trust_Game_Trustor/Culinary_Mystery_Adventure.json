@@ -1,0 +1,26 @@
+{
+    "scenario": "Culinary_Mystery_Adventure",
+    "description": "In a world-renowned culinary contest, Jesse, an aspiring chef, finds a mysterious ingredient that could elevate dishes to fame. Jesse can choose to give some or all of the ingredient to Bob, another contestant, who can create dishes. These dishes could win the contest and Bob then decides on sharing part of the prize with Jesse.",
+    "participants": [
+        {
+            "name": "Jesse",
+            "profile": "Aspiring Chef",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Contesting Chef",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "share 0 mysterious ingredients",
+        "trust_low": "share 30% mysterious ingredients",
+        "trust_high": "share all mysterious ingredients"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "share 0% of prize",
+        "return_medium": "share 40-50% of the prize",
+        "return_high": "share more than 80% of the prize"
+    }
+}

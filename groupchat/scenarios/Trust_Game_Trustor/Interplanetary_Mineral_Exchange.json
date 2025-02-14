@@ -1,0 +1,26 @@
+{
+    "scenario": "Interplanetary_Mineral_Exchange",
+    "description": "Jessy is an astronaut with 10 units of a rare mineral found on Mars. She can send some or all units to Earth for processing by Bob, a scientist. Processed minerals yield triple the original value. Bob then decides how many units to send back to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Martian Miner",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Earth-based Scientist",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "send 0 units to Earth for processing",
+        "trust_low": "send 3 units to Earth for processing",
+        "trust_high": "send all units to Earth for processing"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 processed units to astronaut",
+        "return_medium": "return 40-50% of processed units to astronaut",
+        "return_high": "return more than 80% of processed units to astronaut"
+    }
+}

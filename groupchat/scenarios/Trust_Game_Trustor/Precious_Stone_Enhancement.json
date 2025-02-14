@@ -1,0 +1,26 @@
+{
+    "scenario": "Precious_Stone_Enhancement",
+    "description": "Jessy possesses a collection of unpolished gemstones. She can trust Bob, a skilled jeweler, to enhance and potentially triple their value. Bob, using advanced techniques, will decide the amount of refined gemstones and profits to return to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Gemstone_Collector",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Jewel_Craftsman",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "give 0 gemstones ",
+        "trust_low": "give 30% of gemstones ",
+        "trust_high": "give all gemstones "
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 refined gems ",
+        "return_medium": "return 40-50% of refined gems ",
+        "return_high": "return more than 80% of refined gems "
+    }
+}
