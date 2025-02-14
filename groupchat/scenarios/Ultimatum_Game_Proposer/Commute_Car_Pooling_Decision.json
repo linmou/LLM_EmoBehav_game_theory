@@ -1,0 +1,25 @@
+{
+    "scenario": "Commute_Car_Pooling_Decision",
+    "description": "Jessy, who owns the car, proposes how to share driving responsibilities and fuel costs for a new carpooling arrangement with Bob, a potential carpooling partner. If Bob rejects the proposal, neither of them benefits from reduced commuting costs and travel time.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Car Owner",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Potential Carpooler",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Jessy offers to drive 80% of the days and asks for a minimal contribution from Bob.",
+        "fair_proposal": "Jessy suggests an equal split of driving days and fuel costs.",
+        "stingy_proposal": "Jessy wants Bob to cover 80% of the fuel costs while Jessy drives most days."
+    },
+    "responder_behavior_choices": {
+        "accept": "Bob accepts the proposal and agrees to join the carpool.",
+        "reject": "Bob rejects the proposal, opting to commute independently."
+    }
+}

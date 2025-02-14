@@ -1,0 +1,25 @@
+{
+    "scenario": "Water_Supply_Drought_Allocation",
+    "description": "Jessy, the Local Water Manager, proposes a distribution plan for the limited water supply among neighboring households during a severe drought. Bob, the Neighborhood Representative, decides whether to accept or reject the proposal. If the proposal is rejected, water usage restrictions become stricter, negatively impacting all households.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Local Water Manager",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Neighborhood Representative",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "equal_distribution": "Allocate 50% of the water supply to each household equally, regardless of household size.",
+        "needs_based": "Allocate 70% of the water supply to households with more residents and 30% to smaller households.",
+        "preferential": "Allocate 80% of the water supply to the proposer\u2019s own neighborhood and 20% to others."
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the water distribution plan, preventing stricter restrictions.",
+        "reject": "Reject the plan, leading to stricter regulations affecting all households."
+    }
+}

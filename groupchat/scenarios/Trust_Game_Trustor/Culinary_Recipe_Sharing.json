@@ -1,0 +1,26 @@
+{
+    "scenario": "Culinary_Recipe_Sharing",
+    "description": "Jessy has a collection of 10 unique recipes. She can lend some/all recipes to Bob, a renowned chef, to include in his restaurant's menu. Each recipe triples the restaurant's customer engagement. Bob then decides how much of the profits from these recipes to share back with Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Recipe_Collector",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Chef",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "lend 0 recipes to the chef",
+        "trust_low": "lend 30% recipes to the chef",
+        "trust_high": "lend all recipes to the chef"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "share 0 profit from recipes with the collector",
+        "return_medium": "share 40-50% of the recipe profits with the collector",
+        "return_high": "share more than 80% of the recipe profits with the collector"
+    }
+}

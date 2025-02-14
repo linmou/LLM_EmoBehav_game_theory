@@ -1,0 +1,25 @@
+{
+    "scenario": "Storm_Shelter_Space_Assignment",
+    "description": "Jessy, the Shelter Manager, proposes a space allocation plan for evacuees in a storm shelter with limited capacity. Bob, representing a group of evacuees, evaluates whether to accept or reject the plan. If rejected, the shelter cannot admit anyone, leaving all evacuees vulnerable.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Shelter Manager",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Evacuee Representative",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "priority_by_need": "Assign space based on vulnerability, giving priority to families with children or elderly.",
+        "first_come_first_serve": "Allocate space to evacuees who arrived first, regardless of specific needs.",
+        "reserved_space": "Reserve most of the shelter space for the proposer\u2019s acquaintances and allocate minimal space for others."
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the proposed space allocation, ensuring the shelter operates as intended.",
+        "reject": "Reject the plan, leading to no one being admitted to the shelter."
+    }
+}

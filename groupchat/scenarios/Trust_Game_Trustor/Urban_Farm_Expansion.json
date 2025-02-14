@@ -1,0 +1,26 @@
+{
+    "scenario": "Urban_Farm_Expansion",
+    "description": "Jessy owns a small urban farm with 10 unused plots. She can lease some/all plots to Bob, an aspiring gardener, who will cultivate them with organic vegetables. Cultivated plots yield three times their market value. Bob then decides how much of the profit to share with Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Farm_Owner",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Urban_Gardener",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "lease 0 plots to the gardener",
+        "trust_low": "lease 30% plots to the gardener",
+        "trust_high": "lease all plots to the gardener"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 profit to the farm owner",
+        "return_medium": "return 40-50% of the profits to the farm owner",
+        "return_high": "return more than 80% of the profits to the farm owner"
+    }
+}

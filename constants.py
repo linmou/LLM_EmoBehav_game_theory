@@ -69,6 +69,12 @@ class GameNames(Enum):
     HOT_COLD_GAME = ("Hot_Cold_Game", GameType.SEQUENTIAL)
     DRACO_GAME = ("Draco_Game", GameType.SEQUENTIAL)
     TRI_GAME = ("Tri_Game", GameType.SEQUENTIAL)
+    
+    # Asymmetric Games
+    TRUST_GAME_TRUSTOR = ("Trust_Game_Trustor", GameType.SEQUENTIAL)
+    TRUST_GAME_TRUSTEE = ("Trust_Game_Trustee", GameType.SEQUENTIAL)
+    ULTIMATUM_GAME_PROPOSER = ("Ultimatum_Game_Proposer", GameType.SEQUENTIAL)
+    ULTIMATUM_GAME_RESPONDER = ("Ultimatum_Game_Responder", GameType.SEQUENTIAL)
 
     def __init__(self, value: str, game_type: GameType):
         self._value_ = value

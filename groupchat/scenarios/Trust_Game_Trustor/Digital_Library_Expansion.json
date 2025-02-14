@@ -1,0 +1,26 @@
+{
+    "scenario": "Digital_Library_Expansion",
+    "description": "Jessy is a librarian who has 10 e-books that she can choose to donate to Bob, a developer working on an online library. The e-books can be digitized and reach triple the audience (e.g., 1 book \u2192 3 digital readers). Bob will then decide how much of the digital library's new profits to share with Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Librarian",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Developer",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "donate 0 e-books",
+        "trust_low": "donate 30% of the e-books",
+        "trust_high": "donate all e-books"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "share 0% of the profits",
+        "return_medium": "share 40-50% of the profits",
+        "return_high": "share more than 80% of the profits"
+    }
+}

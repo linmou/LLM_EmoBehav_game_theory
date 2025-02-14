@@ -1,0 +1,25 @@
+{
+    "scenario": "Research_Grant_Allocation",
+    "description": "The head of a research team receives a grant for a project and must propose how to allocate the funding between themselves and a junior researcher. The junior researcher decides whether to accept the allocation or forfeit the entire grant.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Team Lead",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Junior Researcher",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Allocate 70% of the funding to the junior researcher and retain 30%.",
+        "fair_proposal": "Split the funding evenly, 50% to each.",
+        "stingy_proposal": "Keep 80% of the funding and allocate only 20% to the junior researcher."
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the allocation, and work together to complete the research.",
+        "reject": "Decline the proposal, resulting in the loss of the grant and discontinuation of the project."
+    }
+}

@@ -6,8 +6,8 @@ from pathlib import Path
 from statistical_engine import analyze_emotion_and_intensity_effects
 
 
-exp_res_dir_1 = Path("results/escalation_game_previous_actions_1_20250210_014112")
-exp_res_dir_2 = Path("results/escalation_game_previous_actions_1_20250210_015819")
+exp_res_dir_1 = Path("results/promptEng/priDeli_SiliconFlow_llama3_70B_20250212_151234")
+exp_res_dir_2 = Path("results/promptEng/priDeli_SiliconFlow_llama3_70B_20250212_151730")
 
 raw_analyse_file = 'analysis_results.json'
 

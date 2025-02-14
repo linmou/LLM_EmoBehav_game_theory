@@ -1,0 +1,26 @@
+{
+    "scenario": "Ocean_Current_Energy_Exchange",
+    "description": "Jessy, a marine energy technician, has 10 units of energy credits. Jessy can allocate some/all credits to Bob, an oceanographer who can utilize ocean currents to triple the energy credits. After the enhancement, Bob decides how many credits he returns to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Energy Technician",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Oceanographer",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "allocate 0 energy credits to oceanographer",
+        "trust_low": "allocate 30% energy credits to oceanographer",
+        "trust_high": "allocate all energy credits to oceanographer"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 credits to energy technician",
+        "return_medium": "return 40-50% of enhanced credits to energy technician",
+        "return_high": "return more than 80% of enhanced credits to energy technician"
+    }
+}

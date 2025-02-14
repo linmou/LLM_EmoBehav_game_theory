@@ -1,0 +1,25 @@
+{
+    "scenario": "Event_Scheduling_Plan",
+    "description": "Jessy, the Event Coordinator, proposes a schedule for an upcoming conference, and Bob, the Keynote Speaker, decides whether to accept or reject the proposed schedule. If rejected, the event planning stalls, risking overall delays.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Event Coordinator",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Keynote Speaker",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "unequal_priority": "Allocate prime time slots for themselves and off-peak slots for others",
+        "moderate": "Allocate slightly more favorable slots for themselves compared to others",
+        "equal_split": "Allocate prime slots equally among all participants"
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the schedule as accommodating and proceed with the event",
+        "reject": "Reject the proposed schedule, causing event planning disruptions"
+    }
+}

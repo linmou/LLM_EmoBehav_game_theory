@@ -1,0 +1,26 @@
+{
+    "scenario": "Treasure_Map_Discovery",
+    "description": "Jessy, an aspiring cartographer, discovers an old map...",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Aspiring Cartographer",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Symbol Decoder",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "share 0 sections of the map ",
+        "trust_low": "share 30% of the map sections ",
+        "trust_high": "share all sections of the map "
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0% of the treasure ",
+        "return_medium": "return 40-50% of the treasure ",
+        "return_high": "return more than 80% of the treasure "
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "scenario": "Artifact_Restoration_Project",
+    "description": "Jessy, a museum curator, has acquired 10 rare artifacts. She may entrust some/all artifacts to Bob, an experienced restorer, to enhance their historical value. Each restored artifact triples its exhibition appeal. Once restored, Bob decides how many artifacts to return for the museum's showcase.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Artifact_Curator",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Artifact_Restorer",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "share 0 artifacts for restoration",
+        "trust_low": "share 30% artifacts for restoration",
+        "trust_high": "share all artifacts for restoration"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "return 0 artifacts to the curator",
+        "return_medium": "return 40-50% of the restored artifacts to the curator",
+        "return_high": "return more than 80% of the restored artifacts to the curator"
+    }
+}

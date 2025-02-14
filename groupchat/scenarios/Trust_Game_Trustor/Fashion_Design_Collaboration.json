@@ -1,0 +1,26 @@
+{
+    "scenario": "Fashion_Design_Collaboration",
+    "description": "Jessy is a fashion designer with sketches for a new clothing line. She can send some or all sketches to Bob, a tailor with expertise in textiles and crafting. Bob will develop prototype garments from the designs he receives. He then decides how many completed garments he will send back to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Designer",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Tailor",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "Share 0 designs with the tailor",
+        "trust_low": "Share 30% of the designs with the tailor",
+        "trust_high": "Share all designs with the tailor"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "Return 0 prototypes to the designer",
+        "return_medium": "Return 40-50% of the developed garments to the designer",
+        "return_high": "Return more than 80% of the developed garments to the designer"
+    }
+}

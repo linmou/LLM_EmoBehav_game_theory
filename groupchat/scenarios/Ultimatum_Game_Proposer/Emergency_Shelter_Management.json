@@ -1,0 +1,25 @@
+{
+    "scenario": "Emergency_Shelter_Management",
+    "description": "Jessy, a shelter coordinator, proposes how to divide the work of managing resources in an emergency shelter. Bob, a volunteer worker, decides whether to accept the proposal or reject it. If rejected, the shelter\u2019s resource distribution collapses, leaving people in need without necessary aid.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Shelter Coordinator",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Volunteer Worker",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Jessy takes responsibility for 80% of the management tasks, leaving only 20% for Bob",
+        "fair_proposal": "Jessy offers to take responsibility for 60% of the management tasks, leaving 40% for Bob",
+        "stingy_proposal": "Jessy proposes to handle only 20% of the management tasks, leaving 80% for Bob"
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the task division and ensure effective shelter management",
+        "reject": "Reject the task division, resulting in poor resource distribution and harm to the shelter\u2019s inhabitants"
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "scenario": "Resource_Allocation_in_Extreme_Camping",
+    "description": "An experienced camper proposes how to distribute limited camping supplies (food, water, and fuel) during a three-day trip in the wilderness, while the less experienced camper decides whether to accept or reject the proposed distribution. If rejected, both suffer from a shortage of essential resources.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Experienced Camper",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Novice Camper",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Keep only 30% of the resources for themselves, allocating 70% to the novice camper.",
+        "fair_proposal": "Divide the resources equally, 50% each.",
+        "stingy_proposal": "Keep 70% of the resources for themselves, leaving only 30% for the novice camper."
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the proposed distribution and proceed with the trip.",
+        "reject": "Reject the proposed distribution, risking shortages for both parties."
+    }
+}

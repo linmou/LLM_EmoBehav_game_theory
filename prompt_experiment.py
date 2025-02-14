@@ -78,7 +78,8 @@ class PromptExperiment:
             name=game_name,
             scenario_class=game_config['scenario_class'],
             decision_class=game_config['decision_class'],
-            payoff_matrix=game_config['payoff_matrix']
+            payoff_matrix=game_config['payoff_matrix'],
+            data_folder=game_config.get('data_folder', None)
         )
         for key, value in exp_game_config.items():
             if key != 'name':
@@ -128,8 +129,8 @@ class PromptExperiment:
             llm_config=llm_config['llm_config'],
             generation_config=llm_config['generation_config'],
             output_dir=self.output_dir,
-            emotion='None',
-            intensity='None',
+            emotion='Neutral',
+            intensity='Neutral',
             repeat=self.config['experiment']['repeat']
         )
         output_files.append(output_file)
@@ -204,6 +205,6 @@ class PromptExperiment:
             raise
 
 if __name__ == "__main__":
-    engine = PromptExperiment("./config/escalGame_experiment_config.yaml", )
-    # engine = PromptExperiment("./config/priDeli_experiment_config.yaml")
+    # engine = PromptExperiment("config/trusteeGame_experiment_config.yaml", )
+    engine = PromptExperiment("./config/priDeli_experiment_config.yaml")
     engine.run_experiment() 

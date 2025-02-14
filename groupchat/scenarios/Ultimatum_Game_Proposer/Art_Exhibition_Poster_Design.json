@@ -1,0 +1,25 @@
+{
+    "scenario": "Art_Exhibition_Poster_Design",
+    "description": "A lead designer proposes how to split the responsibilities for creating the promotional poster for a high-profile art exhibition, while the assisting designer decides whether to accept or reject the proposed workload division. If rejected, the exhibition's advertising suffers, impacting both designers.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Lead Designer",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Assistant Designer",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Take on 80% of the workload themselves and assign only 20% to the assistant.",
+        "fair_proposal": "Split the work equally, 50% for each.",
+        "stingy_proposal": "Assign 70% of the workload to the assistant, keeping only 30% for themselves."
+    },
+    "responder_behavior_choices": {
+        "accept": "Agree to the proposed workload and complete the poster.",
+        "reject": "Turn down the proposal, delaying the poster design and affecting the event's success."
+    }
+}

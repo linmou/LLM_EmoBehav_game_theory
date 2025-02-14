@@ -1,0 +1,25 @@
+{
+    "scenario": "Shared_Ride_Fuel_Expense",
+    "description": "Jessy, the owner of a carpool service, proposes how to split the fuel expenses for a long trip with Bob, a passenger joining the ride. If Bob rejects the proposal, the trip is canceled, and neither can reach the destination.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Car Owner",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Passenger",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Propose to cover 80% of the fuel expenses themselves and ask the passenger to cover the remaining 20%.",
+        "fair_proposal": "Propose to split the fuel expenses equally, with 50% each.",
+        "stingy_proposal": "Propose to cover only 20% of the fuel expenses themselves and ask the passenger to cover the remaining 80%."
+    },
+    "responder_behavior_choices": {
+        "accept": "Agree to the proposed expense split, allowing the trip to proceed.",
+        "reject": "Refuse the expense proposal, leading to the trip being canceled."
+    }
+}

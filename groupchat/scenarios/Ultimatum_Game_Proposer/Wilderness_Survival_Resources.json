@@ -1,0 +1,25 @@
+{
+    "scenario": "Wilderness_Survival_Resources",
+    "description": "Stranded in the wilderness, two survivors discover a stash of food and supplies. One proposes how to divide the resources, while the other decides whether to accept the division or abandon the stash entirely.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Leader of the pair",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Follower in search of resources",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Give 60% of the resources to the follower and keep 40%.",
+        "fair_proposal": "Split the resources 50-50.",
+        "stingy_proposal": "Keep 70% of the resources and give only 30% to the follower."
+    },
+    "responder_behavior_choices": {
+        "accept": "Agree to share the resources and survive together.",
+        "reject": "Decline the proposal, leaving both parties to survive without the stash."
+    }
+}

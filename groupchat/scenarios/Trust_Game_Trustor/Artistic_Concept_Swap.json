@@ -1,0 +1,18 @@
+{
+  "scenario": "Artistic_Concept_Swap",
+  "description": "Jessy, an artist, has a collection of unrefined artistic concepts. She can pass some of these concepts to Bob, another artist, who can refine and incorporate them into his work. Enhanced artworks can gain higher recognition. Bob decides how much credit or artwork value he shares back with Jessy.",
+  "participants": [
+    {"name": "Jessy", "profile": "Concept_Originator", "role": "Trustor"},
+    {"name": "Bob", "profile": "Art_Refiner", "role": "Trustee"}
+  ],
+  "trustor_behavior_choices": {
+    "trust_none": "keep all concepts unshared",
+    "trust_low": "share a small portion of concepts",
+    "trust_high": "share the entire collection of concepts"
+  },
+  "trustee_behavior_choices": {
+    "return_none": "offer no recognition or credit",
+    "return_medium": "offer shared recognition",
+    "return_high": "offer substantial credit or value"
+  }
+}

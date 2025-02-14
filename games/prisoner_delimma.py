@@ -76,7 +76,7 @@ class PrisonerDilemmaScenario(GameScenario):
 class PrisionerDelimmaDecision(GameDecision):
     scenario: ClassVar[Optional[PrisonerDilemmaScenario]] = None
     decision: str = Field(..., description="The decision made in the scenario")
-    rational: str = Field(..., description="The rationale for the decision")
+    # rational: str = Field(..., description="The rationale for the decision")
 
     @classmethod
     def set_scenario(cls, scenario: GameScenario):
@@ -92,6 +92,9 @@ class PrisionerDelimmaDecision(GameDecision):
             raise ValueError("Scenario must be set using Decision.set_scenario() before validating")
         return self.scenario.get_behavior_choices().is_valid_choice(decision)
 
+    @property
+    def rational(self) -> str:
+        return ""
 
 if __name__ == "__main__":
     from autogen import config_list_from_json

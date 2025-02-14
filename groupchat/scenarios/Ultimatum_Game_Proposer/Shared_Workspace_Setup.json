@@ -1,0 +1,25 @@
+{
+    "scenario": "Shared_Workspace_Setup",
+    "description": "Jessy, a new colleague, proposes how to allocate desk space in a shared office environment, and Bob, a current team member, decides whether to agree on the proposed seating plan or not.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "New Colleague",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Team Member",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Allocate the best desk near the window to Bob and keep a regular desk for themselves",
+        "fair_proposal": "Allocate equally favorable desks for both",
+        "stingy_proposal": "Allocate the best desk for themselves and offer a less favorable one to Bob"
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the seating plan and integrate into the new setup",
+        "reject": "Reject the proposal, causing inconvenience or needing HR intervention"
+    }
+}

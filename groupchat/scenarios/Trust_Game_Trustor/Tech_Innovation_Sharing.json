@@ -1,0 +1,18 @@
+{
+  "scenario": "Tech_Innovation_Sharing",
+  "description": "Jessy, a tech innovator, has developed breakthrough ideas for improving software efficiency. She may share some concepts with Bob, another developer, for implementation in his projects. Shared ideas can significantly boost project success. Bob then decides how much of the improved project outcomes to share back with Jessy.",
+  "participants": [
+    {"name": "Jessy", "profile": "Idea_Innovator", "role": "Trustor"},
+    {"name": "Bob", "profile": "Project_Developer", "role": "Trustee"}
+  ],
+  "trustor_behavior_choices": {
+    "trust_none": "keep all ideas private",
+    "trust_low": "share a few ideas",
+    "trust_high": "share all innovative concepts"
+  },
+  "trustee_behavior_choices": {
+    "return_none": "share no project outcomes",
+    "return_medium": "share partial project benefits",
+    "return_high": "share significant project success"
+  }
+}

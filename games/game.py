@@ -65,14 +65,10 @@ class SequentialGameScenario(GameScenario, ABC):
     previous_actions_length: int
 
     @property
-    def previous_actions(self) -> list[str]:
-        previous_actions = []
-        for i in range(self.previous_actions_length,):
-            previous_actions.append((self.get_participant_names()[ (i+1) % 2 ], self.behavior_choices.escalation)) # only one action
-        previous_actions.reverse() # ensure the last actor is not 'You'
-        if self.previous_actions_length > 0:
-            assert previous_actions[-1][0] != self.get_participant_names()[0]
-        return previous_actions
+    @abstractmethod
+    def previous_actions(self) -> list:
+        """Get the previous actions"""
+        pass
 
 class GameDecision(BaseModel, ABC):
     """Abstract base class for game decisions"""
@@ -97,12 +93,16 @@ class Game:
         scenario_class: Union[GameScenario, SequentialGameScenario],
         decision_class: Type[GameDecision],
         payoff_matrix: Dict[str, Any],
-        extra_attrs: Dict[str, Any] = {}
+        extra_attrs: Dict[str, Any] = {},
+        data_path: str = None,
+        data_folder: str = None
     ):
         self.name = name
         self.scenario_class = scenario_class
         self.decision_class = decision_class
         self.payoff_matrix = payoff_matrix
+        self.data_path = data_path
+        self.data_folder = data_folder if data_folder else self.folder_path
         self.extra_attrs = extra_attrs
 
     def add_extra_attr(self, key: str, value: Any):
@@ -110,7 +110,7 @@ class Game:
 
     @property
     def folder_path(self) -> str:
-        """Get the folder path for scenario files"""
+        """Get the default folder path for scenario files"""
         return f"groupchat/scenarios/{self.name}"
 
     def create_scenario(self, data: dict) -> GameScenario:

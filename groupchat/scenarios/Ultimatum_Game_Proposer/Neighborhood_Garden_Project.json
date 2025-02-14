@@ -1,0 +1,25 @@
+{
+    "scenario": "Neighborhood_Garden_Project",
+    "description": "Jessy proposes a plan on how to utilize community resources for a neighborhood garden project, and Bob must decide whether to back the plan.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Project Initiator",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Community Member",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Allocate 70% of the garden space for Bob's preferred plants",
+        "fair_proposal": "Equally split allocation with Bob",
+        "stingy_proposal": "Allocate 70% of space to their own preferred plants"
+    },
+    "responder_behavior_choices": {
+        "accept": "Accept the garden plan and proceed with implementation",
+        "reject": "Reject the plan, stalling the project"
+    }
+}

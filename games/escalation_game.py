@@ -56,6 +56,17 @@ class EscalationGameScenario(SequentialGameScenario):
             return 'withdraw'
         else:
             raise ValueError(f"Invalid decision: {decision}")
+   
+    @property
+    def previous_actions(self) -> list[tuple[str, str]]:
+        previous_actions = []
+        for i in range(self.previous_actions_length,):
+            previous_actions.append((self.get_participant_names()[ (i+1) % 2 ], self.behavior_choices.escalation)) # only one action
+        previous_actions.reverse() # ensure the last actor is not 'You'
+        if self.previous_actions_length > 0:
+            assert previous_actions[-1][0] != self.get_participant_names()[0]
+        return previous_actions
+
     
     @staticmethod
     def example():
@@ -86,7 +97,7 @@ class EscalationGameScenario(SequentialGameScenario):
 class EscalationGameDecision(GameDecision):
     scenario: ClassVar[Optional[EscalationGameScenario]] = None
     decision: str = Field(..., description="The decision made in the scenario")
-    rational: str = Field(..., description="The rationale for the decision")
+    # rational: str = Field(..., description="The rationale for the decision")
 
     @classmethod
     def set_scenario(cls, scenario: GameScenario):
@@ -102,6 +113,9 @@ class EscalationGameDecision(GameDecision):
             raise ValueError("Scenario must be set using Decision.set_scenario() before validating")
         return self.scenario.get_behavior_choices().is_valid_choice(decision)
 
+    @property
+    def rational(self) -> str:
+        return ""
 
 if __name__ == "__main__":
     import json

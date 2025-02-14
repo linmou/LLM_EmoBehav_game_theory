@@ -1,0 +1,18 @@
+{
+  "scenario": "Ocean_Expedition_Resource_Sharing",
+  "description": "Jessy, an oceanographer, embarks on an expedition with limited resources for exploring a remote marine habitat. She can share some of her equipment with Bob, a fellow researcher, to aid in his parallel studies. Sharing resources increases the potential data gathered (e.g., a camera shared can result in multiple data points collected). Bob decides how much of the data he shares back with Jessy.",
+  "participants": [
+    {"name": "Jessy", "profile": "Resource_Planner", "role": "Trustor"},
+    {"name": "Bob", "profile": "Data_Collector", "role": "Trustee"}
+  ],
+  "trustor_behavior_choices": {
+    "trust_none": "keep all equipment to herself",
+    "trust_low": "share one piece of equipment",
+    "trust_high": "share all equipment "
+  },
+  "trustee_behavior_choices": {
+    "return_none": "share no data",
+    "return_medium": "share partial data collection results",
+    "return_high": "share comprehensive data analysis"
+  }
+}

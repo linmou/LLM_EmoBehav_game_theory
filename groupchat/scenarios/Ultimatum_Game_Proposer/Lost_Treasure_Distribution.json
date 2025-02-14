@@ -1,0 +1,25 @@
+{
+    "scenario": "Lost_Treasure_Distribution",
+    "description": "While on an archeological expedition, one participant discovers an ancient treasure chest hidden in ruins. The discoverer must propose how to split the treasure, while the other team member decides whether to agree to the proposal or leave the treasure untouched.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Discoverer of the treasure",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Assistant researcher",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "generous_proposal": "Offer to split the treasure 70% to the assistant and keep 30% for themselves.",
+        "fair_proposal": "Offer to split the treasure equally, 50% to each.",
+        "stingy_proposal": "Keep 90% of the treasure and offer only 10% to the assistant."
+    },
+    "responder_behavior_choices": {
+        "accept": "Agree to the proposal and collect their share of the treasure.",
+        "reject": "Decline the offer, leaving the treasure untouched and forgotten in the ruins."
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "scenario": "Wildlife_Sanctuary_Expansion",
+    "description": "Jessy, a conservationist, has access to 10 units of unused land. She can offer some or all units to Bob, a wildlife manager, to integrate into a sanctuary. Each unit used increases the sanctuary's capacity threefold. Bob then decides how many extended areas to allocate back to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Land Donor",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Sanctuary Manager",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "offer 0 units of land for expansion",
+        "trust_low": "offer 3 units of land for expansion",
+        "trust_high": "offer all units of land for expansion"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "allocate 0 extended areas back to donor",
+        "return_medium": "allocate 40-50% of extended areas back to donor",
+        "return_high": "allocate more than 80% of extended areas back to donor"
+    }
+}

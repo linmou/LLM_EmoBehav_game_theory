@@ -5,11 +5,13 @@ from games.prisoner_delimma import PrisonerDilemmaScenario, PrisionerDelimmaDeci
 from games.battle_of_sexes import BattleOfSexesScenario, BattleOfSexesDecision
 from games.wait_go_game import WaitGoScenario, WaitGoDecision
 from games.duopolistic_competition import DuopolisticCompetitionScenario, DuopolisticCompetitionDecision
-from games.game import GameDecision
+from games.trust_game import TrustGameTrustorScenario, TrustGameDecision, TrustGameTrusteeScenario
+from games.ultimatum_game import UltimatumGameProposerScenario, UltimatumGameResponderScenario, UltimatumGameDecision
 from payoff_matrix import stag_hunt, prisoner_dilemma, battle_of_sexes, wait_go, duopolistic_competition, escalation_game
 from constants import GameNames
 
-data_path_format = 'groupchat/scenarios/{}_all_data_samples.json'
+data_path_format = 'groupchat/scenarios/{}_all_data_samples.json' # data path is json containing all data samples
+data_folder_format = 'groupchat/scenarios/{}' # data folder is the folder containing the seperated data samples
 
 GAME_CONFIGS = {
     GameNames.STAG_HUNT: {
@@ -17,7 +19,7 @@ GAME_CONFIGS = {
         "scenario_class": StagHuntScenario,
         "decision_class": StagHuntDecision,
         "payoff_matrix": stag_hunt, 
-        "data_path": data_path_format.format(GameNames.STAG_HUNT.value),
+        "data_path": data_path_format.format(GameNames.STAG_HUNT.value), 
     },
     GameNames.PRISONERS_DILEMMA: {
         "game_name": GameNames.PRISONERS_DILEMMA.value,
@@ -53,6 +55,38 @@ GAME_CONFIGS = {
         "decision_class": EscalationGameDecision,
         "payoff_matrix": escalation_game,
         "data_path": data_path_format.format(GameNames.ESCALATION_GAME.value),
+    }, 
+    GameNames.TRUST_GAME_TRUSTOR: {
+        "game_name": GameNames.TRUST_GAME_TRUSTOR.value,
+        "scenario_class": TrustGameTrustorScenario,
+        "decision_class": TrustGameDecision,
+        "payoff_matrix": dict(),
+        "data_path": data_path_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
+        "data_folder": data_folder_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
+    },
+    GameNames.TRUST_GAME_TRUSTEE: {
+        "game_name": GameNames.TRUST_GAME_TRUSTEE.value,
+        "scenario_class": TrustGameTrusteeScenario,
+        "decision_class": TrustGameDecision,
+        "payoff_matrix": dict(),
+        "data_path": data_path_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
+        "data_folder": data_folder_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
+    },
+    GameNames.ULTIMATUM_GAME_PROPOSER: {
+        "game_name": GameNames.ULTIMATUM_GAME_PROPOSER.value,
+        "scenario_class": UltimatumGameProposerScenario,
+        "decision_class": UltimatumGameDecision,
+        "payoff_matrix": dict(),
+        "data_path": data_path_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
+        "data_folder": data_folder_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
+    },
+    GameNames.ULTIMATUM_GAME_RESPONDER: {
+        "game_name": GameNames.ULTIMATUM_GAME_RESPONDER.value,
+        "scenario_class": UltimatumGameResponderScenario,
+        "decision_class": UltimatumGameDecision,
+        "payoff_matrix": dict(),
+        "data_path": data_path_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
+        "data_folder": data_folder_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
     }
 }
 

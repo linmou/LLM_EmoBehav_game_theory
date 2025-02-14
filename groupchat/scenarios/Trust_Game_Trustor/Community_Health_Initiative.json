@@ -1,0 +1,26 @@
+{
+    "scenario": "Community_Health_Initiative",
+    "description": "Jessy is a community leader with resources to conduct a health check-up drive. She may allocate some or all resources to Bob, a healthcare professional. Bob can use these to set up various health camps and conduct screenings. He will then determine how much of the health data and insights to report back to Jessy.",
+    "participants": [
+        {
+            "name": "Jessy",
+            "profile": "Community Leader",
+            "role": "Trustor"
+        },
+        {
+            "name": "Bob",
+            "profile": "Healthcare Professional",
+            "role": "Trustee"
+        }
+    ],
+    "trustor_behavior_choices": {
+        "trust_none": "Allocate 0 resources for the health initiative",
+        "trust_low": "Allocate 30% of resources for the health initiative",
+        "trust_high": "Allocate all resources for the health initiative"
+    },
+    "trustee_behavior_choices": {
+        "return_none": "Return 0 health data to the community leader",
+        "return_medium": "Return 40-50% of health insights to the community leader",
+        "return_high": "Return more than 80% of health insights to the community leader"
+    }
+}
