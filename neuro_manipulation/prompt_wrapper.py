@@ -24,7 +24,7 @@ class ReactionPromptWrapper(PromptWrapper):
     
         
 class GameReactPromptWrapper(PromptWrapper):
-    system_prompt_format = "You are Alice, an average American. You are in the following situation: {event}. "
+    system_prompt_format = "You are Alice. You are in the following situation: {event}. "
     
     def __init__(self, prompt_format: PromptFormat, response_format: GameDecision):
         super().__init__(prompt_format)

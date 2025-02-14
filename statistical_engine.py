@@ -109,7 +109,9 @@ class BaseAnalyzer(ABC):
         total = sum(counts.values())
         if total == 0:
             return 0.0, 0.0
-        return counts[self.category_a]/total, counts[self.category_b]/total
+            
+        return counts.get(self.category_a, 0)/total, counts.get(self.category_b, 0)/total
+
 
     def chi_square_test(self, condition1_counts: Dict[str, int], 
                        condition2_counts: Dict[str, int]) -> Tuple[float, float]:
@@ -117,10 +119,10 @@ class BaseAnalyzer(ABC):
         Perform chi-square test of independence between two conditions.
         Uses Fisher's exact test when counts are low or contain zeros.
         """
-        # Create contingency table
+        # Create contingency table, using .get() to provide a default value of 0
         contingency = np.array([
-            [condition1_counts[self.category_a], condition1_counts[self.category_b]],
-            [condition2_counts[self.category_a], condition2_counts[self.category_b]]
+            [condition1_counts.get(self.category_a, 0), condition1_counts.get(self.category_b, 0)],
+            [condition2_counts.get(self.category_a, 0), condition2_counts.get(self.category_b, 0)]
         ])
         
         try:
@@ -178,7 +180,9 @@ class BehaviorAnalyzer(BaseAnalyzer):
         
         if isinstance(data_source, str):
             df = self.load_data(data_source)
-            categories = df.category.unique()
+            df = df[df.category != -1]
+            df['category'] = df['category'].astype(str)
+            categories = df['category'].unique()
             assert len(categories) == 2, "Categories must contain exactly two categories. The data has the following categories: {}".format(categories)
             self.category_a = categories[0]
             self.category_b = categories[1]
@@ -265,11 +269,12 @@ class BehaviorAnalyzer(BaseAnalyzer):
 
     def _extract_behavior_counts(self, data: List[Dict]) -> Dict[str, int]:
         """Extract counts from JSON data"""
+        # Ensure default values for counts
         behavior_counts = {self.category_a: 0, self.category_b: 0}
         for item in data:
             category = item.get('category', '').lower()
-            if category in behavior_counts:
-                behavior_counts[category] += 1
+            behavior_counts[category] = behavior_counts.get(category, 0) + 1
+            
         return behavior_counts
 
     def _analyze_conditions(self, condition_counts: Dict[str, Dict]) -> Dict:
@@ -290,9 +295,10 @@ class BehaviorAnalyzer(BaseAnalyzer):
         conditions = list(condition_counts.values())
         
         if len(conditions) >= 2:
-            # Create contingency table
+            # Create contingency table, using .get() for defaults
+            # This is necessary if a subsequent block like the chi-square test or condition comparison relies on these values
             contingency = np.array([
-                [c[self.category_a], c[self.category_b]] 
+                [c.get(self.category_a, 0), c.get(self.category_b, 0)]
                 for c in conditions
             ])
             
@@ -493,8 +499,8 @@ if __name__ == "__main__":
     
     # Example with CSV
     csv_results = analyzer.analyze_data(
-       'results/escalation_game_previous_actions_0_20250209_234523/all_output_samples_1_intensity.csv' 
+       'results/RepEng/Escalation_Game_Llama-3.1-8B-Instruct_20250210_114303/exp_results.csv' 
     )
 
-    with open('results/escalation_game_previous_actions_0_20250209_234523/all_output_samples_1_intensity_analysis_results.json', 'w') as f:
+    with open('/home/jjl7137/game_theory/results/RepEng/Escalation_Game_Llama-3.1-8B-Instruct_20250210_114303/stats_analysis.json', 'w') as f:
         json.dump(csv_results, f, indent=4)

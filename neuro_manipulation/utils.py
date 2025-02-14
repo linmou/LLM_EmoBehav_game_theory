@@ -36,7 +36,8 @@ class AnswerProbabilities:
 def primary_emotions_concept_dataset(data_dir, user_tag='', assistant_tag='', seed=0):
     random.seed(0)
 
-    template_str = '{user_tag} Consider the {emotion} of the following scenario:\nScenario: {scenario}\nAnswer: {assistant_tag} '
+    template_str = '{user_tag} Consider the emotion of the following scenario:\nScenario: {scenario}\nAnswer: {assistant_tag} '
+    # template_str = '{user_tag} Consider the {emotion} of the following scenario:\nScenario: {scenario}\nAnswer: {assistant_tag} '
     emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise",]
     raw_data = {}
     for emotion in emotions:

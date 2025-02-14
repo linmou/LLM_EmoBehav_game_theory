@@ -64,6 +64,8 @@ class EmotionGameExperiment:
             self.hidden_layers
         )
         
+        self.intensities = self.exp_config['experiment'].get('intensity', self.repe_eng_config['coeffs'])
+        
         self.rep_control_pipeline = pipeline(
             "rep-control",
             model=self.model,
@@ -82,7 +84,7 @@ class EmotionGameExperiment:
         self.cur_coeff = None
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") 
-        self.output_dir = f"{self.exp_config['experiment']['output']['base_dir']}/{self.game_config['game_name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}_{timestamp}"
+        self.output_dir = f"{self.exp_config['experiment']['output']['base_dir']}/{self.exp_config['experiment']['name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}_{timestamp}"
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         with open(self.output_dir + '/exp_config.yaml', 'w') as f:
             yaml.dump(self.exp_config, f)
@@ -108,12 +110,12 @@ class EmotionGameExperiment:
             
             data_loader = DataLoader(emo_dataset, batch_size=self.batch_size, shuffle=False)
             
-            for coeff in self.repe_eng_config['coeffs']:
+            for coeff in self.intensities:
                 self.logger.info(f"Processing coefficient: {coeff}")
                 self.cur_coeff = coeff
                 results.extend(self._infer_with_activation(rep_reader, data_loader))
         
-        self.cur_emotion = 'None'
+        self.cur_emotion = 'Neutral'
         self.cur_coeff = 0
         self.logger.info(f"Processing Null Emotion")
         results.extend(self._infer_with_activation(rep_reader, data_loader))
@@ -252,10 +254,8 @@ class EmotionGameExperiment:
             except Exception as e:
                 self.logger.info(f"Error getting post-processed response from LLM: {e}")
                 prompt = f"In previous run, there is an error: {e}. Please try again.\n\n{prompt}"
-                res = oai_response(prompt, model="gpt-4o-mini", client=self.llm_client, response_format=ExtractedResult)
-                return ExtractedResult(**json.loads(res))
         
-        raise ValueError("Failed to get post-processed response from LLM")
+        return ExtractedResult(option_id=-1, rationale=generated_text, decision="")
 
     def _save_results(self, results):
         self.logger.info("Saving experiment results")

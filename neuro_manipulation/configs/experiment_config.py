@@ -12,7 +12,7 @@ def get_repe_eng_config(model_name):
         'block_name': "decoder_block",
         'control_method': "reading_vec",
         'acc_threshold': 0.,
-        'rebuild': False,
+        'rebuild': True,
         'n_difference': 1,
         'direction_method': 'pca',
         'rep_token': -1,
