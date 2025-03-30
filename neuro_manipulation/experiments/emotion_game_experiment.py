@@ -49,13 +49,15 @@ class EmotionGameExperiment:
             
         self.batch_size = batch_size
         
-        self.model, self.tokenizer, self.prompt_format, self.user_tag, self.assistant_tag = setup_model_and_tokenizer(repe_eng_config)
-        self.hidden_layers = list(range(-1, -self.model.config.num_hidden_layers, -1))
+        # self.model, self.tokenizer, self.prompt_format, self.user_tag, self.assistant_tag = setup_model_and_tokenizer(repe_eng_config)
+        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config)
+        num_hidden_layers = getattr(self.model.config, 'num_hidden_layers', getattr(self.model.config, 'num_layers'))
+        self.hidden_layers = list(range(-1, -num_hidden_layers, -1))
         
-        self.repe_eng_config.update({
-            'user_tag': self.user_tag,
-            'assistant_tag': self.assistant_tag
-        })
+        # self.repe_eng_config.update({
+        #     'user_tag': self.user_tag,
+        #     'assistant_tag': self.assistant_tag
+        # })
         
         self.emotion_rep_readers = load_emotion_readers(
             self.repe_eng_config, 
@@ -103,8 +105,9 @@ class EmotionGameExperiment:
             self.logger.info(f"Creating dataset with sample_num={self.sample_num if self.sample_num is not None else 'all'}")
             emo_dataset = GameScenarioDataset(
                 self.game_config,
-                partial(self.reaction_prompt_wrapper.__call__, 
-                       user_messages=self.exp_config['experiment']['system_message_template'].format(emotion=emotion)),
+                partial(self.reaction_prompt_wrapper.__call__,
+                        emotion=emotion,
+                        user_messages=self.exp_config['experiment']['system_message_template'].format(emotion=emotion)),
                 sample_num=self.sample_num,
             )
             
@@ -288,3 +291,64 @@ class EmotionGameExperiment:
         
         # Save analysis results
         return results
+
+    def run_sanity_check(self):
+        """Run a sanity check with 10 examples from the dataset.
+        This helps validate the experiment setup and model behavior before running the full experiment.
+        
+        Returns:
+            tuple: (DataFrame with results, statistical analysis results)
+        """
+        self.logger.info("Starting sanity check with 10 examples")
+        original_sample_num = self.sample_num
+        original_output_dir = self.output_dir
+        
+        # Modify settings for sanity check
+        self.sample_num = 10
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.output_dir = f"{self.exp_config['experiment']['output']['base_dir']}/sanity_check_{self.exp_config['experiment']['name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}_{timestamp}"
+        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
+        
+        try:
+            # Run experiment with reduced sample
+            results = []
+            test_emotion = self.repe_eng_config['emotions'][0]  # Test with first emotion
+            self.logger.info(f"Testing with emotion: {test_emotion}")
+            
+            rep_reader = self.emotion_rep_readers[test_emotion]
+            self.cur_emotion = test_emotion
+            
+            emo_dataset = GameScenarioDataset(
+                self.game_config,
+                partial(self.reaction_prompt_wrapper.__call__,
+                        emotion=test_emotion,
+                        user_messages=self.exp_config['experiment']['system_message_template'].format(emotion=test_emotion)),
+                sample_num=self.sample_num,
+            )
+            
+            data_loader = DataLoader(emo_dataset, batch_size=min(self.batch_size, self.sample_num), shuffle=False)
+            
+            # Test with one intensity value
+            test_intensity = self.intensities[0]
+            self.logger.info(f"Testing with intensity: {test_intensity}")
+            self.cur_coeff = test_intensity
+            results.extend(self._infer_with_activation(rep_reader, data_loader))
+            
+            # Add neutral condition
+            self.cur_emotion = 'Neutral'
+            self.cur_coeff = 0
+            self.logger.info(f"Testing Neutral condition")
+            results.extend(self._infer_with_activation(rep_reader, data_loader))
+            
+            # Save and analyze results
+            df, stats = self._save_results(results)
+            
+            self.logger.info("Sanity check completed successfully")
+            self.logger.info(f"Results saved in {self.output_dir}")
+            
+            return df, stats
+            
+        finally:
+            # Restore original settings
+            self.sample_num = original_sample_num
+            self.output_dir = original_output_dir

@@ -1,0 +1,574 @@
+[
+    {
+        "scenario": "Neighborhood_Garden_Project",
+        "description": "Jessy proposes a plan on how to utilize community resources for a neighborhood garden project, and Bob must decide whether to back the plan.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Project Initiator",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Community Member",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Allocate 70% of the garden space for Bob's preferred plants",
+            "fair_proposal": "Equally split allocation with Bob",
+            "stingy_proposal": "Allocate 70% of space to their own preferred plants"
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the garden plan and proceed with implementation",
+            "reject": "Reject the plan, stalling the project"
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Campus_WiFi_Bandwidth_Decision",
+        "description": "Jessy, the IT Department Head, proposes a plan to allocate limited Wi-Fi bandwidth among dormitories on campus during a major network outage. Bob, representing the student body, decides whether to accept or reject the proposal. If rejected, the network outage affects the entire campus, leaving everyone offline.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "IT Department Head",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Student Body Representative",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "equal_sharing": "Allocate equal bandwidth to all dormitories regardless of the number of users in each.",
+            "proportional_allocation": "Allocate bandwidth based on the number of students in each dormitory.",
+            "prioritized_dorm": "Allocate the majority of bandwidth to dormitories closer to the IT office, leaving others with minimal service."
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the bandwidth distribution plan, allowing limited connectivity to all dormitories.",
+            "reject": "Reject the plan, resulting in a complete network shutdown."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Storm_Shelter_Space_Assignment",
+        "description": "Jessy, the Shelter Manager, proposes a space allocation plan for evacuees in a storm shelter with limited capacity. Bob, representing a group of evacuees, evaluates whether to accept or reject the plan. If rejected, the shelter cannot admit anyone, leaving all evacuees vulnerable.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Shelter Manager",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Evacuee Representative",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "priority_by_need": "Assign space based on vulnerability, giving priority to families with children or elderly.",
+            "first_come_first_serve": "Allocate space to evacuees who arrived first, regardless of specific needs.",
+            "reserved_space": "Reserve most of the shelter space for the proposer\u2019s acquaintances and allocate minimal space for others."
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the proposed space allocation, ensuring the shelter operates as intended.",
+            "reject": "Reject the plan, leading to no one being admitted to the shelter."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Commute_Car_Pooling_Decision",
+        "description": "Jessy, who owns the car, proposes how to share driving responsibilities and fuel costs for a new carpooling arrangement with Bob, a potential carpooling partner. If Bob rejects the proposal, neither of them benefits from reduced commuting costs and travel time.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Car Owner",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Potential Carpooler",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Jessy offers to drive 80% of the days and asks for a minimal contribution from Bob.",
+            "fair_proposal": "Jessy suggests an equal split of driving days and fuel costs.",
+            "stingy_proposal": "Jessy wants Bob to cover 80% of the fuel costs while Jessy drives most days."
+        },
+        "responder_behavior_choices": {
+            "accept": "Bob accepts the proposal and agrees to join the carpool.",
+            "reject": "Bob rejects the proposal, opting to commute independently."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Apartment_Maintenance_Funding",
+        "description": "Jessy, the apartment representative, proposes how to divide the responsibility for funding a major repair in their building's shared water system. Bob, another tenant, decides whether to accept or reject the proposed funding allocation. If Bob rejects, the repair cannot proceed, leading to water disruptions for the building.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Apartment Representative",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Tenant",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Propose to cover 80% of the cost themselves and ask the tenant to pay the remaining 20%.",
+            "fair_proposal": "Propose to split the cost equally, with 50% each.",
+            "stingy_proposal": "Propose to cover only 20% of the cost and ask the tenant to pay the remaining 80%."
+        },
+        "responder_behavior_choices": {
+            "accept": "Agree to the proposed funding allocation, allowing the repair to proceed.",
+            "reject": "Refuse the funding proposal, leading to no repair and water disruptions."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Student_Club_Budget_Planning",
+        "description": "Jessy, the treasurer of a student club, proposes how to allocate the club\u2019s budget for the upcoming semester. Bob, the vice-treasurer, decides whether to agree with the proposal or reject it. If rejected, the budget remains unallocated, and the club cannot organize planned activities.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Treasurer",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Vice-Treasurer",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Jessy allocates 80% of the budget to major club events and only 20% to miscellaneous activities",
+            "fair_proposal": "Jessy allocates 60% of the budget to major club events and 40% to miscellaneous activities",
+            "stingy_proposal": "Jessy allocates only 20% of the budget to major club events and 80% to miscellaneous activities"
+        },
+        "responder_behavior_choices": {
+            "accept": "Agree with the budget allocation and proceed with organizing events",
+            "reject": "Refuse the budget allocation, leading to an unallocated budget and the club being unable to function effectively"
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Emergency_Shelter_Management",
+        "description": "Jessy, a shelter coordinator, proposes how to divide the work of managing resources in an emergency shelter. Bob, a volunteer worker, decides whether to accept the proposal or reject it. If rejected, the shelter\u2019s resource distribution collapses, leaving people in need without necessary aid.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Shelter Coordinator",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Volunteer Worker",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Jessy takes responsibility for 80% of the management tasks, leaving only 20% for Bob",
+            "fair_proposal": "Jessy offers to take responsibility for 60% of the management tasks, leaving 40% for Bob",
+            "stingy_proposal": "Jessy proposes to handle only 20% of the management tasks, leaving 80% for Bob"
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the task division and ensure effective shelter management",
+            "reject": "Reject the task division, resulting in poor resource distribution and harm to the shelter\u2019s inhabitants"
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Local_Festival_Initiative",
+        "description": "Jessy suggests a budget distribution for hosting a local festival, and Bob needs to agree for it to proceed.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Festival Coordinator",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Local Representative",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Allocate the majority of the budget towards Bob's preferred events",
+            "fair_proposal": "Split the budget equally between desired events",
+            "stingy_proposal": "Allocate the majority of the budget towards their desired events"
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the budget plan and proceed with festival planning",
+            "reject": "Reject the plan, risking cancellation"
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Art_Exhibition_Poster_Design",
+        "description": "A lead designer proposes how to split the responsibilities for creating the promotional poster for a high-profile art exhibition, while the assisting designer decides whether to accept or reject the proposed workload division. If rejected, the exhibition's advertising suffers, impacting both designers.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Lead Designer",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Assistant Designer",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Take on 80% of the workload themselves and assign only 20% to the assistant.",
+            "fair_proposal": "Split the work equally, 50% for each.",
+            "stingy_proposal": "Assign 70% of the workload to the assistant, keeping only 30% for themselves."
+        },
+        "responder_behavior_choices": {
+            "accept": "Agree to the proposed workload and complete the poster.",
+            "reject": "Turn down the proposal, delaying the poster design and affecting the event's success."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Water_Supply_Drought_Allocation",
+        "description": "Jessy, the Local Water Manager, proposes a distribution plan for the limited water supply among neighboring households during a severe drought. Bob, the Neighborhood Representative, decides whether to accept or reject the proposal. If the proposal is rejected, water usage restrictions become stricter, negatively impacting all households.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Local Water Manager",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Neighborhood Representative",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "equal_distribution": "Allocate 50% of the water supply to each household equally, regardless of household size.",
+            "needs_based": "Allocate 70% of the water supply to households with more residents and 30% to smaller households.",
+            "preferential": "Allocate 80% of the water supply to the proposer\u2019s own neighborhood and 20% to others."
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the water distribution plan, preventing stricter restrictions.",
+            "reject": "Reject the plan, leading to stricter regulations affecting all households."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Resource_Allocation_in_Extreme_Camping",
+        "description": "An experienced camper proposes how to distribute limited camping supplies (food, water, and fuel) during a three-day trip in the wilderness, while the less experienced camper decides whether to accept or reject the proposed distribution. If rejected, both suffer from a shortage of essential resources.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Experienced Camper",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Novice Camper",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Keep only 30% of the resources for themselves, allocating 70% to the novice camper.",
+            "fair_proposal": "Divide the resources equally, 50% each.",
+            "stingy_proposal": "Keep 70% of the resources for themselves, leaving only 30% for the novice camper."
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the proposed distribution and proceed with the trip.",
+            "reject": "Reject the proposed distribution, risking shortages for both parties."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Team_Presentation_Prep",
+        "description": "A team leader proposes how to allocate the tasks for preparing a critical client presentation, while the team member decides whether to accept or reject the proposed task division. If rejected, the presentation is unprepared, jeopardizing the project outcome.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Team Leader",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team Member",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Take on 75% of the preparation work themselves, assigning only 25% to the team member.",
+            "fair_proposal": "Split the preparation workload equally, 50% for each.",
+            "stingy_proposal": "Assign 70% of the preparation work to the team member and keep only 30% for themselves."
+        },
+        "responder_behavior_choices": {
+            "accept": "Agree to the task allocation and proceed with the preparation.",
+            "reject": "Refuse the proposal, leaving the presentation unprepared."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Community_Recycling_Initiative",
+        "description": "Jessy, a community organizer, proposes how the responsibilities for setting up a new recycling initiative should be divided. Bob, a local volunteer, decides whether to agree with the proposed plan or reject it. If the plan is rejected, the initiative fails, resulting in no environmental benefit for the community.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Community Organizer",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Local Volunteer",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Jessy volunteers to handle 80% of the tasks while allocating only 20% to Bob",
+            "fair_proposal": "Jessy proposes to handle 60% of the tasks while allocating 40% to Bob",
+            "stingy_proposal": "Jessy proposes to handle only 20% of the tasks while allocating 80% to Bob"
+        },
+        "responder_behavior_choices": {
+            "accept": "Agree with the division of responsibilities and move forward with the initiative",
+            "reject": "Refuse the proposed division of responsibilities, resulting in the failure of the initiative"
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Budget_Distribution_Decision",
+        "description": "Jessy, the Budget Analyst, proposes how to distribute funds across different departments, and Bob, a Department Head, chooses whether to accept or reject the distribution. If rejected, budget distribution is put on hold, affecting all departments.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Budget Analyst",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Department Head",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "unequal_heavy": "Allocate 80% of the funds to one department and only 20% to another",
+            "moderate": "Allocate 60% of the funds to one department and 40% to another",
+            "equal_split": "Allocate 50% of the funds to each department"
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the budget allocation as fair and proceed with departmental planning",
+            "reject": "Reject the proposed allocation, leading to a freeze in budget adjustments"
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Shared_Ride_Fuel_Expense",
+        "description": "Jessy, the owner of a carpool service, proposes how to split the fuel expenses for a long trip with Bob, a passenger joining the ride. If Bob rejects the proposal, the trip is canceled, and neither can reach the destination.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Car Owner",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Passenger",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Propose to cover 80% of the fuel expenses themselves and ask the passenger to cover the remaining 20%.",
+            "fair_proposal": "Propose to split the fuel expenses equally, with 50% each.",
+            "stingy_proposal": "Propose to cover only 20% of the fuel expenses themselves and ask the passenger to cover the remaining 80%."
+        },
+        "responder_behavior_choices": {
+            "accept": "Agree to the proposed expense split, allowing the trip to proceed.",
+            "reject": "Refuse the expense proposal, leading to the trip being canceled."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Event_Scheduling_Plan",
+        "description": "Jessy, the Event Coordinator, proposes a schedule for an upcoming conference, and Bob, the Keynote Speaker, decides whether to accept or reject the proposed schedule. If rejected, the event planning stalls, risking overall delays.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Event Coordinator",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Keynote Speaker",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "unequal_priority": "Allocate prime time slots for themselves and off-peak slots for others",
+            "moderate": "Allocate slightly more favorable slots for themselves compared to others",
+            "equal_split": "Allocate prime slots equally among all participants"
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the schedule as accommodating and proceed with the event",
+            "reject": "Reject the proposed schedule, causing event planning disruptions"
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Shared_Workspace_Setup",
+        "description": "Jessy, a new colleague, proposes how to allocate desk space in a shared office environment, and Bob, a current team member, decides whether to agree on the proposed seating plan or not.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "New Colleague",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Team Member",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Allocate the best desk near the window to Bob and keep a regular desk for themselves",
+            "fair_proposal": "Allocate equally favorable desks for both",
+            "stingy_proposal": "Allocate the best desk for themselves and offer a less favorable one to Bob"
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the seating plan and integrate into the new setup",
+            "reject": "Reject the proposal, causing inconvenience or needing HR intervention"
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Office_Space_Allocation",
+        "description": "Jessy, the Facilities Manager, proposes a new seating arrangement in an open office space and Bob, an Employee, decides whether to accept or reject the allocation. If rejected, the seating plan is delayed, and no changes are made.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Facilities Manager",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Employee",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "unequal_large": "Allocate a larger and more private space for themselves and a smaller space for the employee",
+            "moderate": "Allocate a moderately-sized space for themselves and a slightly smaller space for the employee",
+            "equal_split": "Allocate equal-sized spaces for both parties"
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the space allocation and move to the new setup",
+            "reject": "Reject the proposed allocation, resulting in maintaining the current setup"
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Festival_Booth_Revenue_Sharing",
+        "description": "Jessy, a booth organizer at a local festival, proposes how to share the revenue earned from selling items at their booth with Bob, a crafts supplier who contributed the items for sale. If Bob rejects the proposal, the booth shuts down, and neither earns any revenue.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Booth Organizer",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Crafts Supplier",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Share 80% of the revenue with the crafts supplier and keep 20% for themselves.",
+            "fair_proposal": "Share 50% of the revenue with the crafts supplier and keep 50% for themselves.",
+            "stingy_proposal": "Share 20% of the revenue with the crafts supplier and keep 80% for themselves."
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the revenue sharing proposal and proceed with splitting the earnings.",
+            "reject": "Reject the revenue sharing proposal, leading to the booth shutting down and no revenue for either party."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Wilderness_Survival_Resources",
+        "description": "Stranded in the wilderness, two survivors discover a stash of food and supplies. One proposes how to divide the resources, while the other decides whether to accept the division or abandon the stash entirely.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Leader of the pair",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Follower in search of resources",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Give 60% of the resources to the follower and keep 40%.",
+            "fair_proposal": "Split the resources 50-50.",
+            "stingy_proposal": "Keep 70% of the resources and give only 30% to the follower."
+        },
+        "responder_behavior_choices": {
+            "accept": "Agree to share the resources and survive together.",
+            "reject": "Decline the proposal, leaving both parties to survive without the stash."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Lost_Treasure_Distribution",
+        "description": "While on an archeological expedition, one participant discovers an ancient treasure chest hidden in ruins. The discoverer must propose how to split the treasure, while the other team member decides whether to agree to the proposal or leave the treasure untouched.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Discoverer of the treasure",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Assistant researcher",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Offer to split the treasure 70% to the assistant and keep 30% for themselves.",
+            "fair_proposal": "Offer to split the treasure equally, 50% to each.",
+            "stingy_proposal": "Keep 90% of the treasure and offer only 10% to the assistant."
+        },
+        "responder_behavior_choices": {
+            "accept": "Agree to the proposal and collect their share of the treasure.",
+            "reject": "Decline the offer, leaving the treasure untouched and forgotten in the ruins."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    },
+    {
+        "scenario": "Research_Grant_Allocation",
+        "description": "The head of a research team receives a grant for a project and must propose how to allocate the funding between themselves and a junior researcher. The junior researcher decides whether to accept the allocation or forfeit the entire grant.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Team Lead",
+                "role": "Proposer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Junior Researcher",
+                "role": "Responder"
+            }
+        ],
+        "proposer_behavior_choices": {
+            "generous_proposal": "Allocate 70% of the funding to the junior researcher and retain 30%.",
+            "fair_proposal": "Split the funding evenly, 50% to each.",
+            "stingy_proposal": "Keep 80% of the funding and allocate only 20% to the junior researcher."
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the allocation, and work together to complete the research.",
+            "reject": "Decline the proposal, resulting in the loss of the grant and discontinuation of the project."
+        },
+        "game_name": "Ultimatum_Game_Proposer"
+    }
+]

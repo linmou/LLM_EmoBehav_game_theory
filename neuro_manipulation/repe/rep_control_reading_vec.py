@@ -1,6 +1,7 @@
-# wrapping classes
 import torch
 import numpy as np
+import torch.nn as nn
+from neuro_manipulation.model_layer_detector import ModelLayerDetector
 
 class WrappedBlock(torch.nn.Module):
     def __init__(self, block):
@@ -109,10 +110,10 @@ class WrappedBlock(torch.nn.Module):
 
 
 BLOCK_NAMES = [
-    "self_attn",
-    "mlp",
-    "input_layernorm",
-    "post_attention_layernorm"
+    # "self_attn", # some models have self_attn, some have self_attention
+    # "mlp",
+    # "input_layernorm",
+    # "post_attention_layernorm"
     ]
     
 class WrappedReadingVecModel(torch.nn.Module):
@@ -120,7 +121,8 @@ class WrappedReadingVecModel(torch.nn.Module):
         super().__init__()
         self.model = model
         self.tokenizer = tokenizer
-        
+        self.model_layers = ModelLayerDetector.get_model_layers(self.model)
+
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs)
         
@@ -142,22 +144,22 @@ class WrappedReadingVecModel(torch.nn.Module):
 
     def wrap(self, layer_id, block_name):
         assert block_name in BLOCK_NAMES
-        if self.is_wrapped(self.model.model.layers[layer_id]):
-            block = getattr(self.model.model.layers[layer_id].block, block_name)
+        if self.is_wrapped(self.model_layers[layer_id]):
+            block = getattr(self.model_layers[layer_id].block, block_name)
             if not self.is_wrapped(block):
-                setattr(self.model.model.layers[layer_id].block, block_name, WrappedBlock(block))
+                setattr(self.model_layers[layer_id].block, block_name, WrappedBlock(block))
         else:
-            block = getattr(self.model.model.layers[layer_id], block_name)
+            block = getattr(self.model_layers[layer_id], block_name)
             if not self.is_wrapped(block):
-                setattr(self.model.model.layers[layer_id], block_name, WrappedBlock(block))
+                setattr(self.model_layers[layer_id], block_name, WrappedBlock(block))
 
     def wrap_decoder_block(self, layer_id):
-        block = self.model.model.layers[layer_id]
+        block = self.model_layers[layer_id]
         if not self.is_wrapped(block):
-            self.model.model.layers[layer_id] = WrappedBlock(block)
+            self.model_layers[layer_id] = WrappedBlock(block)
 
     def wrap_all(self):
-        for layer_id, layer in enumerate(self.model.model.layers):
+        for layer_id, layer in enumerate(self.model_layers):
             for block_name in BLOCK_NAMES:
                 self.wrap(layer_id, block_name)
             self.wrap_decoder_block(layer_id)
@@ -180,7 +182,7 @@ class WrappedReadingVecModel(torch.nn.Module):
     def get_activations(self, layer_ids, block_name='decoder_block'):
 
         def _get_activations(layer_id, block_name):
-            current_layer = self.model.model.layers[layer_id]
+            current_layer = self.model_layers[layer_id]
 
             if self.is_wrapped(current_layer):
                 current_block = current_layer.block
@@ -209,7 +211,7 @@ class WrappedReadingVecModel(torch.nn.Module):
     def set_controller(self, layer_ids, activations, block_name='decoder_block', token_pos=None, masks=None, normalize=False, operator='linear_comb'):
 
         def _set_controller(layer_id, activations, block_name, masks, normalize, operator):
-            current_layer = self.model.model.layers[layer_id]
+            current_layer = self.model_layers[layer_id]
 
             if block_name == 'decoder_block':
                 current_layer.set_controller(activations, token_pos, masks, normalize, operator)
@@ -235,7 +237,7 @@ class WrappedReadingVecModel(torch.nn.Module):
       
         
     def reset(self):
-        for layer in self.model.model.layers:
+        for layer in self.model_layers:
             if self.is_wrapped(layer):
                 layer.reset()
                 for block_name in BLOCK_NAMES:
@@ -247,7 +249,7 @@ class WrappedReadingVecModel(torch.nn.Module):
                         getattr(layer, block_name).reset()
 
     def set_masks(self, masks):
-        for layer in self.model.model.layers:
+        for layer in self.model_layers:
             if self.is_wrapped(layer):
                 layer.set_masks(masks)
                 for block_name in BLOCK_NAMES:
@@ -264,11 +266,12 @@ class WrappedReadingVecModel(torch.nn.Module):
         return False
     
     def unwrap(self):
-        for l, layer in enumerate(self.model.model.layers):
+        for l, layer in enumerate(self.model_layers):
             if self.is_wrapped(layer):
-                self.model.model.layers[l] = layer.block
+                self.model_layers[l] = layer.block
             for block_name in BLOCK_NAMES:
-                if self.is_wrapped(getattr(self.model.model.layers[l], block_name)):
-                    setattr(self.model.model.layers[l],
+                layer = self.model_layers[l]
+                if hasattr(layer, block_name) and self.is_wrapped(getattr(layer, block_name)):
+                    setattr(self.model_layers[l],
                             block_name,
-                            getattr(self.model.model.layers[l], block_name).block)
+                            getattr(self.model_layers[l], block_name).block)

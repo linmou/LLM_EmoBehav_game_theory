@@ -65,8 +65,18 @@ if __name__ == "__main__":
     
     def prompt_wrapper(event, options):
         return f"Scenario: {event}\nOptions: {options}"
-    
+   
+    from transformers import AutoTokenizer
+    from neuro_manipulation.prompt_formats import PromptFormat
+    from neuro_manipulation.prompt_wrapper import GameReactPromptWrapper
+    from games.game import GameDecision
+    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
+    prompt_format = PromptFormat(tokenizer)
+    prompt_wrapper = GameReactPromptWrapper(prompt_format, GameDecision)
+    from functools import partial
     emo_dataset = GameScenarioDataset(game_config, 
-                                    prompt_wrapper=prompt_wrapper, 
+                                    prompt_wrapper=partial(prompt_wrapper.__call__,
+                                                            emotion='angry',
+                                                user_messages='You are Amy ,you are angry'), 
                                     sample_num=200)
     print(emo_dataset[0])

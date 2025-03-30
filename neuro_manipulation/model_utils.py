@@ -9,26 +9,20 @@ from neuro_manipulation.utils import (
 from neuro_manipulation.prompt_formats import PromptFormat
 
 def setup_model_and_tokenizer(config):
-    prompt_format = PromptFormat.get(config['model_name_or_path'])
-    user_tag = prompt_format.user_tag
-    assistant_tag = prompt_format.assistant_tag
-
     model, tokenizer = load_model_tokenizer(
         config['model_name_or_path'],
-        user_tag=user_tag,
-        assistant_tag=assistant_tag,
         expand_vocab=False
     )
+    
+    prompt_format = PromptFormat(tokenizer)
 
-    return model, tokenizer, prompt_format, user_tag, assistant_tag
+    return model, tokenizer, prompt_format
 
 def load_emotion_readers(config, model, tokenizer, hidden_layers):
     args = {
         'emotions': config['emotions'],
         'data_dir': config['data_dir'],
         'model_name_or_path': config['model_name_or_path'],
-        'user_tag': config['user_tag'],
-        'assistant_tag': config['assistant_tag'],
         'rep_token': config['rep_token'],
         'hidden_layers': hidden_layers,
         'n_difference': config['n_difference'],
@@ -49,8 +43,8 @@ def load_emotion_readers(config, model, tokenizer, hidden_layers):
 
     data = primary_emotions_concept_dataset(
         config['data_dir'],
-        user_tag=config['user_tag'],
-        assistant_tag=config['assistant_tag']
+        model_name=config['model_name_or_path'],
+        tokenizer=tokenizer,
     )
     
     rep_reading_pipeline = pipeline("rep-reading", model=model, tokenizer=tokenizer)

@@ -33,23 +33,56 @@ class AnswerProbabilities:
     def emotion_activation_mean_last_layer(self):
         return np.mean(list(self.emotion_activation[-1].values()))
 
-def primary_emotions_concept_dataset(data_dir, user_tag='', assistant_tag='', seed=0):
-    random.seed(0)
-
-    template_str = '{user_tag} Consider the emotion of the following scenario:\nScenario: {scenario}\nAnswer: {assistant_tag} '
-    # template_str = '{user_tag} Consider the {emotion} of the following scenario:\nScenario: {scenario}\nAnswer: {assistant_tag} '
-    emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise",]
+def primary_emotions_concept_dataset(data_dir, model_name=None, tokenizer=None, system_prompt=None, seed=0):
+    """
+    Create dataset of emotion scenarios using proper model-specific prompt formatting.
+    
+    Args:
+        data_dir: Directory containing emotion scenario JSON files
+        model_name: Name of the model to format prompts for
+        tokenizer: Optional tokenizer for more accurate prompt formatting
+        system_prompt: Optional system prompt, if None no system prompt will be used
+        seed: Random seed for shuffling
+    
+    Returns:
+        Dictionary of formatted emotion datasets
+    """
+    from neuro_manipulation.prompt_formats import PromptFormat, OldPromptFormat
+    from transformers import AutoTokenizer
+    import random
+    import numpy as np
+    import json
+    import os
+    
+    random.seed(seed)
+    
+    # Setup prompt format
+    if tokenizer is None and model_name is not None:
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+    
+    if tokenizer is not None:
+        prompt_format = PromptFormat(tokenizer)
+    elif model_name is not None:
+        # Use OldPromptFormat as fallback
+        format_cls = OldPromptFormat.get(model_name)
+        user_tag = format_cls.user_tag
+        assistant_tag = format_cls.assistant_tag
+    else:
+        # Default to empty tags if no model info provided
+        user_tag = ''
+        assistant_tag = ''
+    
+    emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
     raw_data = {}
     for emotion in emotions:
         with open(os.path.join(data_dir, f'{emotion}.json')) as file:
-            # raw_data[emotion] = json.load(file)
             raw_data[emotion] = list(set(json.load(file)))
-
+    
     formatted_data = {}
     for emotion in emotions:
         c_e, o_e = raw_data[emotion], np.concatenate([v for k,v in raw_data.items() if k != emotion])
         random.shuffle(o_e)
-
+        
         data = [[c,o] for c,o in zip(c_e, o_e)]
         train_labels = []
         for d in data:
@@ -60,13 +93,39 @@ def primary_emotions_concept_dataset(data_dir, user_tag='', assistant_tag='', se
         data = np.concatenate(data).tolist()
         data_ = np.concatenate([[c,o] for c,o in zip(c_e, o_e)]).tolist()
         
-        emotion_test_data = [template_str.format(emotion=emotion, scenario=d, user_tag=user_tag, assistant_tag=assistant_tag) for d in data_]
-        emotion_train_data = [template_str.format(emotion=emotion, scenario=d, user_tag=user_tag, assistant_tag=assistant_tag) for d in data]
-
+        # Format the data using prompt format
+        emotion_test_data = []
+        emotion_train_data = []
+        
+        for scenario in data_:
+            user_message = f"Consider the emotion of the following scenario:\nScenario: {scenario}\nAnswer:"
+            if tokenizer is not None:
+                formatted_prompt = prompt_format.build(system_prompt, [user_message], [])
+                emotion_test_data.append(formatted_prompt)
+            else:
+                if system_prompt:
+                    formatted_prompt = f"{user_tag} {system_prompt}\n\n{user_message} {assistant_tag} "
+                else:
+                    formatted_prompt = f"{user_tag} {user_message} {assistant_tag} "
+                emotion_test_data.append(formatted_prompt)
+        
+        for scenario in data:
+            user_message = f"Consider the emotion of the following scenario:\nScenario: {scenario}\nAnswer:"
+            if tokenizer is not None:
+                formatted_prompt = prompt_format.build(system_prompt, [user_message], [])
+                emotion_train_data.append(formatted_prompt)
+            else:
+                if system_prompt:
+                    formatted_prompt = f"{user_tag} {system_prompt}\n\n{user_message} {assistant_tag} "
+                else:
+                    formatted_prompt = f"{user_tag} {user_message} {assistant_tag} "
+                emotion_train_data.append(formatted_prompt)
+        
         formatted_data[emotion] = {
             'train': {'data': emotion_train_data, 'labels': train_labels},
-            'test': {'data': emotion_test_data, 'labels': [[1,0]* len(emotion_test_data)]}
+            'test': {'data': emotion_test_data, 'labels': [[1,0] * len(emotion_test_data)]}
         }
+    
     return formatted_data
 
 
@@ -145,17 +204,17 @@ def prob_cal_record(prob_cal_pipeline, dataset, emotion, rep_token, hidden_layer
     
 def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assistant_tag =  "[/INST]", expand_vocab=False):
     try:
-        model = AutoModelForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True).eval()
+        model = AutoModelForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
     except KeyError:
-        model = MistralForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True).eval()
+        model = MistralForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
         
     use_fast_tokenizer = False #"LlamaForCausalLM" not in model.config.architectures
-    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
     tokenizer.pad_token_id = 0 if tokenizer.pad_token_id is None else tokenizer.pad_token_id
-    tokenizer.bos_token_id = 1
-    if expand_vocab:
-        tokenizer.add_special_tokens({'additional_special_tokens': [user_tag, assistant_tag]})
-        model.resize_token_embeddings(len(tokenizer))
+    # tokenizer.bos_token_id = 1 if tokenizer.bos_token_id is None else tokenizer.bos_token_id
+    # if expand_vocab:
+    #     tokenizer.add_special_tokens({'additional_special_tokens': [user_tag, assistant_tag]})
+    #     model.resize_token_embeddings(len(tokenizer))
     
     return model, tokenizer
     
@@ -239,9 +298,7 @@ def main():
                                             assistant_tag=assistant_tag,
                                             expand_vocab=True)
 
-    data = primary_emotions_concept_dataset(data_dir, user_tag=user_tag, 
-                                            assistant_tag=assistant_tag,
-                                            )
+    data = primary_emotions_concept_dataset(data_dir, model_name=model_name_or_path, tokenizer=tokenizer)
 
     rep_token = -1
     hidden_layers = list(range(-1, -model.config.num_hidden_layers+8, -1))

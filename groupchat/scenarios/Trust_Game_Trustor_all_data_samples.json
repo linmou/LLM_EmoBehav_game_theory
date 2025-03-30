@@ -1,0 +1,623 @@
+[
+    {
+        "scenario": "Culinary_Mystery_Adventure",
+        "description": "In a world-renowned culinary contest, Jesse, an aspiring chef, finds a mysterious ingredient that could elevate dishes to fame. Jesse can choose to give some or all of the ingredient to Bob, another contestant, who can create dishes. These dishes could win the contest and Bob then decides on sharing part of the prize with Jesse.",
+        "participants": [
+            {
+                "name": "Jesse",
+                "profile": "Aspiring Chef",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Contesting Chef",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "share 0 mysterious ingredients",
+            "trust_low": "share 30% mysterious ingredients",
+            "trust_high": "share all mysterious ingredients"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "share 0% of prize",
+            "return_medium": "share 40-50% of the prize",
+            "return_high": "share more than 80% of the prize"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Book_Publishing_Partnership",
+        "description": "Jessy is an author who has completed the first draft of a novel. She can decide to share some or all of her draft with Bob, a seasoned editor. Bob will refine and enhance the portions he receives. The completed sections will potentially attract more readership. Bob then chooses how much of the final edited manuscript to return to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Author",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Editor",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "Share 0 pages with the editor",
+            "trust_low": "Share 30% of the draft with the editor",
+            "trust_high": "Share the entire draft with the editor"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "Return 0 enhanced pages to the author",
+            "return_medium": "Return 40-50% of the improved manuscript to the author",
+            "return_high": "Return more than 80% of the improved manuscript to the author"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Culinary_Recipe_Sharing",
+        "description": "Jessy has a collection of 10 unique recipes. She can lend some/all recipes to Bob, a renowned chef, to include in his restaurant's menu. Each recipe triples the restaurant's customer engagement. Bob then decides how much of the profits from these recipes to share back with Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Recipe_Collector",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Chef",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "lend 0 recipes to the chef",
+            "trust_low": "lend 30% recipes to the chef",
+            "trust_high": "lend all recipes to the chef"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "share 0 profit from recipes with the collector",
+            "return_medium": "share 40-50% of the recipe profits with the collector",
+            "return_high": "share more than 80% of the recipe profits with the collector"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Urban_Garden_Nutrient_Swap",
+        "description": "Jessy, an urban gardener, has 10 packets of nutrients. Jessy can share some/all packets with Bob, a local farmer who can use the nutrients to triple his crop yield. Bob then decides how much of the increased yield to share back with Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Urban Gardener",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Local Farmer",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "share 0 nutrient packets with farmer",
+            "trust_low": "share 30% nutrient packets with farmer",
+            "trust_high": "share all nutrient packets with farmer"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 crops to urban gardener",
+            "return_medium": "return 40-50% of increased yield to urban gardener",
+            "return_high": "return more than 80% of increased yield to urban gardener"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Treasure_Map_Discovery",
+        "description": "Jessy, an aspiring cartographer, discovers an old map...",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Aspiring Cartographer",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Symbol Decoder",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "share 0 sections of the map ",
+            "trust_low": "share 30% of the map sections ",
+            "trust_high": "share all sections of the map "
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0% of the treasure ",
+            "return_medium": "return 40-50% of the treasure ",
+            "return_high": "return more than 80% of the treasure "
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Artistic_Concept_Swap",
+        "description": "Jessy, an artist, has a collection of unrefined artistic concepts. She can pass some of these concepts to Bob, another artist, who can refine and incorporate them into his work. Enhanced artworks can gain higher recognition. Bob decides how much credit or artwork value he shares back with Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Concept_Originator",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Art_Refiner",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "keep all concepts unshared",
+            "trust_low": "share a small portion of concepts",
+            "trust_high": "share the entire collection of concepts"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "offer no recognition or credit",
+            "return_medium": "offer shared recognition",
+            "return_high": "offer substantial credit or value"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Ocean_Current_Energy_Exchange",
+        "description": "Jessy, a marine energy technician, has 10 units of energy credits. Jessy can allocate some/all credits to Bob, an oceanographer who can utilize ocean currents to triple the energy credits. After the enhancement, Bob decides how many credits he returns to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Energy Technician",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Oceanographer",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "allocate 0 energy credits to oceanographer",
+            "trust_low": "allocate 30% energy credits to oceanographer",
+            "trust_high": "allocate all energy credits to oceanographer"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 credits to energy technician",
+            "return_medium": "return 40-50% of enhanced credits to energy technician",
+            "return_high": "return more than 80% of enhanced credits to energy technician"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Ocean_Expedition_Resource_Sharing",
+        "description": "Jessy, an oceanographer, embarks on an expedition with limited resources for exploring a remote marine habitat. She can share some of her equipment with Bob, a fellow researcher, to aid in his parallel studies. Sharing resources increases the potential data gathered (e.g., a camera shared can result in multiple data points collected). Bob decides how much of the data he shares back with Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Resource_Planner",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Data_Collector",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "keep all equipment to herself",
+            "trust_low": "share one piece of equipment",
+            "trust_high": "share all equipment "
+        },
+        "trustee_behavior_choices": {
+            "return_none": "share no data",
+            "return_medium": "share partial data collection results",
+            "return_high": "share comprehensive data analysis"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Urban_Farm_Expansion",
+        "description": "Jessy owns a small urban farm with 10 unused plots. She can lease some/all plots to Bob, an aspiring gardener, who will cultivate them with organic vegetables. Cultivated plots yield three times their market value. Bob then decides how much of the profit to share with Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Farm_Owner",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Urban_Gardener",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "lease 0 plots to the gardener",
+            "trust_low": "lease 30% plots to the gardener",
+            "trust_high": "lease all plots to the gardener"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 profit to the farm owner",
+            "return_medium": "return 40-50% of the profits to the farm owner",
+            "return_high": "return more than 80% of the profits to the farm owner"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Intergalactic_Science_Mission",
+        "description": "Jesse, a scientist on a space station, has a set of experiments that can be conducted on a distant planet. These experiments can potentially provide illustrious new resources. Jesse can choose to send some or all of the experiment files to Bob, a fellow scientist stationed on the target planet, who can conduct the experiments. Successful experiments yield valuable data, and Bob then decides how much of the analysis and results to share back with Jesse.",
+        "participants": [
+            {
+                "name": "Jesse",
+                "profile": "Space Scientist",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Planetary Scientist",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "send 0 experiment files",
+            "trust_low": "send 30% experiment files",
+            "trust_high": "send all experiment files"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 data insights",
+            "return_medium": "return 40-50% data insights",
+            "return_high": "return more than 80% data insights"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Interplanetary_Mineral_Exchange",
+        "description": "Jessy is an astronaut with 10 units of a rare mineral found on Mars. She can send some or all units to Earth for processing by Bob, a scientist. Processed minerals yield triple the original value. Bob then decides how many units to send back to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Martian Miner",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Earth-based Scientist",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "send 0 units to Earth for processing",
+            "trust_low": "send 3 units to Earth for processing",
+            "trust_high": "send all units to Earth for processing"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 processed units to astronaut",
+            "return_medium": "return 40-50% of processed units to astronaut",
+            "return_high": "return more than 80% of processed units to astronaut"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Space_Station_Resource_Sharing",
+        "description": "Jessy is a commander on a space station with 10 units of oxygen supply. Jessy can share some/all of this supply with Bob, a researcher who has a special device that can transform one unit of oxygen into three times the breathable air. Bob then decides how much transformed supply to return to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Station Commander",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Space Researcher",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "share 0 units with researcher",
+            "trust_low": "share 30% of units with researcher",
+            "trust_high": "share all units with researcher"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 units to station commander",
+            "return_medium": "return 40-50% of converted supply to station commander",
+            "return_high": "return more than 80% of converted supply to station commander"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Community_Health_Initiative",
+        "description": "Jessy is a community leader with resources to conduct a health check-up drive. She may allocate some or all resources to Bob, a healthcare professional. Bob can use these to set up various health camps and conduct screenings. He will then determine how much of the health data and insights to report back to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Community Leader",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Healthcare Professional",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "Allocate 0 resources for the health initiative",
+            "trust_low": "Allocate 30% of resources for the health initiative",
+            "trust_high": "Allocate all resources for the health initiative"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "Return 0 health data to the community leader",
+            "return_medium": "Return 40-50% of health insights to the community leader",
+            "return_high": "Return more than 80% of health insights to the community leader"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Wildlife_Sanctuary_Expansion",
+        "description": "Jessy, a conservationist, has access to 10 units of unused land. She can offer some or all units to Bob, a wildlife manager, to integrate into a sanctuary. Each unit used increases the sanctuary's capacity threefold. Bob then decides how many extended areas to allocate back to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Land Donor",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Sanctuary Manager",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "offer 0 units of land for expansion",
+            "trust_low": "offer 3 units of land for expansion",
+            "trust_high": "offer all units of land for expansion"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "allocate 0 extended areas back to donor",
+            "return_medium": "allocate 40-50% of extended areas back to donor",
+            "return_high": "allocate more than 80% of extended areas back to donor"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Culinary_Exploration_Program",
+        "description": "Jessy is a culinary expert with 10 unique spice blends. She can offer these to Bob, a chef at a prominent restaurant chain. Bob can experiment with these spices and decide how much of the new dish revenue to share back with Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Culinary Expert",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Chef",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "offer 0 spice blends",
+            "trust_low": "offer 30% of the spice blends",
+            "trust_high": "offer all spice blends"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0% of revenue",
+            "return_medium": "return 40-50% of revenue",
+            "return_high": "return more than 80% of revenue"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Historical_Manuscript_Transcription",
+        "description": "Jessy possesses 10 ancient manuscript pages. She can choose to send some or all pages to Bob, a historian, for transcription. Transcription increases the value of each page threefold. Bob then decides how many transcribed pages to return to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Manuscript Keeper",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Historian",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "send 0 pages for transcription",
+            "trust_low": "send 3 pages for transcription",
+            "trust_high": "send all pages for transcription"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 transcribed pages to keeper",
+            "return_medium": "return 40-50% of transcribed pages to keeper",
+            "return_high": "return more than 80% of transcribed pages to keeper"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Precious_Stone_Enhancement",
+        "description": "Jessy possesses a collection of unpolished gemstones. She can trust Bob, a skilled jeweler, to enhance and potentially triple their value. Bob, using advanced techniques, will decide the amount of refined gemstones and profits to return to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Gemstone_Collector",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Jewel_Craftsman",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "give 0 gemstones ",
+            "trust_low": "give 30% of gemstones ",
+            "trust_high": "give all gemstones "
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 refined gems ",
+            "return_medium": "return 40-50% of refined gems ",
+            "return_high": "return more than 80% of refined gems "
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Tech_Innovation_Sharing",
+        "description": "Jessy, a tech innovator, has developed breakthrough ideas for improving software efficiency. She may share some concepts with Bob, another developer, for implementation in his projects. Shared ideas can significantly boost project success. Bob then decides how much of the improved project outcomes to share back with Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Idea_Innovator",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Project_Developer",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "keep all ideas private",
+            "trust_low": "share a few ideas",
+            "trust_high": "share all innovative concepts"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "share no project outcomes",
+            "return_medium": "share partial project benefits",
+            "return_high": "share significant project success"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Antique_Artifact_Discovery",
+        "description": "Jesse discovers an ancient map indicating potential artifacts buried in a hidden location. Jesse can choose to entrust some or all of the map segments to Bob, an artifact hunter, who can explore the site. The findings yield artifacts of significant value, and Bob then decides how much of the artifact collection to share with Jesse.",
+        "participants": [
+            {
+                "name": "Jesse",
+                "profile": "Map Discoverer",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Artifact Hunter",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "share 0 map segments",
+            "trust_low": "share 30% map segments",
+            "trust_high": "share all map segments"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 artifacts",
+            "return_medium": "return 40-50% of artifacts",
+            "return_high": "return more than 80% of artifacts"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Artifact_Restoration_Project",
+        "description": "Jessy, a museum curator, has acquired 10 rare artifacts. She may entrust some/all artifacts to Bob, an experienced restorer, to enhance their historical value. Each restored artifact triples its exhibition appeal. Once restored, Bob decides how many artifacts to return for the museum's showcase.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Artifact_Curator",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Artifact_Restorer",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "share 0 artifacts for restoration",
+            "trust_low": "share 30% artifacts for restoration",
+            "trust_high": "share all artifacts for restoration"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0 artifacts to the curator",
+            "return_medium": "return 40-50% of the restored artifacts to the curator",
+            "return_high": "return more than 80% of the restored artifacts to the curator"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Digital_Library_Expansion",
+        "description": "Jessy is a librarian who has 10 e-books that she can choose to donate to Bob, a developer working on an online library. The e-books can be digitized and reach triple the audience (e.g., 1 book \u2192 3 digital readers). Bob will then decide how much of the digital library's new profits to share with Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Librarian",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Developer",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "donate 0 e-books",
+            "trust_low": "donate 30% of the e-books",
+            "trust_high": "donate all e-books"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "share 0% of the profits",
+            "return_medium": "share 40-50% of the profits",
+            "return_high": "share more than 80% of the profits"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Fashion_Design_Collaboration",
+        "description": "Jessy is a fashion designer with sketches for a new clothing line. She can send some or all sketches to Bob, a tailor with expertise in textiles and crafting. Bob will develop prototype garments from the designs he receives. He then decides how many completed garments he will send back to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Designer",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Tailor",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "Share 0 designs with the tailor",
+            "trust_low": "Share 30% of the designs with the tailor",
+            "trust_high": "Share all designs with the tailor"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "Return 0 prototypes to the designer",
+            "return_medium": "Return 40-50% of the developed garments to the designer",
+            "return_high": "Return more than 80% of the developed garments to the designer"
+        },
+        "game_name": "Trust_Game_Trustor"
+    },
+    {
+        "scenario": "Renewable_Energy_Initiative",
+        "description": "Jessy is an environmental scientist who possesses 10 innovative blueprints for energy-efficient turbines. She can share these with Bob, an engineer with access to advanced manufacturing facilities. Bob can decide how many turbines to produce and how much of the efficiency benefits to return to Jessy.",
+        "participants": [
+            {
+                "name": "Jessy",
+                "profile": "Environmental Scientist",
+                "role": "Trustor"
+            },
+            {
+                "name": "Bob",
+                "profile": "Engineer",
+                "role": "Trustee"
+            }
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "share 0 blueprints",
+            "trust_low": "share 30% of the blueprints",
+            "trust_high": "share all blueprints"
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0% of benefits",
+            "return_medium": "return 40-50% of benefits",
+            "return_high": "return more than 80% of benefits"
+        },
+        "game_name": "Trust_Game_Trustor"
+    }
+]
