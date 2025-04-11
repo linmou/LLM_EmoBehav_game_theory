@@ -117,11 +117,12 @@ BLOCK_NAMES = [
     ]
     
 class WrappedReadingVecModel(torch.nn.Module):
-    def __init__(self, model, tokenizer):
+    def __init__(self, model, tokenizer, raw_llm=None):
         super().__init__()
         self.model = model
         self.tokenizer = tokenizer
-        self.model_layers = ModelLayerDetector.get_model_layers(self.model)
+        self.raw_llm = raw_llm
+        self.model_layers = ModelLayerDetector.get_model_layers(self.raw_llm if self.raw_llm is not None else self.model)
 
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs)

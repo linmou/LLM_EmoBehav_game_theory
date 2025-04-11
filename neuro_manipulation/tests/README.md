@@ -29,13 +29,13 @@ For integration tests, we:
 
 This approach ensures that each model is tested independently and any model-specific issues are identified immediately.
 
-## Main Test Files
+### Main Test Files
 
 - `test_prompt_format.py`: Tests for basic prompt formatting functionality
 - `test_prompt_format_integration.py`: Integration tests for prompt formatting with wrappers
 - `test_model_layer_detector.py`: Tests for automatic layer detection in various model architectures
 
-## Running Tests
+### Running Tests
 
 ```bash
 # Run all tests
@@ -47,11 +47,9 @@ python -m unittest neuro_manipulation.tests.test_prompt_format
 # Run a specific test class
 python -m unittest neuro_manipulation.tests.test_prompt_format.TestPromptTemplates
 
-# Run all integration tests
-python -m unittest neuro_manipulation.tests.test_prompt_format_integration
 ```
 
-## Common Test Issues
+### Common Test Issues
 
 - **Missing model name**: Ensure the model name is passed correctly to the `PromptFormat.build` method
 - **Format expectations**: Different models use different chat templates, so test assertions should be flexible
@@ -61,6 +59,49 @@ python -m unittest neuro_manipulation.tests.test_prompt_format_integration
   - ChatGLM has a unique transformer structure
   - Deeply nested models require careful traversal
 
-## Prompt Format Tests
 
-The `test_prompt_format.py` file contains tests to ensure that the new `PromptFormat` class works correctly across different model architectures.
+## Experiment test
+
+# ModelLayerDetector Tests
+
+This directory contains tests for the `ModelLayerDetector` module, which is responsible for identifying and extracting model layers from various transformer architectures.
+
+## `test_model_layer_detector.py`
+
+This test suite validates that the `ModelLayerDetector` can correctly identify model layers across different model architectures:
+
+### Test Cases:
+
+1. **Small Models** - Tests with lightweight models like GPT-2 and OPT-125M
+2. **ChatGLM Models** - Specific test for ChatGLM architecture (skipable)
+3. **RWKV Models** - Specific test for RWKV architecture (skipable)
+4. **Custom Models** - Tests with custom-built transformer architectures to ensure robustness
+5. **vLLM Integration** - Tests with vLLM models, specifically Llama-3.1-8B-Instruct
+
+### Running Tests
+
+```bash
+# Run all tests
+python -m unittest neuro_manipulation/tests/test_model_layer_detector.py
+
+# Run a specific test
+python -m unittest neuro_manipulation/tests/test_model_layer_detector.py TestModelLayerDetector.test_vllm_model_layers
+```
+
+### Requirements
+
+- Most tests require GPU with CUDA
+- Tests for large models will be skipped if:
+  - CUDA is not available
+  - Specific packages (like vLLM) are not installed
+  - Running in CI environment
+
+### vLLM Model Structure
+
+The vLLM test specifically validates that `ModelLayerDetector` can navigate the nested structure of vLLM models to find the correct layers path:
+
+```
+self.llm.llm_engine.model_executor.driver_worker.model_runner.model.model.layers
+```
+
+This test ensures that the `ModelLayerDetector` works correctly with representation engineering techniques that modify model layers in vLLM backends.

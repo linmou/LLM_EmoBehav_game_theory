@@ -100,7 +100,7 @@ class TestModelLayerDetector(unittest.TestCase):
             logger.error(f"Error with ChatGLM model: {str(e)}")
             raise
     
-    @unittest.skipIf(True, "Skipping RWKV model tests by default")
+    @unittest.skipIf(False, "Testing RWKV model specifically")
     def test_rwkv_model(self):
         """Test layer detection with RWKV models"""
         if self.skip_gpu_tests:
@@ -109,9 +109,9 @@ class TestModelLayerDetector(unittest.TestCase):
         try:
             logger.info("Testing layer detection on RWKV model")
             from transformers import AutoModelForCausalLM
-            
+            from transformers.models.rwkv.modeling_rwkv import RwkvBlock
             model = AutoModelForCausalLM.from_pretrained(
-                "BlinkDL/rwkv-4-raven-1b5", 
+                "RWKV/rwkv-4-world-169m", 
                 torch_dtype=torch.float16,
                 trust_remote_code=True
             )
@@ -125,7 +125,8 @@ class TestModelLayerDetector(unittest.TestCase):
             
             # Verify the result is a ModuleList
             self.assertIsInstance(layers, torch.nn.ModuleList)
-            
+            self.assertIsInstance(layers[0], RwkvBlock)
+             
             # Verify it has more than one layer
             self.assertGreater(len(layers), 0)
             
@@ -280,6 +281,68 @@ class TestModelLayerDetector(unittest.TestCase):
         for idx, layer in enumerate(reversed_layers):
             self.assertIsInstance(layer, CustomTransformerLayer)
             self.assertEqual(layer, layers[-(idx + 1)])
+
+    @unittest.skipIf(not torch.cuda.is_available(), "CUDA not available, skipping vLLM test")
+    def test_vllm_model_layers(self):
+        """Test layer detection with vLLM models, specifically Llama-3.1-8B-Instruct"""
+        try:
+            logger.info("Testing layer detection on vLLM model: meta-llama/Llama-3.1-8B-Instruct")
+            
+            # Import vLLM
+            try:
+                from vllm import LLM
+            except ImportError:
+                self.skipTest("vLLM not installed, skipping test")
+            
+            # Initialize vLLM model with minimal resources for testing
+            llm = LLM(
+                model="meta-llama/Llama-3.1-8B-Instruct",
+                trust_remote_code=True,
+                max_model_len=256,  # Reduce context size for testing
+                tensor_parallel_size=1,
+                gpu_memory_utilization=0.9
+            )
+            
+            # Get the actual model from vLLM's nested structure
+            model = llm.llm_engine.model_executor.driver_worker.model_runner.model
+            
+            # Print the model structure to help with debugging
+            logger.info("vLLM model structure:")
+            ModelLayerDetector.print_model_structure(model)
+            
+            # Test layer detection
+            layers = ModelLayerDetector.get_model_layers(model)
+            
+            # Verify the result is a ModuleList
+            self.assertIsInstance(layers, torch.nn.ModuleList)
+            
+            # Verify it has more than one layer
+            self.assertGreater(len(layers), 0)
+            
+            # Check if the detected layers match the expected path
+            # Access a specific layer to verify the structure
+            try:
+                # This is the expected path in vLLM
+                expected_layers = model.model.layers
+                
+                # Verify they're the same layers
+                for i in range(len(layers)):
+                    self.assertIs(layers[i], expected_layers[i])
+                
+                # Verify MLP access works as expected (used in rep_control_vllm.py)
+                test_layer = layers[0].mlp
+                self.assertIsNotNone(test_layer, "Could not access MLP in the layer")
+                
+                logger.info(f"✓ Successfully detected layers for vLLM model: Found {len(layers)} layers")
+                logger.info(f"✓ Verified correct layer path: model.model.layers")
+                
+            except AttributeError as e:
+                logger.error(f"Expected layer structure not found: {str(e)}")
+                raise
+                
+        except Exception as e:
+            logger.error(f"Error with vLLM model: {str(e)}")
+            raise
 
 if __name__ == "__main__":
     unittest.main() 

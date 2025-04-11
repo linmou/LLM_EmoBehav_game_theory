@@ -2,10 +2,10 @@ from enum import Enum
 
 class Emotions(Enum):
     ANGER = "anger"
-    DISGUST = "disgust"
-    FEAR = "fear"
     HAPPINESS = "happiness"
     SADNESS = "sadness"
+    DISGUST = "disgust"
+    FEAR = "fear"
     SURPRISE = "surprise"
     
     def __init__(self, *args):
@@ -21,6 +21,10 @@ class Emotions(Enum):
                         f"Prefix overlap detected between {self.value} and {other.value}: "
                         f"both share prefix '{self.value[:i]}'"
                     )
+
+    @classmethod
+    def get_emotions(cls) -> list[str]:
+        return [emotion.value for emotion in cls]
 
     @classmethod
     def from_string(cls, value: str) -> 'Emotions':

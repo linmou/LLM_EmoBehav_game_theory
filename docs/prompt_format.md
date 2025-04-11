@@ -33,9 +33,9 @@ prompt = prompt_format.build(
 )
 ```
 
-### OldPromptFormat (Deprecated)
+### ManualPromptFormat
 
-The `OldPromptFormat` class is the original implementation that manually formatted prompts. It is now deprecated and should not be used in new code. It is kept for compatibility and testing purposes.
+The `ManualPromptFormat` class is the original implementation that manually formatted prompts. Used as the backup plan when huggingface tokenizer.apply_chat_format failed.
 
 ## Model-specific Format Classes
 

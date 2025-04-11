@@ -12,6 +12,8 @@ import random
 import os
 import json
 
+from vllm import LLM
+
 
 from neuro_manipulation.repe import repe_pipeline_registry
 import pickle
@@ -47,7 +49,7 @@ def primary_emotions_concept_dataset(data_dir, model_name=None, tokenizer=None, 
     Returns:
         Dictionary of formatted emotion datasets
     """
-    from neuro_manipulation.prompt_formats import PromptFormat, OldPromptFormat
+    from neuro_manipulation.prompt_formats import PromptFormat, ManualPromptFormat
     from transformers import AutoTokenizer
     import random
     import numpy as np
@@ -63,8 +65,8 @@ def primary_emotions_concept_dataset(data_dir, model_name=None, tokenizer=None, 
     if tokenizer is not None:
         prompt_format = PromptFormat(tokenizer)
     elif model_name is not None:
-        # Use OldPromptFormat as fallback
-        format_cls = OldPromptFormat.get(model_name)
+        # Use ManualPromptFormat as fallback
+        format_cls = ManualPromptFormat.get(model_name)
         user_tag = format_cls.user_tag
         assistant_tag = format_cls.assistant_tag
     else:
@@ -75,7 +77,7 @@ def primary_emotions_concept_dataset(data_dir, model_name=None, tokenizer=None, 
     emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
     raw_data = {}
     for emotion in emotions:
-        with open(os.path.join(data_dir, f'{emotion}.json')) as file:
+        with open(os.path.join(data_dir, f'{emotion}.json'), 'r', encoding='utf-8') as file:
             raw_data[emotion] = list(set(json.load(file)))
     
     formatted_data = {}
@@ -204,13 +206,14 @@ def prob_cal_record(prob_cal_pipeline, dataset, emotion, rep_token, hidden_layer
     
 def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assistant_tag =  "[/INST]", expand_vocab=False):
     try:
+        model = LLM(model=model_name_or_path, tensor_parallel_size=torch.cuda.device_count(), max_model_len=600)
+    except Exception as e:
         model = AutoModelForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
-    except KeyError:
-        model = MistralForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
-        
+
     use_fast_tokenizer = False #"LlamaForCausalLM" not in model.config.architectures
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
-    tokenizer.pad_token_id = 0 if tokenizer.pad_token_id is None else tokenizer.pad_token_id
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = 0 
     # tokenizer.bos_token_id = 1 if tokenizer.bos_token_id is None else tokenizer.bos_token_id
     # if expand_vocab:
     #     tokenizer.add_special_tokens({'additional_special_tokens': [user_tag, assistant_tag]})
@@ -289,26 +292,26 @@ def main():
    
     emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise",]
     # emotions = ["stress"]
-    data_dir = "/home/representation-engineering/data/emotions"
-    model_name_or_path = "meta-llama/Llama-2-13b-chat-hf"
+    data_dir = "/home/jjl7137/representation-engineering/data/emotions"
+    model_name_or_path = "meta-llama/Llama-3.1-8B-Instruct"
     user_tag =  "[INST]"
     assistant_tag =  "[/INST]"
     
-    model, tokenizer = load_model_tokenizer(model_name_or_path,user_tag=user_tag, 
-                                            assistant_tag=assistant_tag,
-                                            expand_vocab=True)
-
+    # model, tokenizer = load_model_tokenizer(model_name_or_path,user_tag=user_tag, 
+    #                                         assistant_tag=assistant_tag,
+    #                                         expand_vocab=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=False, padding_side="left", legacy=False, token=True, trust_remote_code=True)
     data = primary_emotions_concept_dataset(data_dir, model_name=model_name_or_path, tokenizer=tokenizer)
 
-    rep_token = -1
-    hidden_layers = list(range(-1, -model.config.num_hidden_layers+8, -1))
-    n_difference = 1
-    direction_method = 'pca'
+    # rep_token = -1
+    # hidden_layers = list(range(-1, -model.config.num_hidden_layers+8, -1))
+    # n_difference = 1
+    # direction_method = 'pca'
 
-    rep_reading_pipeline = pipeline( "rep-reading", model=model, tokenizer=tokenizer)
-    prob_cal_pipeline = pipeline( "rep-reading&prob-calc", model=model, tokenizer=tokenizer, user_tag=user_tag, assistant_tag=assistant_tag)
+    # rep_reading_pipeline = pipeline( "rep-reading", model=model, tokenizer=tokenizer)
+    # prob_cal_pipeline = pipeline( "rep-reading&prob-calc", model=model, tokenizer=tokenizer, user_tag=user_tag, assistant_tag=assistant_tag)
 
-    emotion_rep_readers = all_emotion_rep_reader(data, emotions, rep_reading_pipeline, hidden_layers, rep_token, n_difference, direction_method)
+    # emotion_rep_readers = all_emotion_rep_reader(data, emotions, rep_reading_pipeline, hidden_layers, rep_token, n_difference, direction_method)
     
     # for pid, emotional_prompt in tqdm(enumerate(Negative_SET)):
     #     dataset = EvalDatasets('MATH', prompt_modify_func=lambda question, answer: f' {emotional_prompt} {user_tag} {question} {assistant_tag}: Answer: {answer}')

@@ -14,11 +14,14 @@ from threading import Thread
 import re
 from pathlib import Path
 
+from vllm import LLM
 import yaml
 
-from neuro_manipulation.datasets.game_scenario_dataset import GameScenarioDataset
+from neuro_manipulation.datasets.game_scenario_dataset import GameScenarioDataset, collate_game_scenarios
+from neuro_manipulation.model_layer_detector import ModelLayerDetector
 from neuro_manipulation.prompt_wrapper import GameReactPromptWrapper
 from neuro_manipulation.model_utils import setup_model_and_tokenizer, load_emotion_readers
+from neuro_manipulation.repe.pipelines import get_pipeline
 from neuro_manipulation.utils import oai_response
 from api_configs import OAI_CONFIG
 from statistical_engine import analyze_emotion_and_intensity_effects
@@ -51,7 +54,9 @@ class EmotionGameExperiment:
         
         # self.model, self.tokenizer, self.prompt_format, self.user_tag, self.assistant_tag = setup_model_and_tokenizer(repe_eng_config)
         self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config)
-        num_hidden_layers = getattr(self.model.config, 'num_hidden_layers', getattr(self.model.config, 'num_layers'))
+        self.logger.info(f"Model: {self.model} loaded from {repe_eng_config['model_name_or_path']}, type: {type(self.model)}")
+        self.is_vllm = isinstance(self.model, LLM)
+        num_hidden_layers = ModelLayerDetector.num_layers(self.model) if not self.is_vllm else ModelLayerDetector.num_layers(self.get_core_model_from_vllm())
         self.hidden_layers = list(range(-1, -num_hidden_layers, -1))
         
         # self.repe_eng_config.update({
@@ -67,9 +72,8 @@ class EmotionGameExperiment:
         )
         
         self.intensities = self.exp_config['experiment'].get('intensity', self.repe_eng_config['coeffs'])
-        
-        self.rep_control_pipeline = pipeline(
-            "rep-control",
+        self.rep_control_pipeline = get_pipeline(
+            "rep-control-vllm" if self.is_vllm else "rep-control",
             model=self.model,
             tokenizer=self.tokenizer,
             layers=self.repe_eng_config['control_layer_id'],
@@ -92,7 +96,22 @@ class EmotionGameExperiment:
             yaml.dump(self.exp_config, f)
          
         self.llm_client = OpenAI(**OAI_CONFIG)
+        
+    def get_core_model_from_vllm(self):
+        return self.model.llm_engine.model_executor.driver_worker.model_runner.model 
 
+    def build_dataloader(self):
+        self.logger.info(f"Creating dataset with sample_num={self.sample_num if self.sample_num is not None else 'all'}")
+        emo_dataset = GameScenarioDataset(
+            self.game_config,
+            partial(self.reaction_prompt_wrapper.__call__,
+                    user_messages=self.exp_config['experiment']['system_message_template']),
+            sample_num=self.sample_num,
+        )
+            
+        data_loader = DataLoader(emo_dataset, batch_size=self.batch_size, shuffle=False, collate_fn=collate_game_scenarios)
+        return data_loader
+    
     def run_experiment(self):
         self.logger.info("Starting experiment")
         results = []
@@ -102,16 +121,7 @@ class EmotionGameExperiment:
             rep_reader = self.emotion_rep_readers[emotion]
             self.cur_emotion = emotion
             
-            self.logger.info(f"Creating dataset with sample_num={self.sample_num if self.sample_num is not None else 'all'}")
-            emo_dataset = GameScenarioDataset(
-                self.game_config,
-                partial(self.reaction_prompt_wrapper.__call__,
-                        emotion=emotion,
-                        user_messages=self.exp_config['experiment']['system_message_template'].format(emotion=emotion)),
-                sample_num=self.sample_num,
-            )
-            
-            data_loader = DataLoader(emo_dataset, batch_size=self.batch_size, shuffle=False)
+            data_loader = self.build_dataloader()
             
             for coeff in self.intensities:
                 self.logger.info(f"Processing coefficient: {coeff}")
@@ -150,11 +160,12 @@ class EmotionGameExperiment:
                     repeat_batch['prompt'],
                     activations=activations,
                     batch_size=self.batch_size,
+                    temperature=self.generation_config['temperature'],
                     max_new_tokens=self.generation_config['max_new_tokens'],
                     do_sample=self.generation_config['do_sample'],
                     top_p=self.generation_config['top_p']
                 )
-                pipeline_queue.put((batch, control_outputs))
+                pipeline_queue.put((repeat_batch, control_outputs))
             pipeline_queue.put(None)
         
         # Start pipeline worker thread
@@ -183,34 +194,50 @@ class EmotionGameExperiment:
     def _post_process_batch(self, batch, control_outputs):
         results = []
         output_data = []
-        
+        batch_size = int(len(batch['prompt']) / self.repeat) # we dont need self.batch_size here since the last batch might be smaller
+        assert len(batch['prompt']) == len(batch['options']) == len(batch['scenario']) == len(batch['description']) == len(control_outputs) == batch_size * self.repeat
         # Prepare data for parallel processing
-        batch_size = len(batch['prompt'])
+        self.logger.info(f"Processing batch size {len(batch['prompt'])}")
+        self.logger.info(f"Control outputs length: {len(control_outputs)}")
+        
         for i, p in enumerate(control_outputs):
-            generated_text = p[0]['generated_text'].replace(batch['prompt'][i % batch_size], "")
-            options = [opts[i % batch_size] for opts in batch['options']]
+            self.logger.info(f"Processing control output {i}")
+            self.logger.info(f"Original text: {p[0]['generated_text']}")
+            generated_text = p[0]['generated_text'].replace(batch['prompt'][i], "")
+            self.logger.info(f"After prompt removal: {generated_text}")
+            self.logger.info(f"Batch options: {batch['options']}")
+            options = batch['options'][i]
+            self.logger.info(f"Mapped options: {options}")
             output_data.append((generated_text, options))
             repeat_idx = i // batch_size
+            self.logger.info(f"Repeat index: {repeat_idx}")
         
         # Process outputs in parallel
+        self.logger.info(f"Starting parallel processing of {len(output_data)} items")
         with ThreadPoolExecutor(max_workers=min(len(output_data), 8)) as executor:
             extracted_reses = list(executor.map(self._post_process_single_output, output_data))
         
+        self.logger.info(f"Extracted {len(extracted_reses)} results")
+        
         # Combine results
-        for i, (extracted_res, generated_text) in enumerate(zip(extracted_reses, output_data)):
+        for i, (extracted_res, (generated_text, _)) in enumerate(zip(extracted_reses, output_data)):
+            batch_idx = i
+            self.logger.info(f"Extracted result: {extracted_res}")
+            
             results.append({
                 'emotion': self.cur_emotion,
                 'intensity': self.cur_coeff,
-                'scenario': batch['scenario'][i % batch_size],
-                'description': batch['description'][i % batch_size],
-                # 'options': batch['options'][i % batch_size],
-                'input': batch['prompt'][i % batch_size],
+                'scenario': batch['scenario'][batch_idx],
+                'description': batch['description'][batch_idx],
+                'input': batch['prompt'][batch_idx],
                 'output': generated_text,
                 'rationale': extracted_res.rationale,
                 'decision': extracted_res.decision,
                 'category': extracted_res.option_id,
-                'repeat_num': i // batch_size
+                'repeat_num': i // self.batch_size
             })
+            
+            self.logger.info(f"Added result with scenario {batch['scenario'][batch_idx]} and repeat {i // self.batch_size}")
         
         return results
 
@@ -222,7 +249,8 @@ class EmotionGameExperiment:
             # Extract rationale and decision using regex
             rationale = re.search(r'"rational"\s*:\s*"([^"]*)"', generated_text)
             decision = re.search(r'"decision"\s*:\s*"([^"]*)"', generated_text)
-            
+            self.logger.info(f"Rationale: {rationale}")
+            self.logger.info(f"Decision: {decision}")
             if not rationale or not decision:
                 raise ValueError("Failed to extract rationale or decision")
                 
@@ -318,15 +346,7 @@ class EmotionGameExperiment:
             rep_reader = self.emotion_rep_readers[test_emotion]
             self.cur_emotion = test_emotion
             
-            emo_dataset = GameScenarioDataset(
-                self.game_config,
-                partial(self.reaction_prompt_wrapper.__call__,
-                        emotion=test_emotion,
-                        user_messages=self.exp_config['experiment']['system_message_template'].format(emotion=test_emotion)),
-                sample_num=self.sample_num,
-            )
-            
-            data_loader = DataLoader(emo_dataset, batch_size=min(self.batch_size, self.sample_num), shuffle=False)
+            data_loader = self.build_dataloader()
             
             # Test with one intensity value
             test_intensity = self.intensities[0]

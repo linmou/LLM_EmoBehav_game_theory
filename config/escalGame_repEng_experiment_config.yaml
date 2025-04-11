@@ -9,8 +9,7 @@ experiment:
     batch_size: 4
 
   llm:
-    model_name: 'meta-llama/Llama-3.1-8B-Instruct' # Name of the config from api_configs.py
-    # Additional parameters to override or extend the base config
+    model_name: '/data/home/jjl7137/huggingface_models/RWKV/v6-Finch-7B-HF'
     generation_config:
       temperature: 0.7
       do_sample: true

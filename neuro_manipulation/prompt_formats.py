@@ -194,27 +194,68 @@ class MistralInstFormat(ModelPromptFormat):
     def name_pattern(model_name):
         return 'mistral' in model_name.lower() and 'instruct' in model_name.lower()
 
-     
+class RWKVsFormat(ModelPromptFormat):
+    __user_tag = 'User:'
+    __assistant_tag = 'Assistant:'
+    __end_of_turn = '\n\n'
+    
+    @classproperty
+    def user_tag(cls):
+        return cls.__user_tag
+    
+    @classproperty
+    def assistant_tag(cls):   
+        return cls.__assistant_tag
+    
+    @classproperty
+    def end_of_turn(cls):
+        return cls.__end_of_turn  
+   
+    @staticmethod
+    def build(system_prompt, user_messages:list, assistant_answers:list=[]):
+        '''
+        User: bbbbbb
+        
+        Assistant: aaaaa
+        
+        User: bbbb
+        
+        Assistant: cccc
+        '''
+        
+        assert len(user_messages), f' user_messages: {user_messages} should not empty'
+        assert len(user_messages) - len(assistant_answers) in [0,1], f' user_messages: {user_messages} and assistant_answers: {assistant_answers} should have the same length or assistant_answers should have one less element'
+        
+        prompt = f"{RWKVsFormat.user_tag} {system_prompt if system_prompt else ''} {user_messages[0]}{RWKVsFormat.end_of_turn}"
+        
+        for mid in range(len(assistant_answers)):
+            prompt += f"{RWKVsFormat.assistant_tag} {assistant_answers[mid]}{RWKVsFormat.end_of_turn}"
+            if mid < len(user_messages) - 1:
+                prompt += f"{RWKVsFormat.user_tag} {user_messages[mid+1]}{RWKVsFormat.end_of_turn}"
+    
+        return prompt
 
-class OldPromptFormat:
+    @staticmethod
+    def name_pattern(model_name):
+        return 'rwkv' in model_name.lower()
+
+class ManualPromptFormat:
     ''' 
     Manually defined prompt format.
-    This class is deprecated. Use PromptFormat instead, which uses the tokenizer's chat_template.
-    This class is kept for compatibility and testing purposes.
     '''
     
-    format_ls = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat]
+    format_ls = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat]
     
     @staticmethod
     def get(model_name) -> ModelPromptFormat:
-        for format in OldPromptFormat.format_ls:
+        for format in ManualPromptFormat.format_ls:
             if format.name_pattern(model_name): # more than one pattern may match
                 return format
-        raise ValueError(f'Prompt format not found for model name: {model_name}. Supported formats: {OldPromptFormat.format_ls}')
+        raise ValueError(f'Prompt format not found for model name: {model_name}. Supported formats: {ManualPromptFormat.format_ls}')
     
     @staticmethod
     def build(model_name, system_prompt, user_messages:list, assistant_messages:list=[] ) -> str:
-        return OldPromptFormat.get(model_name).build(system_prompt, user_messages, assistant_messages)
+        return ManualPromptFormat.get(model_name).build(system_prompt, user_messages, assistant_messages)
     
 class PromptFormat:
     '''
@@ -225,7 +266,7 @@ class PromptFormat:
     
     In case the chat template is not available or fails, it falls back to the manual format definitions.
     '''
-    format_ls: list[ModelPromptFormat] = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat]
+    format_ls: list[ModelPromptFormat] = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat]
 
     def __init__(self, tokenizer: AutoTokenizer):
         self.tokenizer = tokenizer
@@ -266,7 +307,7 @@ class PromptFormat:
             return prompt_str
         except Exception as e:
             print(f"Error applying chat template for model {self.model_name}: {e}")
-            # Only try to merge system prompt if it exists
+            # In case the error from system prompt, try to merge system prompt to the first user message
             if system_prompt and len(chat) > 1:
                 print("Try to merge system prompt into first message")
                 raw_chat_1 = copy.deepcopy(chat[1]["content"])
@@ -284,9 +325,9 @@ class PromptFormat:
                             print(f"Error applying chat template for model {self.model_name}: {e}")
                             continue
             
-            # Fallback to OldPromptFormat if all else fails
-            print("Falling back to OldPromptFormat")
-            prompt_str = OldPromptFormat.build(self.model_name, system_prompt, user_messages, assistant_messages)
+            # Fallback to ManualPromptFormat if all else fails
+            print("Falling back to ManualPromptFormat")
+            prompt_str = ManualPromptFormat.build(self.model_name, system_prompt, user_messages, assistant_messages)
             return prompt_str
 
     def _verify_message_order_in_prompt(self, prompt_str, chat):

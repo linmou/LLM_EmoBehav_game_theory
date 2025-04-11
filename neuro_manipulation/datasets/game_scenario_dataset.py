@@ -44,7 +44,7 @@ class GameScenarioDataset(Dataset):
     
     def __getitem__(self, idx):
         item: GameScenario = self.data[idx]
-        options = [ f'Option {i+1}. {opt}' for i, opt in enumerate(item.get_behavior_choices().get_choices())]
+        options = tuple(f'Option {i+1}. {opt}' for i, opt in enumerate(item.get_behavior_choices().get_choices()))
         event = str(item)
         return {
             "prompt": self.prompt_wrapper(event=event, options=options),
@@ -54,6 +54,21 @@ class GameScenarioDataset(Dataset):
             'description': item.get_scenario_info()['description'],
         }
         
+def collate_game_scenarios(batch):
+    """
+    Custom collate function for GameScenarioDataset that properly handles option tuples.
+    Args:
+        batch: List of dictionaries containing dataset items
+    Returns:
+        Collated batch with options properly grouped
+    """
+    return {
+        'prompt': [item['prompt'] for item in batch],
+        'options': [item['options'] for item in batch],
+        'behavior_choices': [item['behavior_choices'] for item in batch],
+        'scenario': [item['scenario'] for item in batch],
+        'description': [item['description'] for item in batch],
+    }
 
 if __name__ == "__main__":
     from games.game_configs import get_game_config
@@ -80,3 +95,14 @@ if __name__ == "__main__":
                                                 user_messages='You are Amy ,you are angry'), 
                                     sample_num=200)
     print(emo_dataset[0])
+    
+    from torch.utils.data import DataLoader
+    data_loader = DataLoader(
+        emo_dataset, 
+        batch_size=2, 
+        shuffle=True,
+        collate_fn=collate_game_scenarios
+    )
+    for batch in data_loader:
+        print(batch)
+        break

@@ -11,7 +11,7 @@ from games.game_configs import get_game_config
 def setup_experiment():
     repe_pipeline_registry()
     
-    exp_config = get_exp_config('config/priDeli_repEng_experiment_config.yaml') 
+    exp_config = get_exp_config('config/escalGame_repEng_experiment_config.yaml') 
     game_name = GameNames.from_string(exp_config['experiment']['game']['name'])
     model_name = exp_config['experiment']['llm']['model_name'] #  "meta-llama/Meta-Llama-3.1-8B-Instruct"
     repe_eng_config = get_repe_eng_config(model_name)

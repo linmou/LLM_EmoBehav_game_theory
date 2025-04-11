@@ -7,7 +7,7 @@ from neuro_manipulation.utils import (
     dict_to_unique_code
 )
 from neuro_manipulation.prompt_formats import PromptFormat
-
+from constants import Emotions
 def setup_model_and_tokenizer(config):
     model, tokenizer = load_model_tokenizer(
         config['model_name_or_path'],
@@ -20,7 +20,7 @@ def setup_model_and_tokenizer(config):
 
 def load_emotion_readers(config, model, tokenizer, hidden_layers):
     args = {
-        'emotions': config['emotions'],
+        'emotions': Emotions.get_emotions(),
         'data_dir': config['data_dir'],
         'model_name_or_path': config['model_name_or_path'],
         'rep_token': config['rep_token'],

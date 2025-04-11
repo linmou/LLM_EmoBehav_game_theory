@@ -1,5 +1,5 @@
 experiment:
-  name: "Prisoners_Dilemma_New_Template_inten1.0"
+  name: "Prisoners_Dilemma_New_Template_vllm"
   game:
     name: "Prisoners_Dilemma"  # or "Prisoners_Dilemma"
     
@@ -25,14 +25,9 @@ experiment:
 
   emotions:
     - "anger"
-    - "happiness"
-    - "sadness"
-    - "disgust"
-    - "fear"
-    - "surprise"
-  
+
   intensity:
-    - 1.0
+    - 1.5
     
   output:
     base_dir: "results/RepEng"

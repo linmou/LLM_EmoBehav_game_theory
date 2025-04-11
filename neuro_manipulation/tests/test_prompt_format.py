@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 from transformers import AutoTokenizer
 from jinja2.exceptions import TemplateError
-from neuro_manipulation.prompt_formats import OldPromptFormat, PromptFormat, Llama2InstFormat, Llama3InstFormat, MistralInstFormat, ModelPromptFormat, ClassPropertyDescriptor, classproperty
+from neuro_manipulation.prompt_formats import ManualPromptFormat, PromptFormat, Llama2InstFormat, Llama3InstFormat, MistralInstFormat, ModelPromptFormat, ClassPropertyDescriptor, classproperty, RWKVsFormat
 
 class TestPromptTemplates(unittest.TestCase):
     """Test the application of model-specific chat templates"""
@@ -274,7 +274,7 @@ class TestPromptFormatBasics(unittest.TestCase):
             tokenizer.apply_chat_template = original_method
         
     def test_fallback_to_old_format(self):
-        """Test fallback to OldPromptFormat when all template applications fail"""
+        """Test fallback to ManualPromptFormat when all template applications fail"""
         model_name = "meta-llama/Llama-2-7b-chat-hf"
         tokenizer = self.tokenizers[model_name]
         prompt_format = PromptFormat(tokenizer)
@@ -283,21 +283,21 @@ class TestPromptFormatBasics(unittest.TestCase):
         
         # Save original methods
         original_apply_template = tokenizer.apply_chat_template
-        original_old_build = OldPromptFormat.build
+        original_old_build = ManualPromptFormat.build
         
         try:
             # Replace with a mock that always raises TemplateError
             tokenizer.apply_chat_template = MagicMock(side_effect=TemplateError("Mocked template error"))
             
-            # Mock OldPromptFormat.build
+            # Mock ManualPromptFormat.build
             expected_result = "Fallback to old format successful"
-            OldPromptFormat.build = MagicMock(return_value=expected_result)
+            ManualPromptFormat.build = MagicMock(return_value=expected_result)
             
             # Test the method
             result = prompt_format.build(model_name, system_prompt, user_messages)
             
-            # Verify OldPromptFormat.build was called with correct arguments
-            OldPromptFormat.build.assert_called_once_with(model_name, system_prompt, user_messages, [])
+            # Verify ManualPromptFormat.build was called with correct arguments
+            ManualPromptFormat.build.assert_called_once_with(model_name, system_prompt, user_messages, [])
             
             # Verify the result
             self.assertEqual(result, expected_result)
@@ -308,12 +308,12 @@ class TestPromptFormatBasics(unittest.TestCase):
             # Print debug info
             print(f"Result: {result}")
             print(f"apply_chat_template call count: {tokenizer.apply_chat_template.call_count}")
-            print(f"OldPromptFormat.build called with: {OldPromptFormat.build.call_args}")
+            print(f"ManualPromptFormat.build called with: {ManualPromptFormat.build.call_args}")
             
         finally:
             # Restore original methods
             tokenizer.apply_chat_template = original_apply_template
-            OldPromptFormat.build = original_old_build
+            ManualPromptFormat.build = original_old_build
 
 class TestPromptFormatCompatibility(unittest.TestCase):
     def setUp(self):
@@ -334,7 +334,7 @@ class TestPromptFormatCompatibility(unittest.TestCase):
         model_name = "meta-llama/Llama-2-7b-chat-hf"
         
         # Old implementation
-        old_prompt = OldPromptFormat.build(
+        old_prompt = ManualPromptFormat.build(
             model_name, 
             self.system_prompt, 
             self.user_messages, 
@@ -368,7 +368,7 @@ class TestPromptFormatCompatibility(unittest.TestCase):
         model_name = "meta-llama/Llama-3.1-8B-Instruct"
         
         # Old implementation
-        old_prompt = OldPromptFormat.build(
+        old_prompt = ManualPromptFormat.build(
             model_name, 
             self.system_prompt, 
             self.user_messages, 
@@ -400,7 +400,7 @@ class TestPromptFormatCompatibility(unittest.TestCase):
         model_name = "mistralai/Mistral-7B-Instruct-v0.3"
         
         # Old implementation
-        old_prompt = OldPromptFormat.build(
+        old_prompt = ManualPromptFormat.build(
             model_name, 
             self.system_prompt, 
             self.user_messages, 
@@ -429,7 +429,7 @@ class TestPromptFormatCompatibility(unittest.TestCase):
         model_name = "meta-llama/Llama-2-7b-chat-hf"
         
         # Test with no assistant messages
-        old_prompt = OldPromptFormat.build(
+        old_prompt = ManualPromptFormat.build(
             model_name, 
             self.system_prompt, 
             self.user_messages[:1], 
@@ -451,7 +451,7 @@ class TestPromptFormatCompatibility(unittest.TestCase):
         self.assertIn(self.user_messages[0], new_prompt)
         
         # Test with multiple message pairs
-        old_prompt = OldPromptFormat.build(
+        old_prompt = ManualPromptFormat.build(
             model_name, 
             self.system_prompt, 
             self.user_messages, 
@@ -474,6 +474,29 @@ class TestPromptFormatCompatibility(unittest.TestCase):
         for msg in ["I'm doing well", "I can help with that"]:
             self.assertIn(msg, old_prompt)
             self.assertIn(msg, new_prompt)
+
+    def test_rwkv_format(self):
+        """Test the RWKVsFormat implementation"""
+        system_prompt = "You are a helpful AI assistant."
+        user_messages = ["Hello, how are you?", "Can you help me with a task?"]
+        assistant_messages = ["I'm doing well, how can I help you today?"]
+        
+        # Test without system prompt
+        prompt = RWKVsFormat.build("", user_messages[:1], [])
+        self.assertEqual(prompt, "User:  Hello, how are you?\n\n")
+        
+        # Test with system prompt
+        prompt = RWKVsFormat.build(system_prompt, user_messages[:1], [])
+        self.assertEqual(prompt, "User: You are a helpful AI assistant. Hello, how are you?\n\n")
+        
+        # Test with multiple messages
+        prompt = RWKVsFormat.build(system_prompt, user_messages, assistant_messages)
+        expected = "User: You are a helpful AI assistant. Hello, how are you?\n\nAssistant: I'm doing well, how can I help you today?\n\nUser: Can you help me with a task?\n\n"
+        self.assertEqual(prompt, expected)
+        
+        # Test name pattern matching
+        self.assertTrue(RWKVsFormat.name_pattern("rwkv-4-raven"))
+        self.assertFalse(RWKVsFormat.name_pattern("llama-2-7b"))
 
 if __name__ == "__main__":
     unittest.main() 

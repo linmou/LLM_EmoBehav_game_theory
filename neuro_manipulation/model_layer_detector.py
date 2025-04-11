@@ -43,8 +43,8 @@ class ModelLayerDetector:
             )
             
             # Return True if module has attention OR other transformer components
-            # The OR condition helps with models like RWKV that don't use explicit attention
-            return has_attention or has_transformer_components
+            # The OR condition helps with models that don't use explicit attention
+            return has_attention # or has_transformer_components
         
         # Helper to check if a ModuleList is likely transformer layers
         def is_transformer_layers(module_list):
@@ -139,4 +139,8 @@ class ModelLayerDetector:
         
         model_type = type(model).__name__
         print(f"Model: {model_type}")
-        _print_structure(model) 
+        _print_structure(model)
+        
+    @staticmethod
+    def num_layers(model):
+        return len(ModelLayerDetector.get_model_layers(model))
