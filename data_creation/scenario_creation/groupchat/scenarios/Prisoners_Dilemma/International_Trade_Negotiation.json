@@ -1,0 +1,18 @@
+{
+    "scenario": "International Trade Negotiation",
+    "description": "Two ambassadors, You and Bob, representing neighboring countries, are involved in crucial trade negotiations. Each ambassador must decide whether to introduce new tariffs or maintain current trade agreements. If both maintain current agreements, economic stability is achieved for both countries, and they strengthen diplomatic ties. If one imposes tariffs while the other does not, the imposing country gains a competitive advantage but strains relations. If both impose tariffs, trade wars ensue, causing economic harm to both.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Ambassador of Country A"
+        },
+        {
+            "name": "Bob",
+            "profile": "Ambassador of Country B"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Maintain current trade agreements",
+        "defect": "Impose tariffs"
+    }
+}

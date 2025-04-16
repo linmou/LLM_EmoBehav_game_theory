@@ -1,0 +1,18 @@
+{
+  "scenario": "Charity Fundraiser Strategy",
+  "description": "Two non-profit organizations, led by You and Bob, are planning a fundraising event to support community education. Both organizations have the option of collaborating to pool resources and volunteers, or they can choose to work independently. If both organizations collaborate, the event becomes a major success, garnering media attention and large donations, benefiting both parties equally. If one organization chooses to collaborate while the other decides to work independently, the independent organization can potentially secure exclusive sponsorships and greater individual recognition, while the collaborating organization risks being overshadowed. If neither organization collaborates, they both host smaller, less impactful events, receiving limited exposure and donations. External factors such as an unexpected community event on the same day and varying levels of volunteer engagement add complexity to the decision-making process, making the outcome less predictable.",
+  "participants": [
+    {
+      "name": "You",
+      "profile": "Leader of Non-Profit Organization A"
+    },
+    {
+      "name": "Bob",
+      "profile": "Leader of Non-Profit Organization B"
+    }
+  ],
+  "behavior_choices": {
+    "cooperate": "Collaborate Resources",
+    "defect": "Work Independently"
+  }
+}

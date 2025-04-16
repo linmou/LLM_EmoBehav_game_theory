@@ -1,0 +1,18 @@
+{
+    "scenario": "Resource Sharing",
+    "description": "You and Bob are both members of an organization managing a shared set of resources necessary for ongoing projects. Each member decides whether to contribute additional resources (time, effort) or focus on personal projects. If both contribute, the organization's projects flourish, leading to extended contracts and recognition for both. If one contributes while the other focuses on personal projects, the contributor feels overburdened and exploited while the non-contributor advances individually. If neither contributes, ongoing projects stagnate, leading to missed opportunities for growth.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Organizational Member"
+        },
+        {
+            "name": "Bob",
+            "profile": "Organizational Member"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Focus on Personal Projects",
+        "defect": "Contribute Additional Resources"
+    }
+}

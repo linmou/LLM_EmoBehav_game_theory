@@ -1,0 +1,18 @@
+{
+    "scenario": "Community Fundraising Drive",
+    "description": "Two nonprofit leaders, You and Bob, are spearheading a community fundraising drive. Each must decide whether to allocate additional resources towards organizing larger community events or to stick with the current smaller-scale efforts. If both allocate additional resources, the fundraising goal will be exceeded, boosting community projects. If one allocates more while the other does not, the one who allocates more might feel overburdened, whereas the other conserves resources. If neither allocates extra resources, the fundraising goal is met minimally, but no extra funds are available for additional community projects.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Nonprofit Leader"
+        },
+        {
+            "name": "Bob",
+            "profile": "Nonprofit Leader"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Stick to Current Efforts",
+        "defect": "Allocate Additional Resources"
+    }
+}

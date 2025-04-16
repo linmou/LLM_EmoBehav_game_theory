@@ -1,0 +1,18 @@
+{
+    "scenario": "Exhibition Showcase",
+    "description": "Two visual artists, 'You' and 'Bob', have been invited to collaborate on a high-profile exhibition where they are each responsible for curating a joint art piece. They must decide whether to allocate more time and resources towards this collaborative project or to focus on their individual artwork that will also be showcased separately. If both artists decide to prioritize the joint piece, it will become the highlight of the exhibition, and they will gain significant recognition and potential future opportunities. If one artist prioritizes the joint piece while the other focuses on their individual artwork, the collaborator will feel overburdened, and their individual artwork might not stand out. However, the artist focusing on their piece could gain more personal acclaim. If both choose to focus only on their individual artworks, the joint piece will receive minimal attention, leading to a missed opportunity for wider recognition, although both will maintain their usual level of success in the exhibition.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Visual Artist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Visual Artist"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Prioritize Joint Piece",
+        "defect": "Focus on Individual Artwork"
+    }
+}

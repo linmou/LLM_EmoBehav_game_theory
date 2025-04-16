@@ -1,10 +1,14 @@
-from pydantic import BaseModel, Field
-from typing import ClassVar, Optional, Type, Dict, Any, List, Union
 from abc import ABC, abstractmethod
+from typing import Any, ClassVar, Dict, List, Optional, Type, Union
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from .game_tree import PayoffMatrix
+
 
 class BehaviorChoices(BaseModel, ABC):
     """Abstract base class for behavior choices in a game"""
-    
+
     @abstractmethod
     def is_valid_choice(self, choice: str) -> bool:
         """Check if a choice is valid"""
@@ -24,22 +28,29 @@ class BehaviorChoices(BaseModel, ABC):
     def __str__(self):
         return ", ".join(self.get_choices())
 
+
 class GameScenario(BaseModel, ABC):
     """Abstract base class for game scenarios"""
-   
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    payoff_matrix: Union[Dict[str, Dict[str, Dict[str, float]]], PayoffMatrix] = Field(
+        default=None
+    )
+
     @abstractmethod
     def get_scenario_info(self) -> dict:
         """Get the scenario information"""
         pass
-    
+
     def get_participants(self) -> list[dict]:
         return self.participants
-    
+
     @abstractmethod
     def get_behavior_choices(self) -> BehaviorChoices:
         """Get the behavior choices"""
         pass
-    
+
     @abstractmethod
     def find_behavior_from_decision(self, decision: str) -> str:
         """Convert a decision string to a behavior identifier"""
@@ -60,8 +71,10 @@ class GameScenario(BaseModel, ABC):
         Behavior Choices: {self.get_behavior_choices().get_choices()}
         """
 
+
 class SequentialGameScenario(GameScenario, ABC):
     """Base class for sequential game scenarios"""
+
     previous_actions_length: int
 
     @property
@@ -70,32 +83,32 @@ class SequentialGameScenario(GameScenario, ABC):
         """Get the previous actions"""
         pass
 
+
 class GameDecision(BaseModel, ABC):
     """Abstract base class for game decisions"""
-    
+
     @abstractmethod
     def validate_decision(self, decision: str) -> bool:
         """Validate if a decision is valid for the current scenario"""
         pass
-    
+
     @staticmethod
     def example() -> dict:
-        return {
-            "rational": "<rational for the decision>",
-            "decision": "<decision>"
-        }
-        
+        return {"rational": "<rational for the decision>", "decision": "<decision>"}
+
+
 class Game:
     """Main class to handle different types of games"""
+
     def __init__(
         self,
         name: str,
         scenario_class: Union[GameScenario, SequentialGameScenario],
         decision_class: Type[GameDecision],
-        payoff_matrix: Dict[str, Any],
+        payoff_matrix: Union[Dict[str, Any], PayoffMatrix],
         extra_attrs: Dict[str, Any] = {},
         data_path: str = None,
-        data_folder: str = None
+        data_folder: str = None,
     ):
         self.name = name
         self.scenario_class = scenario_class
@@ -115,7 +128,7 @@ class Game:
 
     def create_scenario(self, data: dict) -> GameScenario:
         """Create a new scenario instance"""
-        data['payoff_matrix'] = self.payoff_matrix
+        data["payoff_matrix"] = self.payoff_matrix
         data.update(self.extra_attrs)
         scenario = self.scenario_class(**data)
         self.decision_class.set_scenario(scenario)
@@ -128,4 +141,4 @@ class Game:
     @property
     def example_scenario(self) -> dict:
         """Get an example scenario for this game type"""
-        return self.scenario_class.example() 
+        return self.scenario_class.example()

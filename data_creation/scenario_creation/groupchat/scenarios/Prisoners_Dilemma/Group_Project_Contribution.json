@@ -1,0 +1,18 @@
+{
+    "scenario": "Group Project Contribution",
+    "description": "You and Bob are assigned a group project worth a significant portion of your final grade. Both must decide whether to focus on the project or allocate time to individual study for upcoming exams. If both focus on the project, you will finish ahead of time and achieve excellent grades. If one focuses on the project while the other prioritizes individual study, the project will be completed, but the one who studied individually gains an edge in exams. If neither focuses on the project, both will need to work harder during exams to make up for lost project marks.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Student"
+        },
+        {
+            "name": "Bob",
+            "profile": "Student"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Focus on Project",
+        "defect": "Prioritize Individual Study"
+    }
+}

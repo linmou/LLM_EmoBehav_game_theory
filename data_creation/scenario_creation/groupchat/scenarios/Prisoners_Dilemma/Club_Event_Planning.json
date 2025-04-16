@@ -1,0 +1,18 @@
+{
+    "scenario": "Club Event Planning",
+    "description": "Two club organizers are tasked with organizing an upcoming event. Each organizer must decide whether to contribute additional volunteer hours or stick to the minimum required hours. If both contribute additional hours, the event is a resounding success, attracting more members and sponsors. If one contributes additional hours while the other sticks to the minimum, the one contributing extra feels overworked while the other enjoys personal time. If neither contributes additional hours, the event is average with no significant gains in membership or sponsorship.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Club Organizer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Club Organizer"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Minimum Hours",
+        "defect": "Additional Volunteer Hours"
+    }
+}

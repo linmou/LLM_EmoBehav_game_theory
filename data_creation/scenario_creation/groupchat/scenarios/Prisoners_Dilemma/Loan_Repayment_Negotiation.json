@@ -1,0 +1,18 @@
+{
+    "scenario": "Loan Repayment Negotiation",
+    "description": "Two borrowers have taken out a significant loan from a community fund and are negotiating their repayment terms. Each borrower must decide whether to repay their loan on time or delay the repayment. If both repay on time, the community fund thrives and they gain goodwill and potential future funding opportunities. If one repays on time while the other delays, the timely repayer gains goodwill but feels taken advantage of, whereas the delayer risks losing credibility. If neither repays on time, both borrowers face sanctions from the community, and future funding is jeopardized.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Borrower from community fund"
+        },
+        {
+            "name": "Bob",
+            "profile": "Borrower from community fund"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Repay on Time",
+        "defect": "Delay Repayment"
+    }
+}

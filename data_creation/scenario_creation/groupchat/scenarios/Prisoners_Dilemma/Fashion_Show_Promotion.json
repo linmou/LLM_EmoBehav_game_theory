@@ -1,0 +1,18 @@
+{
+    "scenario": "Fashion Show Promotion",
+    "description": "Two fashion marketing students, You and Bob, are tasked with promoting an upcoming college fashion show. Each student can either put in extra effort to create a dazzling promotional campaign or stick to doing the minimum required. If both students put in extra effort, the fashion show receives excellent publicity and both receive accolades from the faculty. If one student puts in the effort while the other doesn't, the one who worked harder gains some recognition, but feels undervalued as the show doesn't achieve its full potential. If neither puts in extra effort, the show gets minimal attention and neither student stands out.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Fashion marketing student"
+        },
+        {
+            "name": "Bob",
+            "profile": "Fashion marketing student"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Minimal Effort",
+        "defect": "Extra Effort"
+    }
+}

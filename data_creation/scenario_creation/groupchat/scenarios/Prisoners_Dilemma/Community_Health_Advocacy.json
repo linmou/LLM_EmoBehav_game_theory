@@ -1,0 +1,18 @@
+{
+    "scenario": "Community Health Advocacy",
+    "description": "You and Bob are Medicaid recipients in a community health advocacy group. Both are presented with an opportunity to enhance the community's health outcome by deciding whether to actively organize events or merely attend meetings. If both organize events, the community health advocacy achieves greater results and everyone benefits. If one organizes events while the other attends meetings, the organizer feels burdened while the attendee conserves personal resources. If both attend meetings without organizing events, minimal community engagement occurs, resulting in a mediocre impact.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Medicaid recipient in the community health advocacy group"
+        },
+        {
+            "name": "Bob",
+            "profile": "Medicaid recipient in the community health advocacy group"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Attend Meetings",
+        "defect": "Organize Events"
+    }
+}

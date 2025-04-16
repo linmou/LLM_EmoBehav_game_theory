@@ -1,0 +1,18 @@
+{
+    "scenario": "Confidential Interview",
+    "description": "Two military psychologists are tasked with conducting a crucial interview with a soldier showing signs of stress. Each psychologist must decide whether to share their assessment openly with the other or keep their observations confidential. If both share openly, they can identify the root issues together and help the soldier effectively. If one shares openly while the other doesn't, the one who shares may feel undermined while the other maintains control of their assessment. If neither shares openly, their conclusions are disconnected, hindering the soldier's recovery and weakening team trust.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Military Psychologist"
+        },
+        {
+            "name": "Bob",
+            "profile": "Military Psychologist"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Share Assessment",
+        "defect": "Keep Observations Confidential"
+    }
+}
