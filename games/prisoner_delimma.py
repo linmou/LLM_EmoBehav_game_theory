@@ -24,7 +24,10 @@ class PDBehaviorChoice(BehaviorChoices):
 
     @staticmethod
     def example():
-        return {"cooperate": "Regular Hours", "defect": "Work Overtime"}
+        return {
+            "cooperate": "Immediately upgrade infrastructure",
+            "defect": "Delay upgrade infrastructure",
+        }
 
 
 class PrisonerDilemmaScenario(GameScenario):
@@ -57,13 +60,27 @@ class PrisonerDilemmaScenario(GameScenario):
     @staticmethod
     def example():
         return {
-            "scenario": "Project Collaboration",
-            "description": "Two developers are working on a critical project with a tight deadline. Each developer must decide whether to work overtime or stick to regular hours. If both work overtime, they'll complete the project early and receive bonuses. If one works overtime while the other doesn't, the one working overtime feels exploited while the other maintains work-life balance. If neither works overtime, the project meets minimal requirements but no bonuses are awarded.",
+            "scenario": "Bandwidth Brinkmanship: The ISP Upgrade Dilemma",
             "participants": [
-                {"name": "participant1", "profile": "Developer of the project"},
-                {"name": "participant2", "profile": "Developer of the project"},
+                {"name": "You", "profile": "CEO of an internet service provider"},
+                {"name": "Bob", "profile": "CEO of an internet service provider"},
             ],
             "behavior_choices": PDBehaviorChoice.example(),
+            "payoff_matrix": {
+                "You: cooperate , Bob: cooperate": [
+                    "You get 3: networks are upgraded and do not lose customers; Bob gets 3: networks are upgraded and do not lose customers",
+                ],
+                "You: cooperate , Bob: defect": [
+                    "You get 0: networks are upgraded but you lose customers; Bob gets 5: get customers from you",
+                ],
+                "You: defect , Bob: cooperate": [
+                    "You get 5: get customers from Bob; Bob gets 0: networks are upgraded but he loses customers",
+                ],
+                "You: defect , Bob: defect": [
+                    "You get 1: networks are not upgraded, no customers leave, continue making modest profits; Bob gets 1: networks are not upgraded, no customer leave, continue making modest profits",
+                ],
+            },
+            "description": "You and Bob, rival ISP CEOs, face a critical choice: throttle speeds for five days to upgrade your aging infrastructure. If both upgrade, customers stay and quality improves. If one delays while the other upgrades, the one who waits gains customers and profit. If both wait, networks stagnate, but profits hold steady—for now.",
         }
 
 

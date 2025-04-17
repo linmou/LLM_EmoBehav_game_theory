@@ -31,8 +31,12 @@ class SimultaneousNode:
 GameNode = Union[TerminalNode, DecisionNode, SimultaneousNode]
 
 
-class PayoffMatrix:
-    """Class to represent payoff matrices for both simultaneous and sequential games."""
+class OldPayoffMatrix:
+    """
+    Class to represent payoff matrices for both simultaneous and sequential games.
+
+    Deprecated: Use payoff_matrices.PayoffMatrix instead.
+    """
 
     def __init__(self, game_tree: GameNode, name: str = "", description: str = ""):
         self.game_tree = game_tree

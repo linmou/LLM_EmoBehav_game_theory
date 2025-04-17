@@ -3,7 +3,7 @@ from typing import Any, ClassVar, Dict, List, Optional, Type, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .game_tree import PayoffMatrix
+from .payoff_matrices import PayoffMatrix
 
 
 class BehaviorChoices(BaseModel, ABC):

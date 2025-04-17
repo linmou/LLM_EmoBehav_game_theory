@@ -1,3 +1,5 @@
+# Deprecated
+
 # Game Tree Data Structure
 
 This document explains the game tree data structure used to represent payoff matrices for both simultaneous and sequential games.

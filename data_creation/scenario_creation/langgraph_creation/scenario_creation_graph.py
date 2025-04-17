@@ -33,7 +33,7 @@ def get_llm(temperature=1.4, json_mode=True):
     """Get the LLM to use for the scenario creation."""
     # Using ChatOpenAI, but you can replace with other LLM providers
     return ChatOpenAI(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         temperature=temperature,
         response_format={"type": "json_object"} if json_mode else None,
     )
@@ -88,10 +88,10 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         {payoff_description}
         Do not use the specific digits in the payoff matrix, but please make sure the payoff in your created scenario is at the proper level.
          
-        You should follow this example format:
+        You should follow this example format, note that when writing payoff_matrix, you should first use digital payoff, then write the natural language description of the payoff in this scenario.
         {json.dumps(example_scenario, indent=2)}
         
-        Return the scenario as a valid JSON object.
+        Write in English.Return the scenario as a valid JSON object.
         """
     else:
         # Subsequent iterations with feedback
@@ -144,7 +144,7 @@ def verify_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
     """Verify if the created scenario matches the requirements and provide feedback."""
     game_name = state["game_name"]
     scenario_draft = state["scenario_draft"]
-
+    players = state["participants"]
     # Get game config for verification
     game_cfg = get_game_config(game_name)
     game = Game(
@@ -175,10 +175,12 @@ def verify_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
     
     Evaluate the scenario on these criteria:
     1. Does it properly mask the {game_name} structure?
-    2. Are the participants' named {state["participants"]} and jobs {state["participant_jobs"]} correctly assigned?
-    3. Are the behavior choices correctly representing the game's strategies?
-    4. Are the behavior-payoff mapping correctly represented?
-    5. Do not talk anything about participants' previous relationship.
+    2. Does the scenario make sense and realistic?
+    3. Are the participants' named {state["participants"]} and jobs {state["participant_jobs"]} correctly assigned?
+    4. Are the behavior choices correctly representing the game's strategies?
+    5. For {players[0]}, the rank of the payoff should follow the order: {game.payoff_matrix.ordered_payoff_leaves[0]}
+    6. For {players[1]}, the rank of the payoff should follow the order: {game.payoff_matrix.ordered_payoff_leaves[1]}
+    7. Do not talk anything about participants' previous relationship.
     
     
     Return a list of specific feedback points for improvement. 
@@ -240,6 +242,9 @@ def should_continue(state: ScenarioCreationState) -> str:
 
 def finalize_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
     """Finalize the scenario and save it."""
+    if not state["converged"]:
+        return {**state, "final_scenario": None}
+
     game_name = state["game_name"]
     scenario_draft = state["scenario_draft"]
     auto_save_path = state.get("auto_save_path", None)
