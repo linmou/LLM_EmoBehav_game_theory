@@ -123,6 +123,15 @@ class WrappedReadingVecModel(torch.nn.Module):
         self.tokenizer = tokenizer
         self.raw_llm = raw_llm
         self.model_layers = ModelLayerDetector.get_model_layers(self.raw_llm if self.raw_llm is not None else self.model)
+        
+        # Make sure tokenizer has a pad token
+        if self.tokenizer is not None and self.tokenizer.pad_token is None:
+            if hasattr(self.model, "config") and hasattr(self.model.config, "eos_token_id"):
+                self.tokenizer.pad_token_id = self.model.config.eos_token_id
+                print(f"Setting pad_token_id to eos_token_id: {self.tokenizer.pad_token_id}")
+            elif hasattr(self.tokenizer, 'eos_token') and self.tokenizer.eos_token is not None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token
+                print(f"Setting pad_token to eos_token: {self.tokenizer.pad_token}")
 
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs)

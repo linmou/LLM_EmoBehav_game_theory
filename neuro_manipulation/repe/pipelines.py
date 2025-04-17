@@ -6,7 +6,8 @@ from transformers.pipelines import pipeline
 from neuro_manipulation.repe.rep_control_vllm import RepControlVLLM
 from neuro_manipulation.repe.rep_reading_vllm import RepReadingVLLM
 from .rep_reading_pipeline import RepReadingPipeline
-from .rep_control_pipeline import RepControlPipeline
+from .rep_control_pipeline_wrapped import RepControlPipelineWrappedBlock
+from .rep_control_pipeline_hook import RepControlPipelineHook
 from .rep_reading_prob_calc_pipeline import RepReadingNProbCalcPipeline
 
 from vllm import LLM
@@ -20,7 +21,7 @@ def repe_pipeline_registry():
 
     PIPELINE_REGISTRY.register_pipeline(
         "rep-control",
-        pipeline_class=RepControlPipeline,
+        pipeline_class=RepControlPipelineHook,
         pt_model=AutoModelForCausalLM,
     )
     PIPELINE_REGISTRY.register_pipeline(

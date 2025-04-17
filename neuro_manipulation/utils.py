@@ -205,10 +205,10 @@ def prob_cal_record(prob_cal_pipeline, dataset, emotion, rep_token, hidden_layer
     print(f"Records saved to {save_path}")
     
 def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assistant_tag =  "[/INST]", expand_vocab=False):
-    try:
-        model = LLM(model=model_name_or_path, tensor_parallel_size=torch.cuda.device_count(), max_model_len=600)
-    except Exception as e:
-        model = AutoModelForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
+    # try:
+    #     model = LLM(model=model_name_or_path, tensor_parallel_size=torch.cuda.device_count(), max_model_len=600)
+    # except Exception as e:
+    model = AutoModelForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
 
     use_fast_tokenizer = False #"LlamaForCausalLM" not in model.config.architectures
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)

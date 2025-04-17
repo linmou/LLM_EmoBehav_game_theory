@@ -21,6 +21,15 @@ class RepControlVLLM:
         self.wrapped_model.unwrap()
         self.wrapped_model.wrap_block(layers, block_name=block_name)
         
+        # Make sure tokenizer has a pad token
+        if self.tokenizer is not None and self.tokenizer.pad_token is None:
+            if hasattr(self.model, "config") and hasattr(self.model.config, "eos_token_id"):
+                self.tokenizer.pad_token_id = self.model.config.eos_token_id
+                print(f"Setting pad_token_id to eos_token_id: {self.tokenizer.pad_token_id}")
+            elif hasattr(self.tokenizer, 'eos_token') and self.tokenizer.eos_token is not None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token
+                print(f"Setting pad_token to eos_token: {self.tokenizer.pad_token}")
+        
     def __call__(self, text_inputs: list[str], activations=None, **kwargs):
         if activations is not None:
             self.wrapped_model.reset()

@@ -8,6 +8,15 @@ class RepReadingPipeline(Pipeline):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # Make sure tokenizer has a pad token
+        if self.tokenizer is not None:
+            if self.tokenizer.pad_token is None:
+                if hasattr(self.model, "config") and hasattr(self.model.config, "eos_token_id"):
+                    self.tokenizer.pad_token_id = self.model.config.eos_token_id
+                    print(f"Setting pad_token_id to eos_token_id: {self.tokenizer.pad_token_id}")
+                elif self.tokenizer.eos_token is not None:
+                    self.tokenizer.pad_token = self.tokenizer.eos_token
+                    print(f"Setting pad_token to eos_token: {self.tokenizer.pad_token}")
 
     def _get_hidden_states(
             self, 

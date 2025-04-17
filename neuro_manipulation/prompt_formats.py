@@ -1,8 +1,29 @@
 import abc
 import copy
-from jinja2.exceptions import TemplateError
 
 from transformers import AutoTokenizer
+import logging
+
+logger = logging.getLogger(__name__)
+
+class FormatRegistry:
+    def __init__(self):
+        self.formats = []
+    
+    def register(self):
+        def decorator(cls):
+            self.formats.append(cls)
+            return cls
+        return decorator
+    
+    def __iter__(self):
+        return iter(self.formats)
+    
+    def __getitem__(self, idx):
+        return self.formats[idx]
+
+FORMAT_REGISTRY = FormatRegistry()
+
 
 class ClassPropertyDescriptor:
     def __init__(self, fget):
@@ -34,6 +55,58 @@ class ModelPromptFormat(abc.ABC):
     def name_pattern(self, model_name):
         pass
 
+@FORMAT_REGISTRY.register()
+class GPT2Format(ModelPromptFormat):
+    '''
+    for debugging only
+    '''
+    
+    __user_tag = 'User:'
+    __assistant_tag = 'Assistant:'
+    __end_of_turn = '\n\n'
+    
+       
+    @classproperty
+    def user_tag(cls):
+        return cls.__user_tag
+    
+    @classproperty
+    def assistant_tag(cls):   
+        return cls.__assistant_tag
+    
+    @classproperty
+    def end_of_turn(cls):
+        return cls.__end_of_turn  
+   
+    @staticmethod
+    def build(system_prompt, user_messages:list, assistant_answers:list=[]):
+        '''
+        User: bbbbbb
+        
+        Assistant: aaaaa
+        
+        User: bbbb
+        
+        Assistant: cccc
+        '''
+        
+        assert len(user_messages), f' user_messages: {user_messages} should not empty'
+        assert len(user_messages) - len(assistant_answers) in [0,1], f' user_messages: {user_messages} and assistant_answers: {assistant_answers} should have the same length or assistant_answers should have one less element'
+        
+        prompt = f"{GPT2Format.user_tag} {system_prompt if system_prompt else ''} {user_messages[0]}{GPT2Format.end_of_turn}"
+        
+        for mid in range(len(assistant_answers)):
+            prompt += f"{GPT2Format.assistant_tag} {assistant_answers[mid]}{GPT2Format.end_of_turn}"
+            if mid < len(user_messages) - 1:
+                prompt += f"{GPT2Format.user_tag} {user_messages[mid+1]}{GPT2Format.end_of_turn}"
+    
+        return prompt
+
+    @staticmethod
+    def name_pattern(model_name):
+        return 'gpt2' in model_name.lower()
+
+@FORMAT_REGISTRY.register()
 class Llama2InstFormat(ModelPromptFormat):
     __system_begin = '<<SYS>>'
     __system_end = '<</SYS>>'
@@ -91,7 +164,7 @@ class Llama2InstFormat(ModelPromptFormat):
     def name_pattern(model_name):
         return 'llama-2' in model_name.lower() and 'chat' in model_name.lower()
     
-    
+@FORMAT_REGISTRY.register()
 class Llama3InstFormat(ModelPromptFormat):
     __begin_of_text = '<|begin_of_text|>'
     __system_begin = '<|start_header_id|>system<|end_header_id|>'
@@ -153,6 +226,7 @@ class Llama3InstFormat(ModelPromptFormat):
         return 'llama-3' in model_name.lower() and 'instruct' in model_name.lower()
 
 
+@FORMAT_REGISTRY.register()
 class MistralInstFormat(ModelPromptFormat):
     __user_tag = '[INST]'
     __assistant_tag = '[/INST]'
@@ -194,6 +268,7 @@ class MistralInstFormat(ModelPromptFormat):
     def name_pattern(model_name):
         return 'mistral' in model_name.lower() and 'instruct' in model_name.lower()
 
+@FORMAT_REGISTRY.register()
 class RWKVsFormat(ModelPromptFormat):
     __user_tag = 'User:'
     __assistant_tag = 'Assistant:'
@@ -244,14 +319,12 @@ class ManualPromptFormat:
     Manually defined prompt format.
     '''
     
-    format_ls = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat]
-    
     @staticmethod
     def get(model_name) -> ModelPromptFormat:
-        for format in ManualPromptFormat.format_ls:
+        for format in FORMAT_REGISTRY:
             if format.name_pattern(model_name): # more than one pattern may match
                 return format
-        raise ValueError(f'Prompt format not found for model name: {model_name}. Supported formats: {ManualPromptFormat.format_ls}')
+        raise ValueError(f'Prompt format not found for model name: {model_name}. Supported formats: {list(FORMAT_REGISTRY)}')
     
     @staticmethod
     def build(model_name, system_prompt, user_messages:list, assistant_messages:list=[] ) -> str:
@@ -266,7 +339,6 @@ class PromptFormat:
     
     In case the chat template is not available or fails, it falls back to the manual format definitions.
     '''
-    format_ls: list[ModelPromptFormat] = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat]
 
     def __init__(self, tokenizer: AutoTokenizer):
         self.tokenizer = tokenizer
@@ -306,12 +378,12 @@ class PromptFormat:
             self._verify_message_order_in_prompt(prompt_str, chat)
             return prompt_str
         except Exception as e:
-            print(f"Error applying chat template for model {self.model_name}: {e}")
+            logger.warning(f"Error applying chat template for model {self.model_name}: {e}")
             # In case the error from system prompt, try to merge system prompt to the first user message
             if system_prompt and len(chat) > 1:
-                print("Try to merge system prompt into first message")
+                logger.info("Try to merge system prompt into first message")
                 raw_chat_1 = copy.deepcopy(chat[1]["content"])
-                for format in PromptFormat.format_ls:
+                for format in FORMAT_REGISTRY:
                     if format.name_pattern(self.model_name):
                         try:
                             if chat[0]["role"] == "system":
@@ -322,11 +394,11 @@ class PromptFormat:
                             self._verify_message_order_in_prompt(prompt_str, chat)
                             return prompt_str
                         except Exception as e:
-                            print(f"Error applying chat template for model {self.model_name}: {e}")
+                            logger.warning(f"Error applying chat template for model {self.model_name}: {e}")
                             continue
             
             # Fallback to ManualPromptFormat if all else fails
-            print("Falling back to ManualPromptFormat")
+            logger.info(f"Falling back to ManualPromptFormat")
             prompt_str = ManualPromptFormat.build(self.model_name, system_prompt, user_messages, assistant_messages)
             return prompt_str
 
@@ -341,18 +413,28 @@ class PromptFormat:
         Raises:
             AssertionError: If message content order is not preserved
         """
-        prompt_copy = prompt_str
+        previous_idx = -1
         
         # Check each message content appears in the expected order
         for msg in chat:
             content = msg["content"]
-            if content:  # Skip empty messages
+            if content: 
                 # Check if the content appears in the prompt string
-                if content not in prompt_copy:
+                if content not in prompt_str:
                     raise AssertionError(f"Message content '{content[:20]}...' not found in prompt string")
                 
-                # Find the first occurrence and slice the string there to ensure order
-                start_idx = prompt_copy.find(content)
-                prompt_copy = prompt_copy[start_idx + len(content):]
-        
-        # If we've processed all messages and reached here, the order is preserved
+                # Find the start index of this content and ensure it comes after the previous content
+                current_idx = prompt_str.find(content)
+                if current_idx <= previous_idx and previous_idx != -1:
+                    raise AssertionError(f"Message order not preserved. Content '{content[:20]}...' appears out of order in prompt string")
+                
+                previous_idx = current_idx
+
+if __name__ == "__main__":
+    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
+    prompt_format = PromptFormat(tokenizer)
+    from_prompt_format = prompt_format.build("You are a helpful assistant", ["Hello, how are you?"], ["I'm doing well, thank you!"])
+    from_tk_template = tokenizer.apply_chat_template([{"role": "system", "content": "You are a helpful assistant"}, {"role": "user", "content": "Hello, how are you?"}, {"role": "assistant", "content": "I'm doing well, thank you!"}], tokenize=False, add_generation_prompt=True)
+    print(from_prompt_format)
+    print(from_tk_template)
+    print(from_prompt_format == from_tk_template)

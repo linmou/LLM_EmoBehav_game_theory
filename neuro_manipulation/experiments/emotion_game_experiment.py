@@ -13,6 +13,7 @@ from queue import Queue
 from threading import Thread
 import re
 from pathlib import Path
+import gc
 
 from vllm import LLM
 import yaml
@@ -25,6 +26,7 @@ from neuro_manipulation.repe.pipelines import get_pipeline
 from neuro_manipulation.utils import oai_response
 from api_configs import OAI_CONFIG
 from statistical_engine import analyze_emotion_and_intensity_effects
+from neuro_manipulation.gpu_optimization import find_optimal_batch_size_for_experiment
 
 class ExtractedResult(BaseModel):
     option_id: int
@@ -33,7 +35,7 @@ class ExtractedResult(BaseModel):
         
 
 class EmotionGameExperiment:
-    def __init__(self, repe_eng_config, exp_config, game_config, batch_size, sample_num=None,  repeat=1):
+    def __init__(self, repe_eng_config, exp_config, game_config, batch_size=None, sample_num=None, repeat=1):
         # Setup logging
         logging.basicConfig(
             level=logging.INFO,
@@ -49,20 +51,46 @@ class EmotionGameExperiment:
         
         self.repeat = repeat
         self.sample_num = sample_num
-            
-        self.batch_size = batch_size
         
-        # self.model, self.tokenizer, self.prompt_format, self.user_tag, self.assistant_tag = setup_model_and_tokenizer(repe_eng_config)
+        # Load model and tokenizer first - needed for batch size optimization
         self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config)
         self.logger.info(f"Model: {self.model} loaded from {repe_eng_config['model_name_or_path']}, type: {type(self.model)}")
+        
+        # Set up the prompt wrapper - needed for batch size optimization
+        self.reaction_prompt_wrapper = GameReactPromptWrapper(
+            self.prompt_format, 
+            response_format=self.game_config['decision_class']
+        )
+        
+        # Handle batch size determination
+        if batch_size is None:
+            config_batch_size = exp_config['experiment'].get('batch_size', 128)
+            if config_batch_size == 'auto_batch_size':
+                self.logger.info("Auto batch size detection enabled")
+                safety_margin = exp_config['experiment'].get('batch_size_safety_margin', 0.9)
+                self.batch_size = find_optimal_batch_size_for_experiment(
+                    model=self.model,
+                    tokenizer=self.tokenizer,
+                    prompt_wrapper=self.reaction_prompt_wrapper,
+                    game_config=self.game_config,
+                    exp_config=self.exp_config,
+                    safety_margin=safety_margin
+                )
+            elif isinstance(config_batch_size, int):
+                self.batch_size = config_batch_size
+            else:
+                raise ValueError(f"Invalid batch_size value in config: {config_batch_size}. Must be an integer or 'auto_batch_size'")
+        elif isinstance(batch_size, int):
+            self.batch_size = batch_size
+        else:
+            raise ValueError(f"Invalid batch_size argument: {batch_size}. Must be an integer or None")
+            
+        self.logger.info(f"Using batch size: {self.batch_size}")
+        
+        # Continue with the rest of initialization
         self.is_vllm = isinstance(self.model, LLM)
         num_hidden_layers = ModelLayerDetector.num_layers(self.model) if not self.is_vllm else ModelLayerDetector.num_layers(self.get_core_model_from_vllm())
         self.hidden_layers = list(range(-1, -num_hidden_layers, -1))
-        
-        # self.repe_eng_config.update({
-        #     'user_tag': self.user_tag,
-        #     'assistant_tag': self.assistant_tag
-        # })
         
         self.emotion_rep_readers = load_emotion_readers(
             self.repe_eng_config, 
@@ -79,11 +107,6 @@ class EmotionGameExperiment:
             layers=self.repe_eng_config['control_layer_id'],
             block_name=self.repe_eng_config['block_name'],
             control_method=self.repe_eng_config['control_method']
-        )
-        
-        self.reaction_prompt_wrapper = GameReactPromptWrapper(
-            self.prompt_format, 
-            response_format=self.game_config['decision_class']
         )
         
         self.cur_emotion = None
@@ -116,7 +139,7 @@ class EmotionGameExperiment:
         self.logger.info("Starting experiment")
         results = []
         
-        for emotion in self.repe_eng_config['emotions']:
+        for emotion in self.exp_config['experiment']['emotions']:
             self.logger.info(f"Processing emotion: {emotion}")
             rep_reader = self.emotion_rep_readers[emotion]
             self.cur_emotion = emotion
@@ -196,24 +219,13 @@ class EmotionGameExperiment:
         output_data = []
         batch_size = int(len(batch['prompt']) / self.repeat) # we dont need self.batch_size here since the last batch might be smaller
         assert len(batch['prompt']) == len(batch['options']) == len(batch['scenario']) == len(batch['description']) == len(control_outputs) == batch_size * self.repeat
-        # Prepare data for parallel processing
-        self.logger.info(f"Processing batch size {len(batch['prompt'])}")
-        self.logger.info(f"Control outputs length: {len(control_outputs)}")
-        
+
         for i, p in enumerate(control_outputs):
-            self.logger.info(f"Processing control output {i}")
-            self.logger.info(f"Original text: {p[0]['generated_text']}")
             generated_text = p[0]['generated_text'].replace(batch['prompt'][i], "")
-            self.logger.info(f"After prompt removal: {generated_text}")
-            self.logger.info(f"Batch options: {batch['options']}")
             options = batch['options'][i]
-            self.logger.info(f"Mapped options: {options}")
             output_data.append((generated_text, options))
             repeat_idx = i // batch_size
-            self.logger.info(f"Repeat index: {repeat_idx}")
         
-        # Process outputs in parallel
-        self.logger.info(f"Starting parallel processing of {len(output_data)} items")
         with ThreadPoolExecutor(max_workers=min(len(output_data), 8)) as executor:
             extracted_reses = list(executor.map(self._post_process_single_output, output_data))
         
@@ -234,7 +246,7 @@ class EmotionGameExperiment:
                 'rationale': extracted_res.rationale,
                 'decision': extracted_res.decision,
                 'category': extracted_res.option_id,
-                'repeat_num': i // self.batch_size
+                'repeat_num': i // batch_size
             })
             
             self.logger.info(f"Added result with scenario {batch['scenario'][batch_idx]} and repeat {i // self.batch_size}")

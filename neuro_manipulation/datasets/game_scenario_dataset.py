@@ -91,8 +91,7 @@ if __name__ == "__main__":
     from functools import partial
     emo_dataset = GameScenarioDataset(game_config, 
                                     prompt_wrapper=partial(prompt_wrapper.__call__,
-                                                            emotion='angry',
-                                                user_messages='You are Amy ,you are angry'), 
+                                                user_messages= "Remember you are Alice. What is your option? Choose one option shown above."), 
                                     sample_num=200)
     print(emo_dataset[0])
     

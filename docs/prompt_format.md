@@ -83,4 +83,10 @@ To run the tests:
 ```bash
 python -m unittest neuro_manipulation/tests/test_prompt_format.py
 python -m unittest neuro_manipulation/tests/test_prompt_format_integration.py
-``` 
+```
+
+## Format Registry
+
+The prompt format system now uses an automatic registration system to manage format classes.
+
+For details about the format registry, see [Prompt Format Registry](./prompt_format_registry.md). 

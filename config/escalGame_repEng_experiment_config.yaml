@@ -30,9 +30,9 @@ experiment:
   repeat: 2
 
   intensity:
-    - 0.5
-    - 1
     - 1.5
+
+  batch_size: auto_batch_size
 
   output:
     base_dir: "results/RepEng"

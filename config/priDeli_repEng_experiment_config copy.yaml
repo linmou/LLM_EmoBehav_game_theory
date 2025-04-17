@@ -1,5 +1,5 @@
 experiment:
-  name: "Prisoners_Dilemma_New_Template_vllm"
+  name: "Prisoners_Dilemma_New_Template_hook"
   game:
     name: "Prisoners_Dilemma"  # or "Prisoners_Dilemma"
     
@@ -18,7 +18,7 @@ experiment:
       max_new_tokens: 440
 
   # Template for system message with placeholders
-  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. "
+  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
   # system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. Before making your choice, think about do you have emotion about {emotion} that will affect your choice. If so, try to regulate it."
   
   repeat: 5
