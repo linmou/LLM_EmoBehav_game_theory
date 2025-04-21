@@ -1,107 +1,110 @@
-# Neuro Manipulation Tests
+# Neuro-Manipulation Tests
 
-This directory contains tests for the neuro_manipulation package. The tests are designed to ensure that the package works correctly with various models and prompt formats.
+This directory contains tests for the utilities within the `neuro_manipulation` package.
 
-## Test Structure
+## Tests
 
-- **Unit Tests:** Testing individual components in isolation
-- **Integration Tests:** Testing how components work together
+### `test_model_layer_detector.py`
 
-## Model Testing Strategy
+Contains unit tests for the `ModelLayerDetector` class. These tests verify its ability to correctly identify transformer layers across various model architectures, including:
 
-The tests are designed to work with multiple LLM models to ensure compatibility across different architectures:
+- Standard HuggingFace models (GPT-2, OPT)
+- Models with different layer naming conventions (ChatGLM)
+- Non-standard architectures (RWKV - requires `trust_remote_code=True`)
+- Custom-built simple transformer models
+- Models loaded via vLLM
 
-1. **Llama 2:** `meta-llama/Llama-2-7b-chat-hf`
-2. **Llama 3:** `meta-llama/Llama-3.1-8B-Instruct` 
-3. **Mistral:** `mistralai/Mistral-7B-Instruct-v0.3`
-4. **ChatGLM:** `THUDM/glm-4-9b`
+### `test_vllm_hook_registration.py`
 
-Each test class instantiates tokenizers for all supported models and runs tests against each model. This ensures that our prompt formatting and other functionality works consistently across different LLM architectures.
+Tests the ability to register PyTorch forward hooks on transformer layers within a model served by vLLM.
 
-### Integration Test Implementation
+- Uses `ModelLayerDetector` to find the target layers dynamically.
+- Initializes a vLLM `LLM` instance with standard models (e.g., GPT-2, OPT-125m, Llama-2-7b).
+- Accesses the underlying PyTorch model from the vLLM engine.
+- Registers a simple forward hook on a specific layer.
+- Runs inference using `llm.generate()`.
+- Verifies that the hook was executed during inference.
+- Removes the hook and verifies it is no longer active.
 
-For integration tests, we:
+**Note:** This test requires a GPU environment with CUDA available and vLLM installed. For multi-GPU testing, set the `CUDA_VISIBLE_DEVICES` environment variable (e.g., `CUDA_VISIBLE_DEVICES=0,1`) before running the test. The test will automatically use the specified number of GPUs for tensor parallelism (`tensor_parallel_size`).
 
-1. Initialize tokenizers for each model in the `setUp` method
-2. Create a PromptFormat instance for each tokenizer
-3. Use subtests to run tests for each model separately
-4. Extract the model name from the tokenizer using `tokenizer.name_or_path` in the wrapper
+### `test_vllm_hook_modification.py`
 
-This approach ensures that each model is tested independently and any model-specific issues are identified immediately.
+# Test: VLLM Hook Output Modification via RPC
 
-### Main Test Files
+This test script (`test_vllm_hook_modification.py`) verifies the ability to register PyTorch forward hooks onto specific layers of a model running within vLLM worker processes and **modify** the output of those layers. This is achieved using vLLM's `collective_rpc` mechanism.
 
-- `test_prompt_format.py`: Tests for basic prompt formatting functionality
-- `test_prompt_format_integration.py`: Integration tests for prompt formatting with wrappers
-- `test_model_layer_detector.py`: Tests for automatic layer detection in various model architectures
+## Purpose
 
-### Running Tests
+The primary goal is to demonstrate that:
+1.  A hook function can be successfully registered onto a target layer (e.g., the first decoder block) across all tensor-parallel workers using RPC.
+2.  This hook function can intercept the layer's forward pass output.
+3.  The hook function can modify the output tensor (in this case, by zeroing it out).
+4.  The modification to the intermediate layer's output has a tangible effect on the final generated text produced by the model.
 
-```bash
-# Run all tests
-python -m unittest discover
+## How it Works
 
-# Run a specific test file
-python -m unittest neuro_manipulation.tests.test_prompt_format
+1.  **Initialization:** An LLM instance is created using vLLM, potentially with tensor parallelism (`tensor_parallel_size > 1`).
+2.  **Baseline Generation:** The script first generates text for a given prompt *without* any hooks active. This serves as a baseline. `temperature=0.0` is used for deterministic output.
+3.  **Hook Function (`hook_fn_modify_output_global`):** A global Python function is defined. This function:
+    *   Accepts the standard PyTorch hook arguments (`module`, `args`, `output`).
+    *   Identifies the main output tensor (handling cases where the layer returns a tuple).
+    *   Logs information about the tensor (shape, dtype, device).
+    *   **Modifies** the tensor by creating a new tensor of zeros with the same properties (`torch.zeros_like`).
+    *   Logs completion and returns the modified tensor (or reconstructed tuple).
+4.  **RPC Registration (`_register_hook_on_worker_rpc`):**
+    *   A helper function `_register_hook_on_worker_rpc` is defined to run on each worker via RPC.
+    *   This function accesses the worker's local model instance (`worker_self.model_runner.model`).
+    *   It uses `ModelLayerDetector` to find the layers of the model.
+    *   It registers the `hook_fn_modify_output_global` to the specified `target_layer_index` (e.g., index 0).
+    *   The main process calls `llm.llm_engine.collective_rpc(_register_hook_on_worker_rpc, args=(target_layer_index, hook_fn_modify_output_global))` to execute registration on all workers.
+5.  **Modified Generation:** The script runs generation again with the *same* prompt and sampling parameters, but now the hook is active.
+6.  **Verification:**
+    *   The test asserts that the RPC call reported success on at least one worker.
+    *   Crucially, it asserts that the text generated *with* the hook is **different** from the baseline text generated *without* the hook (`assertNotEqual`).
+    *   Extensive logging is included in the hook and the test itself to aid debugging. Look for `*** MODIFY HOOK EXECUTING ***` messages in the logs from the workers.
+7.  **Cleanup:** Resources (LLM object) are deleted, and CUDA cache is cleared between test runs for different models.
 
-# Run a specific test class
-python -m unittest neuro_manipulation.tests.test_prompt_format.TestPromptTemplates
+## Running the Test
 
-```
-
-### Common Test Issues
-
-- **Missing model name**: Ensure the model name is passed correctly to the `PromptFormat.build` method
-- **Format expectations**: Different models use different chat templates, so test assertions should be flexible
-- **Tokenizer limitations**: Some models have limitations on how system prompts are handled
-- **Layer detection**: Some models may have non-standard architectures requiring special handling:
-  - RWKV uses attention-free mechanisms
-  - ChatGLM has a unique transformer structure
-  - Deeply nested models require careful traversal
-
-
-## Experiment test
-
-# ModelLayerDetector Tests
-
-This directory contains tests for the `ModelLayerDetector` module, which is responsible for identifying and extracting model layers from various transformer architectures.
-
-## `test_model_layer_detector.py`
-
-This test suite validates that the `ModelLayerDetector` can correctly identify model layers across different model architectures:
-
-### Test Cases:
-
-1. **Small Models** - Tests with lightweight models like GPT-2 and OPT-125M
-2. **ChatGLM Models** - Specific test for ChatGLM architecture (skipable)
-3. **RWKV Models** - Specific test for RWKV architecture (skipable)
-4. **Custom Models** - Tests with custom-built transformer architectures to ensure robustness
-5. **vLLM Integration** - Tests with vLLM models, specifically Llama-3.1-8B-Instruct
-
-### Running Tests
+Ensure you have the necessary dependencies (vLLM, PyTorch, etc.) installed in your environment (e.g., `conda activate llm`).
 
 ```bash
-# Run all tests
-python -m unittest neuro_manipulation/tests/test_model_layer_detector.py
+# Activate your environment if needed
+# conda activate llm
 
-# Run a specific test
-python -m unittest neuro_manipulation/tests/test_model_layer_detector.py TestModelLayerDetector.test_vllm_model_layers
+# Run the specific test file
+python -m unittest neuro_manipulation.tests.test_vllm_hook_modification
 ```
 
-### Requirements
+## Requirements
 
-- Most tests require GPU with CUDA
-- Tests for large models will be skipped if:
-  - CUDA is not available
-  - Specific packages (like vLLM) are not installed
-  - Running in CI environment
+*   vLLM installed.
+*   PyTorch installed.
+*   Access to CUDA GPU(s). The test skips if `CUDA_VISIBLE_DEVICES` is not set.
+*   The `neuro_manipulation` package (containing `ModelLayerDetector`) available in the Python path.
 
-### vLLM Model Structure
+## Running Tests
 
-The vLLM test specifically validates that `ModelLayerDetector` can navigate the nested structure of vLLM models to find the correct layers path:
+To run all tests in this directory, navigate to the project root and use the `unittest` discovery mechanism:
 
+```bash
+python -m unittest discover neuro_manipulation/tests/
 ```
-self.llm.llm_engine.model_executor.driver_worker.model_runner.model.model.layers
+
+To run a specific test file (e.g., the vLLM hook test):
+
+```bash
+python -m unittest neuro_manipulation.tests.test_vllm_hook_registration
 ```
 
-This test ensures that the `ModelLayerDetector` works correctly with representation engineering techniques that modify model layers in vLLM backends.
+To run a specific test class within a file:
+
+```bash
+python -m unittest neuro_manipulation.tests.test_vllm_hook_registration.TestVLLMHookRegistration
+```
+
+To run a specific test method within a class:
+```bash
+python -m unittest neuro_manipulation.tests.test_vllm_hook_registration.TestVLLMHookRegistration.test_vllm_forward_hook
+```

@@ -115,4 +115,5 @@ For detailed information about testing the `ModelLayerDetector` with different m
 2. **ChatGLM Models** - Specific test for ChatGLM architecture
 3. **RWKV Models** - Specific test for RWKV architecture
 4. **Custom Models** - Tests with custom-built transformer architectures
-5. **vLLM Models** - Tests with vLLM-hosted models like Llama-3.1-8B-Instruct 
+5. **vLLM Models** - Tests with vLLM-hosted models like Llama-3.1-8B-Instruct
+6. **vLLM Hook Registration** - Tests the ability to register hooks on layers within vLLM models. 
