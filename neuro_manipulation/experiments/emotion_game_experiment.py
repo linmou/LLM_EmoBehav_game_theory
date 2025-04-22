@@ -26,6 +26,28 @@ from neuro_manipulation.utils import oai_response
 from api_configs import OAI_CONFIG
 from statistical_engine import analyze_emotion_and_intensity_effects
 
+# Define the RPC function at the module level to avoid pickling issues with 'self'
+def _get_worker_num_layers_rpc(worker_self):
+    """RPC function to get the number of layers from the worker's model."""
+    try:
+        if hasattr(worker_self, 'model_runner') and hasattr(worker_self.model_runner, 'model'):
+            model = worker_self.model_runner.model
+            # Get config attribute which should contain num_layers or n_layer
+            config = getattr(model, 'config', None)
+            if config:
+                # Try common attribute names for number of layers
+                for attr in ['num_hidden_layers', 'n_layer', 'num_layers']:
+                    if hasattr(config, attr):
+                        return getattr(config, attr)
+            # If config approach failed, try to count transformer layers directly
+            if hasattr(model, 'model') and hasattr(model.model, 'layers'):
+                return len(model.model.layers)
+            elif hasattr(model, 'layers'):
+                return len(model.layers)
+        return -1  # Return -1 to indicate failure
+    except Exception:
+        return -1  # Return -1 on any error
+
 class ExtractedResult(BaseModel):
     option_id: int
     rationale: str
@@ -56,13 +78,27 @@ class EmotionGameExperiment:
         self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config)
         self.logger.info(f"Model: {self.model} loaded from {repe_eng_config['model_name_or_path']}, type: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)
-        num_hidden_layers = ModelLayerDetector.num_layers(self.model) if not self.is_vllm else ModelLayerDetector.num_layers(self.get_core_model_from_vllm())
-        self.hidden_layers = list(range(-1, -num_hidden_layers, -1))
+        assert self.is_vllm, "DEBUG: Model is not a VLLM instance"
         
-        # self.repe_eng_config.update({
-        #     'user_tag': self.user_tag,
-        #     'assistant_tag': self.assistant_tag
-        # })
+        # Get number of layers
+        if self.is_vllm:
+            try:
+                results = self.model.llm_engine.collective_rpc(_get_worker_num_layers_rpc)
+                if not results or all(r == -1 for r in results):
+                    raise RuntimeError("Failed to get number of layers from any worker")
+                num_hidden_layers = next(r for r in results if r > 0)
+                self.logger.info(f"Retrieved {num_hidden_layers} layers from vLLM worker")
+            except Exception as e:
+                self.logger.error(f"Error getting layers from vLLM: {e}")
+                raise
+        else:
+            num_hidden_layers = ModelLayerDetector.num_layers(self.model)
+            
+        if num_hidden_layers <= 0:
+            raise ValueError(f"Invalid number of layers: {num_hidden_layers}")
+            
+        self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
+        self.logger.info(f"Using hidden layers: {self.hidden_layers}")
         
         self.emotion_rep_readers = load_emotion_readers(
             self.repe_eng_config, 
@@ -97,9 +133,6 @@ class EmotionGameExperiment:
          
         self.llm_client = OpenAI(**OAI_CONFIG)
         
-    def get_core_model_from_vllm(self):
-        return self.model.llm_engine.model_executor.driver_worker.model_runner.model 
-
     def build_dataloader(self):
         self.logger.info(f"Creating dataset with sample_num={self.sample_num if self.sample_num is not None else 'all'}")
         emo_dataset = GameScenarioDataset(
@@ -137,9 +170,23 @@ class EmotionGameExperiment:
 
     def _infer_with_activation(self, rep_reader, data_loader):
         self.logger.info(f"Setting up activations for coefficient {self.cur_coeff}")
+        
+        # For vLLM models, use cuda:0 as the default device since vLLM doesn't expose direct device attribute
+        if self.is_vllm:
+            device = torch.device('cpu')
+            
+            # # Get tensor parallel size for vLLM model if available
+            # tp_size = 1
+            # if hasattr(self.model.llm_engine, 'parallel_config') and hasattr(self.model.llm_engine.parallel_config, 'tensor_parallel_size'):
+            #     tp_size = self.model.llm_engine.parallel_config.tensor_parallel_size
+                
+            # self.logger.info(f"Using default cuda:0 device for vLLM model with tensor_parallel_size={tp_size}")
+        else:
+            device = self.model.device
+            
         activations = {
             layer: torch.tensor(self.cur_coeff * rep_reader.directions[layer] * rep_reader.direction_signs[layer])
-            .to(self.model.device).half()
+            .to(device).half()
             for layer in self.hidden_layers
         }
        
@@ -234,10 +281,10 @@ class EmotionGameExperiment:
                 'rationale': extracted_res.rationale,
                 'decision': extracted_res.decision,
                 'category': extracted_res.option_id,
-                'repeat_num': i // self.batch_size
+                'repeat_num': i // batch_size
             })
             
-            self.logger.info(f"Added result with scenario {batch['scenario'][batch_idx]} and repeat {i // self.batch_size}")
+            self.logger.info(f"Added result with scenario {batch['scenario'][batch_idx]} and repeat {i // batch_size}")
         
         return results
 
