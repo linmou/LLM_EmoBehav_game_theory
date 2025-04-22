@@ -48,14 +48,21 @@ def hook_fn_modify_output_global(module, args, output):
         logger.info(f"*** MODIFY HOOK EXECUTING on Rank {rank} for module {module.__class__.__name__} ***")
         logger.info(f"Rank {rank} - Original output tensor shape: {target_tensor.shape}, dtype: {target_tensor.dtype}, device: {target_tensor.device}")
         # Log a small slice before zeroing (optional, can be verbose)
-        # logger.info(f"Rank {rank} - Original output tensor slice (pre-zero): {target_tensor.flatten()[:5]}")
+        logger.info(f"Rank {rank} - Original output tensor slice (pre-zero): {target_tensor.flatten()[:8]}")
 
         # --- Modification: Zero out the tensor --- # 
         modified_tensor = torch.zeros_like(target_tensor)
         # --- End Modification --- #
 
+        # --- Verification within the hook --- #
+        are_tensors_equal = torch.equal(target_tensor, modified_tensor)
+        logger.info(f"Rank {rank} - Verification: Original tensor == Modified tensor? {are_tensors_equal}")
+        if are_tensors_equal and target_tensor.numel() > 0: # Avoid false positive for empty tensors
+             logger.warning(f"Rank {rank} - !!! Modification might have failed: Original and modified tensors are equal. !!!")
+        # --- End Verification --- #
+
         # Log after modification
-        # logger.info(f"Rank {rank} - Modified output tensor slice (post-zero): {modified_tensor.flatten()[:5]}")
+        logger.info(f"Rank {rank} - Modified output tensor slice (post-zero): {modified_tensor.flatten()[:8]}")
         logger.info(f"*** MODIFY HOOK FINISHED on Rank {rank} ***")
 
         # Reconstruct the output if it was a tuple

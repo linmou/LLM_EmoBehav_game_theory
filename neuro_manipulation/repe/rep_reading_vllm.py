@@ -5,7 +5,9 @@ import numpy as np
 from .rep_readers import DIRECTION_FINDERS, RepReader
 
 class RepReadingVLLM():
-
+    '''
+    Unfinished class.
+    '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

@@ -4,6 +4,8 @@ from transformers.pipelines import PIPELINE_REGISTRY
 from transformers.pipelines import pipeline
 
 from neuro_manipulation.repe.rep_control_vllm import RepControlVLLM
+
+from neuro_manipulation.repe.rep_control_vllm_hook import RepControlVLLMHook
 from neuro_manipulation.repe.rep_reading_vllm import RepReadingVLLM
 from .rep_reading_pipeline import RepReadingPipeline
 from .rep_control_pipeline import RepControlPipeline
@@ -30,7 +32,7 @@ def repe_pipeline_registry():
     ) 
 
 vllm_task2pipeline = {
-    "rep-control-vllm": RepControlVLLM,
+    "rep-control-vllm": RepControlVLLMHook,
     "rep-reading-vllm": RepReadingVLLM,
 }
 
