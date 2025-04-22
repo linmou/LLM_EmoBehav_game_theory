@@ -10,9 +10,10 @@ from pydantic import BaseModel
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
-from threading import Thread
+from threading import Thread, current_thread
 import re
 from pathlib import Path
+import time
 
 from vllm import LLM
 import yaml
@@ -149,7 +150,7 @@ class EmotionGameExperiment:
         self.logger.info("Starting experiment")
         results = []
         
-        for emotion in self.repe_eng_config['emotions']:
+        for emotion in self.exp_config['experiment']['emotions']:
             self.logger.info(f"Processing emotion: {emotion}")
             rep_reader = self.emotion_rep_readers[emotion]
             self.cur_emotion = emotion
@@ -195,127 +196,157 @@ class EmotionGameExperiment:
     def _forward_dataloader(self, data_loader, activations):
         batch_results = []
         pipeline_queue = Queue(maxsize=2)  # Control memory usage
-         
+        processed_futures = [] # Keep track of futures
+        
         def pipeline_worker():
-            for batch in data_loader:
+            for i, batch in enumerate(data_loader):
                 # Repeat each list in the batch dictionary
                 repeat_batch = {
                     key: [item for item in value for _ in range(self.repeat)]
                     for key, value in batch.items()
                 }
+                
+                start_time = time.time()
                 control_outputs = self.rep_control_pipeline(
                     repeat_batch['prompt'],
                     activations=activations,
-                    batch_size=self.batch_size,
+                    batch_size=self.batch_size * self.repeat, # Ensure batch_size is adjusted for repeats
                     temperature=self.generation_config['temperature'],
                     max_new_tokens=self.generation_config['max_new_tokens'],
                     do_sample=self.generation_config['do_sample'],
                     top_p=self.generation_config['top_p']
                 )
-                pipeline_queue.put((repeat_batch, control_outputs))
-            pipeline_queue.put(None)
-        
+                end_time = time.time()
+                pipeline_queue.put((i, repeat_batch, control_outputs))
+                
+            pipeline_queue.put(None) # Sentinel value
+
+
         # Start pipeline worker thread
-        worker = Thread(target=pipeline_worker)
+        worker = Thread(target=pipeline_worker, name="PipelineWorker")
         worker.start()
-        
+
         # Process results while next batch is being generated
-        with ThreadPoolExecutor(max_workers=8) as post_proc_executor:
+        with ThreadPoolExecutor(max_workers=32, thread_name_prefix="PostProc") as post_proc_executor:
+            active_post_proc_tasks = 0
             while True:
                 item = pipeline_queue.get()
+                
                 if item is None:
-                    break
-                batch, control_outputs = item
+                    break # Worker finished
+                
+                batch_idx, batch, control_outputs = item
                 
                 # Submit post-processing to executor
+                active_post_proc_tasks += 1
                 future = post_proc_executor.submit(
                     self._post_process_batch,
                     batch,
-                    control_outputs
+                    control_outputs,
+                    batch_idx # Pass batch_idx for logging
                 )
-                batch_results.extend(future.result())
-        
+                processed_futures.append((batch_idx, future))
+
+            # Wait for all submitted tasks to complete and collect results
+            results_dict = {}
+            for batch_idx, future in processed_futures:
+                 start_wait = time.time()
+                 try:
+                     result = future.result() # Blocks here
+                     end_wait = time.time()
+                     active_post_proc_tasks -= 1
+                     results_dict[batch_idx] = result
+                 except Exception as e:
+                     results_dict[batch_idx] = [] # Store empty list on error
+
+            # Combine results in order
+            for i in sorted(results_dict.keys()):
+                 batch_results.extend(results_dict[i])
+
         worker.join()
         return batch_results
 
-    def _post_process_batch(self, batch, control_outputs):
+    def _post_process_batch(self, batch, control_outputs, batch_idx): # Add batch_idx
+        start_time = time.time()
+        log_prefix = f"{time.time():.2f} [{current_thread().name}]"
+        
         results = []
         output_data = []
         batch_size = int(len(batch['prompt']) / self.repeat) # we dont need self.batch_size here since the last batch might be smaller
         assert len(batch['prompt']) == len(batch['options']) == len(batch['scenario']) == len(batch['description']) == len(control_outputs) == batch_size * self.repeat
-        # Prepare data for parallel processing
-        self.logger.info(f"Processing batch size {len(batch['prompt'])}")
-        self.logger.info(f"Control outputs length: {len(control_outputs)}")
-        
+
         for i, p in enumerate(control_outputs):
-            self.logger.info(f"Processing control output {i}")
-            self.logger.info(f"Original text: {p[0]['generated_text']}")
-            generated_text = p[0]['generated_text'].replace(batch['prompt'][i], "")
-            self.logger.info(f"After prompt removal: {generated_text}")
-            self.logger.info(f"Batch options: {batch['options']}")
+            if self.is_vllm:
+                generated_text = p.outputs[0].text.replace(batch['prompt'][i], "")
+            else:
+                generated_text = p[0]['generated_text'].replace(batch['prompt'][i], "")
             options = batch['options'][i]
-            self.logger.info(f"Mapped options: {options}")
             output_data.append((generated_text, options))
             repeat_idx = i // batch_size
-            self.logger.info(f"Repeat index: {repeat_idx}")
         
-        # Process outputs in parallel
-        self.logger.info(f"Starting parallel processing of {len(output_data)} items")
-        with ThreadPoolExecutor(max_workers=min(len(output_data), 8)) as executor:
+        with ThreadPoolExecutor(max_workers=min(len(output_data), 8), thread_name_prefix=f"Extractor_B{batch_idx}") as executor:
             extracted_reses = list(executor.map(self._post_process_single_output, output_data))
         
-        self.logger.info(f"Extracted {len(extracted_reses)} results")
+        self.logger.info(f"{log_prefix} PostProc: Extracted {len(extracted_reses)} results")
         
         # Combine results
         for i, (extracted_res, (generated_text, _)) in enumerate(zip(extracted_reses, output_data)):
-            batch_idx = i
-            self.logger.info(f"Extracted result: {extracted_res}")
-            
+            current_batch_idx = i # Renamed from batch_idx to avoid confusion with the overall batch index
+            original_index_in_batch = i # Use 'i' directly as it maps 0 to N-1 within this specific post-processing call
+            original_scenario_idx = original_index_in_batch % batch_size 
+            repeat_num = original_index_in_batch // batch_size
+
+            self.logger.debug(f"{log_prefix} PostProc B{batch_idx}: Extracted result {i}: {extracted_res}")
+
             results.append({
                 'emotion': self.cur_emotion,
                 'intensity': self.cur_coeff,
-                'scenario': batch['scenario'][batch_idx],
-                'description': batch['description'][batch_idx],
-                'input': batch['prompt'][batch_idx],
+                'scenario': batch['scenario'][original_scenario_idx],
+                'description': batch['description'][original_scenario_idx],
+                'input': batch['prompt'][original_index_in_batch], # Input prompt is already repeated
                 'output': generated_text,
                 'rationale': extracted_res.rationale,
                 'decision': extracted_res.decision,
                 'category': extracted_res.option_id,
-                'repeat_num': i // batch_size
+                'repeat_num': repeat_num # Use calculated repeat number
             })
             
-            self.logger.info(f"Added result with scenario {batch['scenario'][batch_idx]} and repeat {i // batch_size}")
+            self.logger.debug(f"{log_prefix} PostProc B{batch_idx}: Added result {i} with scenario {batch['scenario'][original_scenario_idx]} and repeat {repeat_num}")
         
+        end_time = time.time()
+        self.logger.info(f"{log_prefix} PostProc: Finished for batch {batch_idx} ({end_time - start_time:.2f}s). Returning {len(results)} results.")
         return results
 
     def _post_process_single_output(self, output_data):
         generated_text, options = output_data
+        log_prefix = f"{time.time():.2f} [{current_thread().name}]" # Add log prefix here too
         
         try:
-            option_id = [j+1 for j, o in enumerate(options) if o.lower() in generated_text.lower()][0]
             # Extract rationale and decision using regex
             rationale = re.search(r'"rational"\s*:\s*"([^"]*)"', generated_text)
             decision = re.search(r'"decision"\s*:\s*"([^"]*)"', generated_text)
-            self.logger.info(f"Rationale: {rationale}")
-            self.logger.info(f"Decision: {decision}")
+            # Use debug level for potentially noisy logs
+            self.logger.debug(f"{log_prefix} Extractor: Regex Rationale: {rationale.group(1) if rationale else 'Not Found'}")
+            self.logger.debug(f"{log_prefix} Extractor: Regex Decision: {decision.group(1) if decision else 'Not Found'}")
             if not rationale or not decision:
-                raise ValueError("Failed to extract rationale or decision")
+                raise ValueError("Failed to extract rationale or decision via regex")
                 
             rationale = rationale.group(1)
             decision = decision.group(1)
-            
+           
+            option_id = [j+1 for j, o in enumerate(options) if decision.lower() in o.lower()][0]
             extracted_res = ExtractedResult(
                 option_id=option_id,
                 rationale=rationale,
                 decision=decision
             )
             
-            self.logger.info(f"Found option_id {option_id} directly from text")
+            self.logger.debug(f"{log_prefix} Extractor: Found option_id {option_id} directly from text")
         
         except Exception as e:
-            self.logger.info(f"Extraction failed: {str(e)}. Using LLM to determine option_id")
+            self.logger.info(f"{log_prefix} Extractor: Regex extraction failed: {str(e)}. Using LLM to determine option_id.")
             extracted_res = self._get_option_id_from_llm(generated_text, options)
-            self.logger.info(f"LLM extracted res sucessfully")
+            self.logger.info(f"{log_prefix} Extractor: LLM extracted res successfully: {extracted_res}")
             
         return extracted_res
 

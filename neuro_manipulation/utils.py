@@ -206,7 +206,7 @@ def prob_cal_record(prob_cal_pipeline, dataset, emotion, rep_token, hidden_layer
     
 def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assistant_tag =  "[/INST]", expand_vocab=False):
     try:
-        model = LLM(model=model_name_or_path, tensor_parallel_size=torch.cuda.device_count(), max_model_len=600, trust_remote_code=True)
+        model = LLM(model=model_name_or_path, tensor_parallel_size=torch.cuda.device_count(), max_model_len=600, trust_remote_code=True, enforce_eager=True)
     except Exception as e:
         model = AutoModelForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
 

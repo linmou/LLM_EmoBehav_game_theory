@@ -110,6 +110,13 @@ def hook_fn_rep_control(module, args, output):
         # Reshape controller_slice to be broadcastable (same logic as before)
         if len(controller_slice.shape) == 1:
             controller_ready = controller_slice.unsqueeze(0)
+        elif len(controller_slice.shape) == 2:
+            if controller_slice.shape[0] == 1:
+                # If it's already (1, hidden_dim), use it directly
+                controller_ready = controller_slice
+            else:
+                logger.warning(f"Rank {rank} - Controller has unexpected 2D shape: {controller_slice.shape}. First dimension should be 1.")
+                return output
         elif len(controller_slice.shape) == 3:
             if controller_slice.shape[1] == 1:
                 controller_ready = controller_slice.expand(-1, modified.shape[0], -1)
