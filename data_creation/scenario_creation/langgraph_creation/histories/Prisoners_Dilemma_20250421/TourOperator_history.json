@@ -1,0 +1,607 @@
+[
+    {
+        "step": 0,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "tour operator",
+                "tour operator"
+            ],
+            "scenario_draft": {
+                "scenario": "Tour Package Pricing Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "tour operator"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "tour operator"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Offer eco-friendly tour packages",
+                    "defect": "Offer discounted tour packages"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both of you attract eco-conscious tourists and maintain sustainable profits",
+                        "Bob gets 3: both of you attract eco-conscious tourists and maintain sustainable profits"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose customers to Bob's cheaper packages",
+                        "Bob gets 5: gain your customers and profit from increased sales"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: gain Bob's customers with your cheaper packages",
+                        "Bob gets 0: lose customers to your discounted tours"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both of you compete on price, reducing profit margins",
+                        "Bob gets 1: both of you compete on price, reducing profit margins"
+                    ]
+                },
+                "description": "You and Bob, both tour operators in a popular tourist destination, must decide on your pricing strategies for the upcoming season. If both choose eco-friendly packages, you attract a niche market and sustain profits. If one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. If both slash prices, you engage in a price war, diminishing profits but maintaining customer numbers.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, as it effectively sets up a competitive situation between two tour operators deciding on pricing strategies.",
+                "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being tour operators. There is no mention of any prior relationship, which aligns with the criteria.",
+                "The behavior choices of 'cooperate' (offer eco-friendly tour packages) and 'defect' (offer discounted tour packages) are appropriate and clearly represent the strategic options in the scenario.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it as a business decision-making scenario involving pricing strategies and market competition."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The scenario describes that if both choose eco-friendly packages, they attract a niche market and sustain profits. This aligns with the outcome where both participants receive a reward of 3, indicating sustainable profits. Therefore, the causal chain between both choosing eco-friendly options and maintaining sustainable profits is realistic. YES.",
+                "The scenario states that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This matches the outcome where you lose customers to Bob's cheaper packages, and Bob gains your customers and profits from increased sales. The causal chain is realistic. YES.",
+                "The scenario describes that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This aligns with the outcome where you gain Bob's customers with your cheaper packages, and Bob loses customers to your discounted tours. The causal chain is realistic. YES.",
+                "The scenario states that if both slash prices, they engage in a price war, diminishing profits but maintaining customer numbers. This matches the outcome where both participants receive a reward of 1, indicating reduced profit margins due to price competition. The causal chain is realistic. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": {
+                "scenario": "Tour Package Pricing Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "tour operator"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "tour operator"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Offer eco-friendly tour packages",
+                    "defect": "Offer discounted tour packages"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both of you attract eco-conscious tourists and maintain sustainable profits",
+                        "Bob gets 3: both of you attract eco-conscious tourists and maintain sustainable profits"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose customers to Bob's cheaper packages",
+                        "Bob gets 5: gain your customers and profit from increased sales"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: gain Bob's customers with your cheaper packages",
+                        "Bob gets 0: lose customers to your discounted tours"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both of you compete on price, reducing profit margins",
+                        "Bob gets 1: both of you compete on price, reducing profit margins"
+                    ]
+                },
+                "description": "You and Bob, both tour operators in a popular tourist destination, must decide on your pricing strategies for the upcoming season. If both choose eco-friendly packages, you attract a niche market and sustain profits. If one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. If both slash prices, you engage in a price war, diminishing profits but maintaining customer numbers.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "finalize_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "tour operator",
+                        "tour operator"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Tour Package Pricing Dilemma",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "tour operator"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "tour operator"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Offer eco-friendly tour packages",
+                            "defect": "Offer discounted tour packages"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: both of you attract eco-conscious tourists and maintain sustainable profits",
+                                "Bob gets 3: both of you attract eco-conscious tourists and maintain sustainable profits"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose customers to Bob's cheaper packages",
+                                "Bob gets 5: gain your customers and profit from increased sales"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: gain Bob's customers with your cheaper packages",
+                                "Bob gets 0: lose customers to your discounted tours"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: both of you compete on price, reducing profit margins",
+                                "Bob gets 1: both of you compete on price, reducing profit margins"
+                            ]
+                        },
+                        "description": "You and Bob, both tour operators in a popular tourist destination, must decide on your pricing strategies for the upcoming season. If both choose eco-friendly packages, you attract a niche market and sustain profits. If one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. If both slash prices, you engage in a price war, diminishing profits but maintaining customer numbers.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, as it effectively sets up a competitive situation between two tour operators deciding on pricing strategies.",
+                        "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being tour operators. There is no mention of any prior relationship, which aligns with the criteria.",
+                        "The behavior choices of 'cooperate' (offer eco-friendly tour packages) and 'defect' (offer discounted tour packages) are appropriate and clearly represent the strategic options in the scenario.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it as a business decision-making scenario involving pricing strategies and market competition."
+                    ],
+                    "preference_feedback": [],
+                    "payoff_feedback": [
+                        "The scenario describes that if both choose eco-friendly packages, they attract a niche market and sustain profits. This aligns with the outcome where both participants receive a reward of 3, indicating sustainable profits. Therefore, the causal chain between both choosing eco-friendly options and maintaining sustainable profits is realistic. YES.",
+                        "The scenario states that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This matches the outcome where you lose customers to Bob's cheaper packages, and Bob gains your customers and profits from increased sales. The causal chain is realistic. YES.",
+                        "The scenario describes that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This aligns with the outcome where you gain Bob's customers with your cheaper packages, and Bob loses customers to your discounted tours. The causal chain is realistic. YES.",
+                        "The scenario states that if both slash prices, they engage in a price war, diminishing profits but maintaining customer numbers. This matches the outcome where both participants receive a reward of 1, indicating reduced profit margins due to price competition. The causal chain is realistic. YES."
+                    ],
+                    "iteration_count": 1,
+                    "final_scenario": {
+                        "scenario": "Tour Package Pricing Dilemma",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "tour operator"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "tour operator"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Offer eco-friendly tour packages",
+                            "defect": "Offer discounted tour packages"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: both of you attract eco-conscious tourists and maintain sustainable profits",
+                                "Bob gets 3: both of you attract eco-conscious tourists and maintain sustainable profits"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose customers to Bob's cheaper packages",
+                                "Bob gets 5: gain your customers and profit from increased sales"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: gain Bob's customers with your cheaper packages",
+                                "Bob gets 0: lose customers to your discounted tours"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: both of you compete on price, reducing profit margins",
+                                "Bob gets 1: both of you compete on price, reducing profit margins"
+                            ]
+                        },
+                        "description": "You and Bob, both tour operators in a popular tourist destination, must decide on your pricing strategies for the upcoming season. If both choose eco-friendly packages, you attract a niche market and sustain profits. If one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. If both slash prices, you engage in a price war, diminishing profits but maintaining customer numbers.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_converged": true,
+                    "preference_converged": true,
+                    "payoff_converged": true,
+                    "all_converged": true,
+                    "auto_save_path": null
+                }
+            },
+            "step": 4,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_tour operator-tour operator_20250421_132715_482255"
+        },
+        "created_at": "2025-04-21T17:27:24.750669+00:00"
+    },
+    {
+        "step": 1,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "tour operator",
+                "tour operator"
+            ],
+            "scenario_draft": {
+                "scenario": "Tour Package Pricing Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "tour operator"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "tour operator"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Offer eco-friendly tour packages",
+                    "defect": "Offer discounted tour packages"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both of you attract eco-conscious tourists and maintain sustainable profits",
+                        "Bob gets 3: both of you attract eco-conscious tourists and maintain sustainable profits"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose customers to Bob's cheaper packages",
+                        "Bob gets 5: gain your customers and profit from increased sales"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: gain Bob's customers with your cheaper packages",
+                        "Bob gets 0: lose customers to your discounted tours"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both of you compete on price, reducing profit margins",
+                        "Bob gets 1: both of you compete on price, reducing profit margins"
+                    ]
+                },
+                "description": "You and Bob, both tour operators in a popular tourist destination, must decide on your pricing strategies for the upcoming season. If both choose eco-friendly packages, you attract a niche market and sustain profits. If one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. If both slash prices, you engage in a price war, diminishing profits but maintaining customer numbers.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, as it effectively sets up a competitive situation between two tour operators deciding on pricing strategies.",
+                "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being tour operators. There is no mention of any prior relationship, which aligns with the criteria.",
+                "The behavior choices of 'cooperate' (offer eco-friendly tour packages) and 'defect' (offer discounted tour packages) are appropriate and clearly represent the strategic options in the scenario.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it as a business decision-making scenario involving pricing strategies and market competition."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The scenario describes that if both choose eco-friendly packages, they attract a niche market and sustain profits. This aligns with the outcome where both participants receive a reward of 3, indicating sustainable profits. Therefore, the causal chain between both choosing eco-friendly options and maintaining sustainable profits is realistic. YES.",
+                "The scenario states that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This matches the outcome where you lose customers to Bob's cheaper packages, and Bob gains your customers and profits from increased sales. The causal chain is realistic. YES.",
+                "The scenario describes that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This aligns with the outcome where you gain Bob's customers with your cheaper packages, and Bob loses customers to your discounted tours. The causal chain is realistic. YES.",
+                "The scenario states that if both slash prices, they engage in a price war, diminishing profits but maintaining customer numbers. This matches the outcome where both participants receive a reward of 1, indicating reduced profit margins due to price competition. The causal chain is realistic. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": true
+                }
+            },
+            "step": 3,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_tour operator-tour operator_20250421_132715_482255"
+        },
+        "created_at": "2025-04-21T17:27:24.744990+00:00"
+    },
+    {
+        "step": 2,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "tour operator",
+                "tour operator"
+            ],
+            "scenario_draft": {
+                "scenario": "Tour Package Pricing Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "tour operator"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "tour operator"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Offer eco-friendly tour packages",
+                    "defect": "Offer discounted tour packages"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both of you attract eco-conscious tourists and maintain sustainable profits",
+                        "Bob gets 3: both of you attract eco-conscious tourists and maintain sustainable profits"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose customers to Bob's cheaper packages",
+                        "Bob gets 5: gain your customers and profit from increased sales"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: gain Bob's customers with your cheaper packages",
+                        "Bob gets 0: lose customers to your discounted tours"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both of you compete on price, reducing profit margins",
+                        "Bob gets 1: both of you compete on price, reducing profit margins"
+                    ]
+                },
+                "description": "You and Bob, both tour operators in a popular tourist destination, must decide on your pricing strategies for the upcoming season. If both choose eco-friendly packages, you attract a niche market and sustain profits. If one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. If both slash prices, you engage in a price war, diminishing profits but maintaining customer numbers.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, as it effectively sets up a competitive situation between two tour operators deciding on pricing strategies.",
+                "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being tour operators. There is no mention of any prior relationship, which aligns with the criteria.",
+                "The behavior choices of 'cooperate' (offer eco-friendly tour packages) and 'defect' (offer discounted tour packages) are appropriate and clearly represent the strategic options in the scenario.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it as a business decision-making scenario involving pricing strategies and market competition."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The scenario describes that if both choose eco-friendly packages, they attract a niche market and sustain profits. This aligns with the outcome where both participants receive a reward of 3, indicating sustainable profits. Therefore, the causal chain between both choosing eco-friendly options and maintaining sustainable profits is realistic. YES.",
+                "The scenario states that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This matches the outcome where you lose customers to Bob's cheaper packages, and Bob gains your customers and profits from increased sales. The causal chain is realistic. YES.",
+                "The scenario describes that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This aligns with the outcome where you gain Bob's customers with your cheaper packages, and Bob loses customers to your discounted tours. The causal chain is realistic. YES.",
+                "The scenario states that if both slash prices, they engage in a price war, diminishing profits but maintaining customer numbers. This matches the outcome where both participants receive a reward of 1, indicating reduced profit margins due to price competition. The causal chain is realistic. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, as it effectively sets up a competitive situation between two tour operators deciding on pricing strategies.",
+                        "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being tour operators. There is no mention of any prior relationship, which aligns with the criteria.",
+                        "The behavior choices of 'cooperate' (offer eco-friendly tour packages) and 'defect' (offer discounted tour packages) are appropriate and clearly represent the strategic options in the scenario.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it as a business decision-making scenario involving pricing strategies and market competition."
+                    ],
+                    "narrative_converged": true
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "The scenario describes that if both choose eco-friendly packages, they attract a niche market and sustain profits. This aligns with the outcome where both participants receive a reward of 3, indicating sustainable profits. Therefore, the causal chain between both choosing eco-friendly options and maintaining sustainable profits is realistic. YES.",
+                        "The scenario states that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This matches the outcome where you lose customers to Bob's cheaper packages, and Bob gains your customers and profits from increased sales. The causal chain is realistic. YES.",
+                        "The scenario describes that if one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. This aligns with the outcome where you gain Bob's customers with your cheaper packages, and Bob loses customers to your discounted tours. The causal chain is realistic. YES.",
+                        "The scenario states that if both slash prices, they engage in a price war, diminishing profits but maintaining customer numbers. This matches the outcome where both participants receive a reward of 1, indicating reduced profit margins due to price competition. The causal chain is realistic. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 2,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_tour operator-tour operator_20250421_132715_482255"
+        },
+        "created_at": "2025-04-21T17:27:24.152329+00:00"
+    },
+    {
+        "step": 3,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "tour operator",
+                "tour operator"
+            ],
+            "scenario_draft": {
+                "scenario": "Tour Package Pricing Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "tour operator"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "tour operator"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Offer eco-friendly tour packages",
+                    "defect": "Offer discounted tour packages"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both of you attract eco-conscious tourists and maintain sustainable profits",
+                        "Bob gets 3: both of you attract eco-conscious tourists and maintain sustainable profits"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose customers to Bob's cheaper packages",
+                        "Bob gets 5: gain your customers and profit from increased sales"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: gain Bob's customers with your cheaper packages",
+                        "Bob gets 0: lose customers to your discounted tours"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both of you compete on price, reducing profit margins",
+                        "Bob gets 1: both of you compete on price, reducing profit margins"
+                    ]
+                },
+                "description": "You and Bob, both tour operators in a popular tourist destination, must decide on your pricing strategies for the upcoming season. If both choose eco-friendly packages, you attract a niche market and sustain profits. If one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. If both slash prices, you engage in a price war, diminishing profits but maintaining customer numbers.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "tour operator",
+                        "tour operator"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Tour Package Pricing Dilemma",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "tour operator"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "tour operator"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Offer eco-friendly tour packages",
+                            "defect": "Offer discounted tour packages"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: both of you attract eco-conscious tourists and maintain sustainable profits",
+                                "Bob gets 3: both of you attract eco-conscious tourists and maintain sustainable profits"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose customers to Bob's cheaper packages",
+                                "Bob gets 5: gain your customers and profit from increased sales"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: gain Bob's customers with your cheaper packages",
+                                "Bob gets 0: lose customers to your discounted tours"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: both of you compete on price, reducing profit margins",
+                                "Bob gets 1: both of you compete on price, reducing profit margins"
+                            ]
+                        },
+                        "description": "You and Bob, both tour operators in a popular tourist destination, must decide on your pricing strategies for the upcoming season. If both choose eco-friendly packages, you attract a niche market and sustain profits. If one offers discounts while the other sticks to eco-friendly options, the one with discounts attracts more customers and profits. If both slash prices, you engage in a price war, diminishing profits but maintaining customer numbers.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 1,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": 1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_tour operator-tour operator_20250421_132715_482255"
+        },
+        "created_at": "2025-04-21T17:27:20.806787+00:00"
+    },
+    {
+        "step": 4,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "tour operator",
+                "tour operator"
+            ],
+            "scenario_draft": null,
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 0,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": null,
+            "step": 0,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_tour operator-tour operator_20250421_132715_482255"
+        },
+        "created_at": "2025-04-21T17:27:15.495679+00:00"
+    },
+    {
+        "step": 5,
+        "values": {
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": []
+        },
+        "metadata": {
+            "source": "input",
+            "writes": {
+                "__start__": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "tour operator",
+                        "tour operator"
+                    ],
+                    "scenario_draft": null,
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": -1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_tour operator-tour operator_20250421_132715_482255"
+        },
+        "created_at": "2025-04-21T17:27:15.483885+00:00"
+    }
+]

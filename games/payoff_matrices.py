@@ -147,10 +147,10 @@ prisoners_dilemma = [
 # | 3,3 | 0,1 |
 # | 1,0 | 1,1 |
 stag_hunt = [
-    PayoffLeaf(actions=("stag", "stag"), payoffs=(3, 3)),
-    PayoffLeaf(actions=("stag", "hare"), payoffs=(0, 1)),
-    PayoffLeaf(actions=("hare", "stag"), payoffs=(1, 0)),
-    PayoffLeaf(actions=("hare", "hare"), payoffs=(1, 1)),
+    PayoffLeaf(actions=("cooperate", "cooperate"), payoffs=(3, 3)),
+    PayoffLeaf(actions=("cooperate", "defect"), payoffs=(0, 1)),
+    PayoffLeaf(actions=("defect", "cooperate"), payoffs=(1, 0)),
+    PayoffLeaf(actions=("defect", "defect"), payoffs=(1, 1)),
 ]
 
 # Battle of the Sexes

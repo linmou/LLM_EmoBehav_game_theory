@@ -88,6 +88,7 @@ class PromptExperiment:
             decision_class=game_config["decision_class"],
             payoff_matrix=game_config["payoff_matrix"],
             data_folder=game_config.get("data_folder", None),
+            data_path=game_config.get("data_path", None),
         )
         for key, value in exp_game_config.items():
             if key != "name":

@@ -1,0 +1,612 @@
+[
+    {
+        "step": 0,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "Medicaid recipient",
+                "Medicaid recipient"
+            ],
+            "scenario_draft": {
+                "scenario": "Community Health Initiative: Vaccine Distribution Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Medicaid recipient"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Medicaid recipient"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Participate in a community-wide vaccination drive",
+                    "defect": "Opt-out of the community vaccination drive for personal reasons"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: community health improves, reducing disease spread and healthcare costs",
+                        "Bob gets 3: community health improves, reducing disease spread and healthcare costs"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you contribute to community health, but face increased risks as others do not participate",
+                        "Bob gets 5: benefits from community immunity without participating"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: benefits from community immunity without participating",
+                        "Bob gets 0: he contributes to community health, but faces increased risks as others do not participate"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: minimal community immunity, higher disease spread, and increased healthcare costs",
+                        "Bob gets 1: minimal community immunity, higher disease spread, and increased healthcare costs"
+                    ]
+                },
+                "description": "You and Bob, both Medicaid recipients, are part of a community facing a potential health crisis. A local health initiative offers free vaccinations to reduce disease outbreak. By participating, you both contribute to a healthier community. However, opting out saves personal time but risks community health. The overall community health and individual safety depend on the collective choices made by you and Bob.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally realistic and coherent, presenting a plausible community health initiative context.",
+                "Participants' roles as 'Medicaid recipients' are correctly integrated and plausible, aligning with the narrative's focus on public health and accessibility.",
+                "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining their roles as independent decision-makers.",
+                "The behavior choices of 'cooperate' (participate in the vaccination drive) and 'defect' (opt-out for personal reasons) accurately represent the strategies available in the scenario.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing the decision in terms of community health benefits and personal convenience, rather than explicitly competitive or adversarial terms."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both you and Bob choosing to participate in the vaccination drive is plausible given the scenario's emphasis on community health. If both participate, the outcome of improved community health, reduced disease spread, and lower healthcare costs is a reasonable consequence. Therefore, the reward of 3 for both participants matches the scenario description. YES.",
+                "It is plausible that you choose to participate while Bob opts out, as individuals may have different priorities. In this case, you contribute to community health but face increased risks due to Bob's non-participation, which aligns with the reward of 0. Bob benefits from community immunity without participating, which is a plausible outcome, matching the reward of 5. YES.",
+                "The scenario where you opt out and Bob participates is plausible. You benefit from Bob's participation without contributing, which aligns with the reward of 5. Bob contributes to community health but faces increased risks due to your non-participation, matching the reward of 0. YES.",
+                "Both you and Bob opting out is plausible, leading to minimal community immunity, higher disease spread, and increased healthcare costs. This outcome aligns with the reward of 1 for both participants. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": {
+                "scenario": "Community Health Initiative: Vaccine Distribution Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Medicaid recipient"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Medicaid recipient"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Participate in a community-wide vaccination drive",
+                    "defect": "Opt-out of the community vaccination drive for personal reasons"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: community health improves, reducing disease spread and healthcare costs",
+                        "Bob gets 3: community health improves, reducing disease spread and healthcare costs"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you contribute to community health, but face increased risks as others do not participate",
+                        "Bob gets 5: benefits from community immunity without participating"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: benefits from community immunity without participating",
+                        "Bob gets 0: he contributes to community health, but faces increased risks as others do not participate"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: minimal community immunity, higher disease spread, and increased healthcare costs",
+                        "Bob gets 1: minimal community immunity, higher disease spread, and increased healthcare costs"
+                    ]
+                },
+                "description": "You and Bob, both Medicaid recipients, are part of a community facing a potential health crisis. A local health initiative offers free vaccinations to reduce disease outbreak. By participating, you both contribute to a healthier community. However, opting out saves personal time but risks community health. The overall community health and individual safety depend on the collective choices made by you and Bob.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "finalize_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "Medicaid recipient",
+                        "Medicaid recipient"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Community Health Initiative: Vaccine Distribution Strategy",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "Medicaid recipient"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "Medicaid recipient"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Participate in a community-wide vaccination drive",
+                            "defect": "Opt-out of the community vaccination drive for personal reasons"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: community health improves, reducing disease spread and healthcare costs",
+                                "Bob gets 3: community health improves, reducing disease spread and healthcare costs"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: you contribute to community health, but face increased risks as others do not participate",
+                                "Bob gets 5: benefits from community immunity without participating"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: benefits from community immunity without participating",
+                                "Bob gets 0: he contributes to community health, but faces increased risks as others do not participate"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: minimal community immunity, higher disease spread, and increased healthcare costs",
+                                "Bob gets 1: minimal community immunity, higher disease spread, and increased healthcare costs"
+                            ]
+                        },
+                        "description": "You and Bob, both Medicaid recipients, are part of a community facing a potential health crisis. A local health initiative offers free vaccinations to reduce disease outbreak. By participating, you both contribute to a healthier community. However, opting out saves personal time but risks community health. The overall community health and individual safety depend on the collective choices made by you and Bob.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [
+                        "The scenario description is generally realistic and coherent, presenting a plausible community health initiative context.",
+                        "Participants' roles as 'Medicaid recipients' are correctly integrated and plausible, aligning with the narrative's focus on public health and accessibility.",
+                        "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining their roles as independent decision-makers.",
+                        "The behavior choices of 'cooperate' (participate in the vaccination drive) and 'defect' (opt-out for personal reasons) accurately represent the strategies available in the scenario.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing the decision in terms of community health benefits and personal convenience, rather than explicitly competitive or adversarial terms."
+                    ],
+                    "preference_feedback": [],
+                    "payoff_feedback": [
+                        "The probability of both you and Bob choosing to participate in the vaccination drive is plausible given the scenario's emphasis on community health. If both participate, the outcome of improved community health, reduced disease spread, and lower healthcare costs is a reasonable consequence. Therefore, the reward of 3 for both participants matches the scenario description. YES.",
+                        "It is plausible that you choose to participate while Bob opts out, as individuals may have different priorities. In this case, you contribute to community health but face increased risks due to Bob's non-participation, which aligns with the reward of 0. Bob benefits from community immunity without participating, which is a plausible outcome, matching the reward of 5. YES.",
+                        "The scenario where you opt out and Bob participates is plausible. You benefit from Bob's participation without contributing, which aligns with the reward of 5. Bob contributes to community health but faces increased risks due to your non-participation, matching the reward of 0. YES.",
+                        "Both you and Bob opting out is plausible, leading to minimal community immunity, higher disease spread, and increased healthcare costs. This outcome aligns with the reward of 1 for both participants. YES."
+                    ],
+                    "iteration_count": 1,
+                    "final_scenario": {
+                        "scenario": "Community Health Initiative: Vaccine Distribution Strategy",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "Medicaid recipient"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "Medicaid recipient"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Participate in a community-wide vaccination drive",
+                            "defect": "Opt-out of the community vaccination drive for personal reasons"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: community health improves, reducing disease spread and healthcare costs",
+                                "Bob gets 3: community health improves, reducing disease spread and healthcare costs"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: you contribute to community health, but face increased risks as others do not participate",
+                                "Bob gets 5: benefits from community immunity without participating"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: benefits from community immunity without participating",
+                                "Bob gets 0: he contributes to community health, but faces increased risks as others do not participate"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: minimal community immunity, higher disease spread, and increased healthcare costs",
+                                "Bob gets 1: minimal community immunity, higher disease spread, and increased healthcare costs"
+                            ]
+                        },
+                        "description": "You and Bob, both Medicaid recipients, are part of a community facing a potential health crisis. A local health initiative offers free vaccinations to reduce disease outbreak. By participating, you both contribute to a healthier community. However, opting out saves personal time but risks community health. The overall community health and individual safety depend on the collective choices made by you and Bob.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_converged": true,
+                    "preference_converged": true,
+                    "payoff_converged": true,
+                    "all_converged": true,
+                    "auto_save_path": null
+                }
+            },
+            "step": 4,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_Medicaid recipient-Medicaid recipient_20250422_151842_939296"
+        },
+        "created_at": "2025-04-22T19:18:52.477888+00:00"
+    },
+    {
+        "step": 1,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "Medicaid recipient",
+                "Medicaid recipient"
+            ],
+            "scenario_draft": {
+                "scenario": "Community Health Initiative: Vaccine Distribution Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Medicaid recipient"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Medicaid recipient"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Participate in a community-wide vaccination drive",
+                    "defect": "Opt-out of the community vaccination drive for personal reasons"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: community health improves, reducing disease spread and healthcare costs",
+                        "Bob gets 3: community health improves, reducing disease spread and healthcare costs"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you contribute to community health, but face increased risks as others do not participate",
+                        "Bob gets 5: benefits from community immunity without participating"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: benefits from community immunity without participating",
+                        "Bob gets 0: he contributes to community health, but faces increased risks as others do not participate"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: minimal community immunity, higher disease spread, and increased healthcare costs",
+                        "Bob gets 1: minimal community immunity, higher disease spread, and increased healthcare costs"
+                    ]
+                },
+                "description": "You and Bob, both Medicaid recipients, are part of a community facing a potential health crisis. A local health initiative offers free vaccinations to reduce disease outbreak. By participating, you both contribute to a healthier community. However, opting out saves personal time but risks community health. The overall community health and individual safety depend on the collective choices made by you and Bob.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally realistic and coherent, presenting a plausible community health initiative context.",
+                "Participants' roles as 'Medicaid recipients' are correctly integrated and plausible, aligning with the narrative's focus on public health and accessibility.",
+                "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining their roles as independent decision-makers.",
+                "The behavior choices of 'cooperate' (participate in the vaccination drive) and 'defect' (opt-out for personal reasons) accurately represent the strategies available in the scenario.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing the decision in terms of community health benefits and personal convenience, rather than explicitly competitive or adversarial terms."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both you and Bob choosing to participate in the vaccination drive is plausible given the scenario's emphasis on community health. If both participate, the outcome of improved community health, reduced disease spread, and lower healthcare costs is a reasonable consequence. Therefore, the reward of 3 for both participants matches the scenario description. YES.",
+                "It is plausible that you choose to participate while Bob opts out, as individuals may have different priorities. In this case, you contribute to community health but face increased risks due to Bob's non-participation, which aligns with the reward of 0. Bob benefits from community immunity without participating, which is a plausible outcome, matching the reward of 5. YES.",
+                "The scenario where you opt out and Bob participates is plausible. You benefit from Bob's participation without contributing, which aligns with the reward of 5. Bob contributes to community health but faces increased risks due to your non-participation, matching the reward of 0. YES.",
+                "Both you and Bob opting out is plausible, leading to minimal community immunity, higher disease spread, and increased healthcare costs. This outcome aligns with the reward of 1 for both participants. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": true
+                }
+            },
+            "step": 3,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_Medicaid recipient-Medicaid recipient_20250422_151842_939296"
+        },
+        "created_at": "2025-04-22T19:18:52.477347+00:00"
+    },
+    {
+        "step": 2,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "Medicaid recipient",
+                "Medicaid recipient"
+            ],
+            "scenario_draft": {
+                "scenario": "Community Health Initiative: Vaccine Distribution Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Medicaid recipient"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Medicaid recipient"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Participate in a community-wide vaccination drive",
+                    "defect": "Opt-out of the community vaccination drive for personal reasons"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: community health improves, reducing disease spread and healthcare costs",
+                        "Bob gets 3: community health improves, reducing disease spread and healthcare costs"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you contribute to community health, but face increased risks as others do not participate",
+                        "Bob gets 5: benefits from community immunity without participating"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: benefits from community immunity without participating",
+                        "Bob gets 0: he contributes to community health, but faces increased risks as others do not participate"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: minimal community immunity, higher disease spread, and increased healthcare costs",
+                        "Bob gets 1: minimal community immunity, higher disease spread, and increased healthcare costs"
+                    ]
+                },
+                "description": "You and Bob, both Medicaid recipients, are part of a community facing a potential health crisis. A local health initiative offers free vaccinations to reduce disease outbreak. By participating, you both contribute to a healthier community. However, opting out saves personal time but risks community health. The overall community health and individual safety depend on the collective choices made by you and Bob.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally realistic and coherent, presenting a plausible community health initiative context.",
+                "Participants' roles as 'Medicaid recipients' are correctly integrated and plausible, aligning with the narrative's focus on public health and accessibility.",
+                "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining their roles as independent decision-makers.",
+                "The behavior choices of 'cooperate' (participate in the vaccination drive) and 'defect' (opt-out for personal reasons) accurately represent the strategies available in the scenario.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing the decision in terms of community health benefits and personal convenience, rather than explicitly competitive or adversarial terms."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both you and Bob choosing to participate in the vaccination drive is plausible given the scenario's emphasis on community health. If both participate, the outcome of improved community health, reduced disease spread, and lower healthcare costs is a reasonable consequence. Therefore, the reward of 3 for both participants matches the scenario description. YES.",
+                "It is plausible that you choose to participate while Bob opts out, as individuals may have different priorities. In this case, you contribute to community health but face increased risks due to Bob's non-participation, which aligns with the reward of 0. Bob benefits from community immunity without participating, which is a plausible outcome, matching the reward of 5. YES.",
+                "The scenario where you opt out and Bob participates is plausible. You benefit from Bob's participation without contributing, which aligns with the reward of 5. Bob contributes to community health but faces increased risks due to your non-participation, matching the reward of 0. YES.",
+                "Both you and Bob opting out is plausible, leading to minimal community immunity, higher disease spread, and increased healthcare costs. This outcome aligns with the reward of 1 for both participants. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is generally realistic and coherent, presenting a plausible community health initiative context.",
+                        "Participants' roles as 'Medicaid recipients' are correctly integrated and plausible, aligning with the narrative's focus on public health and accessibility.",
+                        "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining their roles as independent decision-makers.",
+                        "The behavior choices of 'cooperate' (participate in the vaccination drive) and 'defect' (opt-out for personal reasons) accurately represent the strategies available in the scenario.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing the decision in terms of community health benefits and personal convenience, rather than explicitly competitive or adversarial terms."
+                    ],
+                    "narrative_converged": true
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "The probability of both you and Bob choosing to participate in the vaccination drive is plausible given the scenario's emphasis on community health. If both participate, the outcome of improved community health, reduced disease spread, and lower healthcare costs is a reasonable consequence. Therefore, the reward of 3 for both participants matches the scenario description. YES.",
+                        "It is plausible that you choose to participate while Bob opts out, as individuals may have different priorities. In this case, you contribute to community health but face increased risks due to Bob's non-participation, which aligns with the reward of 0. Bob benefits from community immunity without participating, which is a plausible outcome, matching the reward of 5. YES.",
+                        "The scenario where you opt out and Bob participates is plausible. You benefit from Bob's participation without contributing, which aligns with the reward of 5. Bob contributes to community health but faces increased risks due to your non-participation, matching the reward of 0. YES.",
+                        "Both you and Bob opting out is plausible, leading to minimal community immunity, higher disease spread, and increased healthcare costs. This outcome aligns with the reward of 1 for both participants. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 2,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_Medicaid recipient-Medicaid recipient_20250422_151842_939296"
+        },
+        "created_at": "2025-04-22T19:18:52.476396+00:00"
+    },
+    {
+        "step": 3,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "Medicaid recipient",
+                "Medicaid recipient"
+            ],
+            "scenario_draft": {
+                "scenario": "Community Health Initiative: Vaccine Distribution Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Medicaid recipient"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Medicaid recipient"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Participate in a community-wide vaccination drive",
+                    "defect": "Opt-out of the community vaccination drive for personal reasons"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: community health improves, reducing disease spread and healthcare costs",
+                        "Bob gets 3: community health improves, reducing disease spread and healthcare costs"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you contribute to community health, but face increased risks as others do not participate",
+                        "Bob gets 5: benefits from community immunity without participating"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: benefits from community immunity without participating",
+                        "Bob gets 0: he contributes to community health, but faces increased risks as others do not participate"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: minimal community immunity, higher disease spread, and increased healthcare costs",
+                        "Bob gets 1: minimal community immunity, higher disease spread, and increased healthcare costs"
+                    ]
+                },
+                "description": "You and Bob, both Medicaid recipients, are part of a community facing a potential health crisis. A local health initiative offers free vaccinations to reduce disease outbreak. By participating, you both contribute to a healthier community. However, opting out saves personal time but risks community health. The overall community health and individual safety depend on the collective choices made by you and Bob.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "Medicaid recipient",
+                        "Medicaid recipient"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Community Health Initiative: Vaccine Distribution Strategy",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "Medicaid recipient"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "Medicaid recipient"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Participate in a community-wide vaccination drive",
+                            "defect": "Opt-out of the community vaccination drive for personal reasons"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: community health improves, reducing disease spread and healthcare costs",
+                                "Bob gets 3: community health improves, reducing disease spread and healthcare costs"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: you contribute to community health, but face increased risks as others do not participate",
+                                "Bob gets 5: benefits from community immunity without participating"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: benefits from community immunity without participating",
+                                "Bob gets 0: he contributes to community health, but faces increased risks as others do not participate"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: minimal community immunity, higher disease spread, and increased healthcare costs",
+                                "Bob gets 1: minimal community immunity, higher disease spread, and increased healthcare costs"
+                            ]
+                        },
+                        "description": "You and Bob, both Medicaid recipients, are part of a community facing a potential health crisis. A local health initiative offers free vaccinations to reduce disease outbreak. By participating, you both contribute to a healthier community. However, opting out saves personal time but risks community health. The overall community health and individual safety depend on the collective choices made by you and Bob.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 1,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": 1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_Medicaid recipient-Medicaid recipient_20250422_151842_939296"
+        },
+        "created_at": "2025-04-22T19:18:48.070586+00:00"
+    },
+    {
+        "step": 4,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "Medicaid recipient",
+                "Medicaid recipient"
+            ],
+            "scenario_draft": null,
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 0,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": null,
+            "step": 0,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_Medicaid recipient-Medicaid recipient_20250422_151842_939296"
+        },
+        "created_at": "2025-04-22T19:18:42.943421+00:00"
+    },
+    {
+        "step": 5,
+        "values": {
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": []
+        },
+        "metadata": {
+            "source": "input",
+            "writes": {
+                "__start__": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "Medicaid recipient",
+                        "Medicaid recipient"
+                    ],
+                    "scenario_draft": null,
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": -1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_Medicaid recipient-Medicaid recipient_20250422_151842_939296"
+        },
+        "created_at": "2025-04-22T19:18:42.940542+00:00"
+    }
+]

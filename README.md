@@ -21,5 +21,7 @@ See [Scenario Creation Graph Documentation](doc/scenario_creation_graph.md) for 
 # API-based Test
 python api_test_engine.py
 
+python prompt_experiment.py # run the pipeline
+
 # Statistic Analysis
 python statistical_engine.py

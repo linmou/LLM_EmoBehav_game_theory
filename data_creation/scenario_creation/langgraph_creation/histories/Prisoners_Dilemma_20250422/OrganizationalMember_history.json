@@ -1,0 +1,612 @@
+[
+    {
+        "step": 0,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "organizational member",
+                "organizational member"
+            ],
+            "scenario_draft": {
+                "scenario": "The Grant Proposal Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "organizational member"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "organizational member"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Share research data and insights",
+                    "defect": "Withhold research data and insights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: joint proposal is strong, both receive equal recognition and funding",
+                        "Bob gets 3: joint proposal is strong, both receive equal recognition and funding"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: proposal is weaker, Bob's section stands out, Bob receives most recognition and funding",
+                        "Bob gets 5: proposal is stronger, receives most recognition and funding"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: proposal is stronger, receive most recognition and funding",
+                        "Bob gets 0: proposal is weaker, your section stands out, you receive most recognition and funding"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: proposal is weak, both receive minimal recognition and funding",
+                        "Bob gets 1: proposal is weak, both receive minimal recognition and funding"
+                    ]
+                },
+                "description": "You and Bob, both members of the same organization, are tasked with submitting a joint grant proposal. The success of the proposal hinges on the quality of the research data and insights provided. If both of you share your data, the proposal is robust, and both of you gain recognition and funding. If one withholds data while the other shares, the one who withholds may appear more competent and secure more rewards. If both withhold, the proposal is weak, and both receive minimal benefits.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, as it effectively sets up a situation where both participants have an incentive to either cooperate or defect.",
+                "The participants' names and roles are correctly integrated, with both being organizational members, which is plausible for a grant proposal context.",
+                "The scenario correctly avoids mentioning any prior relationship between the participants, maintaining the focus on their professional roles.",
+                "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' clearly defined in terms of sharing or withholding data.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by embedding the decision-making process within a realistic organizational task, making the strategic dilemma relatable."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both participants choosing to share their data is plausible given the mutual benefit described in the scenario. The outcome where both receive equal recognition and funding because the proposal is strong matches the scenario description. Therefore, the outcome is plausible. YES.",
+                "The probability of one participant sharing while the other withholds is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                "The probability of one participant withholding while the other shares is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                "The probability of both participants choosing to withhold their data is plausible given the potential for mutual distrust or self-interest. The outcome where both receive minimal recognition and funding because the proposal is weak matches the scenario description. Therefore, the outcome is plausible. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": {
+                "scenario": "The Grant Proposal Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "organizational member"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "organizational member"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Share research data and insights",
+                    "defect": "Withhold research data and insights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: joint proposal is strong, both receive equal recognition and funding",
+                        "Bob gets 3: joint proposal is strong, both receive equal recognition and funding"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: proposal is weaker, Bob's section stands out, Bob receives most recognition and funding",
+                        "Bob gets 5: proposal is stronger, receives most recognition and funding"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: proposal is stronger, receive most recognition and funding",
+                        "Bob gets 0: proposal is weaker, your section stands out, you receive most recognition and funding"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: proposal is weak, both receive minimal recognition and funding",
+                        "Bob gets 1: proposal is weak, both receive minimal recognition and funding"
+                    ]
+                },
+                "description": "You and Bob, both members of the same organization, are tasked with submitting a joint grant proposal. The success of the proposal hinges on the quality of the research data and insights provided. If both of you share your data, the proposal is robust, and both of you gain recognition and funding. If one withholds data while the other shares, the one who withholds may appear more competent and secure more rewards. If both withhold, the proposal is weak, and both receive minimal benefits.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "finalize_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "organizational member",
+                        "organizational member"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "The Grant Proposal Strategy",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "organizational member"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "organizational member"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Share research data and insights",
+                            "defect": "Withhold research data and insights"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: joint proposal is strong, both receive equal recognition and funding",
+                                "Bob gets 3: joint proposal is strong, both receive equal recognition and funding"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: proposal is weaker, Bob's section stands out, Bob receives most recognition and funding",
+                                "Bob gets 5: proposal is stronger, receives most recognition and funding"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: proposal is stronger, receive most recognition and funding",
+                                "Bob gets 0: proposal is weaker, your section stands out, you receive most recognition and funding"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: proposal is weak, both receive minimal recognition and funding",
+                                "Bob gets 1: proposal is weak, both receive minimal recognition and funding"
+                            ]
+                        },
+                        "description": "You and Bob, both members of the same organization, are tasked with submitting a joint grant proposal. The success of the proposal hinges on the quality of the research data and insights provided. If both of you share your data, the proposal is robust, and both of you gain recognition and funding. If one withholds data while the other shares, the one who withholds may appear more competent and secure more rewards. If both withhold, the proposal is weak, and both receive minimal benefits.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, as it effectively sets up a situation where both participants have an incentive to either cooperate or defect.",
+                        "The participants' names and roles are correctly integrated, with both being organizational members, which is plausible for a grant proposal context.",
+                        "The scenario correctly avoids mentioning any prior relationship between the participants, maintaining the focus on their professional roles.",
+                        "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' clearly defined in terms of sharing or withholding data.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by embedding the decision-making process within a realistic organizational task, making the strategic dilemma relatable."
+                    ],
+                    "preference_feedback": [],
+                    "payoff_feedback": [
+                        "The probability of both participants choosing to share their data is plausible given the mutual benefit described in the scenario. The outcome where both receive equal recognition and funding because the proposal is strong matches the scenario description. Therefore, the outcome is plausible. YES.",
+                        "The probability of one participant sharing while the other withholds is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                        "The probability of one participant withholding while the other shares is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                        "The probability of both participants choosing to withhold their data is plausible given the potential for mutual distrust or self-interest. The outcome where both receive minimal recognition and funding because the proposal is weak matches the scenario description. Therefore, the outcome is plausible. YES."
+                    ],
+                    "iteration_count": 1,
+                    "final_scenario": {
+                        "scenario": "The Grant Proposal Strategy",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "organizational member"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "organizational member"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Share research data and insights",
+                            "defect": "Withhold research data and insights"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: joint proposal is strong, both receive equal recognition and funding",
+                                "Bob gets 3: joint proposal is strong, both receive equal recognition and funding"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: proposal is weaker, Bob's section stands out, Bob receives most recognition and funding",
+                                "Bob gets 5: proposal is stronger, receives most recognition and funding"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: proposal is stronger, receive most recognition and funding",
+                                "Bob gets 0: proposal is weaker, your section stands out, you receive most recognition and funding"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: proposal is weak, both receive minimal recognition and funding",
+                                "Bob gets 1: proposal is weak, both receive minimal recognition and funding"
+                            ]
+                        },
+                        "description": "You and Bob, both members of the same organization, are tasked with submitting a joint grant proposal. The success of the proposal hinges on the quality of the research data and insights provided. If both of you share your data, the proposal is robust, and both of you gain recognition and funding. If one withholds data while the other shares, the one who withholds may appear more competent and secure more rewards. If both withhold, the proposal is weak, and both receive minimal benefits.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_converged": true,
+                    "preference_converged": true,
+                    "payoff_converged": true,
+                    "all_converged": true,
+                    "auto_save_path": null
+                }
+            },
+            "step": 4,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_organizational member-organizational member_20250422_151753_317085"
+        },
+        "created_at": "2025-04-22T19:18:05.587230+00:00"
+    },
+    {
+        "step": 1,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "organizational member",
+                "organizational member"
+            ],
+            "scenario_draft": {
+                "scenario": "The Grant Proposal Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "organizational member"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "organizational member"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Share research data and insights",
+                    "defect": "Withhold research data and insights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: joint proposal is strong, both receive equal recognition and funding",
+                        "Bob gets 3: joint proposal is strong, both receive equal recognition and funding"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: proposal is weaker, Bob's section stands out, Bob receives most recognition and funding",
+                        "Bob gets 5: proposal is stronger, receives most recognition and funding"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: proposal is stronger, receive most recognition and funding",
+                        "Bob gets 0: proposal is weaker, your section stands out, you receive most recognition and funding"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: proposal is weak, both receive minimal recognition and funding",
+                        "Bob gets 1: proposal is weak, both receive minimal recognition and funding"
+                    ]
+                },
+                "description": "You and Bob, both members of the same organization, are tasked with submitting a joint grant proposal. The success of the proposal hinges on the quality of the research data and insights provided. If both of you share your data, the proposal is robust, and both of you gain recognition and funding. If one withholds data while the other shares, the one who withholds may appear more competent and secure more rewards. If both withhold, the proposal is weak, and both receive minimal benefits.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, as it effectively sets up a situation where both participants have an incentive to either cooperate or defect.",
+                "The participants' names and roles are correctly integrated, with both being organizational members, which is plausible for a grant proposal context.",
+                "The scenario correctly avoids mentioning any prior relationship between the participants, maintaining the focus on their professional roles.",
+                "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' clearly defined in terms of sharing or withholding data.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by embedding the decision-making process within a realistic organizational task, making the strategic dilemma relatable."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both participants choosing to share their data is plausible given the mutual benefit described in the scenario. The outcome where both receive equal recognition and funding because the proposal is strong matches the scenario description. Therefore, the outcome is plausible. YES.",
+                "The probability of one participant sharing while the other withholds is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                "The probability of one participant withholding while the other shares is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                "The probability of both participants choosing to withhold their data is plausible given the potential for mutual distrust or self-interest. The outcome where both receive minimal recognition and funding because the proposal is weak matches the scenario description. Therefore, the outcome is plausible. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": true
+                }
+            },
+            "step": 3,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_organizational member-organizational member_20250422_151753_317085"
+        },
+        "created_at": "2025-04-22T19:18:05.586354+00:00"
+    },
+    {
+        "step": 2,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "organizational member",
+                "organizational member"
+            ],
+            "scenario_draft": {
+                "scenario": "The Grant Proposal Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "organizational member"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "organizational member"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Share research data and insights",
+                    "defect": "Withhold research data and insights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: joint proposal is strong, both receive equal recognition and funding",
+                        "Bob gets 3: joint proposal is strong, both receive equal recognition and funding"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: proposal is weaker, Bob's section stands out, Bob receives most recognition and funding",
+                        "Bob gets 5: proposal is stronger, receives most recognition and funding"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: proposal is stronger, receive most recognition and funding",
+                        "Bob gets 0: proposal is weaker, your section stands out, you receive most recognition and funding"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: proposal is weak, both receive minimal recognition and funding",
+                        "Bob gets 1: proposal is weak, both receive minimal recognition and funding"
+                    ]
+                },
+                "description": "You and Bob, both members of the same organization, are tasked with submitting a joint grant proposal. The success of the proposal hinges on the quality of the research data and insights provided. If both of you share your data, the proposal is robust, and both of you gain recognition and funding. If one withholds data while the other shares, the one who withholds may appear more competent and secure more rewards. If both withhold, the proposal is weak, and both receive minimal benefits.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, as it effectively sets up a situation where both participants have an incentive to either cooperate or defect.",
+                "The participants' names and roles are correctly integrated, with both being organizational members, which is plausible for a grant proposal context.",
+                "The scenario correctly avoids mentioning any prior relationship between the participants, maintaining the focus on their professional roles.",
+                "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' clearly defined in terms of sharing or withholding data.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by embedding the decision-making process within a realistic organizational task, making the strategic dilemma relatable."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both participants choosing to share their data is plausible given the mutual benefit described in the scenario. The outcome where both receive equal recognition and funding because the proposal is strong matches the scenario description. Therefore, the outcome is plausible. YES.",
+                "The probability of one participant sharing while the other withholds is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                "The probability of one participant withholding while the other shares is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                "The probability of both participants choosing to withhold their data is plausible given the potential for mutual distrust or self-interest. The outcome where both receive minimal recognition and funding because the proposal is weak matches the scenario description. Therefore, the outcome is plausible. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, as it effectively sets up a situation where both participants have an incentive to either cooperate or defect.",
+                        "The participants' names and roles are correctly integrated, with both being organizational members, which is plausible for a grant proposal context.",
+                        "The scenario correctly avoids mentioning any prior relationship between the participants, maintaining the focus on their professional roles.",
+                        "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' clearly defined in terms of sharing or withholding data.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by embedding the decision-making process within a realistic organizational task, making the strategic dilemma relatable."
+                    ],
+                    "narrative_converged": true
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "The probability of both participants choosing to share their data is plausible given the mutual benefit described in the scenario. The outcome where both receive equal recognition and funding because the proposal is strong matches the scenario description. Therefore, the outcome is plausible. YES.",
+                        "The probability of one participant sharing while the other withholds is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                        "The probability of one participant withholding while the other shares is plausible as it aligns with the incentive for one to appear more competent. The outcome where the one who withholds receives more recognition and funding while the proposal is weaker matches the scenario description. Therefore, the outcome is plausible. YES.",
+                        "The probability of both participants choosing to withhold their data is plausible given the potential for mutual distrust or self-interest. The outcome where both receive minimal recognition and funding because the proposal is weak matches the scenario description. Therefore, the outcome is plausible. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 2,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_organizational member-organizational member_20250422_151753_317085"
+        },
+        "created_at": "2025-04-22T19:18:05.585090+00:00"
+    },
+    {
+        "step": 3,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "organizational member",
+                "organizational member"
+            ],
+            "scenario_draft": {
+                "scenario": "The Grant Proposal Strategy",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "organizational member"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "organizational member"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Share research data and insights",
+                    "defect": "Withhold research data and insights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: joint proposal is strong, both receive equal recognition and funding",
+                        "Bob gets 3: joint proposal is strong, both receive equal recognition and funding"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: proposal is weaker, Bob's section stands out, Bob receives most recognition and funding",
+                        "Bob gets 5: proposal is stronger, receives most recognition and funding"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: proposal is stronger, receive most recognition and funding",
+                        "Bob gets 0: proposal is weaker, your section stands out, you receive most recognition and funding"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: proposal is weak, both receive minimal recognition and funding",
+                        "Bob gets 1: proposal is weak, both receive minimal recognition and funding"
+                    ]
+                },
+                "description": "You and Bob, both members of the same organization, are tasked with submitting a joint grant proposal. The success of the proposal hinges on the quality of the research data and insights provided. If both of you share your data, the proposal is robust, and both of you gain recognition and funding. If one withholds data while the other shares, the one who withholds may appear more competent and secure more rewards. If both withhold, the proposal is weak, and both receive minimal benefits.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "organizational member",
+                        "organizational member"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "The Grant Proposal Strategy",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "organizational member"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "organizational member"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Share research data and insights",
+                            "defect": "Withhold research data and insights"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: joint proposal is strong, both receive equal recognition and funding",
+                                "Bob gets 3: joint proposal is strong, both receive equal recognition and funding"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: proposal is weaker, Bob's section stands out, Bob receives most recognition and funding",
+                                "Bob gets 5: proposal is stronger, receives most recognition and funding"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: proposal is stronger, receive most recognition and funding",
+                                "Bob gets 0: proposal is weaker, your section stands out, you receive most recognition and funding"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: proposal is weak, both receive minimal recognition and funding",
+                                "Bob gets 1: proposal is weak, both receive minimal recognition and funding"
+                            ]
+                        },
+                        "description": "You and Bob, both members of the same organization, are tasked with submitting a joint grant proposal. The success of the proposal hinges on the quality of the research data and insights provided. If both of you share your data, the proposal is robust, and both of you gain recognition and funding. If one withholds data while the other shares, the one who withholds may appear more competent and secure more rewards. If both withhold, the proposal is weak, and both receive minimal benefits.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 1,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": 1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_organizational member-organizational member_20250422_151753_317085"
+        },
+        "created_at": "2025-04-22T19:17:59.546178+00:00"
+    },
+    {
+        "step": 4,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "organizational member",
+                "organizational member"
+            ],
+            "scenario_draft": null,
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 0,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": null,
+            "step": 0,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_organizational member-organizational member_20250422_151753_317085"
+        },
+        "created_at": "2025-04-22T19:17:53.448941+00:00"
+    },
+    {
+        "step": 5,
+        "values": {
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": []
+        },
+        "metadata": {
+            "source": "input",
+            "writes": {
+                "__start__": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "organizational member",
+                        "organizational member"
+                    ],
+                    "scenario_draft": null,
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": -1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_organizational member-organizational member_20250422_151753_317085"
+        },
+        "created_at": "2025-04-22T19:17:53.323553+00:00"
+    }
+]

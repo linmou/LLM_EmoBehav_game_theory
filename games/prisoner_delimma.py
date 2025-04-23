@@ -7,6 +7,7 @@ from autogen import AssistantAgent, UserProxyAgent
 from pydantic import Field
 
 from games.game import BehaviorChoices, GameDecision, GameScenario
+from games.payoff_matrices import PayoffMatrix
 
 
 class PDBehaviorChoice(BehaviorChoices):
@@ -35,7 +36,7 @@ class PrisonerDilemmaScenario(GameScenario):
     description: str
     participants: List[Dict[str, Any]]
     behavior_choices: PDBehaviorChoice
-    payoff_matrix: Dict[str, Any]
+    payoff_matrix: PayoffMatrix
     game_name: str = "Prisoners_Dilemma"
 
     def find_behavior_from_decision(self, decision: str) -> str:
@@ -68,16 +69,20 @@ class PrisonerDilemmaScenario(GameScenario):
             "behavior_choices": PDBehaviorChoice.example(),
             "payoff_matrix": {
                 "You: cooperate , Bob: cooperate": [
-                    "You get 3: networks are upgraded and do not lose customers; Bob gets 3: networks are upgraded and do not lose customers",
+                    "You get 3: networks are upgraded and do not lose customers",
+                    "Bob gets 3: networks are upgraded and do not lose customers",
                 ],
                 "You: cooperate , Bob: defect": [
-                    "You get 0: networks are upgraded but you lose customers; Bob gets 5: get customers from you",
+                    "You get 0: networks are upgraded but you lose customers",
+                    "Bob gets 5: get customers from you",
                 ],
                 "You: defect , Bob: cooperate": [
-                    "You get 5: get customers from Bob; Bob gets 0: networks are upgraded but he loses customers",
+                    "You get 5: get customers from Bob",
+                    "Bob gets 0: networks are upgraded but he loses customers",
                 ],
                 "You: defect , Bob: defect": [
-                    "You get 1: networks are not upgraded, no customers leave, continue making modest profits; Bob gets 1: networks are not upgraded, no customer leave, continue making modest profits",
+                    "You get 1: networks are not upgraded, no customers leave, continue making modest profits",
+                    "Bob gets 1: networks are not upgraded, no customer leave, continue making modest profits",
                 ],
             },
             "description": "You and Bob, rival ISP CEOs, face a critical choice: throttle speeds for five days to upgrade your aging infrastructure. If both upgrade, customers stay and quality improves. If one delays while the other upgrades, the one who waits gains customers and profit. If both wait, networks stagnate, but profits hold steady—for now.",

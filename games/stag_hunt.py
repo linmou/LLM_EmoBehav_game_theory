@@ -21,7 +21,10 @@ class StagHuntBehaviors(BehaviorChoices):
 
     @staticmethod
     def example():
-        return {"cooperate": "Coordinate for Stag", "defect": "Solo Hare Hunt"}
+        return {
+            "cooperate": "Collaborate intensely on the joint project",
+            "defect": "Focus solely on individual assignments",
+        }
 
 
 class StagHuntScenario(GameScenario):
@@ -51,13 +54,27 @@ class StagHuntScenario(GameScenario):
     @staticmethod
     def example():
         return {
-            "scenario": "Wildlife_Hunting",
-            "description": "Two hunters must decide whether to collaborate on hunting a stag or individually hunt hares. If both hunt stag, they succeed and share large reward. If one hunts stag while the other hunts hares, the stag hunter fails while the hare hunter gets small reward. If both hunt hares, they both get moderate rewards.",
+            "scenario": "Project Partnership: The High-Stakes Deadline",
             "participants": [
-                {"name": "participant1", "profile": "Experienced hunter"},
-                {"name": "participant2", "profile": "Experienced hunter"},
+                {"name": "You", "profile": "Software Engineer"},
+                {"name": "Bob", "profile": "Software Engineer"},
             ],
             "behavior_choices": StagHuntBehaviors.example(),
+            "payoff_matrix": {
+                f"You: cooperate , Bob: cooperate": [
+                    "You get 3: Major project success, potential promotion; Bob gets 3: Major project success, potential promotion",
+                ],
+                f"You: cooperate , Bob: defect": [
+                    "You get 0: Collaboration effort wasted; Bob gets 1: Individual tasks completed successfully",
+                ],
+                f"You: defect , Bob: cooperate": [
+                    "You get 1: Individual tasks completed successfully; Bob gets 0: Collaboration effort wasted",
+                ],
+                f"You: defect , Bob: defect": [
+                    "You get 1: Basic requirements met; Bob gets 1: Basic requirements met",
+                ],
+            },
+            "description": "Two colleagues, You and Bob, are tasked with a critical project with a tight deadline. They can either collaborate intensely to achieve a major success potentially leading to promotions, or focus on their individual assignments ensuring they meet their basic requirements. If one commits to collaboration while the other focuses individually, the collaborator's efforts are largely wasted, while the individual worker secures their moderate success.",
         }
 
 

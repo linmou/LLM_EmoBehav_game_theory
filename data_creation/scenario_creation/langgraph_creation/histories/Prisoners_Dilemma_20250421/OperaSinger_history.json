@@ -1,0 +1,928 @@
+[
+    {
+        "step": 0,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "opera singer",
+                "opera singer"
+            ],
+            "scenario_draft": {
+                "scenario": "The Opera Performance Scheduling Conflict",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "opera singer"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "opera singer"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to perform on alternate nights",
+                    "defect": "Insist on performing on peak nights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: successful performance schedule with shared audience interest",
+                        "Bob gets 3: successful performance schedule with shared audience interest"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: fewer audiences as Bob takes the peak night",
+                        "Bob gets 5: full house and more acclaim on the peak night"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: full house and more acclaim on the peak night",
+                        "Bob gets 0: fewer audiences as you take the peak night"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: split audience with mediocre attendance and reviews",
+                        "Bob gets 1: split audience with mediocre attendance and reviews"
+                    ]
+                },
+                "description": "You and Bob, both opera singers, are scheduled to perform at a prestigious opera house. Due to logistical constraints and contractual agreements with the venue, alternating nights would ensure optimal use of resources such as stage crew availability and promotional efforts. Agreeing to alternate nights benefits both performers by maintaining operational efficiency and enhancing reputations through consistently high-quality performances. However, if one insists on peak nights, they gain more individual acclaim at the expense of the other. If both insist, the divided audience leads to subpar outcomes for both, affecting potential future contracts and financial gains.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally realistic and coherent, as it presents a plausible situation involving opera singers and performance scheduling conflicts.",
+                "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being opera singers, which fits the narrative context.",
+                "The scenario successfully avoids mentioning any prior relationship between the participants, adhering to the requirement that they should not be friends or family.",
+                "The behavior choices accurately represent the strategies available, with 'cooperate' and 'defect' reflecting the decision to alternate nights or insist on peak nights.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure, as the scenario focuses on performance scheduling and audience dynamics rather than the abstract game theory terms."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both participants agree to perform on alternate nights, the scenario describes that this leads to operational efficiency and high-quality performances, benefiting both performers. Therefore, both receiving a reward of 3 for a successful performance schedule with shared audience interest is a realistic and plausible outcome. YES.",
+                "If you agree to alternate nights while Bob insists on peak nights, Bob would indeed gain more acclaim and a full house on the peak night, while you would have fewer audiences. This aligns with the scenario's description of one gaining at the expense of the other. Therefore, the outcome of you getting 0 and Bob getting 5 is realistic and plausible. YES.",
+                "If you insist on peak nights while Bob agrees to alternate nights, you would gain the full house and more acclaim, while Bob would have fewer audiences. This is consistent with the scenario's description of one gaining at the expense of the other. Thus, the outcome of you getting 5 and Bob getting 0 is realistic and plausible. YES.",
+                "If both insist on performing on peak nights, the scenario describes that this would lead to a divided audience and subpar outcomes for both, affecting future contracts and financial gains. Therefore, both receiving a reward of 1 for split audience and mediocre attendance and reviews is a realistic and plausible outcome. YES."
+            ],
+            "iteration_count": 2,
+            "final_scenario": {
+                "scenario": "The Opera Performance Scheduling Conflict",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "opera singer"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "opera singer"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to perform on alternate nights",
+                    "defect": "Insist on performing on peak nights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: successful performance schedule with shared audience interest",
+                        "Bob gets 3: successful performance schedule with shared audience interest"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: fewer audiences as Bob takes the peak night",
+                        "Bob gets 5: full house and more acclaim on the peak night"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: full house and more acclaim on the peak night",
+                        "Bob gets 0: fewer audiences as you take the peak night"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: split audience with mediocre attendance and reviews",
+                        "Bob gets 1: split audience with mediocre attendance and reviews"
+                    ]
+                },
+                "description": "You and Bob, both opera singers, are scheduled to perform at a prestigious opera house. Due to logistical constraints and contractual agreements with the venue, alternating nights would ensure optimal use of resources such as stage crew availability and promotional efforts. Agreeing to alternate nights benefits both performers by maintaining operational efficiency and enhancing reputations through consistently high-quality performances. However, if one insists on peak nights, they gain more individual acclaim at the expense of the other. If both insist, the divided audience leads to subpar outcomes for both, affecting potential future contracts and financial gains.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "finalize_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "opera singer",
+                        "opera singer"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "The Opera Performance Scheduling Conflict",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "opera singer"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "opera singer"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Agree to perform on alternate nights",
+                            "defect": "Insist on performing on peak nights"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: successful performance schedule with shared audience interest",
+                                "Bob gets 3: successful performance schedule with shared audience interest"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: fewer audiences as Bob takes the peak night",
+                                "Bob gets 5: full house and more acclaim on the peak night"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: full house and more acclaim on the peak night",
+                                "Bob gets 0: fewer audiences as you take the peak night"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: split audience with mediocre attendance and reviews",
+                                "Bob gets 1: split audience with mediocre attendance and reviews"
+                            ]
+                        },
+                        "description": "You and Bob, both opera singers, are scheduled to perform at a prestigious opera house. Due to logistical constraints and contractual agreements with the venue, alternating nights would ensure optimal use of resources such as stage crew availability and promotional efforts. Agreeing to alternate nights benefits both performers by maintaining operational efficiency and enhancing reputations through consistently high-quality performances. However, if one insists on peak nights, they gain more individual acclaim at the expense of the other. If both insist, the divided audience leads to subpar outcomes for both, affecting potential future contracts and financial gains.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [
+                        "The scenario description is generally realistic and coherent, as it presents a plausible situation involving opera singers and performance scheduling conflicts.",
+                        "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being opera singers, which fits the narrative context.",
+                        "The scenario successfully avoids mentioning any prior relationship between the participants, adhering to the requirement that they should not be friends or family.",
+                        "The behavior choices accurately represent the strategies available, with 'cooperate' and 'defect' reflecting the decision to alternate nights or insist on peak nights.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure, as the scenario focuses on performance scheduling and audience dynamics rather than the abstract game theory terms."
+                    ],
+                    "preference_feedback": [],
+                    "payoff_feedback": [
+                        "When both participants agree to perform on alternate nights, the scenario describes that this leads to operational efficiency and high-quality performances, benefiting both performers. Therefore, both receiving a reward of 3 for a successful performance schedule with shared audience interest is a realistic and plausible outcome. YES.",
+                        "If you agree to alternate nights while Bob insists on peak nights, Bob would indeed gain more acclaim and a full house on the peak night, while you would have fewer audiences. This aligns with the scenario's description of one gaining at the expense of the other. Therefore, the outcome of you getting 0 and Bob getting 5 is realistic and plausible. YES.",
+                        "If you insist on peak nights while Bob agrees to alternate nights, you would gain the full house and more acclaim, while Bob would have fewer audiences. This is consistent with the scenario's description of one gaining at the expense of the other. Thus, the outcome of you getting 5 and Bob getting 0 is realistic and plausible. YES.",
+                        "If both insist on performing on peak nights, the scenario describes that this would lead to a divided audience and subpar outcomes for both, affecting future contracts and financial gains. Therefore, both receiving a reward of 1 for split audience and mediocre attendance and reviews is a realistic and plausible outcome. YES."
+                    ],
+                    "iteration_count": 2,
+                    "final_scenario": {
+                        "scenario": "The Opera Performance Scheduling Conflict",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "opera singer"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "opera singer"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Agree to perform on alternate nights",
+                            "defect": "Insist on performing on peak nights"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: successful performance schedule with shared audience interest",
+                                "Bob gets 3: successful performance schedule with shared audience interest"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: fewer audiences as Bob takes the peak night",
+                                "Bob gets 5: full house and more acclaim on the peak night"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: full house and more acclaim on the peak night",
+                                "Bob gets 0: fewer audiences as you take the peak night"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: split audience with mediocre attendance and reviews",
+                                "Bob gets 1: split audience with mediocre attendance and reviews"
+                            ]
+                        },
+                        "description": "You and Bob, both opera singers, are scheduled to perform at a prestigious opera house. Due to logistical constraints and contractual agreements with the venue, alternating nights would ensure optimal use of resources such as stage crew availability and promotional efforts. Agreeing to alternate nights benefits both performers by maintaining operational efficiency and enhancing reputations through consistently high-quality performances. However, if one insists on peak nights, they gain more individual acclaim at the expense of the other. If both insist, the divided audience leads to subpar outcomes for both, affecting potential future contracts and financial gains.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_converged": true,
+                    "preference_converged": true,
+                    "payoff_converged": true,
+                    "all_converged": true,
+                    "auto_save_path": null
+                }
+            },
+            "step": 7,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_opera singer-opera singer_20250421_132906_372665"
+        },
+        "created_at": "2025-04-21T17:29:25.600954+00:00"
+    },
+    {
+        "step": 1,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "opera singer",
+                "opera singer"
+            ],
+            "scenario_draft": {
+                "scenario": "The Opera Performance Scheduling Conflict",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "opera singer"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "opera singer"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to perform on alternate nights",
+                    "defect": "Insist on performing on peak nights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: successful performance schedule with shared audience interest",
+                        "Bob gets 3: successful performance schedule with shared audience interest"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: fewer audiences as Bob takes the peak night",
+                        "Bob gets 5: full house and more acclaim on the peak night"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: full house and more acclaim on the peak night",
+                        "Bob gets 0: fewer audiences as you take the peak night"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: split audience with mediocre attendance and reviews",
+                        "Bob gets 1: split audience with mediocre attendance and reviews"
+                    ]
+                },
+                "description": "You and Bob, both opera singers, are scheduled to perform at a prestigious opera house. Due to logistical constraints and contractual agreements with the venue, alternating nights would ensure optimal use of resources such as stage crew availability and promotional efforts. Agreeing to alternate nights benefits both performers by maintaining operational efficiency and enhancing reputations through consistently high-quality performances. However, if one insists on peak nights, they gain more individual acclaim at the expense of the other. If both insist, the divided audience leads to subpar outcomes for both, affecting potential future contracts and financial gains.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally realistic and coherent, as it presents a plausible situation involving opera singers and performance scheduling conflicts.",
+                "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being opera singers, which fits the narrative context.",
+                "The scenario successfully avoids mentioning any prior relationship between the participants, adhering to the requirement that they should not be friends or family.",
+                "The behavior choices accurately represent the strategies available, with 'cooperate' and 'defect' reflecting the decision to alternate nights or insist on peak nights.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure, as the scenario focuses on performance scheduling and audience dynamics rather than the abstract game theory terms."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both participants agree to perform on alternate nights, the scenario describes that this leads to operational efficiency and high-quality performances, benefiting both performers. Therefore, both receiving a reward of 3 for a successful performance schedule with shared audience interest is a realistic and plausible outcome. YES.",
+                "If you agree to alternate nights while Bob insists on peak nights, Bob would indeed gain more acclaim and a full house on the peak night, while you would have fewer audiences. This aligns with the scenario's description of one gaining at the expense of the other. Therefore, the outcome of you getting 0 and Bob getting 5 is realistic and plausible. YES.",
+                "If you insist on peak nights while Bob agrees to alternate nights, you would gain the full house and more acclaim, while Bob would have fewer audiences. This is consistent with the scenario's description of one gaining at the expense of the other. Thus, the outcome of you getting 5 and Bob getting 0 is realistic and plausible. YES.",
+                "If both insist on performing on peak nights, the scenario describes that this would lead to a divided audience and subpar outcomes for both, affecting future contracts and financial gains. Therefore, both receiving a reward of 1 for split audience and mediocre attendance and reviews is a realistic and plausible outcome. YES."
+            ],
+            "iteration_count": 2,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": true
+                }
+            },
+            "step": 6,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_opera singer-opera singer_20250421_132906_372665"
+        },
+        "created_at": "2025-04-21T17:29:25.600520+00:00"
+    },
+    {
+        "step": 2,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "opera singer",
+                "opera singer"
+            ],
+            "scenario_draft": {
+                "scenario": "The Opera Performance Scheduling Conflict",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "opera singer"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "opera singer"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to perform on alternate nights",
+                    "defect": "Insist on performing on peak nights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: successful performance schedule with shared audience interest",
+                        "Bob gets 3: successful performance schedule with shared audience interest"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: fewer audiences as Bob takes the peak night",
+                        "Bob gets 5: full house and more acclaim on the peak night"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: full house and more acclaim on the peak night",
+                        "Bob gets 0: fewer audiences as you take the peak night"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: split audience with mediocre attendance and reviews",
+                        "Bob gets 1: split audience with mediocre attendance and reviews"
+                    ]
+                },
+                "description": "You and Bob, both opera singers, are scheduled to perform at a prestigious opera house. Due to logistical constraints and contractual agreements with the venue, alternating nights would ensure optimal use of resources such as stage crew availability and promotional efforts. Agreeing to alternate nights benefits both performers by maintaining operational efficiency and enhancing reputations through consistently high-quality performances. However, if one insists on peak nights, they gain more individual acclaim at the expense of the other. If both insist, the divided audience leads to subpar outcomes for both, affecting potential future contracts and financial gains.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally realistic and coherent, as it presents a plausible situation involving opera singers and performance scheduling conflicts.",
+                "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being opera singers, which fits the narrative context.",
+                "The scenario successfully avoids mentioning any prior relationship between the participants, adhering to the requirement that they should not be friends or family.",
+                "The behavior choices accurately represent the strategies available, with 'cooperate' and 'defect' reflecting the decision to alternate nights or insist on peak nights.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure, as the scenario focuses on performance scheduling and audience dynamics rather than the abstract game theory terms."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both participants agree to perform on alternate nights, the scenario describes that this leads to operational efficiency and high-quality performances, benefiting both performers. Therefore, both receiving a reward of 3 for a successful performance schedule with shared audience interest is a realistic and plausible outcome. YES.",
+                "If you agree to alternate nights while Bob insists on peak nights, Bob would indeed gain more acclaim and a full house on the peak night, while you would have fewer audiences. This aligns with the scenario's description of one gaining at the expense of the other. Therefore, the outcome of you getting 0 and Bob getting 5 is realistic and plausible. YES.",
+                "If you insist on peak nights while Bob agrees to alternate nights, you would gain the full house and more acclaim, while Bob would have fewer audiences. This is consistent with the scenario's description of one gaining at the expense of the other. Thus, the outcome of you getting 5 and Bob getting 0 is realistic and plausible. YES.",
+                "If both insist on performing on peak nights, the scenario describes that this would lead to a divided audience and subpar outcomes for both, affecting future contracts and financial gains. Therefore, both receiving a reward of 1 for split audience and mediocre attendance and reviews is a realistic and plausible outcome. YES."
+            ],
+            "iteration_count": 2,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": false,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is generally realistic and coherent, as it presents a plausible situation involving opera singers and performance scheduling conflicts.",
+                        "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being opera singers, which fits the narrative context.",
+                        "The scenario successfully avoids mentioning any prior relationship between the participants, adhering to the requirement that they should not be friends or family.",
+                        "The behavior choices accurately represent the strategies available, with 'cooperate' and 'defect' reflecting the decision to alternate nights or insist on peak nights.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure, as the scenario focuses on performance scheduling and audience dynamics rather than the abstract game theory terms."
+                    ],
+                    "narrative_converged": true
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "When both participants agree to perform on alternate nights, the scenario describes that this leads to operational efficiency and high-quality performances, benefiting both performers. Therefore, both receiving a reward of 3 for a successful performance schedule with shared audience interest is a realistic and plausible outcome. YES.",
+                        "If you agree to alternate nights while Bob insists on peak nights, Bob would indeed gain more acclaim and a full house on the peak night, while you would have fewer audiences. This aligns with the scenario's description of one gaining at the expense of the other. Therefore, the outcome of you getting 0 and Bob getting 5 is realistic and plausible. YES.",
+                        "If you insist on peak nights while Bob agrees to alternate nights, you would gain the full house and more acclaim, while Bob would have fewer audiences. This is consistent with the scenario's description of one gaining at the expense of the other. Thus, the outcome of you getting 5 and Bob getting 0 is realistic and plausible. YES.",
+                        "If both insist on performing on peak nights, the scenario describes that this would lead to a divided audience and subpar outcomes for both, affecting future contracts and financial gains. Therefore, both receiving a reward of 1 for split audience and mediocre attendance and reviews is a realistic and plausible outcome. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 5,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_opera singer-opera singer_20250421_132906_372665"
+        },
+        "created_at": "2025-04-21T17:29:25.599694+00:00"
+    },
+    {
+        "step": 3,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "opera singer",
+                "opera singer"
+            ],
+            "scenario_draft": {
+                "scenario": "The Opera Performance Scheduling Conflict",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "opera singer"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "opera singer"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to perform on alternate nights",
+                    "defect": "Insist on performing on peak nights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: successful performance schedule with shared audience interest",
+                        "Bob gets 3: successful performance schedule with shared audience interest"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: fewer audiences as Bob takes the peak night",
+                        "Bob gets 5: full house and more acclaim on the peak night"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: full house and more acclaim on the peak night",
+                        "Bob gets 0: fewer audiences as you take the peak night"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: split audience with mediocre attendance and reviews",
+                        "Bob gets 1: split audience with mediocre attendance and reviews"
+                    ]
+                },
+                "description": "You and Bob, both opera singers, are scheduled to perform at a prestigious opera house. Due to logistical constraints and contractual agreements with the venue, alternating nights would ensure optimal use of resources such as stage crew availability and promotional efforts. Agreeing to alternate nights benefits both performers by maintaining operational efficiency and enhancing reputations through consistently high-quality performances. However, if one insists on peak nights, they gain more individual acclaim at the expense of the other. If both insist, the divided audience leads to subpar outcomes for both, affecting potential future contracts and financial gains.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 2,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": false,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "opera singer",
+                        "opera singer"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "The Opera Performance Scheduling Conflict",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "opera singer"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "opera singer"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Agree to perform on alternate nights",
+                            "defect": "Insist on performing on peak nights"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: successful performance schedule with shared audience interest",
+                                "Bob gets 3: successful performance schedule with shared audience interest"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: fewer audiences as Bob takes the peak night",
+                                "Bob gets 5: full house and more acclaim on the peak night"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: full house and more acclaim on the peak night",
+                                "Bob gets 0: fewer audiences as you take the peak night"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: split audience with mediocre attendance and reviews",
+                                "Bob gets 1: split audience with mediocre attendance and reviews"
+                            ]
+                        },
+                        "description": "You and Bob, both opera singers, are scheduled to perform at a prestigious opera house. Due to logistical constraints and contractual agreements with the venue, alternating nights would ensure optimal use of resources such as stage crew availability and promotional efforts. Agreeing to alternate nights benefits both performers by maintaining operational efficiency and enhancing reputations through consistently high-quality performances. However, if one insists on peak nights, they gain more individual acclaim at the expense of the other. If both insist, the divided audience leads to subpar outcomes for both, affecting potential future contracts and financial gains.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 2,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": false,
+                    "auto_save_path": null
+                }
+            },
+            "step": 4,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_opera singer-opera singer_20250421_132906_372665"
+        },
+        "created_at": "2025-04-21T17:29:21.410053+00:00"
+    },
+    {
+        "step": 4,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "opera singer",
+                "opera singer"
+            ],
+            "scenario_draft": {
+                "scenario": "The Opera Performance Scheduling Conflict",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "opera singer"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "opera singer"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to perform on alternate nights",
+                    "defect": "Insist on performing on peak nights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get a successful performance schedule with shared audience interest",
+                        "Bob gets a successful performance schedule with shared audience interest"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get fewer audiences as Bob takes the peak night",
+                        "Bob gets a full house and more acclaim on the peak night"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get a full house and more acclaim on the peak night",
+                        "Bob gets fewer audiences as you take the peak night"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get a split audience with mediocre attendance and reviews",
+                        "Bob gets a split audience with mediocre attendance and reviews"
+                    ]
+                },
+                "description": "You and Bob, both opera singers, must decide how to schedule your performances at a prestigious opera house. If both agree to alternate nights, you can each enjoy full houses and positive reviews. If one insists on peak nights while the other cooperates, the defector receives more acclaim and a larger audience. If both insist on the peak nights, the audience is split, leading to lower attendance and lukewarm reviews. The decision balances personal gain with mutual success.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally realistic and coherent, but it could benefit from more context about why alternating nights is beneficial beyond just audience interest, such as logistical or contractual reasons.",
+                "The participants' names and jobs are correctly integrated, and the scenario does not imply any prior relationship between 'You' and 'Bob', which is appropriate.",
+                "The behavior choices accurately represent the strategies available in the scenario, aligning well with the typical Prisoners Dilemma options of cooperation and defection.",
+                "The narrative effectively masks the underlying Prisoners Dilemma structure by using a relatable context of scheduling conflicts in a performance setting.",
+                "The payoff matrix and description align well with the narrative, but the narrative could emphasize the stakes involved, such as potential career impacts or financial implications, to enhance the realism."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both participants agree to alternate nights, they both benefit from full houses and positive reviews due to shared audience interest. This outcome is directly aligned with the scenario description, where mutual cooperation leads to mutual success. YES.",
+                "If you agree to alternate nights while Bob insists on peak nights, Bob benefits from a full house and more acclaim, while you receive fewer audiences. This is consistent with the scenario's explanation that a defector gains more when the other cooperates. YES.",
+                "If you insist on peak nights while Bob agrees to alternate, you gain a full house and more acclaim, while Bob gets fewer audiences. This mirrors the scenario's description of the defector benefiting at the expense of the cooperator. YES.",
+                "When both insist on peak nights, the audience is split, resulting in mediocre attendance and reviews for both. This matches the scenario's outcome of mutual defection leading to shared negative consequences. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": false,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": false
+                }
+            },
+            "step": 3,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_opera singer-opera singer_20250421_132906_372665"
+        },
+        "created_at": "2025-04-21T17:29:15.760642+00:00"
+    },
+    {
+        "step": 5,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "opera singer",
+                "opera singer"
+            ],
+            "scenario_draft": {
+                "scenario": "The Opera Performance Scheduling Conflict",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "opera singer"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "opera singer"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to perform on alternate nights",
+                    "defect": "Insist on performing on peak nights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get a successful performance schedule with shared audience interest",
+                        "Bob gets a successful performance schedule with shared audience interest"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get fewer audiences as Bob takes the peak night",
+                        "Bob gets a full house and more acclaim on the peak night"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get a full house and more acclaim on the peak night",
+                        "Bob gets fewer audiences as you take the peak night"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get a split audience with mediocre attendance and reviews",
+                        "Bob gets a split audience with mediocre attendance and reviews"
+                    ]
+                },
+                "description": "You and Bob, both opera singers, must decide how to schedule your performances at a prestigious opera house. If both agree to alternate nights, you can each enjoy full houses and positive reviews. If one insists on peak nights while the other cooperates, the defector receives more acclaim and a larger audience. If both insist on the peak nights, the audience is split, leading to lower attendance and lukewarm reviews. The decision balances personal gain with mutual success.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally realistic and coherent, but it could benefit from more context about why alternating nights is beneficial beyond just audience interest, such as logistical or contractual reasons.",
+                "The participants' names and jobs are correctly integrated, and the scenario does not imply any prior relationship between 'You' and 'Bob', which is appropriate.",
+                "The behavior choices accurately represent the strategies available in the scenario, aligning well with the typical Prisoners Dilemma options of cooperation and defection.",
+                "The narrative effectively masks the underlying Prisoners Dilemma structure by using a relatable context of scheduling conflicts in a performance setting.",
+                "The payoff matrix and description align well with the narrative, but the narrative could emphasize the stakes involved, such as potential career impacts or financial implications, to enhance the realism."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both participants agree to alternate nights, they both benefit from full houses and positive reviews due to shared audience interest. This outcome is directly aligned with the scenario description, where mutual cooperation leads to mutual success. YES.",
+                "If you agree to alternate nights while Bob insists on peak nights, Bob benefits from a full house and more acclaim, while you receive fewer audiences. This is consistent with the scenario's explanation that a defector gains more when the other cooperates. YES.",
+                "If you insist on peak nights while Bob agrees to alternate, you gain a full house and more acclaim, while Bob gets fewer audiences. This mirrors the scenario's description of the defector benefiting at the expense of the cooperator. YES.",
+                "When both insist on peak nights, the audience is split, resulting in mediocre attendance and reviews for both. This matches the scenario's outcome of mutual defection leading to shared negative consequences. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is generally realistic and coherent, but it could benefit from more context about why alternating nights is beneficial beyond just audience interest, such as logistical or contractual reasons.",
+                        "The participants' names and jobs are correctly integrated, and the scenario does not imply any prior relationship between 'You' and 'Bob', which is appropriate.",
+                        "The behavior choices accurately represent the strategies available in the scenario, aligning well with the typical Prisoners Dilemma options of cooperation and defection.",
+                        "The narrative effectively masks the underlying Prisoners Dilemma structure by using a relatable context of scheduling conflicts in a performance setting.",
+                        "The payoff matrix and description align well with the narrative, but the narrative could emphasize the stakes involved, such as potential career impacts or financial implications, to enhance the realism."
+                    ],
+                    "narrative_converged": false
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "When both participants agree to alternate nights, they both benefit from full houses and positive reviews due to shared audience interest. This outcome is directly aligned with the scenario description, where mutual cooperation leads to mutual success. YES.",
+                        "If you agree to alternate nights while Bob insists on peak nights, Bob benefits from a full house and more acclaim, while you receive fewer audiences. This is consistent with the scenario's explanation that a defector gains more when the other cooperates. YES.",
+                        "If you insist on peak nights while Bob agrees to alternate, you gain a full house and more acclaim, while Bob gets fewer audiences. This mirrors the scenario's description of the defector benefiting at the expense of the cooperator. YES.",
+                        "When both insist on peak nights, the audience is split, resulting in mediocre attendance and reviews for both. This matches the scenario's outcome of mutual defection leading to shared negative consequences. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 2,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_opera singer-opera singer_20250421_132906_372665"
+        },
+        "created_at": "2025-04-21T17:29:14.649011+00:00"
+    },
+    {
+        "step": 6,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "opera singer",
+                "opera singer"
+            ],
+            "scenario_draft": {
+                "scenario": "The Opera Performance Scheduling Conflict",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "opera singer"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "opera singer"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to perform on alternate nights",
+                    "defect": "Insist on performing on peak nights"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get a successful performance schedule with shared audience interest",
+                        "Bob gets a successful performance schedule with shared audience interest"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get fewer audiences as Bob takes the peak night",
+                        "Bob gets a full house and more acclaim on the peak night"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get a full house and more acclaim on the peak night",
+                        "Bob gets fewer audiences as you take the peak night"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get a split audience with mediocre attendance and reviews",
+                        "Bob gets a split audience with mediocre attendance and reviews"
+                    ]
+                },
+                "description": "You and Bob, both opera singers, must decide how to schedule your performances at a prestigious opera house. If both agree to alternate nights, you can each enjoy full houses and positive reviews. If one insists on peak nights while the other cooperates, the defector receives more acclaim and a larger audience. If both insist on the peak nights, the audience is split, leading to lower attendance and lukewarm reviews. The decision balances personal gain with mutual success.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "opera singer",
+                        "opera singer"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "The Opera Performance Scheduling Conflict",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "opera singer"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "opera singer"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Agree to perform on alternate nights",
+                            "defect": "Insist on performing on peak nights"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get a successful performance schedule with shared audience interest",
+                                "Bob gets a successful performance schedule with shared audience interest"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get fewer audiences as Bob takes the peak night",
+                                "Bob gets a full house and more acclaim on the peak night"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get a full house and more acclaim on the peak night",
+                                "Bob gets fewer audiences as you take the peak night"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get a split audience with mediocre attendance and reviews",
+                                "Bob gets a split audience with mediocre attendance and reviews"
+                            ]
+                        },
+                        "description": "You and Bob, both opera singers, must decide how to schedule your performances at a prestigious opera house. If both agree to alternate nights, you can each enjoy full houses and positive reviews. If one insists on peak nights while the other cooperates, the defector receives more acclaim and a larger audience. If both insist on the peak nights, the audience is split, leading to lower attendance and lukewarm reviews. The decision balances personal gain with mutual success.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 1,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": 1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_opera singer-opera singer_20250421_132906_372665"
+        },
+        "created_at": "2025-04-21T17:29:11.477171+00:00"
+    },
+    {
+        "step": 7,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "opera singer",
+                "opera singer"
+            ],
+            "scenario_draft": null,
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 0,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": null,
+            "step": 0,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_opera singer-opera singer_20250421_132906_372665"
+        },
+        "created_at": "2025-04-21T17:29:06.379763+00:00"
+    },
+    {
+        "step": 8,
+        "values": {
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": []
+        },
+        "metadata": {
+            "source": "input",
+            "writes": {
+                "__start__": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "opera singer",
+                        "opera singer"
+                    ],
+                    "scenario_draft": null,
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": -1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_opera singer-opera singer_20250421_132906_372665"
+        },
+        "created_at": "2025-04-21T17:29:06.375249+00:00"
+    }
+]

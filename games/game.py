@@ -127,10 +127,36 @@ class Game:
         return f"groupchat/scenarios/{self.name}"
 
     def create_scenario(self, data: dict) -> GameScenario:
-        """Create a new scenario instance"""
-        data["payoff_matrix"] = self.payoff_matrix
-        data.update(self.extra_attrs)
-        scenario = self.scenario_class(**data)
+        """Create a new scenario instance.
+
+        This method creates a new scenario instance with the provided data, filtering out any
+        invalid attributes that are not defined in the scenario class. The method will:
+        1. Copy the input data to avoid modifications
+        2. Add the game's payoff matrix and extra attributes
+        3. Filter out any keys that are not valid fields in the scenario class
+        4. Create and return the scenario instance
+
+        Args:
+            data (dict): Initial data for creating the scenario. Invalid keys will be ignored.
+
+        Returns:
+            GameScenario: A new instance of the game's scenario class.
+        """
+        # Create a copy of data to avoid modifying the original
+        scenario_data = data.copy()
+
+        # Add payoff matrix and extra attributes
+        scenario_data["payoff_matrix"] = self.payoff_matrix
+        scenario_data.update(self.extra_attrs)
+
+        # Get valid field names from the scenario class
+        valid_fields = set(self.scenario_class.model_fields.keys())
+
+        # Filter out invalid keys
+        filtered_data = {k: v for k, v in scenario_data.items() if k in valid_fields}
+
+        # Create scenario with filtered data
+        scenario = self.scenario_class(**filtered_data)
         self.decision_class.set_scenario(scenario)
         return scenario
 

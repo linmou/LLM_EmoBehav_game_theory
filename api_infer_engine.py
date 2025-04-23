@@ -54,18 +54,26 @@ class GameTheoryTest:
     ) -> List[Tuple[GameScenario, Type[GameDecision]]]:
         """Load scenarios from JSON files in the specified folder."""
         scenario_decision_pairs = []
-        folder = Path(game.data_folder)
-
-        if not folder.exists():
-            raise ValueError(f"Folder {game.data_folder} does not exist")
-
-        for file in folder.glob("*.json"):
-            print(f"Loading scenario from {file.name}")
-            with open(file, "r") as f:
+        if game.data_path:
+            with open(game.data_path, "r") as f:
                 data = json.load(f)
-                data["payoff_matrix"] = game.payoff_matrix
-                scenario = game.create_scenario(data)
-                scenario_decision_pairs.append((scenario, game.decision_class))
+                for scenario_data in data:
+                    scenario = game.create_scenario(scenario_data)
+                    scenario_decision_pairs.append((scenario, game.decision_class))
+
+        elif game.data_folder:
+            folder = Path(game.data_folder)
+
+            if not folder.exists():
+                raise ValueError(f"Folder {game.data_folder} does not exist")
+
+            for file in folder.glob("*.json"):
+                print(f"Loading scenario from {file.name}")
+                with open(file, "r") as f:
+                    data = json.load(f)
+                    data["payoff_matrix"] = game.payoff_matrix
+                    scenario = game.create_scenario(data)
+                    scenario_decision_pairs.append((scenario, game.decision_class))
 
         return scenario_decision_pairs
 

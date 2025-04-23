@@ -38,7 +38,7 @@ GAME_CONFIGS = {
         "scenario_class": PrisonerDilemmaScenario,
         "decision_class": PrisionerDelimmaDecision,
         "payoff_matrix": ALL_GAME_PAYOFF[GameNames.PRISONERS_DILEMMA],
-        "data_path": data_path_format.format(GameNames.PRISONERS_DILEMMA.value),
+        "data_path": "data_creation/scenario_creation/langgraph_creation/Prisoners_Dilemma_all_data_samples.json",  # data_path_format.format(GameNames.PRISONERS_DILEMMA.value),
     },
     GameNames.BATTLE_OF_SEXES: {
         "game_name": GameNames.BATTLE_OF_SEXES.value,
