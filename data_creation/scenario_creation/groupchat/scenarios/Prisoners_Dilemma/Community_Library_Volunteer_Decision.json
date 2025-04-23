@@ -1,0 +1,18 @@
+{
+    "scenario": "Community Library Volunteer Decision",
+    "description": "Two retired elementary school teachers, 'You' and 'Bob', are volunteering at the local community library. They have been asked to help organize a fundraising event to buy new books for the children's section. Each teacher must decide whether to volunteer extra hours or stick to their assigned shifts. If both volunteer extra hours, the event is a huge success and raises additional funds for more books. If one volunteers extra hours while the other doesn\u2019t, the volunteering teacher feels overwhelmed while the other enjoys more free time. If neither volunteers extra hours, the event meets the minimum requirements but doesn't raise additional funds.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Retired elementary school teacher"
+        },
+        {
+            "name": "Bob",
+            "profile": "Retired elementary school teacher"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Volunteer Assigned Shifts",
+        "defect": "Volunteer Extra Hours"
+    }
+}

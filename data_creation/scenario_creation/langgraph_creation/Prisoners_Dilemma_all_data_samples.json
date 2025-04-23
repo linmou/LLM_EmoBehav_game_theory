@@ -1,0 +1,1788 @@
+[
+    {
+        "scenario": "Diplomatic Dinner Dilemma: The Cultural Exchange Gala",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "ambassador"
+            },
+            {
+                "name": "Bob",
+                "profile": "ambassador"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Organize a joint cultural exchange gala",
+            "defect": "Arrange a separate exclusive gathering"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both cultural events successful with shared benefits and increased diplomatic goodwill",
+                "Bob gets 3: both cultural events successful with shared benefits and increased diplomatic goodwill"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your event is overshadowed, losing diplomatic influence",
+                "Bob gets 5: gains diplomatic prestige by holding an exclusive successful event"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: gain diplomatic prestige by holding an exclusive successful event",
+                "Bob gets 0: his event is overshadowed, losing diplomatic influence"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both events are mediocre and fail to attract attention, maintaining only current status",
+                "Bob gets 1: both events are mediocre and fail to attract attention, maintaining only current status"
+            ]
+        },
+        "description": "You and Bob, both ambassadors, have the opportunity to host a cultural exchange gala to strengthen diplomatic ties. If you both organize a joint gala, the event will be a mutual success, boosting diplomatic goodwill. If one of you decides to host an exclusive gathering while the other aims for a joint event, the one hosting exclusively gains more influence, leaving the other in the shadows. If both decide on separate gatherings, neither event will stand out, and both of you will merely maintain your current diplomatic positions.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Green Tech Summit: The Innovation Race",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "tech mogul"
+            },
+            {
+                "name": "Bob",
+                "profile": "tech mogul"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Introduce eco-friendly product at summit",
+            "defect": "Delay the launch to gather more market data"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: gain market recognition for being a pioneer in green technology, attract environmentally conscious consumers",
+                "Bob gets 3: gain market recognition for being a pioneer in green technology, attract environmentally conscious consumers"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your innovation is overshadowed by Bob's later, improved release, and you lose potential market share",
+                "Bob gets 5: capitalize on your early release to learn and improve, gaining a larger market share"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: capitalize on Bob's early release to learn and improve, gaining a larger market share",
+                "Bob gets 0: his innovation is overshadowed by your later, improved release, and he loses potential market share"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both gather more data and release later, maintaining current market position but missing early adopter benefits",
+                "Bob gets 1: both gather more data and release later, maintaining current market position but missing early adopter benefits"
+            ]
+        },
+        "description": "In the highly competitive green tech industry, you and Bob are set to unveil new eco-friendly products at an upcoming summit. The market is eager for innovation, and being the first to launch could solidify a leadership position. However, waiting to gather more market data could lead to a more refined product. If both launch now, they share the spotlight and attract a dedicated customer base. If one waits while the other launches, the one who delays can learn from the initial launch to create a superior product and capture the market. If both delay, they hold their current positions but miss out on early market enthusiasm.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Advertising Agency Pitch Conflict",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Marketing consultant"
+            },
+            {
+                "name": "Bob",
+                "profile": "Marketing consultant"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share innovative pitch ideas",
+            "defect": "Withhold ideas to present solo"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both secure joint project, enhancing reputation and share rewards",
+                "Bob gets 3: both secure joint project, enhancing reputation and share rewards"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you share ideas but Bob wins project solo, gaining all rewards",
+                "Bob gets 5: wins project solo utilizing shared ideas, gaining all rewards"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: win project solo utilizing shared ideas, gaining all rewards",
+                "Bob gets 0: shares ideas but you win project solo, gaining all rewards"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: neither wins project, maintain current client base with minimal growth",
+                "Bob gets 1: neither wins project, maintain current client base with minimal growth"
+            ]
+        },
+        "description": "You and Bob are both marketing consultants competing for a lucrative agency pitch. If both of you decide to share your most innovative pitch ideas, you can collaborate and secure the project together, splitting the rewards and enhancing your professional standing. However, if one of you chooses to withhold ideas and present solo, that person stands to gain the entire project and its benefits, leaving the other with nothing. If both of you keep your ideas to yourselves, neither secures the pitch, and you both continue with your current clients without new growth opportunities.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Art Gallery Exhibition Strategy",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Curator of an art gallery"
+            },
+            {
+                "name": "Bob",
+                "profile": "Curator of an art gallery"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Host a classic, well-known art exhibition",
+            "defect": "Host a contemporary, avant-garde art exhibition"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both galleries attract a consistent number of art enthusiasts",
+                "Bob gets 3: both galleries attract a consistent number of art enthusiasts"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your gallery loses visitors to Bob's due to the fresh appeal",
+                "Bob gets 5: attracts visitors from your gallery intrigued by novelty"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: attract visitors from Bob's gallery looking for something new",
+                "Bob gets 0: his gallery loses visitors to yours due to lack of novelty"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both galleries see minor growth but lose potential visitors to other attractions",
+                "Bob gets 1: both galleries see minor growth but lose potential visitors to other attractions"
+            ]
+        },
+        "description": "You and Bob are curators of art galleries in the same city, each planning your next exhibition. Choosing a classic exhibition ensures a steady stream of visitors who appreciate timeless art. Opting for a contemporary exhibition could attract attention from those seeking innovative and fresh experiences. The challenge lies in picking the right strategy to either maintain a stable audience or risk for a potentially larger crowd by offering something new. The dynamic nature of art appreciation makes this decision crucial in determining the success of your gallery's visitor numbers.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Library Loyalty: The Study Group Strategy",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "student"
+            },
+            {
+                "name": "Bob",
+                "profile": "student"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Bring and share notes for the study session",
+            "defect": "Keep notes private and rely on Bob's notes"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both have comprehensive notes, boosting exam preparation",
+                "Bob gets 3: both have comprehensive notes, boosting exam preparation"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you share notes but lack additional insights from Bob",
+                "Bob gets 5: benefits from your notes without sharing his own"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: benefit from Bob's notes without sharing your own",
+                "Bob gets 0: shares notes but lacks additional insights from you"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both rely solely on personal notes, minimal improvement",
+                "Bob gets 1: both rely solely on personal notes, minimal improvement"
+            ]
+        },
+        "description": "You and Bob, classmates in a challenging course, have agreed to meet for a study session before the big exam. The effectiveness of the session depends on whether you both bring and share your personal notes. If both of you share, the session becomes highly productive, and you're both well-prepared. If one shares while the other doesn't, the sharer loses out while the non-sharer gains significant advantage. If neither shares, both struggle with limited personal knowledge.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Cultural Heritage Preservation: The Digital Archive Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Curator at a national museum"
+            },
+            {
+                "name": "Bob",
+                "profile": "Curator at a national museum"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Digitize and share rare artifacts online",
+            "defect": "Delay digitization to focus on exclusive exhibitions"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both museums gain international recognition and increase accessibility to collections",
+                "Bob gets 3: both museums gain international recognition and increase accessibility to collections"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your museum gains recognition, but loses visitors to Bob's exclusive exhibitions",
+                "Bob gets 5: attracts more visitors with exclusive access and retains cultural prestige"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: attract more visitors with exclusive access and retain cultural prestige",
+                "Bob gets 0: his museum gains recognition, but loses visitors to your exclusive exhibitions"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: maintain current visitor numbers with limited online presence",
+                "Bob gets 1: maintain current visitor numbers with limited online presence"
+            ]
+        },
+        "description": "In the realm of cultural heritage, you and Bob, both curators at rival national museums, are faced with the decision of whether to digitize your rare artifacts and share them online. The process of digitization is costly and time-consuming but offers the potential of increased international recognition and accessibility to your collections. If both museums decide to digitize and share, they will both benefit from enhanced reputations and heightened interest from global audiences. However, if one museum chooses to delay digitization and instead focuses on exclusive physical exhibitions, it can capitalize on the appeal of exclusivity, attracting more visitors and maintaining its cultural prestige. Meanwhile, the museum that chose to digitize will lose a portion of its physical visitors to the competitor. If both museums delay digitization, they will maintain their current visitor numbers, but miss out on the opportunities for international acclaim and digital engagement.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Ink Supply Strategy: The Printing Press Maintenance Challenge",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "printing press technician"
+            },
+            {
+                "name": "Bob",
+                "profile": "printing press technician"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share your spare ink cartridges",
+            "defect": "Hoard your spare ink cartridges"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both maintain steady printing schedules, meeting all deadlines",
+                "Bob gets 3: both maintain steady printing schedules, meeting all deadlines"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you run out of ink and miss deadlines",
+                "Bob gets 5: Bob finishes extra jobs and receives bonuses"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: you complete additional jobs and earn bonuses",
+                "Bob gets 0: Bob runs out of ink and misses deadlines"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both struggle with minimal ink supply, barely completing essential tasks",
+                "Bob gets 1: both struggle with minimal ink supply, barely completing essential tasks"
+            ]
+        },
+        "description": "You and Bob, both technicians at a printing press, face shortages in ink supplies. If you both agree to share your spare cartridges, the printing schedules can continue smoothly, and all deadlines will be met. However, if one technician decides to hoard their cartridges, they can take on extra printing jobs, potentially earning bonuses, while the other struggles to meet deadlines. If both decide to keep their spare cartridges to themselves, the press will barely function, and only essential tasks will be completed with difficulty.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Vintage Tournament Sponsorship Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "retired tennis player"
+            },
+            {
+                "name": "Bob",
+                "profile": "retired tennis player"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Both agree to sponsor a new tennis tournament together",
+            "defect": "Choose to sponsor a separate tennis event individually"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: the tournament is successful, both gain prestige and attract new tennis fans",
+                "Bob gets 3: the tournament is successful, both gain prestige and attract new tennis fans"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you lose attention as Bob's event overshadows yours",
+                "Bob gets 5: Bob's solo event is a hit, gaining significant attention"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your solo event is a hit, gaining significant attention",
+                "Bob gets 0: Bob loses attention as your event overshadows his"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both events are mediocre, splitting the audience",
+                "Bob gets 1: both events are mediocre, splitting the audience"
+            ]
+        },
+        "description": "You and Bob, both retired tennis players, are presented with an opportunity to sponsor a vintage tennis tournament. If both of you choose to sponsor the event together, it promises to draw in a large crowd, boosting your public image and reigniting interest in your early careers. However, if one of you decides to host a separate event, that solo effort could capture more attention and accolades, leaving the other in the shadows. If both choose to go their separate ways, the divided interest might lead to mediocre success for both events.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Art Gallery Showdown: The Exhibition Scheduling Conflict",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "visual artist"
+            },
+            {
+                "name": "Bob",
+                "profile": "visual artist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Schedule your art exhibition during different months",
+            "defect": "Schedule your art exhibition during the same month"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both exhibitions attract their own audiences and both artists gain recognition",
+                "Bob gets 3: both exhibitions attract their own audiences and both artists gain recognition"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your exhibition is overshadowed and attracts fewer visitors",
+                "Bob gets 5: Bob's exhibition attracts more visitors, gaining more recognition"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your exhibition attracts more visitors, gaining more recognition",
+                "Bob gets 0: Bob's exhibition is overshadowed and attracts fewer visitors"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both exhibitions suffer from split audiences, resulting in mediocre turnout",
+                "Bob gets 1: both exhibitions suffer from split audiences, resulting in mediocre turnout"
+            ]
+        },
+        "description": "You and Bob, both talented visual artists, have the opportunity to showcase your newest collections in the city's most prestigious art galleries. The catch is that there are only two available months to schedule your exhibitions. If you both choose different months, each exhibition will shine, drawing its own crowd and enhancing both of your reputations. However, if you both choose to exhibit during the same month, audiences will be divided, and neither exhibition will reach its full potential. If one of you chooses the same month while the other opts for a different one, the one who goes solo will gain the majority of the art enthusiasts' attention.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Content Collaboration Quandary",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "vlogger"
+            },
+            {
+                "name": "Bob",
+                "profile": "vlogger"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Agree to create a joint video series",
+            "defect": "Focus on individual content creation"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: the series boosts both channels' viewership equally",
+                "Bob gets 3: the series boosts both channels' viewership equally"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you invest effort in the joint series but lose viewers to Bob's solo content",
+                "Bob gets 5: Bob attracts your audience with his solo content"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: you attract Bob's audience with your solo content",
+                "Bob gets 0: Bob invests effort in the joint series but loses viewers to your solo content"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both channels maintain their current viewers with modest growth",
+                "Bob gets 1: both channels maintain their current viewers with modest growth"
+            ]
+        },
+        "description": "You and Bob are both popular vloggers who have the opportunity to collaborate on a new video series. If both of you work together, the series could engage a larger audience and enhance both your channels' popularity. However, if one chooses to focus on individual content while the other works on the joint series, the one focusing on individual content could gain a larger share of viewers. If both decide to stick to their own content, their audience remains stable with only slight growth.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Food Distribution Dilemma: Aid Allocation Strategy",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "UNHCR officer"
+            },
+            {
+                "name": "Bob",
+                "profile": "UNHCR officer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share surplus food supplies with neighboring camp",
+            "defect": "Keep all surplus food supplies for own camp"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both camps receive sufficient food and reduce tension between camps",
+                "Bob gets 3: both camps receive sufficient food and reduce tension between camps"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your camp faces food shortages and increased frustration from residents",
+                "Bob gets 5: Bob's camp benefits from surplus, increasing their residents' satisfaction"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your camp benefits from surplus, increasing residents' satisfaction",
+                "Bob gets 0: Bob's camp faces shortages and increased frustration from residents"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both camps face scarcity, but manage to maintain basic order",
+                "Bob gets 1: both camps face scarcity, but manage to maintain basic order"
+            ]
+        },
+        "description": "You and Bob, both UNHCR officers overseeing adjacent refugee camps, have a dilemma regarding the allocation of surplus food supplies. If both of you decide to share the surplus, both camps will have enough resources to meet the needs of their residents, promoting harmony. However, if one decides to keep the surplus, that camp will thrive while the other struggles, risking unrest. If both choose not to share, neither camp suffers significantly, but resources remain tight, maintaining a fragile peace.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Confidential Research Project: Ethical Dilemma in Military Psychology",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "military psychologist"
+            },
+            {
+                "name": "Bob",
+                "profile": "military psychologist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share your findings with the other psychologist to ensure a comprehensive report",
+            "defect": "Withhold your findings in hopes of publishing a more impactful solo paper"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both psychologists create a well-rounded report that benefits the military's mental health program",
+                "Bob gets 3: both psychologists create a well-rounded report that benefits the military's mental health program"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your shared findings are overshadowed by Bob's solo publication, gaining him recognition",
+                "Bob gets 5: his solo publication stands out, earning him significant accolades"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your solo publication is highlighted, earning you significant accolades",
+                "Bob gets 0: his shared findings are overshadowed by your solo publication"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both publish incomplete reports, gaining minimal recognition",
+                "Bob gets 1: both publish incomplete reports, gaining minimal recognition"
+            ]
+        },
+        "description": "As military psychologists tasked with developing a new mental health program, you and Bob have been conducting parallel research studies. The funding agency has hinted at potentially awarding a prestigious grant for the most impactful findings. You both face a choice: share your data to create a comprehensive report or pursue individual publications. Sharing ensures a robust program beneficial to military personnel, while withholding could lead to individual recognition but risks program effectiveness. If both withhold, neither gains significant recognition, and the program lacks depth.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Sports Recovery Center Partnership",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "sports physiotherapist"
+            },
+            {
+                "name": "Bob",
+                "profile": "sports physiotherapist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share advanced recovery techniques and resources",
+            "defect": "Keep advanced recovery techniques and resources private"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both share resources leading to enhanced reputation and client satisfaction",
+                "Bob gets 3: both share resources leading to enhanced reputation and client satisfaction"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you share resources but lose clients to Bob's superior services",
+                "Bob gets 5: benefits from shared resources while keeping his own, attracting more clients"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: keep your techniques private while benefiting from Bob's, gaining more clients",
+                "Bob gets 0: he shares resources but loses clients to your superior services"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both keep resources private, maintaining current client base but with limited growth",
+                "Bob gets 1: both keep resources private, maintaining current client base but with limited growth"
+            ]
+        },
+        "description": "You and Bob operate in the same city, each running a sports recovery center. A local sports festival is approaching, promising an influx of clients seeking top-notch recovery services. You must decide whether to share your advanced techniques and resources with Bob. If both share, you each enhance your services, gaining a stellar reputation and satisfied clients. If one shares while the other keeps techniques private, the one who withholds gains a competitive edge, drawing more clients. If both keep their methods private, each maintains their current level of service, resulting in stable but uninspired client retention.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Fitness Challenge Sponsorship Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "gym owner"
+            },
+            {
+                "name": "Bob",
+                "profile": "gym owner"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Agree to host a joint fitness challenge event",
+            "defect": "Host an independent fitness challenge event"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both gyms host a successful event, gaining new memberships and media attention",
+                "Bob gets 3: both gyms host a successful event, gaining new memberships and media attention"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: spend resources on a joint event but lose potential members to Bob's event",
+                "Bob gets 5: attracts members from your gym due to independent event"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: attract members from Bob's gym due to independent event",
+                "Bob gets 0: spends resources on a joint event but loses potential members to your event"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both host events separately, minimal new memberships, and no media attention",
+                "Bob gets 1: both host events separately, minimal new memberships, and no media attention"
+            ]
+        },
+        "description": "In a competitive market where fitness trends are shifting towards community-based events, you and Bob, both gym owners, are presented with an opportunity to host a fitness challenge event. Recent studies have shown that joint events are drawing more attention and loyalty from members. By collaborating, you can increase exposure, attract media coverage, and potentially expand your membership base significantly. However, the risk of independent events attracting members from the competition remains high. If both choose to defect and hold separate events, the outcome is modest with minimal impact on membership numbers and public attention. This decision comes amid a growing trend of fitness enthusiasts seeking unique and large-scale community events.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Carbon Credit Crunch: The Emission Trading Quandary",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "climate policy analyst"
+            },
+            {
+                "name": "Bob",
+                "profile": "climate policy analyst"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Advocate for stricter carbon credit caps",
+            "defect": "Advocate for relaxed carbon credit caps"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both gain recognition for environmental leadership and improve air quality",
+                "Bob gets 3: both gain recognition for environmental leadership and improve air quality"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: lose credibility as environmentalist while industry stakeholders praise Bob",
+                "Bob gets 5: gains significant support from industry, enhancing reputation"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: gain support from industry, enhancing reputation",
+                "Bob gets 0: loses credibility as environmentalist while industry stakeholders praise you"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: maintain status quo with modest support from industry",
+                "Bob gets 1: maintain status quo with modest support from industry"
+            ]
+        },
+        "description": "You and Bob are tasked with advising on the future of carbon credit policies. The dilemma lies in whether to push for stricter caps, which would benefit the environment but could alienate industry stakeholders, or to advocate for looser caps, which would curry favor with industries but at the potential cost of environmental standards. The choice impacts not only immediate professional standing but also long-term environmental and reputational consequences.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Sponsorship Sprint: Cycling Endorsement Decision",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "professional cyclist"
+            },
+            {
+                "name": "Bob",
+                "profile": "professional cyclist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Agree to support a joint sponsorship campaign",
+            "defect": "Pursue personal sponsorship deals independently"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both gain wide-reaching sponsorships benefiting from joint popularity",
+                "Bob gets 3: both gain wide-reaching sponsorships benefiting from joint popularity"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you miss out on exclusive deals and Bob capitalizes on your cooperation",
+                "Bob gets 5: secures lucrative individual sponsorships taking advantage of your support"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: secure lucrative individual sponsorships taking advantage of Bob's support",
+                "Bob gets 0: misses out on exclusive deals while you capitalize"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both secure modest, individual deals with limited reach",
+                "Bob gets 1: both secure modest, individual deals with limited reach"
+            ]
+        },
+        "description": "Both you and Bob are top-tier cyclists approached by a major sports brand offering a joint sponsorship campaign. The deal promises extensive marketing reach if both commit. However, each of you also has the option to seek individual sponsorships, potentially more lucrative but risky if the other chooses to cooperate. The decision impacts your visibility and income, shaping future career opportunities.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Artifact Exhibition Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "cultural heritage guide"
+            },
+            {
+                "name": "Bob",
+                "profile": "cultural heritage guide"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Coordinate to share exclusive artifacts for a joint exhibition",
+            "defect": "Independently organize personal exhibitions with only local artifacts"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: the joint exhibition is a success, drawing large crowds and boosting the reputation of both guides",
+                "Bob gets 3: the joint exhibition is a success, drawing large crowds and boosting the reputation of both guides"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you provide exclusive artifacts for Bob's exhibition, gaining minimal attention and credit",
+                "Bob gets 5: his exhibition becomes a major attraction with your artifacts, significantly enhancing his standing"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your exhibition becomes a major attraction with Bob's artifacts, significantly enhancing your standing",
+                "Bob gets 0: he provides exclusive artifacts for your exhibition, gaining minimal attention and credit"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both exhibitions feature only local artifacts, attracting moderate interest and maintaining current reputations",
+                "Bob gets 1: both exhibitions feature only local artifacts, attracting moderate interest and maintaining current reputations"
+            ]
+        },
+        "description": "You and Bob, both cultural heritage guides, have access to exclusive artifacts that could enhance an upcoming exhibition. You face a decision: collaborate and share artifacts for a joint exhibition, or host individual exhibitions with only local pieces. If both collaborate, the exhibition flourishes, benefiting both. If one shares while the other retains exclusivity, the latter gains more prestige. If both choose independence, the exhibitions will be modest, attracting some interest but not maximizing potential.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Lake Competition: The Exclusive Water Show",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "water skiing coach"
+            },
+            {
+                "name": "Bob",
+                "profile": "water skiing coach"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Agree to plan separate show timings at the lake",
+            "defect": "Schedule shows at overlapping times to draw more spectators"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both shows attract a good number of spectators without conflict",
+                "Bob gets 3: both shows attract a good number of spectators without conflict"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your show has fewer spectators due to overlap and loss of interest",
+                "Bob gets 5: attracts most spectators and gains popularity due to prime timing"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: attract most spectators and gain popularity due to prime timing",
+                "Bob gets 0: his show has fewer spectators due to overlap and loss of interest"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both shows suffer from divided attention, leading to moderate attendance",
+                "Bob gets 1: both shows suffer from divided attention, leading to moderate attendance"
+            ]
+        },
+        "description": "You and Bob are water skiing coaches at a popular lake, each organizing water shows to attract tourists. The lake management allows show timings to be decided by the coaches. By cooperating and arranging separate timings, both can draw substantial crowds. If one decides to overlap their show timing to attract more spectators, they can gain popularity at the other's expense. However, if both schedule shows at the same time, it leads to divided spectator interest, and both shows attract only moderate crowds.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Community Park Renovation: The Grant Allocation Challenge",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "nonprofit leader"
+            },
+            {
+                "name": "Bob",
+                "profile": "nonprofit leader"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Propose a joint project to renovate the community park",
+            "defect": "Propose separate projects focusing on individual interests"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: secure joint funding and enhance community engagement",
+                "Bob gets 3: secure joint funding and enhance community engagement"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: lose primary funding and face community criticism",
+                "Bob gets 5: receives full funding for his project and recognition"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: receive full funding for your project and recognition",
+                "Bob gets 0: lose primary funding and face community criticism"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: secure minimal funding but projects remain limited",
+                "Bob gets 1: secure minimal funding but projects remain limited"
+            ]
+        },
+        "description": "You and Bob, both nonprofit leaders, are seeking funding to improve local amenities. The community offers a significant grant for a collaborative project to renovate the central park, which enhances community well-being. Alternatively, you can each propose individual projects for different community areas. If both choose to collaborate, the park is fully renovated, benefiting the community. If one proposes a separate project while the other collaborates, the individual project receives full funding and acclaim, while the collaborator's proposal is left unfunded. If both propose separate projects, the grant is split, leading to modest improvements but not significant community impact.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Event Planning Showdown: The Club Fundraiser Competition",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Club organizer"
+            },
+            {
+                "name": "Bob",
+                "profile": "Club organizer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Organize a joint charity event",
+            "defect": "Organize separate, competing charity events"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: the event is a great success, raising funds and gaining prestige for both clubs",
+                "Bob gets 3: the event is a great success, raising funds and gaining prestige for both clubs"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your club's event is overshadowed, and you lose potential attendees and funds",
+                "Bob gets 5: his event attracts more attendees and raises significant funds"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your event attracts more attendees and raises significant funds",
+                "Bob gets 0: his club's event is overshadowed, and he loses potential attendees and funds"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both events are mediocre, splitting the community's attention and funds",
+                "Bob gets 1: both events are mediocre, splitting the community's attention and funds"
+            ]
+        },
+        "description": "You and Bob, both organizing separate clubs, are planning fundraising events for the same cause in the community. If both decide to join forces, the event becomes a major success, benefiting both clubs equally. However, if one chooses to host their event independently while the other proposes collaboration, the independent event draws more attention and resources away from the other. If both choose to go solo, neither event gains the traction needed, resulting in a lukewarm response from the community.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Media Analysis: The Content Syndication Gamble",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "media analyst"
+            },
+            {
+                "name": "Bob",
+                "profile": "media analyst"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share exclusive media insights with Bob for joint publication",
+            "defect": "Retain media insights for an independent report"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: receive recognition for a comprehensive joint article that becomes popular",
+                "Bob gets 3: receive recognition for a comprehensive joint article that becomes popular"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: insights are overshadowed by Bob's exclusive report, losing potential clients",
+                "Bob gets 5: gains widespread acclaim and new clients by showcasing exclusive insights"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: gain widespread acclaim and new clients by showcasing exclusive insights",
+                "Bob gets 0: insights are overshadowed by your exclusive report, losing potential clients"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: publish a standard report with moderate reception, retaining current client base",
+                "Bob gets 1: publishes a standard report with moderate reception, retaining current client base"
+            ]
+        },
+        "description": "In the competitive world of media analysis, you and Bob have access to valuable insights about emerging trends. Both of you must decide whether to pool your insights for a potentially groundbreaking joint article or go solo for an independent report. A joint effort could elevate both reputations if successful, but holding back might allow one to capitalize on exclusivity, while both risking mediocrity if they choose not to share.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The New Land Cultivation Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "emigrant"
+            },
+            {
+                "name": "Bob",
+                "profile": "emigrant"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Plant and cultivate crops together",
+            "defect": "Secretly focus on improving personal land"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both you and Bob have a successful harvest, ensuring food security for both families",
+                "Bob gets 3: both you and Bob have a successful harvest, ensuring food security for both families"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your land suffers due to neglect while Bob's land thrives",
+                "Bob gets 5: Bob's land prospers, gaining extra resources from your land's neglect"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your land prospers, gaining extra resources from Bob's land's neglect",
+                "Bob gets 0: Bob's land suffers due to neglect while your land thrives"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both lands remain underdeveloped, ensuring minimal harvest and resources",
+                "Bob gets 1: both lands remain underdeveloped, ensuring minimal harvest and resources"
+            ]
+        },
+        "description": "You and Bob have recently migrated due to economic hardships in your previous home countries and have settled in a new land with fertile but untested soil. The local government has encouraged new settlers to cultivate the land to ensure food sustainability for the growing community. Cultivating the land together requires pooling resources and effort, such as sharing farming equipment and labor, and tackling large-scale tasks like irrigation and pest control. This cooperation is crucial as it maximizes the yield, ensuring a bountiful harvest for both families. However, focusing solely on your land may yield personal gain if the other fails to act similarly. If both choose self-interest, both lands risk underdevelopment, leaving both parties with limited resources.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Campaign Messaging Conundrum: The Political Ad Strategy",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "political strategist"
+            },
+            {
+                "name": "Bob",
+                "profile": "political strategist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Focus on positive campaign ads",
+            "defect": "Launch negative attack ads"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both campaigns gain public favor and increase voter turnout",
+                "Bob gets 3: both campaigns gain public favor and increase voter turnout"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your candidate's reputation suffers, losing potential voters",
+                "Bob gets 5: Bob's candidate gains undecided voters by discrediting your candidate"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your candidate gains undecided voters by discrediting Bob's candidate",
+                "Bob gets 0: Bob's candidate's reputation suffers, losing potential voters"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both campaigns tarnish each other's reputations, resulting in voter cynicism and lower turnout",
+                "Bob gets 1: both campaigns tarnish each other's reputations, resulting in voter cynicism and lower turnout"
+            ]
+        },
+        "description": "As political strategists for opposing candidates in a closely contested election, you and Bob face a strategic dilemma. You can choose to focus on positive messaging that highlights your candidate's strengths, hoping to inspire voters and improve public perception. Alternatively, you can launch negative ads aimed at undermining Bob's candidate. If both strategists choose positivity, both campaigns benefit from enhanced public esteem and voter engagement. However, if one chooses negativity while the other remains positive, the attacker sways undecided voters at the expense of the other's candidate. If both resort to negativity, mutual damage ensues, leading to widespread voter disillusionment.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Community Health Initiative: Vaccine Distribution Strategy",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Medicaid recipient"
+            },
+            {
+                "name": "Bob",
+                "profile": "Medicaid recipient"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Participate in a community-wide vaccination drive",
+            "defect": "Opt-out of the community vaccination drive for personal reasons"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: community health improves, reducing disease spread and healthcare costs",
+                "Bob gets 3: community health improves, reducing disease spread and healthcare costs"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you contribute to community health, but face increased risks as others do not participate",
+                "Bob gets 5: benefits from community immunity without participating"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: benefits from community immunity without participating",
+                "Bob gets 0: he contributes to community health, but faces increased risks as others do not participate"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: minimal community immunity, higher disease spread, and increased healthcare costs",
+                "Bob gets 1: minimal community immunity, higher disease spread, and increased healthcare costs"
+            ]
+        },
+        "description": "You and Bob, both Medicaid recipients, are part of a community facing a potential health crisis. A local health initiative offers free vaccinations to reduce disease outbreak. By participating, you both contribute to a healthier community. However, opting out saves personal time but risks community health. The overall community health and individual safety depend on the collective choices made by you and Bob.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Restaurant Rivalry: Menu Innovation Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "owner of a popular local restaurant"
+            },
+            {
+                "name": "Bob",
+                "profile": "owner of another popular local restaurant"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on a new seasonal menu",
+            "defect": "Develop a unique menu independently"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both restaurants attract customers with a unique joint menu event",
+                "Bob gets 3: both restaurants attract customers with a unique joint menu event"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your collaborative menu is overshadowed by Bob's unique offering, losing customers",
+                "Bob gets 5: attracts more customers with a distinct menu, gaining an edge"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: attract more customers with a distinct menu, gaining an edge",
+                "Bob gets 0: his collaborative menu is overshadowed by your unique offering, losing customers"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both restaurants maintain usual customer levels with independent menus",
+                "Bob gets 1: both restaurants maintain usual customer levels with independent menus"
+            ]
+        },
+        "description": "You and Bob, owners of competing local restaurants, are considering whether to collaborate on a seasonal menu to attract more customers. A joint menu could draw significant interest and boost business for both. However, creating a unique menu independently could set one restaurant apart, potentially attracting more patrons. If both choose to go solo, customer interest remains steady, but neither gains a competitive edge.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "App Rating Challenge: The Reviewer Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "App store reviewer"
+            },
+            {
+                "name": "Bob",
+                "profile": "App store reviewer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Give honest app reviews",
+            "defect": "Give overly positive reviews to increase app popularity"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: app store maintains credibility and both reviewers are respected for honesty",
+                "Bob gets 3: app store maintains credibility and both reviewers are respected for honesty"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your honest reviews are overshadowed, risking your reputation",
+                "Bob gets 5: gains popularity for being the 'go-to' reviewer, but at the cost of integrity"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: become a popular reviewer for inflating app ratings, but at the cost of integrity",
+                "Bob gets 0: his honest reviews are overshadowed, risking his reputation"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both become known for inflated reviews, reducing overall trust in the app store but maintaining a niche audience",
+                "Bob gets 1: both become known for inflated reviews, reducing overall trust in the app store but maintaining a niche audience"
+            ]
+        },
+        "description": "In a highly competitive app store environment, you and Bob are reviewers who face constant pressure from app developers. Developers offer incentives such as free premium app versions, cash rewards, or exclusive invitations to tech events in exchange for overly positive reviews. The store's credibility hinges on honest reviews. If both you and Bob remain honest, mutual respect and store integrity are preserved. If one inflates reviews while the other stays honest, the inflator gains recognition and rewards. If both inflate, the store's reputation suffers, though you both cater to a specific audience. Despite the potential short-term gains, maintaining a niche audience with inflated reviews risks longer-term credibility and audience trust.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Grant Proposal Strategy",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "organizational member"
+            },
+            {
+                "name": "Bob",
+                "profile": "organizational member"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share research data and insights",
+            "defect": "Withhold research data and insights"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: joint proposal is strong, both receive equal recognition and funding",
+                "Bob gets 3: joint proposal is strong, both receive equal recognition and funding"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: proposal is weaker, Bob's section stands out, Bob receives most recognition and funding",
+                "Bob gets 5: proposal is stronger, receives most recognition and funding"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: proposal is stronger, receive most recognition and funding",
+                "Bob gets 0: proposal is weaker, your section stands out, you receive most recognition and funding"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: proposal is weak, both receive minimal recognition and funding",
+                "Bob gets 1: proposal is weak, both receive minimal recognition and funding"
+            ]
+        },
+        "description": "You and Bob, both members of the same organization, are tasked with submitting a joint grant proposal. The success of the proposal hinges on the quality of the research data and insights provided. If both of you share your data, the proposal is robust, and both of you gain recognition and funding. If one withholds data while the other shares, the one who withholds may appear more competent and secure more rewards. If both withhold, the proposal is weak, and both receive minimal benefits.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Vaccination Campaign Strategy",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "community health advocate"
+            },
+            {
+                "name": "Bob",
+                "profile": "community health advocate"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share the vaccine supply equitably between neighborhoods",
+            "defect": "Prioritize your neighborhood for the majority of the vaccine supply"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both neighborhoods receive adequate vaccines, public health improves, and both advocates are praised",
+                "Bob gets 3: both neighborhoods receive adequate vaccines, public health improves, and both advocates are praised"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your neighborhood receives fewer vaccines, public health suffers, and you face criticism",
+                "Bob gets 5: Bob's neighborhood receives more vaccines, public health improves, and Bob gains recognition"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your neighborhood receives more vaccines, public health improves, and you gain recognition",
+                "Bob gets 0: Bob's neighborhood receives fewer vaccines, public health suffers, and Bob faces criticism"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both neighborhoods receive an uneven supply, public health stagnates, and both advocates face moderate criticism",
+                "Bob gets 1: both neighborhoods receive an uneven supply, public health stagnates, and both advocates face moderate criticism"
+            ]
+        },
+        "description": "You and Bob, both community health advocates, are tasked with managing a limited supply of vaccines for your respective neighborhoods. If both of you decide to share the supply equitably, both communities are healthier, and both of you are seen as effective leaders. However, if you prioritize your neighborhood's needs over sharing, you risk leaving Bob's community vulnerable, potentially at a cost. If Bob does the same, your community suffers. Should both of you prioritize your neighborhoods, neither community fully benefits, and both of you face criticism.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Workshop Scheduling Conundrum",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "career coach"
+            },
+            {
+                "name": "Bob",
+                "profile": "career coach"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Schedule your workshops on different weekends",
+            "defect": "Schedule your workshops on the same weekend"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both workshops are well-attended, boosting your reputation",
+                "Bob gets 3: both workshops are well-attended, boosting his reputation"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your workshop attendance suffers, diminishing your reputation",
+                "Bob gets 5: his workshop attracts more participants, enhancing his reputation"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your workshop attracts more participants, enhancing your reputation",
+                "Bob gets 0: his workshop attendance suffers, diminishing his reputation"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both workshops have mediocre attendance and neither gains much reputation",
+                "Bob gets 1: both workshops have mediocre attendance and neither gains much reputation"
+            ]
+        },
+        "description": "You and Bob are both career coaches who regularly host weekend workshops for aspiring professionals. You both have the opportunity to schedule your next workshops. If you both choose different weekends, each of you can attract a full house, enhancing your standing in the coaching community. However, if you both schedule on the same weekend, you'll compete for the same audience, leading to fewer attendees and less impact for both. If one of you chooses a different weekend while the other sticks to the original plan, the one who stays gets the majority of attendees.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Harmonious High Notes: The Opera Performance Challenge",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "opera singer"
+            },
+            {
+                "name": "Bob",
+                "profile": "opera singer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Practice vocal duets together",
+            "defect": "Focus on solo arias"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both singers deliver a stunning duet that receives acclaim",
+                "Bob gets 3: both singers deliver a stunning duet that receives acclaim"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your duet lacks harmony and Bob shines with his solo",
+                "Bob gets 5: Bob's solo performance steals the spotlight"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your solo performance captivates the audience",
+                "Bob gets 0: Bob struggles with the duet without your support"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both perform adequately on their own but fail to impress",
+                "Bob gets 1: both perform adequately on their own but fail to impress"
+            ]
+        },
+        "description": "You and Bob, both leading opera singers, are scheduled to perform in a prestigious opera house. You face a choice: either practice together to master a challenging duet that could enchant the audience or focus on perfecting your own solo arias. If both singers practice together, they deliver a harmonious performance that wins the hearts of the audience. If one opts for solo focus while the other practices the duet, the soloist captures the audience's attention, leaving the duet partner struggling. If both choose solos, the performance is decent but doesn't leave a lasting impression.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Eco-Friendly Packaging Challenge",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "CEO of a beverage company"
+            },
+            {
+                "name": "Bob",
+                "profile": "CEO of a beverage company"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Switch to eco-friendly packaging",
+            "defect": "Continue using conventional packaging"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both companies enhance brand image and meet consumer demands for sustainability",
+                "Bob gets 3: both companies enhance brand image and meet consumer demands for sustainability"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: higher costs reduce your market share as Bob's cheaper products attract more consumers",
+                "Bob gets 5: gains market share with lower costs and prices"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: retain market share by offering cheaper products while Bob incurs higher costs",
+                "Bob gets 0: higher costs lead to a loss of market share to your cheaper products"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: maintain current market position but miss out on potential eco-conscious consumers",
+                "Bob gets 1: maintain current market position but miss out on potential eco-conscious consumers"
+            ]
+        },
+        "description": "You and Bob, leading beverage company CEOs, face a growing consumer demand for sustainable practices. The decision to switch to eco-friendly packaging could enhance your brand's image and attract eco-conscious consumers. However, this switch involves higher costs. If both switch, both benefit from an improved brand image. If only one switches, the other retains market share by keeping costs low. If neither switches, both maintain their current market but risk losing future eco-conscious consumers.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Film Festival Critique Conundrum: Director's Cut",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "independent film critic"
+            },
+            {
+                "name": "Bob",
+                "profile": "independent film critic"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Highlight the strengths of indie films in your reviews",
+            "defect": "Focus on the weaknesses of indie films in your reviews"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both earn goodwill and respect from filmmakers and the audience for constructive criticism",
+                "Bob gets 3: both earn goodwill and respect from filmmakers and the audience for constructive criticism"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: seen as lacking critical depth, suffer in reputation while Bob is praised for candor",
+                "Bob gets 5: becomes known for his critical insight, gaining more followers"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: becomes known for critical insight, gaining more followers",
+                "Bob gets 0: seen as lacking critical depth, suffers in reputation"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both are viewed as overly harsh, losing some audience trust but maintaining a critical reputation",
+                "Bob gets 1: both are viewed as overly harsh, losing some audience trust but maintaining a critical reputation"
+            ]
+        },
+        "description": "At the prestigious Indie Film Festival, you and Bob, both renowned independent film critics, are invited to provide your reviews. Known for your independent stances, you now face a choice: support these emerging filmmakers by highlighting their strengths or maintain a discerning, critical edge by focusing on their film's weaknesses. If both choose to emphasize strengths, you gain mutual respect from filmmakers and the audience. If one criticizes while the other supports, the criticizer is seen as more insightful. If both criticize, you retain your critical reputation but risk alienating some of your audience.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Marketing Strategy Showdown: The Product Launch Gamble",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "market strategist"
+            },
+            {
+                "name": "Bob",
+                "profile": "market strategist"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Develop joint marketing campaign",
+            "defect": "Launch solo marketing campaign"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: shared resources result in a successful campaign and increased brand recognition",
+                "Bob gets 3: shared resources result in a successful campaign and increased brand recognition"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your resources are spent on a joint campaign, but Bob's solo campaign diverts attention",
+                "Bob gets 5: reaps the benefits of your resources while gaining the spotlight with his solo campaign"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your solo campaign outshines Bob's joint effort, gaining maximum market share",
+                "Bob gets 0: loses resources to a joint campaign while your solo campaign dominates the market"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both campaigns split the market, leading to mediocre results",
+                "Bob gets 1: both campaigns split the market, leading to mediocre results"
+            ]
+        },
+        "description": "You and Bob, both market strategists at competing firms, are set to launch new products simultaneously. A joint marketing campaign could boost both brands, but if one chooses to go solo, they might capture the market's full attention. If both choose solo campaigns, they risk diluting their efforts and achieving only moderate success.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Research Assistant's Choice: The Data Integrity Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "research assistant in a pharmaceutical company"
+            },
+            {
+                "name": "Bob",
+                "profile": "research assistant in a pharmaceutical company"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Report accurate trial data",
+            "defect": "Fabricate trial data for better results"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both are praised for integrity, enhancing career prospects",
+                "Bob gets 3: both are praised for integrity, enhancing career prospects"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your data is questioned, and your reputation suffers",
+                "Bob gets 5: receives accolades for outstanding results"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: receive accolades for outstanding results",
+                "Bob gets 0: his data is questioned, and his reputation suffers"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both face scrutiny, but no immediate consequences",
+                "Bob gets 1: both face scrutiny, but no immediate consequences"
+            ]
+        },
+        "description": "You and Bob, both research assistants at a pharmaceutical company, are tasked with reporting data from crucial drug trials. The results are key to future promotions and career advancement. If both report accurately, the research is credible, helping both professionally. If one fabricates data while the other reports truthfully, the fabricator gains favor for exceptional results while the honest assistant's integrity is questioned. If both fabricate, the results lack credibility, but both avoid immediate fallout, risking future opportunities.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Recital Rehearsal Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "music tutor"
+            },
+            {
+                "name": "Bob",
+                "profile": "music tutor"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share your sheet music and practice tips with Bob",
+            "defect": "Keep your sheet music and practice tips secret from Bob"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both students perform well, impress parents, and enroll more students",
+                "Bob gets 3: both students perform well, impress parents, and enroll more students"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your student underperforms and loses interest",
+                "Bob gets 5: Bob's student excels and attracts more students"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your student excels and attracts more students",
+                "Bob gets 0: Bob's student underperforms and loses interest"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both students perform adequately, but neither attracts new interest",
+                "Bob gets 1: both students perform adequately, but neither attracts new interest"
+            ]
+        },
+        "description": "You and Bob, both music tutors, are preparing your students for an important recital. You each have unique sheet music and practice tips that could significantly benefit the other's student. If both of you decide to share your resources, both students excel, impressing the audience and attracting more learners. However, if one shares while the other withholds, the sharing tutor's student may underperform, while the other gains an edge. If neither shares, both students perform adequately but fail to stand out.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Campus Cuisine Challenge: The Culinary Competition",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "fashion marketing student managing a popular food truck on campus"
+            },
+            {
+                "name": "Bob",
+                "profile": "fashion marketing student managing a rival food truck on campus"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate to create a joint menu featuring both trucks' specialties",
+            "defect": "Launch an exclusive menu independently to outshine the competition"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both trucks attract more customers, sharing the increased foot traffic",
+                "Bob gets 3: both trucks attract more customers, sharing the increased foot traffic"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your menu is overshadowed by Bob's exclusive offerings, losing customers",
+                "Bob gets 5: gains significant traction with his exclusive menu, attracting more customers"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your exclusive menu draws in a larger crowd, overshadowing Bob",
+                "Bob gets 0: his offerings are less appealing compared to your exclusive menu"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both trucks see minimal customer increase as offerings are too similar",
+                "Bob gets 1: both trucks see minimal customer increase as offerings are too similar"
+            ]
+        },
+        "description": "As fashion marketing students in charge of food trucks on a lively college campus, you and Bob have the opportunity to collaborate on a joint menu that highlights the best dishes from both trucks. Should both of you cooperate, the combined menu will attract more customers, benefiting both businesses equally. However, if one chooses to launch an exclusive menu independently, that truck might dominate the market, leaving the other struggling. If both trucks decide to go solo with exclusive menus, the competition will be fierce, resulting in only a slight uptick in customer numbers due to divided interest.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Lunar Resource Allocation: The Moon Base Supply Decision",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "NASA project lead for lunar habitat development"
+            },
+            {
+                "name": "Bob",
+                "profile": "NASA project lead for lunar research station"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Agree to share lunar supply resources equally",
+            "defect": "Secure more lunar supply resources for your own project"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both projects receive adequate resources, leading to successful mission advancements",
+                "Bob gets 3: both projects receive adequate resources, leading to successful mission advancements"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your project suffers due to resource scarcity, hindering progress",
+                "Bob gets 5: Bob's project benefits greatly from extra resources, achieving significant milestones"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your project benefits greatly from extra resources, achieving significant milestones",
+                "Bob gets 0: Bob's project suffers due to resource scarcity, hindering progress"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both projects receive limited resources, slowing progress and leading to minor advancements",
+                "Bob gets 1: both projects receive limited resources, slowing progress and leading to minor advancements"
+            ]
+        },
+        "description": "You and Bob are leading crucial NASA projects on the Moon. Limited resources must be allocated wisely to ensure the success of both the lunar habitat development and the research station. The mission's success depends on avoiding resource scarcity, which could jeopardize technological breakthroughs and astronaut safety. If both collaborate, the mission advances steadily. However, if one project takes more resources, it may succeed at the cost of the other, potentially impacting long-term lunar exploration goals.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Haunting Harmony: The Ethereal Energy Exchange",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "ghost"
+            },
+            {
+                "name": "Bob",
+                "profile": "ghost"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share haunting techniques and energy resources",
+            "defect": "Withhold haunting techniques and absorb energy alone"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both ghosts maximize haunting efficiency, ensuring a peaceful coexistence",
+                "Bob gets 3: both ghosts maximize haunting efficiency, ensuring a peaceful coexistence"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your energy is drained, leaving you weak and unable to haunt effectively",
+                "Bob gets 5: gains superior haunting power, dominating the spectral territory"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your haunting becomes more powerful, overshadowing Bob",
+                "Bob gets 0: his energy is drained, leaving him weak and ineffective"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both ghosts retain minimal energy, leading to a stalemate in haunting efforts",
+                "Bob gets 1: both ghosts retain minimal energy, leading to a stalemate in haunting efforts"
+            ]
+        },
+        "description": "In the spectral realm, you and Bob are ghosts tasked with haunting a shared territory. To maintain balance, ghosts must decide whether to share their unique haunting techniques and pool their spiritual energy. If both choose to share, they enhance their haunting abilities, maintaining harmony. If one chooses to share while the other withholds, the withholding ghost absorbs more energy, gaining dominance. If both withhold, they conserve just enough energy to maintain a fragile status quo, but their haunting efforts remain unimpressive.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Visa Application Approval Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "immigration lawyer"
+            },
+            {
+                "name": "Bob",
+                "profile": "immigration lawyer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Submit visa applications with standard fees",
+            "defect": "Undercut fees and expedite certain applications"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: maintain standard fees, both firms keep a steady client base",
+                "Bob gets 3: maintain standard fees, both firms keep a steady client base"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: lose clients to Bob's expedited services",
+                "Bob gets 5: gains extra clients by offering expedited services at lower fees"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: gain extra clients by offering expedited services at lower fees",
+                "Bob gets 0: lose clients to your expedited services"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both lower fees, resulting in minimal profit",
+                "Bob gets 1: both lower fees, resulting in minimal profit"
+            ]
+        },
+        "description": "You and Bob are immigration lawyers in a bustling city. Each month, you both face the decision of how to handle visa applications. If both of you submit applications with standard fees, your businesses remain stable. However, if one of you decides to undercut the fees and offer expedited services, that lawyer can gain additional clients at the expense of the other. If you both undercut fees, you end up in a price war, resulting in reduced profits for both firms.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Curriculum Clash: The Educational Conference Conundrum",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "educational administrator"
+            },
+            {
+                "name": "Bob",
+                "profile": "educational administrator"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Align conference sessions to focus on collaborative educational strategies",
+            "defect": "Design conference sessions to highlight individual achievements and methods"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: the conference is recognized for its innovative collaborations, boosting reputation",
+                "Bob gets 3: the conference is recognized for its innovative collaborations, boosting reputation"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your sessions are overshadowed, losing potential partnerships",
+                "Bob gets 5: his sessions attract more attention, gaining partnerships"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your sessions attract more attention, gaining partnerships",
+                "Bob gets 0: his sessions are overshadowed, losing potential partnerships"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both have moderate success, maintaining status quo",
+                "Bob gets 1: both have moderate success, maintaining status quo"
+            ]
+        },
+        "description": "You and Bob, as educational administrators, are tasked with organizing a major educational conference. You must decide whether to focus on collaborative strategies or highlight individual achievements in your respective sessions. If both focus on collaboration, the conference is praised for innovation, enhancing both reputations. If one chooses collaboration while the other highlights individual achievements, the latter gains attention and potential partnerships, while the former is overshadowed. If both focus on individual achievements, the conference proceeds without distinction, maintaining the current level of success.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Wildlife Adventure Booking Challenge",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "tour operator"
+            },
+            {
+                "name": "Bob",
+                "profile": "tour operator"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Offer a joint package deal for a safari tour",
+            "defect": "Offer a solo package without including the other operator"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both operators share the customer base and increase tour quality",
+                "Bob gets 3: both operators share the customer base and increase tour quality"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your offer is undermined, losing potential bookings",
+                "Bob gets 5: attracts more customers with an exclusive package"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: attract more customers with an exclusive package",
+                "Bob gets 0: his offer is undermined, losing potential bookings"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both operators maintain their separate offers, leading to fewer bookings",
+                "Bob gets 1: both operators maintain their separate offers, leading to fewer bookings"
+            ]
+        },
+        "description": "As a tour operator, you and Bob face a decision on how to handle the upcoming tourist season. By joining forces and offering a joint safari package, you both have the opportunity to enhance the experience and draw more tourists. However, each of you might decide to go solo with exclusive packages, hoping to capture a larger market share individually. If both choose solo offers, the competition may saturate the market, leading to fewer bookings overall.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Cinematic Festival Showdown: The Documentary Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "cinematographer"
+            },
+            {
+                "name": "Bob",
+                "profile": "cinematographer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share equipment and resources for film production",
+            "defect": "Withhold equipment and resources to focus solely on personal project"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both films are completed with high quality and receive recognition at the festival",
+                "Bob gets 3: both films are completed with high quality and receive recognition at the festival"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your film suffers from lack of equipment, while Bob's film excels and wins top awards",
+                "Bob gets 5: his film excels with your resources and wins top awards"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your film excels with Bob's resources and wins top awards",
+                "Bob gets 0: his film suffers from lack of equipment, while your film excels"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both films are mediocre due to limited resources and receive little attention",
+                "Bob gets 1: both films are mediocre due to limited resources and receive little attention"
+            ]
+        },
+        "description": "You and Bob, both talented cinematographers, are preparing documentaries for an upcoming film festival. The festival is a significant platform for recognition, and both of you have limited access to high-quality equipment. If you both decide to share resources, both documentaries will be completed with exceptional quality, enhancing your reputations. However, if one of you withholds resources while the other shares, the one with better equipment will produce a superior documentary and likely win major accolades. If neither of you shares, both films will end up being subpar, gaining minimal attention at the festival.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Art Exhibition Expansion: The Curatorial Quandary",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "curator"
+            },
+            {
+                "name": "Bob",
+                "profile": "curator"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share valuable artifacts and collaborate on a joint exhibition",
+            "defect": "Keep all valuable artifacts for a solo exhibition"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both exhibitions attract significant media attention and public admiration",
+                "Bob gets 3: both exhibitions attract significant media attention and public admiration"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your exhibition lacks uniqueness and fails to attract visitors",
+                "Bob gets 5: his exhibition attracts all the media spotlight and visitor traffic"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your exhibition becomes highly acclaimed and draws large crowds",
+                "Bob gets 0: his exhibition is overshadowed and poorly attended"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both exhibitions are mediocre with average attendance",
+                "Bob gets 1: both exhibitions are mediocre with average attendance"
+            ]
+        },
+        "description": "You and Bob, both curators at prestigious art museums, are planning simultaneous exhibitions. A rare set of artifacts can significantly boost the appeal of an exhibition. If both curators agree to share artifacts and collaborate, both exhibitions will thrive and gain recognition. If one decides to keep all artifacts for themselves, their exhibition will flourish while the other's will falter. If neither shares, both exhibitions will be underwhelming, attracting only moderate attention.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Green Policy Rivalry: The Energy Reform Challenge",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Policy advocate specializing in renewable energy"
+            },
+            {
+                "name": "Bob",
+                "profile": "Policy advocate specializing in renewable energy"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Collaborate on a unified green energy bill",
+            "defect": "Push for individual policy agendas"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: the joint bill gains national attention and funding, boosting both your reputations",
+                "Bob gets 3: the joint bill gains national attention and funding, boosting both your reputations"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your collaborative efforts are overshadowed, losing potential support and credibility",
+                "Bob gets 5: his individual agenda captures all the media and public support"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your individual agenda captures all the media and public support",
+                "Bob gets 0: his collaborative efforts are overshadowed, losing potential support and credibility"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both agendas receive limited attention, maintaining current influence without growth",
+                "Bob gets 1: both agendas receive limited attention, maintaining current influence without growth"
+            ]
+        },
+        "description": "In a competitive political landscape, you and Bob are leading advocates for renewable energy policies. The government has allocated a significant grant for promising green initiatives, but only for the most impactful proposals. You can either join forces with Bob to present a unified and powerful green energy bill, or you can prioritize your own agenda, hoping to capture the spotlight. Collaboration could lead to substantial gains in funding and reputation, but if one defects while the other collaborates, the defector stands to gain all the accolades and resources. If both focus on their individual agendas, neither proposal gains enough traction, leaving both parties with stagnant influence in the policy arena.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Trade Show Booth Dilemma: A Tale of Two Developers",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "business developer"
+            },
+            {
+                "name": "Bob",
+                "profile": "business developer"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share booth space and resources at the tech trade show",
+            "defect": "Secure separate booth spaces and retain all resources"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: share costs and attract more visitors with a larger combined presentation",
+                "Bob gets 3: share costs and attract more visitors with a larger combined presentation"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: bear full costs of your booth and attract fewer visitors",
+                "Bob gets 5: full resources for his booth and draws visitors away from you"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: full resources for your booth and draw visitors away from Bob",
+                "Bob gets 0: bear full costs of his booth and attract fewer visitors"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: each bears full costs and resources are stretched thin, resulting in fewer visitors overall",
+                "Bob gets 1: each bears full costs and resources are stretched thin, resulting in fewer visitors overall"
+            ]
+        },
+        "description": "You and Bob, both business developers, are preparing for a major tech trade show. The decision lies in whether to combine efforts and share a booth, maximizing space and resources, or to go it alone with individual booths. Sharing would mean lower costs and potentially greater visitor engagement due to a larger, more impressive setup. However, working separately could mean more individual control and potentially more direct engagement with attendees, but at a higher cost and with the risk of attracting fewer visitors overall.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "Community Garden Expansion: The Land Allocation Decision",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "retired elementary school teacher"
+            },
+            {
+                "name": "Bob",
+                "profile": "retired elementary school teacher"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "agree to jointly expand the community garden using both plots of land",
+            "defect": "use your personal plot for private purposes, like a personal shed or leisure area"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both plots are used for the garden, increasing community involvement and fresh produce for all",
+                "Bob gets 3: both plots are used for the garden, increasing community involvement and fresh produce for all"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: you contribute your plot but Bob uses his for personal use, limiting the garden's growth",
+                "Bob gets 5: Bob benefits from your contribution and enjoys his personal use of his plot"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: you enjoy personal use of your plot while benefiting from Bob's contribution to the garden",
+                "Bob gets 0: Bob contributes his plot but the garden's growth is limited by your personal use"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both plots are used for personal purposes, maintaining status quo without community benefits",
+                "Bob gets 1: both plots are used for personal purposes, maintaining status quo without community benefits"
+            ]
+        },
+        "description": "You and Bob, both retired teachers with adjacent plots of land, must decide whether to expand the community garden into a shared project. If both agree, the garden flourishes, boosting community spirit and providing fresh produce. If one opts out for personal use, they gain leisure space while the garden suffers. If both opt for personal use, community benefits are lost, but personal desires are met.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    },
+    {
+        "scenario": "The Robotics Competition Resource Dilemma",
+        "participants": [
+            {
+                "name": "You",
+                "profile": "Robotics enthusiast"
+            },
+            {
+                "name": "Bob",
+                "profile": "Robotics enthusiast"
+            }
+        ],
+        "behavior_choices": {
+            "cooperate": "Share advanced component designs",
+            "defect": "Keep component designs secret"
+        },
+        "payoff_matrix": {
+            "You: cooperate , Bob: cooperate": [
+                "You get 3: both robots perform optimally, impressing judges equally",
+                "Bob gets 3: both robots perform optimally, impressing judges equally"
+            ],
+            "You: cooperate , Bob: defect": [
+                "You get 0: your robot underperforms while Bob's robot excels, attracting attention",
+                "Bob gets 5: his robot excels, attracting attention and potential sponsorships"
+            ],
+            "You: defect , Bob: cooperate": [
+                "You get 5: your robot excels, attracting attention and potential sponsorships",
+                "Bob gets 0: his robot underperforms while yours excels, leaving him unnoticed"
+            ],
+            "You: defect , Bob: defect": [
+                "You get 1: both robots perform adequately, receiving limited interest",
+                "Bob gets 1: both robots perform adequately, receiving limited interest"
+            ]
+        },
+        "description": "In a prestigious robotics competition, you and Bob must decide whether to share your cutting-edge component designs. The competition demands that the robots complete a series of intricate tasks, such as navigating a maze and assembling a structure, all under tight time constraints. Sharing your designs could lead to mutual success and equal recognition from the judges. However, keeping your designs secret might give you an advantage, either by outperforming Bob or maintaining a unique feature of your robot. If both decide to keep their designs secret, the robots will perform adequately, but neither will stand out in the competition.",
+        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+        "game_name": "Prisoners_Dilemma"
+    }
+]

@@ -1,0 +1,18 @@
+{
+    "scenario": "Community Garden Decision",
+    "description": "You and Bob are retired elementary school teachers living in a small town. The community has decided to create a new garden space, and they need volunteers to help with its initial setup. You both have a choice to make: whether to participate and help with the setting up of the garden or to continue with your personal activities during your free time. If both decide to volunteer, the garden can be set up quickly, and you may receive public recognition for your contribution. If one volunteers while the other doesn't, the volunteer may feel burdened with extra work while the other enjoys leisure time. If neither volunteers, the garden project will be delayed but neither will have any additional responsibilities.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Retired Elementary School Teacher"
+        },
+        {
+            "name": "Bob",
+            "profile": "Retired Elementary School Teacher"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Volunteer for the garden setup",
+        "defect": "Choose leisure and avoid volunteering"
+    }
+}

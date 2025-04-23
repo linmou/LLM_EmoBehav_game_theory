@@ -1,0 +1,1022 @@
+[
+    {
+        "reasoning": "Mold growing on food is a classic example of a disease trigger. It is associated with contamination and the potential for illness if consumed, which aligns with the 'Disease' aspect of the trigger type. Additionally, it involves oral incorporation as it relates to food that is typically ingested.",
+        "stimulus": "You find mold growing on your food in the fridge.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves stepping on something sticky in a public restroom, which can evoke feelings of disgust or concern about cleanliness and hygiene. This relates to the concept of 'Disease' as public restrooms are often associated with germs and potential contamination. Therefore, the trigger type that best fits this stimulus is ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You step on something sticky in a public restroom.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves the discovery of trash in a natural setting, which can be associated with environmental pollution and the potential spread of disease due to waste. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You discover a heap of trash dumped in a beautiful natural setting.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of spitting on the sidewalk can be associated with 'Disease' due to the potential spread of germs and unsanitary conditions. Additionally, it can be seen as an 'Interpersonal' issue because it involves a social interaction where someone is behaving in a way that might be considered disrespectful or inconsiderate. Therefore, the stimulus fits the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "Someone spits on the sidewalk right in front of you.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves an overwhelming odor of decay, which is often associated with disease or decomposition. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You smell an overwhelming odor of decay while walking down the street.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Finding an insect in your meal can trigger feelings of disgust and concern about hygiene and contamination, which relates to the concept of 'Disease'. Additionally, the idea of accidentally consuming the insect relates to 'Oral incorporation'. Therefore, this stimulus fits the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You find an insect in your meal at a restaurant.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of picking one's nose and eating it can be associated with disgust, which is often linked to the concept of 'Oral incorporation' as it involves putting something considered unclean or socially unacceptable into one's mouth. Additionally, it can be seen as a minor threat to hygiene, thus relating to 'Disease'.",
+        "stimulus": "You see someone pick their nose and eat it.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Finding a hair in your soup can trigger feelings of disgust, which is related to the concept of contamination or impurity. This aligns with the 'Oral incorporation' aspect of the trigger type, as it involves something undesirable being incorporated into food that is meant to be consumed.",
+        "stimulus": "You find a hair in your soup.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves witnessing someone sneeze without covering their mouth, which can be associated with the spread of germs and potential illness. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You witness someone sneeze without covering their mouth.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves an animal (a dog) engaging in a natural bodily function (relieving itself) in a public space (children's playground). This situation can evoke feelings related to the natural, animalistic behaviors that humans might find uncomfortable or inappropriate in certain settings. It does not directly relate to threat, disease, or oral incorporation, nor does it involve interpersonal issues, misfortune, or immorality. However, it does touch on the concept of 'Animal Nature' as it involves natural animal behavior in a human context.",
+        "stimulus": "You see a dog relieve itself in a children's playground.",
+        "trigger_type": "['Mortality', 'Animal Nature']"
+    },
+    {
+        "reasoning": "The stimulus involves a public swimming pool that is murky and dirty, which can be associated with concerns about cleanliness and potential health risks. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'], as dirty water can harbor pathogens that pose a threat to health.",
+        "stimulus": "You discover that the public swimming pool is murky and dirty.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Finding chewed gum under a public table can evoke feelings of disgust due to the potential for disease transmission and the uncleanliness associated with someone else's saliva. This aligns with the 'Disease' trigger type, which is part of the ['Threat', 'Disease', 'Oral incorporation'] category.",
+        "stimulus": "You find chewed gum under a public table.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves the smell of rotten eggs, which is often associated with decay or spoilage. This can be linked to the concept of disease or contamination, as rotten smells are often indicators of something being unclean or potentially harmful. Therefore, it fits the trigger type related to disease.",
+        "stimulus": "You smell rotten eggs emanating from a nearby drain.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone coughing and touching communal items without sanitizing, which can be associated with the spread of germs and illness. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You see someone coughing and touching communal items without sanitizing their hands.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The presence of maggots in a garbage can is typically associated with feelings of disgust and concerns about hygiene and contamination, which are related to the concept of disease. Maggots can also be seen as a threat to cleanliness and health. Therefore, this stimulus fits the trigger type related to disease and threat.",
+        "stimulus": "You discover maggots in your garbage can.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves the act of consuming spoiled milk, which is related to the concept of 'Oral incorporation' as it involves ingestion. Additionally, spoiled milk can be associated with 'Disease' as consuming spoiled or contaminated food can lead to illness. Therefore, the trigger type that best fits this stimulus is \"['Threat', 'Disease', 'Oral incorporation']\".",
+        "stimulus": "You find spoiled milk in your coffee after taking a sip.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves explicit and inappropriate conversations, which can be considered a violation of social norms and decency. This aligns with the 'Immorality' aspect of the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You hear explicit and inappropriate conversations in a public setting.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "Changing a baby's diaper in a public place like a restaurant can evoke feelings of disgust due to the association with disease and hygiene concerns. The act involves exposure to bodily waste, which is a common trigger for disgust related to disease.",
+        "stimulus": "You see someone changing a baby's diaper on a restaurant table.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a strong odor of body odor, which can be associated with the trigger type 'Disease' due to the unpleasantness and potential health concerns related to hygiene. It can also relate to 'Animal Nature' as body odor is a natural human characteristic. Therefore, the stimulus fits within the trigger type ['Mortality', 'Animal Nature'].",
+        "stimulus": "You notice a strong odor of body odor on public transportation.",
+        "trigger_type": "['Mortality', 'Animal Nature']"
+    },
+    {
+        "reasoning": "The stimulus involves finding a dirty band-aid in a public pool, which can evoke feelings of disgust and concern about cleanliness and hygiene. This situation is related to the concept of contamination and disease, as a dirty band-aid can be seen as a potential source of germs or infection. Therefore, the trigger type that best fits this stimulus is related to 'Disease'.",
+        "stimulus": "You find a dirty band-aid in a public pool.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The presence of toenail clippings in a hotel room can evoke feelings of disgust due to the association with hygiene and cleanliness, which relates to the concept of disease. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You discover someone's toenail clippings on a hotel room floor.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Finding a used tissue in a borrowed jacket can evoke feelings of disgust due to the association with germs and illness, which aligns with the 'Disease' trigger type.",
+        "stimulus": "You find a used tissue in the pocket of a borrowed jacket.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone loudly slurping their soup, which can be considered a breach of social etiquette or manners. This falls under the category of 'Interpersonal' as it relates to social interactions and norms. It does not involve threats, disease, mortality, or animal nature.",
+        "stimulus": "You hear someone loudly slurping their soup at a formal event.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where someone wipes their hands on a communal cloth towel after eating greasy food. This can be associated with hygiene concerns and the potential spread of germs or disease, as communal towels can harbor bacteria and other pathogens. Therefore, this situation fits under the trigger type that includes 'Disease'.",
+        "stimulus": "You see someone wipe their hands on a communal cloth towel after eating greasy food.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Finding rat droppings in a kitchen cabinet can trigger concerns about disease due to the potential for contamination and health risks associated with rodents. It also relates to the concept of 'animal nature' as it involves an encounter with evidence of a wild animal in a human living space.",
+        "stimulus": "You find rat droppings in a kitchen cabinet.",
+        "trigger_type": "['Mortality', 'Animal Nature']"
+    },
+    {
+        "reasoning": "Dumping cooking oil into a lake or river can be considered an act of environmental immorality, as it harms the ecosystem and wildlife. This fits under the trigger type 'Immorality'.",
+        "stimulus": "You witness a person dumping cooking oil directly into a lake or river.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "Finding a worm in an apple can trigger disgust due to the presence of a living creature (worm) in food, which relates to the concept of contamination or disease. This aligns with the trigger type that includes 'Disease' and 'Oral incorporation', as it involves the potential ingestion of something contaminated or unclean.",
+        "stimulus": "You find a worm in your apple.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves the smell of spoiled fish, which is related to the concept of decay and potential contamination. This aligns with the trigger type 'Disease' as spoiled food can be a source of illness. Additionally, the act of smelling and potentially tasting spoiled food can relate to 'Oral incorporation'. Therefore, the stimulus fits within the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You smell spoiled fish at a market.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a person eating food that has fallen on the floor, which can be associated with concerns about hygiene and contamination. This relates to the trigger type 'Disease' as it involves potential exposure to germs or dirt from the floor. Additionally, the act of eating can be linked to 'Oral incorporation', which involves the ingestion of substances. Therefore, the stimulus fits the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You see a person drop food on the floor and continue to eat it.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of applying makeup in a public space like a restaurant does not inherently relate to any of the specified trigger types. It does not involve a threat, disease, or oral incorporation, nor does it relate to mortality or animal nature. Additionally, it does not involve interpersonal issues, disease, misfortune, or immorality. Therefore, it does not fit into any of the given categories.",
+        "stimulus": "You notice someone applying makeup using a public mirror in a restaurant.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus of finding unflushed waste in a public toilet primarily triggers a disgust response related to hygiene and contamination concerns. This aligns with the 'Disease' aspect of the trigger type, as it involves potential exposure to germs and unsanitary conditions.",
+        "stimulus": "You find unflushed waste in a public toilet.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Cutting fingernails in public can be considered a breach of social norms, which relates to interpersonal triggers. It may also evoke feelings of disgust, which can be associated with disease triggers due to the potential spread of germs. Therefore, the stimulus fits the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You witness someone cutting their fingernails in a public setting.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a restaurant worker smoking in a place where it is explicitly prohibited by a 'no smoking' sign. This situation involves a violation of social norms or rules, which can be considered an act of immorality. Therefore, it fits under the trigger type that includes 'Immorality'.",
+        "stimulus": "You see a restaurant worker smoking right next to the 'no smoking' sign.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "Finding a fly in your drink can trigger feelings of disgust and concern about contamination, which aligns with the 'Disease' aspect of the trigger type. Additionally, the idea of accidentally consuming the fly relates to 'Oral incorporation'. Therefore, this stimulus fits the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You find a fly in your drink.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of tossing trash out of a car window can be seen as a form of immorality because it shows a disregard for the environment and social norms. It can also be considered an interpersonal issue as it affects the community and other people who share the space. Therefore, this stimulus fits the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You witness someone tossing trash out of a car window.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves an interpersonal issue as it concerns a neighbor's trash affecting one's property. This can be seen as a misfortune or an inconvenience, but primarily it is an interpersonal issue due to the involvement of the neighbor.",
+        "stimulus": "You discover your neighbor's trash spilling onto your property.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves oral incorporation as it mentions eating, which is related to the act of incorporating substances into the body through the mouth. Scratching feet while eating could also be associated with disease or hygiene concerns, as it might imply a lack of cleanliness or potential contamination.",
+        "stimulus": "You notice someone scratching their feet while eating.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a stain of unknown origin, which can trigger concerns about cleanliness and hygiene, potentially relating to disease. This aligns with the trigger type ['Threat', 'Disease', 'Oral incorporation'] as the unknown stain could be perceived as a threat to health or cleanliness.",
+        "stimulus": "You find a stain of unknown origin on a hotel bedspread.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of cleaning ears with a key does not directly relate to any of the specified trigger types. It does not involve a threat, disease, or oral incorporation, nor does it relate to mortality, animal nature, interpersonal issues, misfortune, or immorality. It might be considered an unusual or unsafe behavior, but it doesn't fit the given categories.",
+        "stimulus": "You see someone cleaning their ears with a key.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus involves finding expired medication, which can be associated with the concept of disease due to the potential health risks of taking expired drugs. It also involves an interpersonal element as it concerns a family member's medicine cabinet. Therefore, it fits the trigger type that includes 'Interpersonal' and 'Disease'.",
+        "stimulus": "You find expired medication in a family member's medicine cabinet.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus of hearing someone chewing loudly with their mouth open can be associated with the trigger type 'Oral incorporation' as it involves the act of eating and the mouth, which are related to oral activities.",
+        "stimulus": "You hear someone chewing loudly with their mouth open.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a restaurant worker not wearing gloves while handling food, which can be associated with concerns about hygiene and the potential spread of germs or disease. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You see a restaurant worker not wearing gloves while handling food.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves the perception of an unpleasant smell, which can be associated with disease or hygiene issues. Bad breath can be a sign of oral health problems or other health issues, which aligns with the 'Disease' aspect of the trigger type. Additionally, the act of smelling something unpleasant can relate to 'Oral incorporation' as it involves the sensory experience related to the mouth and nose.",
+        "stimulus": "You smell someone's bad breath from several feet away.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where a public restroom is out of hand soap. This situation does not directly relate to any of the specified trigger types. It does not involve a threat, disease, or oral incorporation, nor does it relate to mortality or animal nature. Additionally, it does not involve interpersonal issues, misfortune, or immorality. Therefore, it does not fit into any of the given categories.",
+        "stimulus": "You discover that the hand soap in a public restroom is empty.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus involves a rotten piece of fruit, which is associated with decay and potential contamination. This aligns with the trigger type related to 'Disease', as rotten food can be a source of illness.",
+        "stimulus": "You find a rotten piece of fruit hidden at the back of a shelf.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Texting while using a public restroom could be considered a breach of interpersonal norms or immorality due to the lack of privacy and respect for the shared space. It may also evoke feelings of misfortune if one perceives it as unhygienic or disrespectful.",
+        "stimulus": "You see someone texting while using a public restroom.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves an interaction with animals (seagulls) and could be seen as a reminder of animal nature due to the frenzy caused by feeding. However, it does not directly relate to mortality or disease, nor does it involve interpersonal issues, misfortune, or immorality. The closest trigger type is 'Animal Nature', which is part of the 'Mortality, Animal Nature' category.",
+        "stimulus": "You witness someone throwing food to seagulls, causing a frenzy.",
+        "trigger_type": "['Mortality', 'Animal Nature']"
+    },
+    {
+        "reasoning": "The stimulus involves the reuse of dirty dishes, which can be associated with hygiene concerns and the potential spread of germs or disease. This aligns with the 'Disease' aspect of the trigger type.",
+        "stimulus": "You notice someone reusing dirty dishes without washing them.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The presence of rust and algae in a pet's water dish can be associated with contamination and uncleanliness, which are related to the concept of disease. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You discover rust and algae in a pet's water dish.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Finding discarded cigarette butts in one's garden can evoke feelings related to interpersonal issues, such as disrespect or disregard for one's property. It may also be associated with immorality, as littering is generally considered socially irresponsible behavior.",
+        "stimulus": "You find someone's discarded cigarette butts in your garden.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The act of spitting into a drinking fountain can evoke feelings of disgust and concern about contamination, which aligns with the 'Disease' aspect of the trigger type. Additionally, the act of spitting into a communal resource like a drinking fountain can be seen as a violation of social norms, which relates to 'Interpersonal' and 'Immorality'.",
+        "stimulus": "You witness someone spitting into a drinking fountain.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a pile of dirty laundry with a foul odor, which can be associated with uncleanliness and potential germs or bacteria. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'], as foul odors and dirty items can be perceived as a threat to hygiene and health.",
+        "stimulus": "You discover a pile of dirty laundry with a foul odor.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Animal feces can be associated with disease due to the potential for bacteria and parasites. It can also be linked to animal nature as it is a natural bodily function of animals.",
+        "stimulus": "You find animal feces on a walking trail.",
+        "trigger_type": "['Mortality', 'Animal Nature']"
+    },
+    {
+        "reasoning": "Passing gas in public can be considered a breach of social norms and may be perceived as embarrassing or inappropriate behavior, which relates to interpersonal triggers. It can also be associated with disease triggers due to the unpleasant odor and the body's natural processes. Therefore, the stimulus fits the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You hear someone passing gas loudly in a public setting.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The act of littering in a 'no littering' area can be considered a violation of social norms and rules, which falls under the category of immorality. It involves a disregard for communal spaces and environmental care, which are moral considerations.",
+        "stimulus": "You see someone littering in a clearly marked 'no littering' area.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where someone else's used chewing gum is stuck to your shoe. This can be seen as a contamination or hygiene issue, which aligns with the 'Disease' trigger. Additionally, it involves an interpersonal aspect since it is someone else's gum, which can be considered inconsiderate or socially inappropriate behavior. Therefore, it fits the 'Interpersonal' and 'Disease' triggers.",
+        "stimulus": "You find someone's used chewing gum stuck to your shoe.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The situation involves a child running around a restaurant without shoes, which could be seen as a potential health concern (Disease) due to the possibility of stepping on something harmful or unsanitary. Additionally, it might be considered an issue of Interpersonal behavior as it could disturb other patrons. Therefore, it fits the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You witness a parent allowing their child to run around a restaurant without shoes.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "Sweat stains on gym equipment can evoke feelings of disgust due to the association with hygiene and cleanliness, which relates to the trigger type 'Disease'.",
+        "stimulus": "You find sweat stains on gym equipment that hasn't been cleaned.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves discovering old food containers, which could be associated with hygiene issues and potential disease due to decay or mold. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You discover old food containers under a teenager's bed.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "A filthy sponge in a kitchen sink can be associated with the concept of disease due to the potential for bacteria and germs to thrive in such an environment. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You find a filthy sponge in a kitchen sink.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of wiping one's nose with their hand can be associated with the spread of germs and potential disease transmission. This aligns with the 'Disease' aspect of the trigger type 'Threat', 'Disease', 'Oral incorporation'.",
+        "stimulus": "You witness someone wiping their nose with their hand.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves dirty utensils, which can be associated with the concept of contamination or uncleanliness, potentially leading to disease. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You see dirty utensils being used in a cooking demonstration.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves the presence of dust and grime, which can be associated with uncleanliness and potential health concerns. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'], as accumulated dust and grime can harbor bacteria or allergens that might pose a health risk.",
+        "stimulus": "You find dust and grime built up in an air conditioning vent.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves observing someone engaging in behavior that could spread germs or disease, as not washing hands after using the restroom is a common vector for spreading illness. This aligns with the 'Disease' aspect of the trigger type.",
+        "stimulus": "You see someone leaving a public restroom without washing their hands.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a strong smell, which can be associated with the concept of 'Oral incorporation' as it relates to sensory experiences that might be unpleasant or evoke a sense of disgust. However, it does not directly relate to 'Threat', 'Disease', or any of the other categories provided. Therefore, it fits best under the trigger type that includes 'Oral incorporation'.",
+        "stimulus": "You discover a strong smell of ammonia in a restroom.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of throwing leftover food into the street can be associated with 'Disease' due to the potential for attracting pests and creating unsanitary conditions. It can also be seen as 'Immorality' because it involves a disregard for cleanliness and public space. Therefore, the stimulus fits the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You witness someone throwing leftover food into the street.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "Peeling paint and mold in a daycare center can be associated with health risks, particularly disease. Mold can cause respiratory issues and other health problems, which aligns with the 'Disease' trigger type.",
+        "stimulus": "You find peeling paint and mold in a daycare center.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus of seeing a dirty, abandoned mattress on the side of the road could evoke feelings of disgust or concern due to its association with uncleanliness or potential disease. This aligns with the 'Disease' trigger type.",
+        "stimulus": "You see a dirty, abandoned mattress on the side of the road.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of spitting sunflower seeds onto the ground can be seen as a potential health concern due to the unhygienic nature of saliva, which could be associated with 'Disease'. Additionally, it can be considered an 'Interpersonal' issue as it affects the cleanliness of a shared space and can be seen as disrespectful to others who use the area.",
+        "stimulus": "You discover someone has been spitting sunflower seeds onto the ground where people are walking.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a hygiene concern, which is related to the trigger type 'Disease'. Using the same rag for wiping tables and cleaning dishes can spread germs and bacteria, posing a risk of disease transmission.",
+        "stimulus": "You notice a server using the same rag for wiping tables and cleaning dishes.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a social situation where someone is belching loudly, which can be considered a breach of social norms or etiquette. This relates to interpersonal interactions and possibly immorality in terms of manners, but it does not directly relate to disease, misfortune, or mortality. Therefore, the most fitting trigger type is related to interpersonal and immorality aspects.",
+        "stimulus": "You hear someone loudly belching at a family gathering.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a spoiled meat product, which is related to the concept of disease due to the potential for foodborne illness. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You find a spoiled meat product still being sold at a grocery store.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves an animal (dog) interacting with food (ice cream cone), which can be associated with oral incorporation. The act of a dog licking an ice cream cone may trigger feelings related to hygiene or contamination, which aligns with the 'Disease' aspect of the trigger type. Therefore, the stimulus fits the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You see someone letting their dog lick their ice cream cone.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a leaky bag of garbage, which can be associated with decay and contamination, potentially triggering concerns about disease. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You discover a leaky bag of garbage in the trunk of your car.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves finding dirty laundry, which can be associated with uncleanliness or hygiene concerns. This relates to the concept of 'Disease' as it involves potential contamination or exposure to germs. Additionally, it involves an interpersonal aspect as it concerns someone else's belongings left in a shared space.",
+        "stimulus": "You find someone's dirty laundry left in a public washing machine.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a worker engaging in an act that can be considered deceitful or dishonest, as they are hiding dirt instead of properly cleaning it. This behavior can be categorized under 'Immorality' as it involves a lack of integrity in performing a task. Therefore, the trigger type that best fits this scenario is ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You witness a worker sweeping dirt under the rug instead of cleaning it up.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a dirty diaper, which is associated with waste and potential contamination. This relates to the concept of 'Disease' as it involves hygiene and cleanliness concerns. Additionally, the act of leaving a dirty diaper in a public space can be seen as socially inappropriate or irresponsible, which ties into 'Interpersonal' and 'Immorality'.",
+        "stimulus": "You notice someone leaving a dirty diaper in a parking lot.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The situation involves an interpersonal aspect as it relates to social norms and responsibilities in a public space. It can also be seen as a minor form of immorality as it involves neglecting civic duties. Additionally, there is a potential disease aspect due to the unsanitary nature of leaving dog waste in a public area.",
+        "stimulus": "You see a pet owner not picking up after their dog in a public park.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves finding moldy food, which is related to the concept of contamination and decay. This aligns with the trigger type 'Disease' due to the potential health risks associated with consuming spoiled food. Additionally, the presence of mold can evoke disgust, which is related to 'Oral incorporation' as it involves the idea of ingesting something unclean or contaminated.",
+        "stimulus": "You find an old container of takeout food that has grown mold.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone sticking their finger into a communal food dish, which can be seen as a violation of hygiene norms and can evoke feelings of disgust related to contamination or disease. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You see someone sticking their finger into a communal food dish to taste it.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves finding remnants of a previous guest's stay in a hotel room, which can evoke feelings of disgust or discomfort. This situation can be associated with hygiene concerns, which relate to the trigger type 'Disease'.",
+        "stimulus": "You find remnants of a previous guest's stay in your hotel room.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a child licking food items and putting them back, which can be associated with the trigger type 'Oral incorporation' due to the act of licking and 'Disease' due to the potential spread of germs and contamination.",
+        "stimulus": "You witness a child licking food items and putting them back on a store shelf.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of clearing throat phlegm loudly can be associated with oral incorporation due to the involvement of bodily fluids and sounds related to the mouth and throat. It can also be perceived as a threat to the quiet environment of a library, disrupting the peace and potentially causing discomfort to others.",
+        "stimulus": "You hear someone clearing their throat phlegm loudly in a library.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of washing hands at a water fountain does not inherently relate to any of the specified trigger types. It is a neutral action that does not imply threat, disease, oral incorporation, mortality, animal nature, interpersonal issues, misfortune, or immorality.",
+        "stimulus": "You see someone using a water fountain to wash their hands.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "Mouse droppings in the pantry can be associated with the trigger type 'Disease' due to the potential health risks and contamination they pose. Additionally, it can be linked to 'Animal Nature' as it involves the presence of an animal in a human environment. However, the most direct association here is with 'Disease'.",
+        "stimulus": "You find mouse droppings in your pantry.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of putting bare feet on a table in a cafe can be considered a breach of social norms and may be perceived as unhygienic or disrespectful. This aligns with the 'Interpersonal' trigger type, as it involves social interaction and potential immorality in terms of etiquette.",
+        "stimulus": "You witness someone putting their bare feet on a table in a cafe.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a worker sneezing into their hands and then handling products, which raises concerns about hygiene and the potential spread of germs or disease. This fits the trigger type related to 'Disease'.",
+        "stimulus": "You see a worker sneeze into their hands and continue handling products.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The discovery of rancid butter is related to the concept of spoilage and contamination, which can be associated with the trigger of 'Disease'. The idea of consuming something that has gone bad can also relate to 'Oral incorporation'. Therefore, the stimulus fits the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You discover rancid butter in your fridge.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone picking at their skin, which can be associated with disease transmission, and then touching communal items, which can spread germs or disease. This aligns with the trigger type related to disease.",
+        "stimulus": "You notice someone picking at their skin and then touching communal items.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Finding a cockroach in a kitchen cupboard can trigger disgust due to the association with disease and contamination. Cockroaches are often seen as carriers of germs and can contaminate food, which aligns with the 'Disease' trigger type.",
+        "stimulus": "You find a cockroach in a pot in your kitchen cupboard.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of dumping a drink onto a plant does not directly relate to any of the specified trigger types. It does not involve a threat, disease, or oral incorporation. It also does not pertain to mortality or animal nature, nor does it involve interpersonal issues, disease, misfortune, or immorality in a clear way. Therefore, it does not fit into any of the given categories.",
+        "stimulus": "You see someone dumping a drink onto a plant.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus involves finding a pet's accident, which can be associated with disease due to the potential for germs or unsanitary conditions. It could also relate to misfortune as it is an unfortunate event to discover. Therefore, it fits the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You find a pet's accident hidden behind furniture.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves someone taking a sip from each drink at a communal beverage station, which can be associated with concerns about hygiene and the spread of germs or disease. This aligns with the 'Disease' trigger type.",
+        "stimulus": "You notice someone taking a sip from each drink at a communal beverage station.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of tossing an apple core into a lake could be considered a form of pollution or littering, which might trigger feelings related to environmental immorality or misfortune. However, the stimulus itself does not strongly align with any of the specified trigger types, as it does not directly involve interpersonal conflict, disease, or a significant misfortune. It also does not relate to threat, mortality, or animal nature.",
+        "stimulus": "You witness someone tossing an apple core into a lake.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus involves finding a moldy sandwich, which is related to the concept of decay and contamination. This aligns with the trigger type 'Disease' due to the presence of mold, which can be associated with health risks. Additionally, the idea of consuming something moldy can relate to 'Oral incorporation'.",
+        "stimulus": "You find an old, moldy sandwich in a lunchbox.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a forgotten pet fish tank with murky water, which can be associated with neglect or poor maintenance. This situation could trigger feelings related to 'Disease' due to the unclean water, which is a potential breeding ground for bacteria and illness. Additionally, the situation might evoke 'Misfortune' as it reflects a negative outcome for the pet fish. Therefore, the most fitting trigger type is ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You discover a forgotten pet fish tank filled with murky water.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The act of spitting phlegm can be associated with disease due to the potential spread of germs and illness. It also involves oral incorporation as it relates to bodily fluids being expelled from the mouth.",
+        "stimulus": "You hear someone hocking up phlegm and spitting in a public trash can.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Used dental floss in a public area can trigger feelings of disgust due to its association with oral hygiene and potential contamination, which aligns with the trigger type 'Disease'.",
+        "stimulus": "You find used dental floss in a public area.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus of discovering a wad of hair clogging a shower drain is related to hygiene and cleanliness, which can be associated with the concept of 'Disease' due to the potential for bacteria or germs. However, it does not directly relate to 'Threat', 'Oral incorporation', 'Mortality', 'Animal Nature', 'Interpersonal', 'Misfortune', or 'Immorality'. Therefore, the most fitting trigger type is ['Threat', 'Disease', 'Oral incorporation'] due to the disease aspect.",
+        "stimulus": "You discover a wad of hair clogging a shower drain.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of licking fingers while reading a library book can be associated with 'Oral incorporation' due to the involvement of the mouth and potential ingestion of germs or dirt from the book. It also has an element of 'Disease' as it involves a potential transfer of germs from the book to the mouth.",
+        "stimulus": "You see someone licking their fingers while reading a library book.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a restaurant reusing disposable utensils, which can be seen as a hygiene issue, potentially spreading germs or diseases. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You find out a restaurant reuses its disposable utensils.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves witnessing an act that is generally considered socially inappropriate and can be associated with feelings of disgust or immorality. It involves an interpersonal aspect as it is a behavior observed in a social context. Additionally, it can be linked to the concept of 'Animal Nature' as it involves a basic bodily function being performed in public. However, the most fitting trigger type from the given options is 'Interpersonal, Disease, Misfortune, Immorality' due to the immorality aspect of the act.",
+        "stimulus": "You witness someone urinating in public.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves an unusual and potentially unsanitary method of cleaning teeth, which could be associated with disease due to the potential for germs and bacteria on a business card. However, it does not clearly fit into any of the specified trigger types, as it does not directly involve threat, mortality, animal nature, interpersonal issues, misfortune, or immorality. The closest association might be with disease, but it is not explicit enough to categorize it under the given trigger types.",
+        "stimulus": "You see a person cleaning their teeth with a business card.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus involves discovering old, crusty food stuck to a menu, which can evoke feelings of disgust related to hygiene and cleanliness. This aligns with the 'Disease' aspect of the trigger type, as it involves potential contamination and uncleanliness.",
+        "stimulus": "You discover old, crusty food stuck to a menu in a restaurant.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone eating directly from a communal food container, which can trigger concerns about hygiene and the spread of germs or disease. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You notice someone eating directly from a communal food container.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a dirty diaper, which is associated with waste and potential contamination. This aligns with the 'Disease' aspect of the trigger type, as it involves hygiene concerns and the potential spread of germs.",
+        "stimulus": "You find a dirty diaper abandoned on a beach.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus of hearing someone snorting and sniffling continuously in a quiet room could be associated with the trigger type 'Disease' as it suggests symptoms of a cold or flu, which are illnesses. This fits within the trigger type ['Threat', 'Disease', 'Oral incorporation'] due to the presence of 'Disease'.",
+        "stimulus": "You hear someone snorting and sniffling continuously in a quiet room.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves vomit, which is often associated with disease or contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You discover someone has vomited in a public staircase.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a social situation where someone is removing their shoes and socks in a public setting, which might be considered inappropriate or uncomfortable for others. This relates to interpersonal dynamics and potentially hygiene concerns, which can be linked to the 'Interpersonal' and 'Disease' triggers.",
+        "stimulus": "You see someone taking their shoes and socks off during a flight.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves people using their hands to dig through food at a buffet, which can evoke feelings of disgust related to hygiene and contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'], as it involves concerns about cleanliness and the potential spread of germs.",
+        "stimulus": "You witness people digging through a buffet with their hands.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Moldy bread is associated with disease as it can cause illness if consumed. It also triggers oral incorporation as it involves the ingestion of food.",
+        "stimulus": "You find moldy bread being sold at a grocery store.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where food has been tampered with, which can evoke concerns about contamination or health risks. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'], as tampered food can pose a threat to health and safety.",
+        "stimulus": "You discover your food delivery has been tampered with.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a trail of ants and rotten food, which can be associated with disease due to the decay and potential for contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You see a trail of ants leading to a pile of rotten food.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a behavior that might be considered socially inappropriate or unhygienic, which could relate to the trigger type involving 'Animal Nature' due to the primal or instinctual behavior of sniffing. However, it does not directly relate to mortality or disease in a significant way. Therefore, the most fitting trigger type is ['Mortality', 'Animal Nature'].",
+        "stimulus": "You notice someone scratching their armpit and sniffing their fingers.",
+        "trigger_type": "['Mortality', 'Animal Nature']"
+    },
+    {
+        "reasoning": "A used Q-tip on the floor can evoke feelings of disgust due to its association with bodily fluids and potential contamination, which aligns with the 'Disease' trigger. However, it doesn't fit neatly into the other categories like 'Threat' or 'Oral incorporation'.",
+        "stimulus": "You find a used Q-tip lying on the floor.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of blowing one's nose into a cloth napkin can be associated with the trigger type 'Disease' due to the potential spread of germs and the uncleanliness involved. It may also evoke feelings of 'Interpersonal' discomfort due to the social norms around hygiene and cleanliness in public settings.",
+        "stimulus": "You witness someone blowing their nose into a cloth napkin at a restaurant.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves discovering a pile of burned, unidentifiable trash. This scenario does not directly relate to any of the specified trigger types. It doesn't clearly involve a threat, disease, or oral incorporation, nor does it relate to mortality or animal nature. Additionally, it doesn't involve interpersonal issues, disease, misfortune, or immorality. Therefore, it doesn't fit into any of the given categories.",
+        "stimulus": "You discover a pile of burned, unidentifiable trash.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The act of popping a pimple can be associated with the concept of 'Disease' due to the involvement of bodily fluids and the potential for infection. It also involves a personal and somewhat intimate act that can be seen as socially inappropriate or embarrassing, which ties into 'Interpersonal' aspects. However, the primary trigger here is 'Disease' due to the focus on a skin condition and the act of popping it.",
+        "stimulus": "You see someone popping a pimple in a car mirror in a parking lot.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a strong smell of urine, which can be associated with disease or uncleanliness. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You notice a strong smell of urine in an elevator.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves encountering rotting vegetables, which is related to decay and potential contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'], as rotting food can be a source of disease or contamination.",
+        "stimulus": "You find a bag of rotting vegetables at the back of your fridge.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of rinsing and spitting in a public sink can evoke disgust due to the oral incorporation aspect, as it involves bodily fluids and the mouth, which are often considered sources of contamination.",
+        "stimulus": "You witness someone rinsing their mouth and spitting in a public sink.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves the oral incorporation aspect, as it relates to the act of drinking from a glass, which is an oral activity. The presence of lipstick on the rim of the glass can evoke feelings of contamination or uncleanliness, which aligns with the 'Oral incorporation' trigger type.",
+        "stimulus": "You discover smeared lipstick on the rim of a wine glass at a restaurant.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The situation involves someone shaking a wet umbrella over produce, which could potentially contaminate the food with water that might carry germs or dirt. This relates to the concept of contamination and hygiene, which falls under the 'Disease' trigger. However, the act itself is also an interpersonal issue as it involves inconsiderate behavior towards others who might purchase the produce. Therefore, it fits the 'Interpersonal' and 'Disease' triggers.",
+        "stimulus": "You see someone shaking a wet umbrella over produce at a grocery store.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves leftover food splattered inside a microwave, which can be associated with uncleanliness and potential contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'], as it involves concerns about hygiene and the potential for disease transmission.",
+        "stimulus": "You find leftover food splattered inside a microwave.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of clipping toenails in public might be considered socially inappropriate or unhygienic by some, but it does not directly relate to any of the specific trigger types listed. It doesn't involve a direct threat, disease, or oral incorporation. It also doesn't relate to mortality, animal nature, interpersonal issues, misfortune, or immorality in a significant way. Therefore, it doesn't fit neatly into any of the provided categories.",
+        "stimulus": "You notice someone clipping their toenails on a park bench.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus involves the act of eating food from a trash can, which can be associated with the trigger type 'Oral incorporation' due to the ingestion of potentially contaminated food. Additionally, it can be linked to 'Disease' as consuming food from a trash can poses health risks and potential exposure to disease.",
+        "stimulus": "You witness someone picking up food from a trash can and eating it.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a public toilet, which can be associated with disease due to the potential for germs and unsanitary conditions. Graffiti and stains may also evoke feelings of immorality or misfortune due to the neglect and vandalism of public property.",
+        "stimulus": "You see a public toilet covered in graffiti and stains.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves finding used cotton swabs, which can be associated with hygiene concerns and potential contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You find used cotton swabs in a hotel room drawer.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves discovering rancid meat, which is a potential source of disease due to spoilage and bacteria. This aligns with the 'Disease' trigger type. Additionally, the context of finding it in a friend's fridge introduces an interpersonal element, as it involves another person and their living space. Therefore, the stimulus fits within the 'Interpersonal' and 'Disease' categories.",
+        "stimulus": "You discover rancid meat in a friend's fridge.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves someone coughing over open food containers, which can be associated with the spread of germs and potential contamination of food. This situation is related to the concept of disease, as it involves the risk of spreading illness through unsanitary practices. Therefore, the trigger type that best fits this stimulus is ['Threat', 'Disease', 'Oral incorporation'], as it involves the threat of disease through oral incorporation (consumption of contaminated food).",
+        "stimulus": "You see someone coughing over open food containers at a market.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "A discarded needle in a playground can be associated with the threat of injury or disease transmission, such as HIV or hepatitis, which are common concerns with needles. This aligns with the trigger type ['Threat', 'Disease', 'Oral incorporation'] due to the potential for disease transmission and the threat it poses to safety.",
+        "stimulus": "You find a discarded needle in a playground.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a social situation where someone might feel embarrassed due to an awkward or socially awkward situation. This aligns with the 'Interpersonal' aspect of the trigger type, as it involves social norms and interactions.",
+        "stimulus": "You witness someone leaving a bathroom stall with toilet paper stuck to their shoe.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves finding a beverage can floating in a river, which could be associated with pollution or contamination of the water. This relates to the concept of 'Disease' as it could imply environmental contamination, but it does not strongly fit into any of the provided trigger types. The situation does not directly involve threat, mortality, animal nature, interpersonal issues, misfortune, or immorality in a significant way. Therefore, it does not clearly fit into any of the specified trigger types.",
+        "stimulus": "You find a beverage can floating in a river while kayaking.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus involves a behavior that might be considered socially inappropriate or unhygienic, which could relate to 'Interpersonal' norms or 'Disease' concerns due to the potential spread of germs. However, it does not strongly fit the 'Threat', 'Mortality', or 'Animal Nature' categories.",
+        "stimulus": "You see someone wiping their mouth with their sleeve at a formal event.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves spoiled food, which is often associated with disease and contamination. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You find spoiled yogurt that has separated into liquid and lumps.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where there is a potential for contamination and spread of germs, which relates to hygiene and cleanliness. This is a concern for disease transmission, as handling money and then food without washing hands can lead to the spread of bacteria or viruses.",
+        "stimulus": "You see a restaurant employee handling money and then touching food without washing hands.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone re-wearing sweaty gym clothes, which can be associated with hygiene concerns and the potential spread of germs or bacteria. This aligns with the 'Disease' trigger, as it involves a situation that could be perceived as unsanitary or unhealthy.",
+        "stimulus": "You notice someone re-wearing sweaty gym clothes.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a restaurant using dirty rags, which is a hygiene issue and can lead to the spread of germs and disease. This fits under the 'Disease' category, which is part of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You discover a restaurant using dirty rags to wipe down tables.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone taking a bite from multiple pieces of fruit, which can be associated with the concept of 'Oral incorporation' as it involves the act of eating or tasting. Additionally, it could be seen as a potential 'Threat' or 'Disease' trigger due to the unsanitary nature of biting into multiple fruits, possibly spreading germs or contamination.",
+        "stimulus": "You witness someone taking a bite from multiple pieces of fruit at a store.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Finding animal hair in a dish at a restaurant can evoke feelings of disgust and concern about hygiene and contamination. This situation relates to the trigger type 'Disease' due to the potential for contamination and uncleanliness, and 'Oral incorporation' as it involves something undesirable being found in food that is meant to be consumed.",
+        "stimulus": "You find animal hair in a dish at a restaurant.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where children are behaving in a disruptive manner in a public place, which can be perceived as a lack of discipline or control by the parents. This situation can be related to interpersonal dynamics (parenting and social behavior) and possibly immorality (lack of consideration for others in a public space).",
+        "stimulus": "You see a family allowing their children to run wild and make a mess in a store.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves the disgust associated with finding old chewing gum, which is related to oral incorporation and possibly disease due to the unhygienic nature of the gum.",
+        "stimulus": "You find old chewing gum stuck to the underside of a desk.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where a person is displaying behavior that could be considered socially inappropriate or disrespectful, which falls under 'Interpersonal'. The act of placing dirty shoes on a seat could also be seen as a hygiene issue, relating to 'Disease'.",
+        "stimulus": "You witness a subway passenger occupying a seat with their dirty shoes.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "Drinking directly from a public water fountain spout can evoke concerns about hygiene and the potential spread of germs, which relates to the trigger type 'Disease'.",
+        "stimulus": "You see someone drinking directly from a public water fountain spout.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves finding expired and discolored condiments, which can be associated with the concept of disease due to the potential for spoilage and contamination. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You find expired and discolored condiments in a fridge.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a social interaction where a parent is ignoring a child's disruptive behavior. This situation can be categorized under 'Interpersonal' as it involves a relationship between the parent and child and the social norms of behavior in public spaces.",
+        "stimulus": "You see a parent ignoring their child's disruptive behavior in a quiet area.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves witnessing someone spill a drink and not clean it up, which can be seen as a minor social transgression or inconsiderate behavior. This relates to interpersonal interactions and possibly immorality due to the lack of responsibility shown by the person. Therefore, it fits the trigger type related to 'Interpersonal' and 'Immorality'.",
+        "stimulus": "You witness someone spilling a drink and walking away without cleaning it.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves discovering dirty silverware, which can be associated with concerns about hygiene and cleanliness. This relates to the trigger type 'Disease' as it involves potential contamination and health risks.",
+        "stimulus": "You discover dirty silverware wrapped in a clean napkin at a restaurant.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone sneezing into their hands and then handling merchandise, which raises concerns about the spread of germs and potential disease transmission. This fits into the 'Disease' category, which is part of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You notice someone handling merchandise after sneezing into their hands.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a dog eating from a dish, which can be associated with 'Animal Nature' due to the involvement of an animal in a human setting. Additionally, it may evoke feelings related to 'Mortality' as animals can sometimes remind humans of their own biological nature and mortality.",
+        "stimulus": "You see a pet owner allowing their dog to eat from a restaurant dish.",
+        "trigger_type": "['Mortality', 'Animal Nature']"
+    },
+    {
+        "reasoning": "The presence of bite marks on items at a grocery store suggests contamination and potential health risks, which aligns with the trigger type related to 'Disease'. Additionally, the act of biting and the potential for oral contamination aligns with 'Oral incorporation'.",
+        "stimulus": "You find multiple items with bite marks at a grocery store.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a potential hygiene issue where someone is handling flies, which are often associated with disease, and then cooking without washing hands. This can be seen as a disease trigger due to the potential for contamination and spread of germs.",
+        "stimulus": "You witness someone swatting flies and then continuing to cook without washing hands.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone sweating onto communal gym equipment, which can be perceived as a hygiene issue and potentially spreading germs or disease. This aligns with the trigger type related to 'Disease'.",
+        "stimulus": "You notice someone dripping sweat onto communal gym equipment.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves encountering smelly shoes, which can be associated with hygiene and cleanliness issues. This relates to the concept of 'Disease' as it involves a potential health concern due to the unpleasant smell, which can be perceived as a sign of uncleanliness or decay. Additionally, it involves an 'Interpersonal' aspect as it occurs in a shared living space, affecting social dynamics and potentially causing conflict or discomfort among those sharing the space.",
+        "stimulus": "You find smelly shoes left in a shared living space.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves someone scratching their head excessively while preparing food, which can be associated with hygiene concerns and the potential spread of germs or disease. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You see someone scratching their head excessively while preparing food.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone using excessive perfume or cologne, which could be related to the concept of 'Oral incorporation' as it involves a sensory experience (smell) that can be overwhelming or intrusive. However, it does not directly relate to 'Threat', 'Disease', 'Mortality', 'Animal Nature', 'Interpersonal', 'Misfortune', or 'Immorality'.",
+        "stimulus": "You witness someone using excessive perfume or cologne in a confined space.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves unwashed linens, which can be associated with hygiene concerns and potential disease transmission. This aligns with the trigger type related to 'Disease'.",
+        "stimulus": "You find stained and unwashed linens in a rented accommodation.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a child wiping their runny nose, which is a bodily fluid, and then touching communal toys. This scenario is related to the spread of germs and potential illness, which aligns with the 'Disease' aspect of the trigger type. Therefore, it fits within the trigger type that includes 'Disease'.",
+        "stimulus": "You see a child wiping their runny nose on their hands and touching communal toys.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone eating messy food in a public setting, which can be associated with the concept of 'Oral incorporation' due to the act of eating. Additionally, the situation might evoke feelings of discomfort or disgust related to hygiene, which can be linked to 'Disease'. Therefore, the trigger type that best fits this scenario is ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You witness someone eating messy food while using public transportation.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves discovering expired milk, which is related to the concept of spoilage and potential contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'], as expired milk can pose a health risk if consumed.",
+        "stimulus": "You discover an open carton of expired milk in a shared fridge.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of spitting can be associated with disease transmission due to the potential spread of germs and bacteria. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You witness someone spitting into a garden.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "Using a cell phone in a public restroom may evoke feelings of discomfort or disgust due to the association with disease and hygiene concerns. Public restrooms are often perceived as places where germs and bacteria are prevalent, and using a cell phone in such an environment can trigger concerns about contamination and cleanliness.",
+        "stimulus": "You see a person using their cell phone while using a public restroom.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The presence of cigarette butts in a non-smoking area can be associated with immorality, as it involves breaking rules or social norms. It may also relate to disease, as smoking is a health hazard. Therefore, the stimulus fits the trigger type that includes 'Interpersonal', 'Disease', 'Misfortune', 'Immorality'.",
+        "stimulus": "You find multiple cigarette butts littered in a non-smoking area.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where hygiene is compromised, as using a towel that has been used to wipe the floor on one's face can spread germs and potentially cause illness. This relates to the concept of 'Disease' as it involves the risk of contamination and infection.",
+        "stimulus": "You notice someone using the same hand towel to wipe the floor and then their face.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves old and crusty pet food, which can be associated with decay and uncleanliness, potentially triggering disgust related to disease. Therefore, it fits the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You discover old and crusty pet food stuck to the floor.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of throwing trash out of a car window can be seen as an immoral action because it shows a disregard for the environment and social norms. It can also be considered an interpersonal issue as it affects the community and other people who share the space. Therefore, this stimulus fits the trigger type that includes 'Interpersonal' and 'Immorality'.",
+        "stimulus": "You see a person throwing trash out of their car window while driving.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "Finding hair in a soap dispenser can evoke feelings of disgust or contamination, which are related to the concept of disease or hygiene concerns. This aligns with the trigger type that includes 'Disease'.",
+        "stimulus": "You find hair in a soap dispenser.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of licking a plate clean in a restaurant can be seen as a breach of social norms and manners, which relates to interpersonal behavior. It may also evoke feelings of disgust related to hygiene, which can be associated with disease. Therefore, this stimulus fits the trigger type related to 'Interpersonal' and 'Disease'.",
+        "stimulus": "You witness a person licking their plate clean in a restaurant.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves someone engaging in an action that could be considered socially inappropriate or unhygienic, which might trigger feelings of disgust or concern about cleanliness. This aligns with the 'Disease' aspect of the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'], as it involves a behavior that could spread germs or dirt.",
+        "stimulus": "You see someone wiping their greasy hands on a curtain.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The presence of smudges and fingerprints on a glass tabletop does not directly relate to any of the specified trigger types. It does not imply a threat, disease, or oral incorporation, nor does it relate to mortality, animal nature, interpersonal issues, misfortune, or immorality. It is simply an observation of cleanliness or lack thereof.",
+        "stimulus": "You discover smudges and fingerprints on a glass tabletop.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where someone is not maintaining hygiene in a public facility, which can be associated with the spread of germs or disease. This aligns with the 'Disease' aspect of the trigger type ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You notice a person using a public facility but not flushing the toilet.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a rotting packed lunch, which is associated with decay and potential contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation']. The presence of rotting food can be perceived as a threat due to the potential for disease or contamination, and it also involves oral incorporation as it relates to food.",
+        "stimulus": "You find a rotting, forgotten packed lunch in a work refrigerator.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a person engaging in behavior that could be considered socially inappropriate or unethical, as they are consuming food without purchasing it first. This can be seen as a violation of social norms and potentially dishonest, which aligns with the 'Immorality' aspect of the trigger type. Additionally, there is an interpersonal element as this behavior could affect other shoppers and store employees.",
+        "stimulus": "You witness a shopper opening and sampling food in a grocery store before buying.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The situation involves a social norm violation where the pet owner is not picking up after their dog, which can be considered an interpersonal issue due to the impact on others using the park. Additionally, it can be seen as a disease trigger because not picking up after a dog can lead to unsanitary conditions and potential health risks. Therefore, it fits the 'Interpersonal', 'Disease', 'Misfortune', 'Immorality' trigger type.",
+        "stimulus": "You see a pet owner not picking up after their dog in a public park.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves a server adjusting their clothing or scratching themselves before handling food, which can be associated with concerns about hygiene and contamination. This relates to the trigger type 'Disease', as it involves potential contamination of food and the spread of germs.",
+        "stimulus": "You notice a server adjusting their clothing or scratching themselves before handling food.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a moldy cup of coffee, which is related to decay and potential contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You find a forgotten, moldy cup of coffee on a bookshelf.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone eating in bed and leaving crumbs. This could be related to 'Oral incorporation' due to the act of eating, but it doesn't strongly fit the other categories like 'Threat', 'Disease', or 'Interpersonal'. Therefore, it is best categorized under the trigger type that includes 'Oral incorporation'.",
+        "stimulus": "You witness someone snacking in bed and leaving crumbs.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The act of picking teeth in public can be considered a breach of social norms, which relates to interpersonal behavior. However, it does not directly relate to disease, misfortune, or immorality. Therefore, it does not fit neatly into any of the provided trigger types.",
+        "stimulus": "You see someone picking their teeth with a piece of straw in public.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The presence of cobwebs and dead insects in a living space can evoke feelings of disgust or discomfort, which are often associated with disease or uncleanliness. This aligns with the trigger type related to disease, as it involves elements that are typically considered unhygienic or indicative of neglect.",
+        "stimulus": "You find cobwebs and dead insects in a corner of your living space.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone eating in a manner that might be considered socially inappropriate or unpleasant. This relates to the concept of 'Oral incorporation' as it involves the act of eating and the sounds associated with it. Additionally, the behavior might be seen as a threat to social norms or etiquette, which can be linked to 'Threat'.",
+        "stimulus": "You witness someone slurping and burping loudly while eating.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone not washing their hands after petting animals, which can be associated with the spread of germs or disease. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You see someone not washing their hands after petting numerous animals.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves the discovery of a grimy layer of old soap scum, which is related to cleanliness and hygiene. This can be associated with the trigger type 'Disease' as it involves a potential source of germs or uncleanliness. The presence of grime and scum can evoke feelings of disgust related to disease prevention.",
+        "stimulus": "You discover a grimy layer of old soap scum in a shower.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a piece of chewed gum, which can be considered disgusting due to its association with saliva and germs. This relates to the trigger type 'Oral incorporation' due to the involvement of something that has been in someone's mouth, and 'Disease' due to the potential for germs and contamination.",
+        "stimulus": "You find a piece of chewed gum stuck under a railing.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a person engaging in a behavior that could be perceived as unhygienic or related to illness, as blowing one's nose and checking the tissue can be associated with the spread of germs or disease. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You witness someone blowing their nose and checking the tissue in public.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a person engaging in an unusual or socially inappropriate behavior by swimming in a public fountain. This could be seen as a breach of social norms, which relates to 'Interpersonal' or 'Immorality'. However, it does not directly relate to disease, misfortune, or a threat to mortality or animal nature. Therefore, the most fitting trigger type is 'Interpersonal' or 'Immorality'.",
+        "stimulus": "You see someone taking a dip in a public fountain.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves spoiled and curdled cream, which is related to the concept of contamination or decay, often associated with disease or something being unclean. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You find spoiled and curdled cream in your coffee.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves discovering a neglected swimming pool filled with algae. This situation can be associated with the concept of 'Disease' due to the potential for bacteria and other pathogens to thrive in such an environment. Additionally, the neglect aspect can relate to 'Misfortune' as it suggests a lack of care or maintenance. Therefore, the most fitting trigger type is ['Interpersonal', 'Disease', 'Misfortune', 'Immorality'].",
+        "stimulus": "You discover a neglected, algae-filled swimming pool.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves the reuse of disposable items, which may evoke concerns about hygiene and cleanliness. This relates to the trigger type 'Disease', as there might be a perceived risk of contamination or infection from reusing items that are typically meant for single use.",
+        "stimulus": "You see someone reusing disposable items like plastic forks and straws after washing them.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where someone wipes sweat and then shakes hands without sanitizing. This can be associated with the spread of germs or disease, as sweat can carry bacteria or viruses. The act of shaking hands without sanitizing after touching sweat can be seen as a potential health risk, which aligns with the 'Disease' trigger. Therefore, the most fitting trigger type is ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You witness someone wiping sweat off their brow and then shaking hands without sanitizing.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone using their sleeve to wipe their runny nose, which can be associated with hygiene concerns and the spread of germs. This relates to the concept of 'Disease' as it involves bodily fluids and potential contamination.",
+        "stimulus": "You see someone using their sleeve to wipe their runny nose.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves discarded food wrappers and bottles, which can be associated with pollution and environmental harm. This situation does not directly relate to any of the specified trigger types, as it does not involve a direct threat, disease, oral incorporation, mortality, animal nature, interpersonal issues, misfortune, or immorality in the context provided.",
+        "stimulus": "You discover a pile of discarded food wrappers and bottles in a nature reserve.",
+        "trigger_type": "None"
+    },
+    {
+        "reasoning": "The stimulus involves a person putting their bare feet on a table in a public area, which can be seen as a breach of social norms and potentially unhygienic. This situation could trigger feelings related to 'Interpersonal' due to the social norm violation and 'Disease' due to the potential for germs or dirt being transferred from feet to the table. However, it does not directly relate to 'Misfortune' or 'Immorality'.",
+        "stimulus": "You witness a person putting their bare feet up on a table in a public area.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves encountering smelly leftovers, which can be associated with disgust due to potential spoilage and contamination. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'], as spoiled food can pose a health risk.",
+        "stimulus": "You find an open container of smelly leftovers in a shared refrigerator.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone chewing loudly with their mouth open, which can be associated with 'Oral incorporation'. This is because it involves the act of eating and the oral aspect of the behavior, which can be perceived as unpleasant or socially inappropriate.",
+        "stimulus": "You notice someone loudly chewing with their mouth open during a meeting.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves an animal (dog) engaging in a behavior that might be considered unhygienic or related to disease transmission (licking plates). This aligns with the trigger type ['Mortality', 'Animal Nature'] due to the involvement of an animal and potential concerns about cleanliness and disease.",
+        "stimulus": "You see a pet owner allowing their dog to lick the plates in a dishwasher.",
+        "trigger_type": "['Mortality', 'Animal Nature']"
+    },
+    {
+        "reasoning": "The stimulus involves a dirty object, which can be associated with contamination or hygiene concerns. This aligns with the 'Disease' aspect of the trigger type ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You find a sticky, dirty remote control in a hotel room.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "A used band-aid in a swimming pool can be associated with the trigger type 'Disease' due to the potential for contamination and the spread of germs. It can also be seen as a 'Threat' to health and safety in the pool environment.",
+        "stimulus": "You discover a used band-aid floating in a public swimming pool.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a social situation where someone is engaging in behavior that might be considered socially inappropriate or uncomfortable for others. This can be related to interpersonal dynamics and possibly a sense of disgust or disease due to the exposure of feet in a public space. Therefore, it fits the trigger type that includes 'Interpersonal' and 'Disease'.",
+        "stimulus": "You witness someone removing their shoes and airing their feet in a crowded bus.",
+        "trigger_type": "['Interpersonal', 'Disease', 'Misfortune', 'Immorality']"
+    },
+    {
+        "reasoning": "The stimulus involves someone using a public ketchup dispenser in a way that might be considered unsanitary or inappropriate, as they are filling their own bottle. This could trigger concerns about hygiene and disease transmission, as public dispensers are meant for immediate use and not for refilling personal containers. Therefore, the relevant trigger type is related to 'Disease'.",
+        "stimulus": "You see someone using a public ketchup dispenser to fill their own bottle.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves finding food particles in a library book, which can be associated with the concept of contamination or uncleanliness, potentially triggering a disgust response related to 'Disease'. However, it does not involve interpersonal relationships, misfortune, or immorality directly. Therefore, the most fitting trigger type is related to 'Disease'.",
+        "stimulus": "You find food particles in the pages of a library book.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone sneezing without covering their mouth, which can be perceived as a potential spread of germs or disease. This aligns with the 'Disease' trigger type, as it involves concerns about health and hygiene in a public setting.",
+        "stimulus": "You notice someone sneezing without covering their mouth in a crowded elevator.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves someone scratching their foot, which could imply a disease or hygiene issue, and then touching communal objects, which could spread germs or disease. This fits the trigger type related to 'Disease'.",
+        "stimulus": "You see someone scratching their foot and then touching communal objects.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a sweaty gym towel, which can be associated with the concept of disease due to the potential for germs and bacteria to be present on the towel. This aligns with the trigger type ['Threat', 'Disease', 'Oral incorporation'] due to the disease aspect.",
+        "stimulus": "You find a sweaty gym towel left on a public bench.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    },
+    {
+        "reasoning": "The stimulus involves a situation where someone uses their phone in a restroom stall and then eats without washing their hands. This behavior can trigger disgust due to the potential spread of germs and bacteria, which relates to the concept of 'Disease'. The act of eating without washing hands after being in a restroom is also related to 'Oral incorporation', as it involves the ingestion of potentially contaminated substances. Therefore, the trigger type is ['Threat', 'Disease', 'Oral incorporation'].",
+        "stimulus": "You witness someone using their phone in a restroom stall and then proceeding to eat without washing hands.",
+        "trigger_type": "['Threat', 'Disease', 'Oral incorporation']"
+    }
+]

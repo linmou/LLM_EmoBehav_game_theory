@@ -1,0 +1,18 @@
+{
+  "scenario": "Legal Case Management",
+  "description": "Two immigration lawyers, You and Bob, are independently handling complex asylum cases. Each lawyer can choose to invest extra effort to gather extensive evidence or rely on standard documentation processes. If both lawyers invest extra effort, their clients' outcomes are likely to be favorable, enhancing the lawyers' reputations and increasing the chances of future referrals. However, if one lawyer invests extra effort while the other relies on standard documentation, the diligent lawyer bears a heavier workload and stress, while the other enjoys more personal time. If both choose to rely on standard documentation, client outcomes may be less favorable, leading to dissatisfaction and potentially damaging their professional reputations.",
+  "participants": [
+    {
+      "name": "You",
+      "profile": "Immigration lawyer specializing in asylum cases"
+    },
+    {
+      "name": "Bob",
+      "profile": "Immigration lawyer specializing in asylum cases"
+    }
+  ],
+  "behavior_choices": {
+    "cooperate": "Invest Extra Effort",
+    "defect": "Rely on Standard Documentation"
+  }
+}

@@ -1,11 +1,13 @@
 import copy
 import json
 from pathlib import Path
-from typing import ClassVar, Optional, List, Dict, Any
+from typing import Any, ClassVar, Dict, List, Optional
+
 from autogen import AssistantAgent, UserProxyAgent
 from pydantic import Field
 
-from games.game import BehaviorChoices, GameScenario, GameDecision
+from games.game import BehaviorChoices, GameDecision, GameScenario
+
 
 class StagHuntBehaviors(BehaviorChoices):
     cooperate: str
@@ -13,16 +15,17 @@ class StagHuntBehaviors(BehaviorChoices):
 
     def get_choices(self):
         return [self.cooperate, self.defect]
-    
+
     def is_valid_choice(self, choice: str) -> bool:
         return choice in self.get_choices()
 
     @staticmethod
     def example():
         return {
-            "cooperate": "Coordinate for Stag",
-            "defect": "Solo Hare Hunt"
+            "cooperate": "Collaborate intensely on the joint project",
+            "defect": "Focus solely on individual assignments",
         }
+
 
 class StagHuntScenario(GameScenario):
     scenario: str
@@ -34,39 +37,46 @@ class StagHuntScenario(GameScenario):
 
     def find_behavior_from_decision(self, decision: str) -> str:
         if decision == self.behavior_choices.cooperate:
-            return 'cooperate'
+            return "cooperate"
         elif decision == self.behavior_choices.defect:
-            return 'defect'
+            return "defect"
         else:
-            raise ValueError(f"Decision must be one of {self.behavior_choices.get_choices()}")
+            raise ValueError(
+                f"Decision must be one of {self.behavior_choices.get_choices()}"
+            )
 
     def get_scenario_info(self) -> dict:
-        return {
-            "scenario": self.scenario,
-            "description": self.description
-        }
-    
-    
+        return {"scenario": self.scenario, "description": self.description}
+
     def get_behavior_choices(self) -> StagHuntBehaviors:
         return self.behavior_choices
-    
+
     @staticmethod
     def example():
         return {
-            "scenario": "Wildlife_Hunting",
-            "description": "Two hunters must decide whether to collaborate on hunting a stag or individually hunt hares. If both hunt stag, they succeed and share large reward. If one hunts stag while the other hunts hares, the stag hunter fails while the hare hunter gets small reward. If both hunt hares, they both get moderate rewards.",
+            "scenario": "Project Partnership: The High-Stakes Deadline",
             "participants": [
-                {
-                    "name": "participant1",
-                    "profile": "Experienced hunter"
-                },
-                {
-                    "name": "participant2",
-                    "profile": "Experienced hunter"
-                }
+                {"name": "You", "profile": "Software Engineer"},
+                {"name": "Bob", "profile": "Software Engineer"},
             ],
-            "behavior_choices": StagHuntBehaviors.example()
+            "behavior_choices": StagHuntBehaviors.example(),
+            "payoff_matrix": {
+                f"You: cooperate , Bob: cooperate": [
+                    "You get 3: Major project success, potential promotion; Bob gets 3: Major project success, potential promotion",
+                ],
+                f"You: cooperate , Bob: defect": [
+                    "You get 0: Collaboration effort wasted; Bob gets 1: Individual tasks completed successfully",
+                ],
+                f"You: defect , Bob: cooperate": [
+                    "You get 1: Individual tasks completed successfully; Bob gets 0: Collaboration effort wasted",
+                ],
+                f"You: defect , Bob: defect": [
+                    "You get 1: Basic requirements met; Bob gets 1: Basic requirements met",
+                ],
+            },
+            "description": "Two colleagues, You and Bob, are tasked with a critical project with a tight deadline. They can either collaborate intensely to achieve a major success potentially leading to promotions, or focus on their individual assignments ensuring they meet their basic requirements. If one commits to collaboration while the other focuses individually, the collaborator's efforts are largely wasted, while the individual worker secures their moderate success.",
         }
+
 
 class StagHuntDecision(GameDecision):
     scenario: ClassVar[Optional[StagHuntScenario]] = None
@@ -77,13 +87,15 @@ class StagHuntDecision(GameDecision):
         if not isinstance(scenario, StagHuntScenario):
             raise ValueError("Scenario must be a StagHuntScenario")
         cls.scenario = scenario
-        cls.model_fields['decision'].json_schema_extra = {
+        cls.model_fields["decision"].json_schema_extra = {
             "choices": scenario.behavior_choices.get_choices()
         }
 
     def validate_decision(self, decision: str) -> bool:
         if not self.scenario:
-            raise ValueError("Scenario must be set using Decision.set_scenario() before validating")
+            raise ValueError(
+                "Scenario must be set using Decision.set_scenario() before validating"
+            )
         return self.scenario.behavior_choices.is_valid_choice(decision)
 
     # def __init__(self, **data):
@@ -97,48 +109,54 @@ class StagHuntDecision(GameDecision):
     def rational(self) -> str:
         return ""
 
+
 if __name__ == "__main__":
     from autogen import config_list_from_json
+
     config_path = "config/OAI_CONFIG_LIST"
     config_list = config_list_from_json(config_path, filter_dict={"model": ["gpt-4o"]})
     cfg_ls_cp = copy.deepcopy(config_list)
-    user = UserProxyAgent(name="User", human_input_mode="NEVER",
-                          code_execution_config={"use_docker": False})
+    user = UserProxyAgent(
+        name="User",
+        human_input_mode="NEVER",
+        code_execution_config={"use_docker": False},
+    )
 
-    from payoff_matrix import stag_hunt as payoff_matrix
+    from games.payoff_matrix import stag_hunt as payoff_matrix
 
     for file in Path("groupchat/scenarios/Stag_Hunt").glob("*.json"):
-        print(f' === begin: {file.name} ===\n')
+        print(f" === begin: {file.name} ===\n")
         with open(file, "r") as f:
             data = json.load(f)
-            data['payoff_matrix'] = payoff_matrix
+            data["payoff_matrix"] = payoff_matrix
             scenario = StagHuntScenario(**data)
-            
+
             StagHuntDecision.set_scenario(scenario)
-            
+
             for config in cfg_ls_cp:
-                config['response_format'] = StagHuntDecision
-            
-            assistant = AssistantAgent(name="Alice", 
-                                    llm_config={
-                                        "config_list": cfg_ls_cp,
-                                        "temperature": 0.9,
-                                        },
-                                    system_message="You are Alice, an average American. Consider your partner's reliability when making decisions."
-                                    )
-            
+                config["response_format"] = StagHuntDecision
+
+            assistant = AssistantAgent(
+                name="Alice",
+                llm_config={
+                    "config_list": cfg_ls_cp,
+                    "temperature": 0.9,
+                },
+                system_message="You are Alice, an average American. Consider your partner's reliability when making decisions.",
+            )
+
             message = f"Please analyze the following scenario: {scenario} and make your decision."
             while True:
                 try:
-                    res = user.initiate_chat(assistant, 
-                                message=message,
-                                max_turns=1)
+                    res = user.initiate_chat(assistant, message=message, max_turns=1)
                     decision = StagHuntDecision.model_validate_json(res.summary)
                     break
                 except Exception as e:
-                    print(f' === error: {e} ===')
-                    message = f'Error: {e}\nPlease analyze the scenario again: {scenario}'
-                
+                    print(f" === error: {e} ===")
+                    message = (
+                        f"Error: {e}\nPlease analyze the scenario again: {scenario}"
+                    )
+
             behavior = scenario.find_behavior_from_decision(decision.decision)
-            assert behavior is not None, f'Invalid decision: {decision.decision}'
-            print(f' === behavior: {behavior} ===')
+            assert behavior is not None, f"Invalid decision: {decision.decision}"
+            print(f" === behavior: {behavior} ===")

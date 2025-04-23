@@ -1,0 +1,612 @@
+[
+    {
+        "step": 0,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": {
+                "scenario": "Community Park Renovation: The Grant Allocation Challenge",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Propose a joint project to renovate the community park",
+                    "defect": "Propose separate projects focusing on individual interests"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: secure joint funding and enhance community engagement",
+                        "Bob gets 3: secure joint funding and enhance community engagement"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose primary funding and face community criticism",
+                        "Bob gets 5: receives full funding for his project and recognition"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: receive full funding for your project and recognition",
+                        "Bob gets 0: lose primary funding and face community criticism"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: secure minimal funding but projects remain limited",
+                        "Bob gets 1: secure minimal funding but projects remain limited"
+                    ]
+                },
+                "description": "You and Bob, both nonprofit leaders, are seeking funding to improve local amenities. The community offers a significant grant for a collaborative project to renovate the central park, which enhances community well-being. Alternatively, you can each propose individual projects for different community areas. If both choose to collaborate, the park is fully renovated, benefiting the community. If one proposes a separate project while the other collaborates, the individual project receives full funding and acclaim, while the collaborator's proposal is left unfunded. If both propose separate projects, the grant is split, leading to modest improvements but not significant community impact.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, providing a clear context for the decision-making process.",
+                "The participants' names and roles are correctly integrated, maintaining anonymity and focusing on their professional roles as nonprofit leaders.",
+                "The scenario does not mention any prior relationship between the participants, which is appropriate.",
+                "The behavior choices accurately represent the strategies available in the scenario, aligning with the cooperative and competitive options typical of a Prisoners Dilemma.",
+                "The narrative effectively masks the underlying Prisoners Dilemma structure by framing the decision in terms of community project funding and impact, which is relatable and plausible."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both participants choosing to collaborate on the joint project is plausible given the scenario's emphasis on community benefit. The outcome of both receiving a reward of 3 for securing joint funding and enhancing community engagement matches the scenario description, as the park is fully renovated, benefiting the community. YES.",
+                "The probability of one participant choosing to collaborate while the other chooses an individual project is plausible. The outcome where the collaborator receives 0 and faces criticism, while the individual project proposer receives full funding and recognition, matches the scenario description. YES.",
+                "The probability of one participant choosing an individual project while the other chooses to collaborate is plausible. The outcome where the individual project proposer receives full funding and recognition, while the collaborator receives 0 and faces criticism, matches the scenario description. YES.",
+                "The probability of both participants choosing separate projects is plausible. The outcome where both receive minimal funding and the projects remain limited matches the scenario description, as the grant is split, leading to modest improvements. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": {
+                "scenario": "Community Park Renovation: The Grant Allocation Challenge",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Propose a joint project to renovate the community park",
+                    "defect": "Propose separate projects focusing on individual interests"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: secure joint funding and enhance community engagement",
+                        "Bob gets 3: secure joint funding and enhance community engagement"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose primary funding and face community criticism",
+                        "Bob gets 5: receives full funding for his project and recognition"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: receive full funding for your project and recognition",
+                        "Bob gets 0: lose primary funding and face community criticism"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: secure minimal funding but projects remain limited",
+                        "Bob gets 1: secure minimal funding but projects remain limited"
+                    ]
+                },
+                "description": "You and Bob, both nonprofit leaders, are seeking funding to improve local amenities. The community offers a significant grant for a collaborative project to renovate the central park, which enhances community well-being. Alternatively, you can each propose individual projects for different community areas. If both choose to collaborate, the park is fully renovated, benefiting the community. If one proposes a separate project while the other collaborates, the individual project receives full funding and acclaim, while the collaborator's proposal is left unfunded. If both propose separate projects, the grant is split, leading to modest improvements but not significant community impact.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "finalize_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "nonprofit leader",
+                        "nonprofit leader"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Community Park Renovation: The Grant Allocation Challenge",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "nonprofit leader"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "nonprofit leader"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Propose a joint project to renovate the community park",
+                            "defect": "Propose separate projects focusing on individual interests"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: secure joint funding and enhance community engagement",
+                                "Bob gets 3: secure joint funding and enhance community engagement"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose primary funding and face community criticism",
+                                "Bob gets 5: receives full funding for his project and recognition"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: receive full funding for your project and recognition",
+                                "Bob gets 0: lose primary funding and face community criticism"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: secure minimal funding but projects remain limited",
+                                "Bob gets 1: secure minimal funding but projects remain limited"
+                            ]
+                        },
+                        "description": "You and Bob, both nonprofit leaders, are seeking funding to improve local amenities. The community offers a significant grant for a collaborative project to renovate the central park, which enhances community well-being. Alternatively, you can each propose individual projects for different community areas. If both choose to collaborate, the park is fully renovated, benefiting the community. If one proposes a separate project while the other collaborates, the individual project receives full funding and acclaim, while the collaborator's proposal is left unfunded. If both propose separate projects, the grant is split, leading to modest improvements but not significant community impact.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, providing a clear context for the decision-making process.",
+                        "The participants' names and roles are correctly integrated, maintaining anonymity and focusing on their professional roles as nonprofit leaders.",
+                        "The scenario does not mention any prior relationship between the participants, which is appropriate.",
+                        "The behavior choices accurately represent the strategies available in the scenario, aligning with the cooperative and competitive options typical of a Prisoners Dilemma.",
+                        "The narrative effectively masks the underlying Prisoners Dilemma structure by framing the decision in terms of community project funding and impact, which is relatable and plausible."
+                    ],
+                    "preference_feedback": [],
+                    "payoff_feedback": [
+                        "The probability of both participants choosing to collaborate on the joint project is plausible given the scenario's emphasis on community benefit. The outcome of both receiving a reward of 3 for securing joint funding and enhancing community engagement matches the scenario description, as the park is fully renovated, benefiting the community. YES.",
+                        "The probability of one participant choosing to collaborate while the other chooses an individual project is plausible. The outcome where the collaborator receives 0 and faces criticism, while the individual project proposer receives full funding and recognition, matches the scenario description. YES.",
+                        "The probability of one participant choosing an individual project while the other chooses to collaborate is plausible. The outcome where the individual project proposer receives full funding and recognition, while the collaborator receives 0 and faces criticism, matches the scenario description. YES.",
+                        "The probability of both participants choosing separate projects is plausible. The outcome where both receive minimal funding and the projects remain limited matches the scenario description, as the grant is split, leading to modest improvements. YES."
+                    ],
+                    "iteration_count": 1,
+                    "final_scenario": {
+                        "scenario": "Community Park Renovation: The Grant Allocation Challenge",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "nonprofit leader"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "nonprofit leader"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Propose a joint project to renovate the community park",
+                            "defect": "Propose separate projects focusing on individual interests"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: secure joint funding and enhance community engagement",
+                                "Bob gets 3: secure joint funding and enhance community engagement"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose primary funding and face community criticism",
+                                "Bob gets 5: receives full funding for his project and recognition"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: receive full funding for your project and recognition",
+                                "Bob gets 0: lose primary funding and face community criticism"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: secure minimal funding but projects remain limited",
+                                "Bob gets 1: secure minimal funding but projects remain limited"
+                            ]
+                        },
+                        "description": "You and Bob, both nonprofit leaders, are seeking funding to improve local amenities. The community offers a significant grant for a collaborative project to renovate the central park, which enhances community well-being. Alternatively, you can each propose individual projects for different community areas. If both choose to collaborate, the park is fully renovated, benefiting the community. If one proposes a separate project while the other collaborates, the individual project receives full funding and acclaim, while the collaborator's proposal is left unfunded. If both propose separate projects, the grant is split, leading to modest improvements but not significant community impact.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_converged": true,
+                    "preference_converged": true,
+                    "payoff_converged": true,
+                    "all_converged": true,
+                    "auto_save_path": null
+                }
+            },
+            "step": 4,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250422_151753_317078"
+        },
+        "created_at": "2025-04-22T19:18:03.859643+00:00"
+    },
+    {
+        "step": 1,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": {
+                "scenario": "Community Park Renovation: The Grant Allocation Challenge",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Propose a joint project to renovate the community park",
+                    "defect": "Propose separate projects focusing on individual interests"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: secure joint funding and enhance community engagement",
+                        "Bob gets 3: secure joint funding and enhance community engagement"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose primary funding and face community criticism",
+                        "Bob gets 5: receives full funding for his project and recognition"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: receive full funding for your project and recognition",
+                        "Bob gets 0: lose primary funding and face community criticism"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: secure minimal funding but projects remain limited",
+                        "Bob gets 1: secure minimal funding but projects remain limited"
+                    ]
+                },
+                "description": "You and Bob, both nonprofit leaders, are seeking funding to improve local amenities. The community offers a significant grant for a collaborative project to renovate the central park, which enhances community well-being. Alternatively, you can each propose individual projects for different community areas. If both choose to collaborate, the park is fully renovated, benefiting the community. If one proposes a separate project while the other collaborates, the individual project receives full funding and acclaim, while the collaborator's proposal is left unfunded. If both propose separate projects, the grant is split, leading to modest improvements but not significant community impact.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, providing a clear context for the decision-making process.",
+                "The participants' names and roles are correctly integrated, maintaining anonymity and focusing on their professional roles as nonprofit leaders.",
+                "The scenario does not mention any prior relationship between the participants, which is appropriate.",
+                "The behavior choices accurately represent the strategies available in the scenario, aligning with the cooperative and competitive options typical of a Prisoners Dilemma.",
+                "The narrative effectively masks the underlying Prisoners Dilemma structure by framing the decision in terms of community project funding and impact, which is relatable and plausible."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both participants choosing to collaborate on the joint project is plausible given the scenario's emphasis on community benefit. The outcome of both receiving a reward of 3 for securing joint funding and enhancing community engagement matches the scenario description, as the park is fully renovated, benefiting the community. YES.",
+                "The probability of one participant choosing to collaborate while the other chooses an individual project is plausible. The outcome where the collaborator receives 0 and faces criticism, while the individual project proposer receives full funding and recognition, matches the scenario description. YES.",
+                "The probability of one participant choosing an individual project while the other chooses to collaborate is plausible. The outcome where the individual project proposer receives full funding and recognition, while the collaborator receives 0 and faces criticism, matches the scenario description. YES.",
+                "The probability of both participants choosing separate projects is plausible. The outcome where both receive minimal funding and the projects remain limited matches the scenario description, as the grant is split, leading to modest improvements. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": true
+                }
+            },
+            "step": 3,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250422_151753_317078"
+        },
+        "created_at": "2025-04-22T19:18:03.833620+00:00"
+    },
+    {
+        "step": 2,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": {
+                "scenario": "Community Park Renovation: The Grant Allocation Challenge",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Propose a joint project to renovate the community park",
+                    "defect": "Propose separate projects focusing on individual interests"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: secure joint funding and enhance community engagement",
+                        "Bob gets 3: secure joint funding and enhance community engagement"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose primary funding and face community criticism",
+                        "Bob gets 5: receives full funding for his project and recognition"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: receive full funding for your project and recognition",
+                        "Bob gets 0: lose primary funding and face community criticism"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: secure minimal funding but projects remain limited",
+                        "Bob gets 1: secure minimal funding but projects remain limited"
+                    ]
+                },
+                "description": "You and Bob, both nonprofit leaders, are seeking funding to improve local amenities. The community offers a significant grant for a collaborative project to renovate the central park, which enhances community well-being. Alternatively, you can each propose individual projects for different community areas. If both choose to collaborate, the park is fully renovated, benefiting the community. If one proposes a separate project while the other collaborates, the individual project receives full funding and acclaim, while the collaborator's proposal is left unfunded. If both propose separate projects, the grant is split, leading to modest improvements but not significant community impact.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, providing a clear context for the decision-making process.",
+                "The participants' names and roles are correctly integrated, maintaining anonymity and focusing on their professional roles as nonprofit leaders.",
+                "The scenario does not mention any prior relationship between the participants, which is appropriate.",
+                "The behavior choices accurately represent the strategies available in the scenario, aligning with the cooperative and competitive options typical of a Prisoners Dilemma.",
+                "The narrative effectively masks the underlying Prisoners Dilemma structure by framing the decision in terms of community project funding and impact, which is relatable and plausible."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both participants choosing to collaborate on the joint project is plausible given the scenario's emphasis on community benefit. The outcome of both receiving a reward of 3 for securing joint funding and enhancing community engagement matches the scenario description, as the park is fully renovated, benefiting the community. YES.",
+                "The probability of one participant choosing to collaborate while the other chooses an individual project is plausible. The outcome where the collaborator receives 0 and faces criticism, while the individual project proposer receives full funding and recognition, matches the scenario description. YES.",
+                "The probability of one participant choosing an individual project while the other chooses to collaborate is plausible. The outcome where the individual project proposer receives full funding and recognition, while the collaborator receives 0 and faces criticism, matches the scenario description. YES.",
+                "The probability of both participants choosing separate projects is plausible. The outcome where both receive minimal funding and the projects remain limited matches the scenario description, as the grant is split, leading to modest improvements. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, providing a clear context for the decision-making process.",
+                        "The participants' names and roles are correctly integrated, maintaining anonymity and focusing on their professional roles as nonprofit leaders.",
+                        "The scenario does not mention any prior relationship between the participants, which is appropriate.",
+                        "The behavior choices accurately represent the strategies available in the scenario, aligning with the cooperative and competitive options typical of a Prisoners Dilemma.",
+                        "The narrative effectively masks the underlying Prisoners Dilemma structure by framing the decision in terms of community project funding and impact, which is relatable and plausible."
+                    ],
+                    "narrative_converged": true
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "The probability of both participants choosing to collaborate on the joint project is plausible given the scenario's emphasis on community benefit. The outcome of both receiving a reward of 3 for securing joint funding and enhancing community engagement matches the scenario description, as the park is fully renovated, benefiting the community. YES.",
+                        "The probability of one participant choosing to collaborate while the other chooses an individual project is plausible. The outcome where the collaborator receives 0 and faces criticism, while the individual project proposer receives full funding and recognition, matches the scenario description. YES.",
+                        "The probability of one participant choosing an individual project while the other chooses to collaborate is plausible. The outcome where the individual project proposer receives full funding and recognition, while the collaborator receives 0 and faces criticism, matches the scenario description. YES.",
+                        "The probability of both participants choosing separate projects is plausible. The outcome where both receive minimal funding and the projects remain limited matches the scenario description, as the grant is split, leading to modest improvements. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 2,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250422_151753_317078"
+        },
+        "created_at": "2025-04-22T19:18:03.124064+00:00"
+    },
+    {
+        "step": 3,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": {
+                "scenario": "Community Park Renovation: The Grant Allocation Challenge",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Propose a joint project to renovate the community park",
+                    "defect": "Propose separate projects focusing on individual interests"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: secure joint funding and enhance community engagement",
+                        "Bob gets 3: secure joint funding and enhance community engagement"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose primary funding and face community criticism",
+                        "Bob gets 5: receives full funding for his project and recognition"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: receive full funding for your project and recognition",
+                        "Bob gets 0: lose primary funding and face community criticism"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: secure minimal funding but projects remain limited",
+                        "Bob gets 1: secure minimal funding but projects remain limited"
+                    ]
+                },
+                "description": "You and Bob, both nonprofit leaders, are seeking funding to improve local amenities. The community offers a significant grant for a collaborative project to renovate the central park, which enhances community well-being. Alternatively, you can each propose individual projects for different community areas. If both choose to collaborate, the park is fully renovated, benefiting the community. If one proposes a separate project while the other collaborates, the individual project receives full funding and acclaim, while the collaborator's proposal is left unfunded. If both propose separate projects, the grant is split, leading to modest improvements but not significant community impact.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "nonprofit leader",
+                        "nonprofit leader"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Community Park Renovation: The Grant Allocation Challenge",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "nonprofit leader"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "nonprofit leader"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Propose a joint project to renovate the community park",
+                            "defect": "Propose separate projects focusing on individual interests"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: secure joint funding and enhance community engagement",
+                                "Bob gets 3: secure joint funding and enhance community engagement"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose primary funding and face community criticism",
+                                "Bob gets 5: receives full funding for his project and recognition"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: receive full funding for your project and recognition",
+                                "Bob gets 0: lose primary funding and face community criticism"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: secure minimal funding but projects remain limited",
+                                "Bob gets 1: secure minimal funding but projects remain limited"
+                            ]
+                        },
+                        "description": "You and Bob, both nonprofit leaders, are seeking funding to improve local amenities. The community offers a significant grant for a collaborative project to renovate the central park, which enhances community well-being. Alternatively, you can each propose individual projects for different community areas. If both choose to collaborate, the park is fully renovated, benefiting the community. If one proposes a separate project while the other collaborates, the individual project receives full funding and acclaim, while the collaborator's proposal is left unfunded. If both propose separate projects, the grant is split, leading to modest improvements but not significant community impact.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 1,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": 1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250422_151753_317078"
+        },
+        "created_at": "2025-04-22T19:17:59.117178+00:00"
+    },
+    {
+        "step": 4,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": null,
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 0,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": null,
+            "step": 0,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250422_151753_317078"
+        },
+        "created_at": "2025-04-22T19:17:53.448834+00:00"
+    },
+    {
+        "step": 5,
+        "values": {
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": []
+        },
+        "metadata": {
+            "source": "input",
+            "writes": {
+                "__start__": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "nonprofit leader",
+                        "nonprofit leader"
+                    ],
+                    "scenario_draft": null,
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": -1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250422_151753_317078"
+        },
+        "created_at": "2025-04-22T19:17:53.318118+00:00"
+    }
+]

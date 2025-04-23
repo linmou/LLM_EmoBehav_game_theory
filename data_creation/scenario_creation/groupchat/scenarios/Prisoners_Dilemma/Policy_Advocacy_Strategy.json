@@ -1,0 +1,12 @@
+{
+    "scenario": "Policy Advocacy Strategy",
+    "description": "Two policy advocates, You and Bob, are tasked with influencing a key piece of legislation. They must decide whether to collaborate by sharing resources and contacts or to work independently. If both collaborate, they increase the chances of passing the legislation, gaining recognition and funding. If one collaborates while the other works independently, the one who works independently may gain more political clout and credit. If neither collaborates, the legislation has minimal chance of passing, resulting in loss of future influence and potential funding.",
+    "participants": [
+        {"name": "You", "profile": "Policy Advocate"},
+        {"name": "Bob", "profile": "Policy Advocate"}
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate and Share Resources",
+        "defect": "Work Independently"
+    }
+}

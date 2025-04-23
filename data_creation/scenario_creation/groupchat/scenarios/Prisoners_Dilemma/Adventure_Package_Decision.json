@@ -1,0 +1,18 @@
+{
+    "scenario": "Adventure Package Decision",
+    "description": "You and Bob, both tour operators, must decide whether to include a premium add-on feature in their adventure package. If both include it, more tourists are attracted and profits increase. If one includes it while the other doesn't, the one including the feature attracts premium tourists, while the other targets budget tourists. If neither includes it, the package appeals broadly, but with moderate success.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Tour Operator"
+        },
+        {
+            "name": "Bob",
+            "profile": "Tour Operator"
+        }
+    ],
+    "behavior_choices": {
+        "Include Premium Feature": "Opt to add the hot air balloon ride",
+        "Basic Package Only": "Stick to the standard adventure package without add-ons"
+    }
+}

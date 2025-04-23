@@ -1,0 +1,18 @@
+{
+    "scenario": "Campaign Strategy Decision",
+    "description": "You and Bob are маркетинговый консультант tasked with developing a marketing campaign for a new product. Each consultant must decide whether to share their unique insights and strategies with the other or keep their ideas to themselves. If both share their strategies, the campaign benefits from diverse insights leading to higher success and potential bonuses. If one shares while the other does not, the sharer feels exploited, and the campaign lacks robustness. If neither shares, the campaign is mediocre and gains minimal traction with no bonuses.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "You as a маркетинговый консультант"
+        },
+        {
+            "name": "Bob",
+            "profile": "Bob as a маркетинговый консультант"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Share Insights",
+        "defect": "Keep Ideas Private"
+    }
+}

@@ -1,0 +1,52 @@
+{
+    "anger": {
+        "emotion": "anger",
+        "triggers": [
+            {
+                "tag": [
+                    "Threats",
+                    "Controllable",
+                    "Inescapable"
+                ],
+                "description": "A controllable but inescapable threat is likely to elicit reactive aggression and anger"
+            },
+            {
+                "tag": [
+                    "Reward",
+                    "Unattainable",
+                    "ExternalBlock"
+                ],
+                "description": "Anticipate reward can not be achieved owing to non-self factors will lead to anger"
+            }
+        ]
+    },
+    "disgust": {
+        "emotion": "disgust",
+        "triggers": [
+            {
+                "tag": [
+                    "Threat",
+                    "Disease",
+                    "Oral incorporation"
+                ],
+                "description": "A food-rejection response centered on avoiding the intake of offensive stimuli"
+            },
+            {
+                "tag": [
+                    "Mortality",
+                    "Animal Nature"
+                ],
+                "description": "Animal-reminder disgust is a reminder of our own mortality and inherent animalistic nature, about sex, injury to the body or violations of its outer envelope, and death"
+            },
+            {
+                "tag": [
+                    "Interpersonal",
+                    "Disease",
+                    "Misfortune",
+                    "Immorality"
+                ],
+                "description": "related to the avoidance of disease probability through pathways other than ingestion"
+            }
+        ]
+    }
+}

@@ -1,3 +1,4 @@
+.env
 *.pyc
 OAI_CONFIG_LIST
 api_configs.py
@@ -8,3 +9,4 @@ neuro_manipulation/representation_storage
 groupchat/agent_groups
 *.mdc
 test_outputs/*
+data_creation/scenario_creation/langgraph_creation/scenarios/*

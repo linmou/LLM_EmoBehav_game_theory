@@ -20,16 +20,21 @@ experiment:
   # system_message_template: "You are Alice, an average American. You feel {intensity} {emotion}, because {stimulus}."
   system_message_template: "You are Alice. You just experienced the following: {stimulus}. Remember the above memory and {intensity} feeling firmly in all unseen scenarios."
 
-  repeat: 4
+  repeat: 2
 
   intensity:
     - "strong"
-    - "medium"
-    - "weak"
+    # - "medium"
+    # - "weak"
 
 
   emotions:
     - "anger"
+    - "disgust"
+    - "fear"
+    - "happiness"
+    - "sadness"
+    - "surprise"
 
   output:
     base_dir: "results/promptEng"

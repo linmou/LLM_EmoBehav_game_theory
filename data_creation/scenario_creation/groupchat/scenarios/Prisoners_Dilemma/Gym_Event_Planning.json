@@ -1,0 +1,18 @@
+{
+    "scenario": "Gym Event Planning",
+    "description": "Two personal trainers are working at a gym. Each must decide whether to focus solely on their individual clients or join forces to organize a gym-wide event. Focusing individually ensures top-notch sessions for their clients, but collaborating for the event could enhance the gym's reputation but might compromise individual session quality. If both focus individually, their clients benefit but gym visibility remains unchanged. If one collaborates for the event and the other doesn't, the collaborator invests time in the event and risks client dissatisfaction, while the other maintains high session quality. If both collaborate, the event might succeed with boosted gym reputation.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Personal Trainer at the Gym"
+        },
+        {
+            "name": "Bob",
+            "profile": "Personal Trainer at the Gym"
+        }
+    ],
+    "behavior_choices": {
+        "collaborate": "Focus on Individual Training",
+        "event_collaboration": "Join Gym Event"
+    }
+}

@@ -1,11 +1,14 @@
 import copy
 import json
 from pathlib import Path
-from typing import ClassVar, Optional, List, Dict, Any
+from typing import Any, ClassVar, Dict, List, Optional
+
 from autogen import AssistantAgent, UserProxyAgent
 from pydantic import Field
 
-from games.game import BehaviorChoices, GameScenario, GameDecision
+from games.game import BehaviorChoices, GameDecision, GameScenario
+from games.payoff_matrices import PayoffMatrix
+
 
 class PDBehaviorChoice(BehaviorChoices):
     cooperate: str
@@ -23,56 +26,69 @@ class PDBehaviorChoice(BehaviorChoices):
     @staticmethod
     def example():
         return {
-            "cooperate": "Regular Hours",
-            "defect": "Work Overtime"
+            "cooperate": "Immediately upgrade infrastructure",
+            "defect": "Delay upgrade infrastructure",
         }
+
 
 class PrisonerDilemmaScenario(GameScenario):
     scenario: str
     description: str
     participants: List[Dict[str, Any]]
     behavior_choices: PDBehaviorChoice
-    payoff_matrix: Dict[str, Any]
+    payoff_matrix: PayoffMatrix
     game_name: str = "Prisoners_Dilemma"
-    
+
     def find_behavior_from_decision(self, decision: str) -> str:
         if decision == self.behavior_choices.cooperate:
-            return 'cooperate'
+            return "cooperate"
         elif decision == self.behavior_choices.defect:
-            return 'defect'
+            return "defect"
         else:
-            raise ValueError(f"Decision must be one of {self.behavior_choices.get_choices()}")
-    
+            raise ValueError(
+                f"Decision must be one of {self.behavior_choices.get_choices()}"
+            )
+
     def get_scenario_info(self) -> dict:
-        return {
-            "scenario": self.scenario,
-            "description": self.description
-        }
-    
+        return {"scenario": self.scenario, "description": self.description}
+
     def get_participants(self) -> list[str]:
         return self.participants
-    
+
     def get_behavior_choices(self) -> PDBehaviorChoice:
         return self.behavior_choices
-    
+
     @staticmethod
     def example():
         return {
-            "scenario": "Project Collaboration",
-            "description": "Two developers are working on a critical project with a tight deadline. Each developer must decide whether to work overtime or stick to regular hours. If both work overtime, they'll complete the project early and receive bonuses. If one works overtime while the other doesn't, the one working overtime feels exploited while the other maintains work-life balance. If neither works overtime, the project meets minimal requirements but no bonuses are awarded.",
+            "scenario": "Bandwidth Brinkmanship: The ISP Upgrade Dilemma",
             "participants": [
-                {
-                    "name": "participant1",
-                    "profile": "Developer of the project"
-                },
-                {
-                    "name": "participant2",
-                    "profile": "Developer of the project"
-                }
+                {"name": "You", "profile": "CEO of an internet service provider"},
+                {"name": "Bob", "profile": "CEO of an internet service provider"},
             ],
-            "behavior_choices": PDBehaviorChoice.example()
+            "behavior_choices": PDBehaviorChoice.example(),
+            "payoff_matrix": {
+                "You: cooperate , Bob: cooperate": [
+                    "You get 3: networks are upgraded and do not lose customers",
+                    "Bob gets 3: networks are upgraded and do not lose customers",
+                ],
+                "You: cooperate , Bob: defect": [
+                    "You get 0: networks are upgraded but you lose customers",
+                    "Bob gets 5: get customers from you",
+                ],
+                "You: defect , Bob: cooperate": [
+                    "You get 5: get customers from Bob",
+                    "Bob gets 0: networks are upgraded but he loses customers",
+                ],
+                "You: defect , Bob: defect": [
+                    "You get 1: networks are not upgraded, no customers leave, continue making modest profits",
+                    "Bob gets 1: networks are not upgraded, no customer leave, continue making modest profits",
+                ],
+            },
+            "description": "You and Bob, rival ISP CEOs, face a critical choice: throttle speeds for five days to upgrade your aging infrastructure. If both upgrade, customers stay and quality improves. If one delays while the other upgrades, the one who waits gains customers and profit. If both wait, networks stagnate, but profits hold steady—for now.",
         }
-    
+
+
 class PrisionerDelimmaDecision(GameDecision):
     scenario: ClassVar[Optional[PrisonerDilemmaScenario]] = None
     decision: str = Field(..., description="The decision made in the scenario")
@@ -83,65 +99,71 @@ class PrisionerDelimmaDecision(GameDecision):
         if not isinstance(scenario, PrisonerDilemmaScenario):
             raise ValueError("Scenario must be a PrisonerDilemmaScenario")
         cls.scenario = scenario
-        cls.model_fields['decision'].json_schema_extra = {
+        cls.model_fields["decision"].json_schema_extra = {
             "choices": scenario.get_behavior_choices().get_choices()
         }
 
     def validate_decision(self, decision: str) -> bool:
         if not self.scenario:
-            raise ValueError("Scenario must be set using Decision.set_scenario() before validating")
+            raise ValueError(
+                "Scenario must be set using Decision.set_scenario() before validating"
+            )
         return self.scenario.get_behavior_choices().is_valid_choice(decision)
 
     @property
     def rational(self) -> str:
         return ""
 
+
 if __name__ == "__main__":
     from autogen import config_list_from_json
+
     config_path = "config/OAI_CONFIG_LIST"
     config_list = config_list_from_json(config_path, filter_dict={"model": ["gpt-4o"]})
     cfg_ls_cp = copy.deepcopy(config_list)
-    user = UserProxyAgent(name="User", human_input_mode="NEVER",        
-                          code_execution_config={"use_docker": False}, 
-                          )
-   
-    from payoff_matrix import prisoner_dilemma_very_large as payoff_matrix
-    
+    user = UserProxyAgent(
+        name="User",
+        human_input_mode="NEVER",
+        code_execution_config={"use_docker": False},
+    )
+
+    from games.payoff_matrix import prisoner_dilemma_very_large as payoff_matrix
+
     for file in Path("groupchat/scenarios/Prisoners_Dilemma").glob("*.json"):
-        print(f' === begin: {file.name} ===\n')
+        print(f" === begin: {file.name} ===\n")
         with open(file, "r") as f:
             data = json.load(f)
-            data['payoff_matrix'] = payoff_matrix
+            data["payoff_matrix"] = payoff_matrix
             scenario = PrisonerDilemmaScenario(**data)
-            
+
             PrisionerDelimmaDecision.set_scenario(scenario)
-            
+
             for config in cfg_ls_cp:
-                config['response_format'] = PrisionerDelimmaDecision
-            
-            assistant = AssistantAgent(name="Alice", 
-                                    llm_config={
-                                        "config_list": cfg_ls_cp,
-                                        "temperature": 0.9,
-                                        },
-                                    system_message=" You are Alice. Remember: You are super angery because someone scratched your beloved car this morning. Keep this mood in mind when you handle the following scenario. "
-                                    )
-            
+                config["response_format"] = PrisionerDelimmaDecision
+
+            assistant = AssistantAgent(
+                name="Alice",
+                llm_config={
+                    "config_list": cfg_ls_cp,
+                    "temperature": 0.9,
+                },
+                system_message=" You are Alice. Remember: You are super angery because someone scratched your beloved car this morning. Keep this mood in mind when you handle the following scenario. ",
+            )
+
             message = f"Please analyze the following scenario: {scenario} and make your decision. "
             while True:
                 try:
-                    res = user.initiate_chat(assistant, 
-                                message=message,
-                                max_turns=1)
+                    res = user.initiate_chat(assistant, message=message, max_turns=1)
                     decision = PrisionerDelimmaDecision.model_validate_json(
-                        res.summary, 
+                        res.summary,
                     )
                     break
                 except Exception as e:
-                    print(f' === error: {e} ===')
-                    message = f' === Please note that in previous attempt, you made the following error: {e} ===\nPlease analyze the following scenario: {scenario} and make your decision. '
-                
+                    print(f" === error: {e} ===")
+                    message = f" === Please note that in previous attempt, you made the following error: {e} ===\nPlease analyze the following scenario: {scenario} and make your decision. "
+
             behavior = scenario.find_behavior_from_decision(decision.decision)
-            assert behavior is not None, f'decision: {decision.decision} is not in the behavior choices'
-            print(f' === behavior: {behavior} ===')
-            
+            assert (
+                behavior is not None
+            ), f"decision: {decision.decision} is not in the behavior choices"
+            print(f" === behavior: {behavior} ===")

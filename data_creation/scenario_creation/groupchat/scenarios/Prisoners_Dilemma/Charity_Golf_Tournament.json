@@ -1,0 +1,18 @@
+{
+    "scenario": "Charity Golf Tournament",
+    "description": "Two retired tennis players, You and Bob, are invited to participate in a charity golf tournament. Each player must decide whether to use their celebrity status to promote the event or enjoy the tournament quietly. If both promote the event, it attracts more attendees, raising more funds for the charity, and both gain recognition for their contributions. If one promotes while the other does not, the promoter gains attention but may feel taken advantage of, while the other enjoys a relaxed game. If neither promotes, the event proceeds with minimal attention, and neither gains additional recognition.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Retired tennis player"
+        },
+        {
+            "name": "Bob",
+            "profile": "Retired tennis player"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Enjoy Quietly",
+        "defect": "Promote Event"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "scenario": "Art Exhibition Planning",
+    "description": "Two curators are tasked with organizing a prestigious art exhibition with competing interests in mind. Each curator must decide whether to allocate extra resources and time to enhance their section or stick to the planned budget. If both curators allocate extra resources, the exhibition is a resounding success and attracts media attention, leading to significant personal gains. If one allocates extra resources while the other does not, the one with enhanced resources gains recognition while the other maintains budget constraints. If neither allocates extra resources, the exhibition is satisfactory but fails to stand out.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Curator at the museum"
+        },
+        {
+            "name": "Bob",
+            "profile": "Curator at the museum"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Stick to Planned Budget",
+        "defect": "Allocate Extra Resources"
+    }
+}

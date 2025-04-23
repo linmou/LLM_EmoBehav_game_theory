@@ -1,0 +1,928 @@
+[
+    {
+        "step": 0,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "media analyst",
+                "media analyst"
+            ],
+            "scenario_draft": {
+                "scenario": "Festival Promotion Strategy: The Music Festival Marketing Game",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Marketing strategist for a music festival"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Marketing strategist for a competing music festival"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Collaborate on joint promotions to boost ticket sales",
+                    "defect": "Focus solely on your festival's promotion"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: attract a wider audience and enhance brand image",
+                        "Bob gets 3: attract a wider audience and enhance brand image"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose potential attendees to Bob's festival",
+                        "Bob gets 5: captures more attendees by leveraging your promotional efforts"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: captures more attendees by leveraging Bob's promotional efforts",
+                        "Bob gets 0: lose potential attendees to your festival"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: maintain current ticket sales with no significant growth",
+                        "Bob gets 1: maintain current ticket sales with no significant growth"
+                    ]
+                },
+                "description": "You and Bob, both marketing strategists for rival music festivals, must decide whether to collaborate on joint promotions. Joint efforts can increase ticket sales and improve public perception. However, focusing solely on your festival might give you a competitive edge if the other collaborates. If both focus solely on their own festival, neither sees significant growth, but they maintain their current audience.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, effectively setting up a competitive environment between two marketing strategists for music festivals.",
+                "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being marketing strategists, which is plausible for the scenario.",
+                "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' fitting well into the narrative of joint versus individual promotions.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it within a marketing strategy context, where the choices have clear and relatable consequences."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both you and Bob choose to collaborate on joint promotions, it is plausible that both would attract a wider audience and enhance brand image. Joint efforts typically lead to increased visibility and shared resources, which can boost ticket sales and improve public perception. Therefore, the outcome where both receive a reward of 3 is realistic. YES.",
+                "If you choose to collaborate while Bob focuses solely on his festival, it is plausible that you might lose potential attendees to Bob's festival. Bob could capitalize on your promotional efforts without reciprocating, potentially drawing more attendees. Thus, the outcome where you get 0 and Bob gets 5 is realistic. YES.",
+                "If you focus solely on your festival while Bob collaborates, it is plausible that you could capture more attendees by leveraging Bob's promotional efforts. Bob's collaboration might not directly benefit him if you do not reciprocate, leading to a loss of potential attendees to your festival. Therefore, the outcome where you get 5 and Bob gets 0 is realistic. YES.",
+                "If both you and Bob focus solely on your respective festivals, it is plausible that neither would see significant growth, maintaining current ticket sales. Without collaboration, there is no additional boost in visibility or audience reach. Thus, the outcome where both receive a reward of 1 is realistic. YES."
+            ],
+            "iteration_count": 2,
+            "final_scenario": {
+                "scenario": "Festival Promotion Strategy: The Music Festival Marketing Game",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Marketing strategist for a music festival"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Marketing strategist for a competing music festival"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Collaborate on joint promotions to boost ticket sales",
+                    "defect": "Focus solely on your festival's promotion"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: attract a wider audience and enhance brand image",
+                        "Bob gets 3: attract a wider audience and enhance brand image"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose potential attendees to Bob's festival",
+                        "Bob gets 5: captures more attendees by leveraging your promotional efforts"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: captures more attendees by leveraging Bob's promotional efforts",
+                        "Bob gets 0: lose potential attendees to your festival"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: maintain current ticket sales with no significant growth",
+                        "Bob gets 1: maintain current ticket sales with no significant growth"
+                    ]
+                },
+                "description": "You and Bob, both marketing strategists for rival music festivals, must decide whether to collaborate on joint promotions. Joint efforts can increase ticket sales and improve public perception. However, focusing solely on your festival might give you a competitive edge if the other collaborates. If both focus solely on their own festival, neither sees significant growth, but they maintain their current audience.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "finalize_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "media analyst",
+                        "media analyst"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Festival Promotion Strategy: The Music Festival Marketing Game",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "Marketing strategist for a music festival"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "Marketing strategist for a competing music festival"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Collaborate on joint promotions to boost ticket sales",
+                            "defect": "Focus solely on your festival's promotion"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: attract a wider audience and enhance brand image",
+                                "Bob gets 3: attract a wider audience and enhance brand image"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose potential attendees to Bob's festival",
+                                "Bob gets 5: captures more attendees by leveraging your promotional efforts"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: captures more attendees by leveraging Bob's promotional efforts",
+                                "Bob gets 0: lose potential attendees to your festival"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: maintain current ticket sales with no significant growth",
+                                "Bob gets 1: maintain current ticket sales with no significant growth"
+                            ]
+                        },
+                        "description": "You and Bob, both marketing strategists for rival music festivals, must decide whether to collaborate on joint promotions. Joint efforts can increase ticket sales and improve public perception. However, focusing solely on your festival might give you a competitive edge if the other collaborates. If both focus solely on their own festival, neither sees significant growth, but they maintain their current audience.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, effectively setting up a competitive environment between two marketing strategists for music festivals.",
+                        "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being marketing strategists, which is plausible for the scenario.",
+                        "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                        "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' fitting well into the narrative of joint versus individual promotions.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it within a marketing strategy context, where the choices have clear and relatable consequences."
+                    ],
+                    "preference_feedback": [],
+                    "payoff_feedback": [
+                        "When both you and Bob choose to collaborate on joint promotions, it is plausible that both would attract a wider audience and enhance brand image. Joint efforts typically lead to increased visibility and shared resources, which can boost ticket sales and improve public perception. Therefore, the outcome where both receive a reward of 3 is realistic. YES.",
+                        "If you choose to collaborate while Bob focuses solely on his festival, it is plausible that you might lose potential attendees to Bob's festival. Bob could capitalize on your promotional efforts without reciprocating, potentially drawing more attendees. Thus, the outcome where you get 0 and Bob gets 5 is realistic. YES.",
+                        "If you focus solely on your festival while Bob collaborates, it is plausible that you could capture more attendees by leveraging Bob's promotional efforts. Bob's collaboration might not directly benefit him if you do not reciprocate, leading to a loss of potential attendees to your festival. Therefore, the outcome where you get 5 and Bob gets 0 is realistic. YES.",
+                        "If both you and Bob focus solely on your respective festivals, it is plausible that neither would see significant growth, maintaining current ticket sales. Without collaboration, there is no additional boost in visibility or audience reach. Thus, the outcome where both receive a reward of 1 is realistic. YES."
+                    ],
+                    "iteration_count": 2,
+                    "final_scenario": {
+                        "scenario": "Festival Promotion Strategy: The Music Festival Marketing Game",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "Marketing strategist for a music festival"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "Marketing strategist for a competing music festival"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Collaborate on joint promotions to boost ticket sales",
+                            "defect": "Focus solely on your festival's promotion"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: attract a wider audience and enhance brand image",
+                                "Bob gets 3: attract a wider audience and enhance brand image"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose potential attendees to Bob's festival",
+                                "Bob gets 5: captures more attendees by leveraging your promotional efforts"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: captures more attendees by leveraging Bob's promotional efforts",
+                                "Bob gets 0: lose potential attendees to your festival"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: maintain current ticket sales with no significant growth",
+                                "Bob gets 1: maintain current ticket sales with no significant growth"
+                            ]
+                        },
+                        "description": "You and Bob, both marketing strategists for rival music festivals, must decide whether to collaborate on joint promotions. Joint efforts can increase ticket sales and improve public perception. However, focusing solely on your festival might give you a competitive edge if the other collaborates. If both focus solely on their own festival, neither sees significant growth, but they maintain their current audience.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_converged": true,
+                    "preference_converged": true,
+                    "payoff_converged": true,
+                    "all_converged": true,
+                    "auto_save_path": null
+                }
+            },
+            "step": 7,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_media analyst-media analyst_20250421_132906_372616"
+        },
+        "created_at": "2025-04-21T17:29:27.402317+00:00"
+    },
+    {
+        "step": 1,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "media analyst",
+                "media analyst"
+            ],
+            "scenario_draft": {
+                "scenario": "Festival Promotion Strategy: The Music Festival Marketing Game",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Marketing strategist for a music festival"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Marketing strategist for a competing music festival"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Collaborate on joint promotions to boost ticket sales",
+                    "defect": "Focus solely on your festival's promotion"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: attract a wider audience and enhance brand image",
+                        "Bob gets 3: attract a wider audience and enhance brand image"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose potential attendees to Bob's festival",
+                        "Bob gets 5: captures more attendees by leveraging your promotional efforts"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: captures more attendees by leveraging Bob's promotional efforts",
+                        "Bob gets 0: lose potential attendees to your festival"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: maintain current ticket sales with no significant growth",
+                        "Bob gets 1: maintain current ticket sales with no significant growth"
+                    ]
+                },
+                "description": "You and Bob, both marketing strategists for rival music festivals, must decide whether to collaborate on joint promotions. Joint efforts can increase ticket sales and improve public perception. However, focusing solely on your festival might give you a competitive edge if the other collaborates. If both focus solely on their own festival, neither sees significant growth, but they maintain their current audience.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, effectively setting up a competitive environment between two marketing strategists for music festivals.",
+                "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being marketing strategists, which is plausible for the scenario.",
+                "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' fitting well into the narrative of joint versus individual promotions.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it within a marketing strategy context, where the choices have clear and relatable consequences."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both you and Bob choose to collaborate on joint promotions, it is plausible that both would attract a wider audience and enhance brand image. Joint efforts typically lead to increased visibility and shared resources, which can boost ticket sales and improve public perception. Therefore, the outcome where both receive a reward of 3 is realistic. YES.",
+                "If you choose to collaborate while Bob focuses solely on his festival, it is plausible that you might lose potential attendees to Bob's festival. Bob could capitalize on your promotional efforts without reciprocating, potentially drawing more attendees. Thus, the outcome where you get 0 and Bob gets 5 is realistic. YES.",
+                "If you focus solely on your festival while Bob collaborates, it is plausible that you could capture more attendees by leveraging Bob's promotional efforts. Bob's collaboration might not directly benefit him if you do not reciprocate, leading to a loss of potential attendees to your festival. Therefore, the outcome where you get 5 and Bob gets 0 is realistic. YES.",
+                "If both you and Bob focus solely on your respective festivals, it is plausible that neither would see significant growth, maintaining current ticket sales. Without collaboration, there is no additional boost in visibility or audience reach. Thus, the outcome where both receive a reward of 1 is realistic. YES."
+            ],
+            "iteration_count": 2,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": true
+                }
+            },
+            "step": 6,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_media analyst-media analyst_20250421_132906_372616"
+        },
+        "created_at": "2025-04-21T17:29:27.401642+00:00"
+    },
+    {
+        "step": 2,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "media analyst",
+                "media analyst"
+            ],
+            "scenario_draft": {
+                "scenario": "Festival Promotion Strategy: The Music Festival Marketing Game",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Marketing strategist for a music festival"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Marketing strategist for a competing music festival"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Collaborate on joint promotions to boost ticket sales",
+                    "defect": "Focus solely on your festival's promotion"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: attract a wider audience and enhance brand image",
+                        "Bob gets 3: attract a wider audience and enhance brand image"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose potential attendees to Bob's festival",
+                        "Bob gets 5: captures more attendees by leveraging your promotional efforts"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: captures more attendees by leveraging Bob's promotional efforts",
+                        "Bob gets 0: lose potential attendees to your festival"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: maintain current ticket sales with no significant growth",
+                        "Bob gets 1: maintain current ticket sales with no significant growth"
+                    ]
+                },
+                "description": "You and Bob, both marketing strategists for rival music festivals, must decide whether to collaborate on joint promotions. Joint efforts can increase ticket sales and improve public perception. However, focusing solely on your festival might give you a competitive edge if the other collaborates. If both focus solely on their own festival, neither sees significant growth, but they maintain their current audience.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, effectively setting up a competitive environment between two marketing strategists for music festivals.",
+                "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being marketing strategists, which is plausible for the scenario.",
+                "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' fitting well into the narrative of joint versus individual promotions.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it within a marketing strategy context, where the choices have clear and relatable consequences."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both you and Bob choose to collaborate on joint promotions, it is plausible that both would attract a wider audience and enhance brand image. Joint efforts typically lead to increased visibility and shared resources, which can boost ticket sales and improve public perception. Therefore, the outcome where both receive a reward of 3 is realistic. YES.",
+                "If you choose to collaborate while Bob focuses solely on his festival, it is plausible that you might lose potential attendees to Bob's festival. Bob could capitalize on your promotional efforts without reciprocating, potentially drawing more attendees. Thus, the outcome where you get 0 and Bob gets 5 is realistic. YES.",
+                "If you focus solely on your festival while Bob collaborates, it is plausible that you could capture more attendees by leveraging Bob's promotional efforts. Bob's collaboration might not directly benefit him if you do not reciprocate, leading to a loss of potential attendees to your festival. Therefore, the outcome where you get 5 and Bob gets 0 is realistic. YES.",
+                "If both you and Bob focus solely on your respective festivals, it is plausible that neither would see significant growth, maintaining current ticket sales. Without collaboration, there is no additional boost in visibility or audience reach. Thus, the outcome where both receive a reward of 1 is realistic. YES."
+            ],
+            "iteration_count": 2,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": false,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, effectively setting up a competitive environment between two marketing strategists for music festivals.",
+                        "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being marketing strategists, which is plausible for the scenario.",
+                        "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                        "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' fitting well into the narrative of joint versus individual promotions.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it within a marketing strategy context, where the choices have clear and relatable consequences."
+                    ],
+                    "narrative_converged": true
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "When both you and Bob choose to collaborate on joint promotions, it is plausible that both would attract a wider audience and enhance brand image. Joint efforts typically lead to increased visibility and shared resources, which can boost ticket sales and improve public perception. Therefore, the outcome where both receive a reward of 3 is realistic. YES.",
+                        "If you choose to collaborate while Bob focuses solely on his festival, it is plausible that you might lose potential attendees to Bob's festival. Bob could capitalize on your promotional efforts without reciprocating, potentially drawing more attendees. Thus, the outcome where you get 0 and Bob gets 5 is realistic. YES.",
+                        "If you focus solely on your festival while Bob collaborates, it is plausible that you could capture more attendees by leveraging Bob's promotional efforts. Bob's collaboration might not directly benefit him if you do not reciprocate, leading to a loss of potential attendees to your festival. Therefore, the outcome where you get 5 and Bob gets 0 is realistic. YES.",
+                        "If both you and Bob focus solely on your respective festivals, it is plausible that neither would see significant growth, maintaining current ticket sales. Without collaboration, there is no additional boost in visibility or audience reach. Thus, the outcome where both receive a reward of 1 is realistic. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 5,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_media analyst-media analyst_20250421_132906_372616"
+        },
+        "created_at": "2025-04-21T17:29:27.400257+00:00"
+    },
+    {
+        "step": 3,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "media analyst",
+                "media analyst"
+            ],
+            "scenario_draft": {
+                "scenario": "Festival Promotion Strategy: The Music Festival Marketing Game",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "Marketing strategist for a music festival"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "Marketing strategist for a competing music festival"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Collaborate on joint promotions to boost ticket sales",
+                    "defect": "Focus solely on your festival's promotion"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: attract a wider audience and enhance brand image",
+                        "Bob gets 3: attract a wider audience and enhance brand image"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose potential attendees to Bob's festival",
+                        "Bob gets 5: captures more attendees by leveraging your promotional efforts"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: captures more attendees by leveraging Bob's promotional efforts",
+                        "Bob gets 0: lose potential attendees to your festival"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: maintain current ticket sales with no significant growth",
+                        "Bob gets 1: maintain current ticket sales with no significant growth"
+                    ]
+                },
+                "description": "You and Bob, both marketing strategists for rival music festivals, must decide whether to collaborate on joint promotions. Joint efforts can increase ticket sales and improve public perception. However, focusing solely on your festival might give you a competitive edge if the other collaborates. If both focus solely on their own festival, neither sees significant growth, but they maintain their current audience.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 2,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": false,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "media analyst",
+                        "media analyst"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Festival Promotion Strategy: The Music Festival Marketing Game",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "Marketing strategist for a music festival"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "Marketing strategist for a competing music festival"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Collaborate on joint promotions to boost ticket sales",
+                            "defect": "Focus solely on your festival's promotion"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: attract a wider audience and enhance brand image",
+                                "Bob gets 3: attract a wider audience and enhance brand image"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose potential attendees to Bob's festival",
+                                "Bob gets 5: captures more attendees by leveraging your promotional efforts"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: captures more attendees by leveraging Bob's promotional efforts",
+                                "Bob gets 0: lose potential attendees to your festival"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: maintain current ticket sales with no significant growth",
+                                "Bob gets 1: maintain current ticket sales with no significant growth"
+                            ]
+                        },
+                        "description": "You and Bob, both marketing strategists for rival music festivals, must decide whether to collaborate on joint promotions. Joint efforts can increase ticket sales and improve public perception. However, focusing solely on your festival might give you a competitive edge if the other collaborates. If both focus solely on their own festival, neither sees significant growth, but they maintain their current audience.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 2,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": false,
+                    "auto_save_path": null
+                }
+            },
+            "step": 4,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_media analyst-media analyst_20250421_132906_372616"
+        },
+        "created_at": "2025-04-21T17:29:23.457081+00:00"
+    },
+    {
+        "step": 4,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "media analyst",
+                "media analyst"
+            ],
+            "scenario_draft": {
+                "scenario": "Content Clash: The Streaming Service Showdown",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "media analyst"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "media analyst"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Promote each other's exclusive content",
+                    "defect": "Promote only your own exclusive content"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: increase viewership and maintain positive industry reputation",
+                        "Bob gets 3: increase viewership and maintain positive industry reputation"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose potential viewers to Bob's exclusive content",
+                        "Bob gets 5: attract more viewers by undermining your content"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: attract more viewers by undermining Bob's content",
+                        "Bob gets 0: lose potential viewers to your exclusive content"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: maintain current viewer base with no growth",
+                        "Bob gets 1: maintain current viewer base with no growth"
+                    ]
+                },
+                "description": "You and Bob, both media analysts for competing streaming services, must decide whether to support each other's exclusive content releases. If both promote each other's content, viewership increases and both maintain a positive reputation in the industry. If one promotes only their own content, they gain a competitive edge at the expense of the other's viewership. If neither supports the other's content, both maintain their current audience without any significant growth.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally coherent, but the role of 'media analyst' typically involves analyzing data and trends rather than directly promoting content. Consider changing the role to something like 'marketing strategist' or 'content promoter' to better fit the narrative.",
+                "The participants' names and jobs are correctly integrated, but the job title 'media analyst' does not align well with the actions described in the scenario.",
+                "The scenario does not mention any prior relationship between the participants, which is appropriate for maintaining the anonymity of the Prisoners' Dilemma.",
+                "The behavior choices are clearly defined and align with the typical strategies of cooperation and defection in a Prisoners' Dilemma scenario.",
+                "The narrative effectively masks the underlying Prisoners' Dilemma structure by framing the situation as a competitive decision-making process between two analysts, but the job title mismatch slightly detracts from the realism."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The scenario describes that if both participants promote each other's content, they will increase viewership and maintain a positive reputation. This aligns with the outcome where both participants receive a reward of 3, as they both benefit from mutual promotion. YES.",
+                "If you promote Bob's content while Bob only promotes his own, it makes sense that you would lose potential viewers to Bob, as you are not gaining the reciprocal benefit of his promotion. Bob, on the other hand, would gain a competitive edge by focusing solely on his content. The rewards of 0 for you and 5 for Bob reflect this imbalance. YES.",
+                "In this case, if you promote only your own content while Bob promotes both, you would gain more viewers at Bob's expense, as he is not receiving the reciprocal benefit of your promotion. This aligns with the rewards of 5 for you and 0 for Bob, as you gain the competitive advantage. YES.",
+                "If both participants choose to promote only their own content, they maintain their current audience without growth, as stated in the scenario. The rewards of 1 for both participants reflect this outcome of maintaining the status quo. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": false,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": false
+                }
+            },
+            "step": 3,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_media analyst-media analyst_20250421_132906_372616"
+        },
+        "created_at": "2025-04-21T17:29:17.936363+00:00"
+    },
+    {
+        "step": 5,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "media analyst",
+                "media analyst"
+            ],
+            "scenario_draft": {
+                "scenario": "Content Clash: The Streaming Service Showdown",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "media analyst"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "media analyst"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Promote each other's exclusive content",
+                    "defect": "Promote only your own exclusive content"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: increase viewership and maintain positive industry reputation",
+                        "Bob gets 3: increase viewership and maintain positive industry reputation"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose potential viewers to Bob's exclusive content",
+                        "Bob gets 5: attract more viewers by undermining your content"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: attract more viewers by undermining Bob's content",
+                        "Bob gets 0: lose potential viewers to your exclusive content"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: maintain current viewer base with no growth",
+                        "Bob gets 1: maintain current viewer base with no growth"
+                    ]
+                },
+                "description": "You and Bob, both media analysts for competing streaming services, must decide whether to support each other's exclusive content releases. If both promote each other's content, viewership increases and both maintain a positive reputation in the industry. If one promotes only their own content, they gain a competitive edge at the expense of the other's viewership. If neither supports the other's content, both maintain their current audience without any significant growth.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is generally coherent, but the role of 'media analyst' typically involves analyzing data and trends rather than directly promoting content. Consider changing the role to something like 'marketing strategist' or 'content promoter' to better fit the narrative.",
+                "The participants' names and jobs are correctly integrated, but the job title 'media analyst' does not align well with the actions described in the scenario.",
+                "The scenario does not mention any prior relationship between the participants, which is appropriate for maintaining the anonymity of the Prisoners' Dilemma.",
+                "The behavior choices are clearly defined and align with the typical strategies of cooperation and defection in a Prisoners' Dilemma scenario.",
+                "The narrative effectively masks the underlying Prisoners' Dilemma structure by framing the situation as a competitive decision-making process between two analysts, but the job title mismatch slightly detracts from the realism."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The scenario describes that if both participants promote each other's content, they will increase viewership and maintain a positive reputation. This aligns with the outcome where both participants receive a reward of 3, as they both benefit from mutual promotion. YES.",
+                "If you promote Bob's content while Bob only promotes his own, it makes sense that you would lose potential viewers to Bob, as you are not gaining the reciprocal benefit of his promotion. Bob, on the other hand, would gain a competitive edge by focusing solely on his content. The rewards of 0 for you and 5 for Bob reflect this imbalance. YES.",
+                "In this case, if you promote only your own content while Bob promotes both, you would gain more viewers at Bob's expense, as he is not receiving the reciprocal benefit of your promotion. This aligns with the rewards of 5 for you and 0 for Bob, as you gain the competitive advantage. YES.",
+                "If both participants choose to promote only their own content, they maintain their current audience without growth, as stated in the scenario. The rewards of 1 for both participants reflect this outcome of maintaining the status quo. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is generally coherent, but the role of 'media analyst' typically involves analyzing data and trends rather than directly promoting content. Consider changing the role to something like 'marketing strategist' or 'content promoter' to better fit the narrative.",
+                        "The participants' names and jobs are correctly integrated, but the job title 'media analyst' does not align well with the actions described in the scenario.",
+                        "The scenario does not mention any prior relationship between the participants, which is appropriate for maintaining the anonymity of the Prisoners' Dilemma.",
+                        "The behavior choices are clearly defined and align with the typical strategies of cooperation and defection in a Prisoners' Dilemma scenario.",
+                        "The narrative effectively masks the underlying Prisoners' Dilemma structure by framing the situation as a competitive decision-making process between two analysts, but the job title mismatch slightly detracts from the realism."
+                    ],
+                    "narrative_converged": false
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "The scenario describes that if both participants promote each other's content, they will increase viewership and maintain a positive reputation. This aligns with the outcome where both participants receive a reward of 3, as they both benefit from mutual promotion. YES.",
+                        "If you promote Bob's content while Bob only promotes his own, it makes sense that you would lose potential viewers to Bob, as you are not gaining the reciprocal benefit of his promotion. Bob, on the other hand, would gain a competitive edge by focusing solely on his content. The rewards of 0 for you and 5 for Bob reflect this imbalance. YES.",
+                        "In this case, if you promote only your own content while Bob promotes both, you would gain more viewers at Bob's expense, as he is not receiving the reciprocal benefit of your promotion. This aligns with the rewards of 5 for you and 0 for Bob, as you gain the competitive advantage. YES.",
+                        "If both participants choose to promote only their own content, they maintain their current audience without growth, as stated in the scenario. The rewards of 1 for both participants reflect this outcome of maintaining the status quo. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 2,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_media analyst-media analyst_20250421_132906_372616"
+        },
+        "created_at": "2025-04-21T17:29:17.933154+00:00"
+    },
+    {
+        "step": 6,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "media analyst",
+                "media analyst"
+            ],
+            "scenario_draft": {
+                "scenario": "Content Clash: The Streaming Service Showdown",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "media analyst"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "media analyst"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Promote each other's exclusive content",
+                    "defect": "Promote only your own exclusive content"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: increase viewership and maintain positive industry reputation",
+                        "Bob gets 3: increase viewership and maintain positive industry reputation"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: lose potential viewers to Bob's exclusive content",
+                        "Bob gets 5: attract more viewers by undermining your content"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: attract more viewers by undermining Bob's content",
+                        "Bob gets 0: lose potential viewers to your exclusive content"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: maintain current viewer base with no growth",
+                        "Bob gets 1: maintain current viewer base with no growth"
+                    ]
+                },
+                "description": "You and Bob, both media analysts for competing streaming services, must decide whether to support each other's exclusive content releases. If both promote each other's content, viewership increases and both maintain a positive reputation in the industry. If one promotes only their own content, they gain a competitive edge at the expense of the other's viewership. If neither supports the other's content, both maintain their current audience without any significant growth.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "media analyst",
+                        "media analyst"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Content Clash: The Streaming Service Showdown",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "media analyst"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "media analyst"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Promote each other's exclusive content",
+                            "defect": "Promote only your own exclusive content"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: increase viewership and maintain positive industry reputation",
+                                "Bob gets 3: increase viewership and maintain positive industry reputation"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: lose potential viewers to Bob's exclusive content",
+                                "Bob gets 5: attract more viewers by undermining your content"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: attract more viewers by undermining Bob's content",
+                                "Bob gets 0: lose potential viewers to your exclusive content"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: maintain current viewer base with no growth",
+                                "Bob gets 1: maintain current viewer base with no growth"
+                            ]
+                        },
+                        "description": "You and Bob, both media analysts for competing streaming services, must decide whether to support each other's exclusive content releases. If both promote each other's content, viewership increases and both maintain a positive reputation in the industry. If one promotes only their own content, they gain a competitive edge at the expense of the other's viewership. If neither supports the other's content, both maintain their current audience without any significant growth.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 1,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": 1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_media analyst-media analyst_20250421_132906_372616"
+        },
+        "created_at": "2025-04-21T17:29:13.143493+00:00"
+    },
+    {
+        "step": 7,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "media analyst",
+                "media analyst"
+            ],
+            "scenario_draft": null,
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 0,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": null,
+            "step": 0,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_media analyst-media analyst_20250421_132906_372616"
+        },
+        "created_at": "2025-04-21T17:29:06.379628+00:00"
+    },
+    {
+        "step": 8,
+        "values": {
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": []
+        },
+        "metadata": {
+            "source": "input",
+            "writes": {
+                "__start__": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "media analyst",
+                        "media analyst"
+                    ],
+                    "scenario_draft": null,
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": -1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_media analyst-media analyst_20250421_132906_372616"
+        },
+        "created_at": "2025-04-21T17:29:06.374791+00:00"
+    }
+]

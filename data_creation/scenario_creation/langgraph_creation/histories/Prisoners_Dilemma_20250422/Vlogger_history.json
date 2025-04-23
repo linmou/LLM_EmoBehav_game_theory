@@ -1,0 +1,612 @@
+[
+    {
+        "step": 0,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "vlogger",
+                "vlogger"
+            ],
+            "scenario_draft": {
+                "scenario": "Content Collaboration Quandary",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "vlogger"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "vlogger"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to create a joint video series",
+                    "defect": "Focus on individual content creation"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: the series boosts both channels' viewership equally",
+                        "Bob gets 3: the series boosts both channels' viewership equally"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you invest effort in the joint series but lose viewers to Bob's solo content",
+                        "Bob gets 5: Bob attracts your audience with his solo content"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: you attract Bob's audience with your solo content",
+                        "Bob gets 0: Bob invests effort in the joint series but loses viewers to your solo content"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both channels maintain their current viewers with modest growth",
+                        "Bob gets 1: both channels maintain their current viewers with modest growth"
+                    ]
+                },
+                "description": "You and Bob are both popular vloggers who have the opportunity to collaborate on a new video series. If both of you work together, the series could engage a larger audience and enhance both your channels' popularity. However, if one chooses to focus on individual content while the other works on the joint series, the one focusing on individual content could gain a larger share of viewers. If both decide to stick to their own content, their audience remains stable with only slight growth.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, effectively setting up a situation where two vloggers face a strategic decision about collaboration.",
+                "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being vloggers, which fits the narrative context.",
+                "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' being clearly defined in the context of content creation.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it in terms of content collaboration and individual content focus, which are realistic concerns for vloggers."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both participants agreeing to create a joint video series is plausible given the scenario's emphasis on mutual benefit. The outcome where both channels' viewership is equally boosted matches the scenario description, as collaboration is expected to engage a larger audience. YES.",
+                "The probability of one participant agreeing to the joint series while the other focuses on individual content is plausible, as individual content could attract more viewers. The outcome where you lose viewers to Bob's solo content while Bob gains more viewers aligns with the scenario's description of potential outcomes. YES.",
+                "The probability of one participant focusing on individual content while the other agrees to the joint series is plausible. The outcome where you attract Bob's audience with your solo content while Bob loses viewers aligns with the scenario's description of potential outcomes. YES.",
+                "The probability of both participants focusing on individual content is plausible, as it results in stable audience growth. The outcome where both channels maintain their current viewers with modest growth matches the scenario description. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": {
+                "scenario": "Content Collaboration Quandary",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "vlogger"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "vlogger"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to create a joint video series",
+                    "defect": "Focus on individual content creation"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: the series boosts both channels' viewership equally",
+                        "Bob gets 3: the series boosts both channels' viewership equally"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you invest effort in the joint series but lose viewers to Bob's solo content",
+                        "Bob gets 5: Bob attracts your audience with his solo content"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: you attract Bob's audience with your solo content",
+                        "Bob gets 0: Bob invests effort in the joint series but loses viewers to your solo content"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both channels maintain their current viewers with modest growth",
+                        "Bob gets 1: both channels maintain their current viewers with modest growth"
+                    ]
+                },
+                "description": "You and Bob are both popular vloggers who have the opportunity to collaborate on a new video series. If both of you work together, the series could engage a larger audience and enhance both your channels' popularity. However, if one chooses to focus on individual content while the other works on the joint series, the one focusing on individual content could gain a larger share of viewers. If both decide to stick to their own content, their audience remains stable with only slight growth.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "finalize_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "vlogger",
+                        "vlogger"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Content Collaboration Quandary",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "vlogger"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "vlogger"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Agree to create a joint video series",
+                            "defect": "Focus on individual content creation"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: the series boosts both channels' viewership equally",
+                                "Bob gets 3: the series boosts both channels' viewership equally"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: you invest effort in the joint series but lose viewers to Bob's solo content",
+                                "Bob gets 5: Bob attracts your audience with his solo content"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: you attract Bob's audience with your solo content",
+                                "Bob gets 0: Bob invests effort in the joint series but loses viewers to your solo content"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: both channels maintain their current viewers with modest growth",
+                                "Bob gets 1: both channels maintain their current viewers with modest growth"
+                            ]
+                        },
+                        "description": "You and Bob are both popular vloggers who have the opportunity to collaborate on a new video series. If both of you work together, the series could engage a larger audience and enhance both your channels' popularity. However, if one chooses to focus on individual content while the other works on the joint series, the one focusing on individual content could gain a larger share of viewers. If both decide to stick to their own content, their audience remains stable with only slight growth.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, effectively setting up a situation where two vloggers face a strategic decision about collaboration.",
+                        "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being vloggers, which fits the narrative context.",
+                        "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                        "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' being clearly defined in the context of content creation.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it in terms of content collaboration and individual content focus, which are realistic concerns for vloggers."
+                    ],
+                    "preference_feedback": [],
+                    "payoff_feedback": [
+                        "The probability of both participants agreeing to create a joint video series is plausible given the scenario's emphasis on mutual benefit. The outcome where both channels' viewership is equally boosted matches the scenario description, as collaboration is expected to engage a larger audience. YES.",
+                        "The probability of one participant agreeing to the joint series while the other focuses on individual content is plausible, as individual content could attract more viewers. The outcome where you lose viewers to Bob's solo content while Bob gains more viewers aligns with the scenario's description of potential outcomes. YES.",
+                        "The probability of one participant focusing on individual content while the other agrees to the joint series is plausible. The outcome where you attract Bob's audience with your solo content while Bob loses viewers aligns with the scenario's description of potential outcomes. YES.",
+                        "The probability of both participants focusing on individual content is plausible, as it results in stable audience growth. The outcome where both channels maintain their current viewers with modest growth matches the scenario description. YES."
+                    ],
+                    "iteration_count": 1,
+                    "final_scenario": {
+                        "scenario": "Content Collaboration Quandary",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "vlogger"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "vlogger"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Agree to create a joint video series",
+                            "defect": "Focus on individual content creation"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: the series boosts both channels' viewership equally",
+                                "Bob gets 3: the series boosts both channels' viewership equally"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: you invest effort in the joint series but lose viewers to Bob's solo content",
+                                "Bob gets 5: Bob attracts your audience with his solo content"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: you attract Bob's audience with your solo content",
+                                "Bob gets 0: Bob invests effort in the joint series but loses viewers to your solo content"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: both channels maintain their current viewers with modest growth",
+                                "Bob gets 1: both channels maintain their current viewers with modest growth"
+                            ]
+                        },
+                        "description": "You and Bob are both popular vloggers who have the opportunity to collaborate on a new video series. If both of you work together, the series could engage a larger audience and enhance both your channels' popularity. However, if one chooses to focus on individual content while the other works on the joint series, the one focusing on individual content could gain a larger share of viewers. If both decide to stick to their own content, their audience remains stable with only slight growth.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_converged": true,
+                    "preference_converged": true,
+                    "payoff_converged": true,
+                    "all_converged": true,
+                    "auto_save_path": null
+                }
+            },
+            "step": 4,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_vlogger-vlogger_20250422_151842_939310"
+        },
+        "created_at": "2025-04-22T19:18:52.370349+00:00"
+    },
+    {
+        "step": 1,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "vlogger",
+                "vlogger"
+            ],
+            "scenario_draft": {
+                "scenario": "Content Collaboration Quandary",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "vlogger"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "vlogger"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to create a joint video series",
+                    "defect": "Focus on individual content creation"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: the series boosts both channels' viewership equally",
+                        "Bob gets 3: the series boosts both channels' viewership equally"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you invest effort in the joint series but lose viewers to Bob's solo content",
+                        "Bob gets 5: Bob attracts your audience with his solo content"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: you attract Bob's audience with your solo content",
+                        "Bob gets 0: Bob invests effort in the joint series but loses viewers to your solo content"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both channels maintain their current viewers with modest growth",
+                        "Bob gets 1: both channels maintain their current viewers with modest growth"
+                    ]
+                },
+                "description": "You and Bob are both popular vloggers who have the opportunity to collaborate on a new video series. If both of you work together, the series could engage a larger audience and enhance both your channels' popularity. However, if one chooses to focus on individual content while the other works on the joint series, the one focusing on individual content could gain a larger share of viewers. If both decide to stick to their own content, their audience remains stable with only slight growth.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, effectively setting up a situation where two vloggers face a strategic decision about collaboration.",
+                "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being vloggers, which fits the narrative context.",
+                "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' being clearly defined in the context of content creation.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it in terms of content collaboration and individual content focus, which are realistic concerns for vloggers."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both participants agreeing to create a joint video series is plausible given the scenario's emphasis on mutual benefit. The outcome where both channels' viewership is equally boosted matches the scenario description, as collaboration is expected to engage a larger audience. YES.",
+                "The probability of one participant agreeing to the joint series while the other focuses on individual content is plausible, as individual content could attract more viewers. The outcome where you lose viewers to Bob's solo content while Bob gains more viewers aligns with the scenario's description of potential outcomes. YES.",
+                "The probability of one participant focusing on individual content while the other agrees to the joint series is plausible. The outcome where you attract Bob's audience with your solo content while Bob loses viewers aligns with the scenario's description of potential outcomes. YES.",
+                "The probability of both participants focusing on individual content is plausible, as it results in stable audience growth. The outcome where both channels maintain their current viewers with modest growth matches the scenario description. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": true
+                }
+            },
+            "step": 3,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_vlogger-vlogger_20250422_151842_939310"
+        },
+        "created_at": "2025-04-22T19:18:52.368788+00:00"
+    },
+    {
+        "step": 2,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "vlogger",
+                "vlogger"
+            ],
+            "scenario_draft": {
+                "scenario": "Content Collaboration Quandary",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "vlogger"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "vlogger"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to create a joint video series",
+                    "defect": "Focus on individual content creation"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: the series boosts both channels' viewership equally",
+                        "Bob gets 3: the series boosts both channels' viewership equally"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you invest effort in the joint series but lose viewers to Bob's solo content",
+                        "Bob gets 5: Bob attracts your audience with his solo content"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: you attract Bob's audience with your solo content",
+                        "Bob gets 0: Bob invests effort in the joint series but loses viewers to your solo content"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both channels maintain their current viewers with modest growth",
+                        "Bob gets 1: both channels maintain their current viewers with modest growth"
+                    ]
+                },
+                "description": "You and Bob are both popular vloggers who have the opportunity to collaborate on a new video series. If both of you work together, the series could engage a larger audience and enhance both your channels' popularity. However, if one chooses to focus on individual content while the other works on the joint series, the one focusing on individual content could gain a larger share of viewers. If both decide to stick to their own content, their audience remains stable with only slight growth.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, effectively setting up a situation where two vloggers face a strategic decision about collaboration.",
+                "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being vloggers, which fits the narrative context.",
+                "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' being clearly defined in the context of content creation.",
+                "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it in terms of content collaboration and individual content focus, which are realistic concerns for vloggers."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "The probability of both participants agreeing to create a joint video series is plausible given the scenario's emphasis on mutual benefit. The outcome where both channels' viewership is equally boosted matches the scenario description, as collaboration is expected to engage a larger audience. YES.",
+                "The probability of one participant agreeing to the joint series while the other focuses on individual content is plausible, as individual content could attract more viewers. The outcome where you lose viewers to Bob's solo content while Bob gains more viewers aligns with the scenario's description of potential outcomes. YES.",
+                "The probability of one participant focusing on individual content while the other agrees to the joint series is plausible. The outcome where you attract Bob's audience with your solo content while Bob loses viewers aligns with the scenario's description of potential outcomes. YES.",
+                "The probability of both participants focusing on individual content is plausible, as it results in stable audience growth. The outcome where both channels maintain their current viewers with modest growth matches the scenario description. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, effectively setting up a situation where two vloggers face a strategic decision about collaboration.",
+                        "The participants' names and jobs are correctly integrated, with 'You' and 'Bob' both being vloggers, which fits the narrative context.",
+                        "The scenario does not mention any prior relationship between 'You' and 'Bob', maintaining the necessary independence between participants.",
+                        "The behavior choices accurately represent the strategies available in the scenario, with 'cooperate' and 'defect' being clearly defined in the context of content creation.",
+                        "The narrative effectively masks the underlying Prisoners_Dilemma structure by framing it in terms of content collaboration and individual content focus, which are realistic concerns for vloggers."
+                    ],
+                    "narrative_converged": true
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "The probability of both participants agreeing to create a joint video series is plausible given the scenario's emphasis on mutual benefit. The outcome where both channels' viewership is equally boosted matches the scenario description, as collaboration is expected to engage a larger audience. YES.",
+                        "The probability of one participant agreeing to the joint series while the other focuses on individual content is plausible, as individual content could attract more viewers. The outcome where you lose viewers to Bob's solo content while Bob gains more viewers aligns with the scenario's description of potential outcomes. YES.",
+                        "The probability of one participant focusing on individual content while the other agrees to the joint series is plausible. The outcome where you attract Bob's audience with your solo content while Bob loses viewers aligns with the scenario's description of potential outcomes. YES.",
+                        "The probability of both participants focusing on individual content is plausible, as it results in stable audience growth. The outcome where both channels maintain their current viewers with modest growth matches the scenario description. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 2,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_vlogger-vlogger_20250422_151842_939310"
+        },
+        "created_at": "2025-04-22T19:18:52.246080+00:00"
+    },
+    {
+        "step": 3,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "vlogger",
+                "vlogger"
+            ],
+            "scenario_draft": {
+                "scenario": "Content Collaboration Quandary",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "vlogger"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "vlogger"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Agree to create a joint video series",
+                    "defect": "Focus on individual content creation"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: the series boosts both channels' viewership equally",
+                        "Bob gets 3: the series boosts both channels' viewership equally"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: you invest effort in the joint series but lose viewers to Bob's solo content",
+                        "Bob gets 5: Bob attracts your audience with his solo content"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: you attract Bob's audience with your solo content",
+                        "Bob gets 0: Bob invests effort in the joint series but loses viewers to your solo content"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both channels maintain their current viewers with modest growth",
+                        "Bob gets 1: both channels maintain their current viewers with modest growth"
+                    ]
+                },
+                "description": "You and Bob are both popular vloggers who have the opportunity to collaborate on a new video series. If both of you work together, the series could engage a larger audience and enhance both your channels' popularity. However, if one chooses to focus on individual content while the other works on the joint series, the one focusing on individual content could gain a larger share of viewers. If both decide to stick to their own content, their audience remains stable with only slight growth.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "vlogger",
+                        "vlogger"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "Content Collaboration Quandary",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "vlogger"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "vlogger"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Agree to create a joint video series",
+                            "defect": "Focus on individual content creation"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: the series boosts both channels' viewership equally",
+                                "Bob gets 3: the series boosts both channels' viewership equally"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: you invest effort in the joint series but lose viewers to Bob's solo content",
+                                "Bob gets 5: Bob attracts your audience with his solo content"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: you attract Bob's audience with your solo content",
+                                "Bob gets 0: Bob invests effort in the joint series but loses viewers to your solo content"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: both channels maintain their current viewers with modest growth",
+                                "Bob gets 1: both channels maintain their current viewers with modest growth"
+                            ]
+                        },
+                        "description": "You and Bob are both popular vloggers who have the opportunity to collaborate on a new video series. If both of you work together, the series could engage a larger audience and enhance both your channels' popularity. However, if one chooses to focus on individual content while the other works on the joint series, the one focusing on individual content could gain a larger share of viewers. If both decide to stick to their own content, their audience remains stable with only slight growth.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 1,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": 1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_vlogger-vlogger_20250422_151842_939310"
+        },
+        "created_at": "2025-04-22T19:18:48.233013+00:00"
+    },
+    {
+        "step": 4,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "vlogger",
+                "vlogger"
+            ],
+            "scenario_draft": null,
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 0,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": null,
+            "step": 0,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_vlogger-vlogger_20250422_151842_939310"
+        },
+        "created_at": "2025-04-22T19:18:42.943741+00:00"
+    },
+    {
+        "step": 5,
+        "values": {
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": []
+        },
+        "metadata": {
+            "source": "input",
+            "writes": {
+                "__start__": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "vlogger",
+                        "vlogger"
+                    ],
+                    "scenario_draft": null,
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": -1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_vlogger-vlogger_20250422_151842_939310"
+        },
+        "created_at": "2025-04-22T19:18:42.941220+00:00"
+    }
+]

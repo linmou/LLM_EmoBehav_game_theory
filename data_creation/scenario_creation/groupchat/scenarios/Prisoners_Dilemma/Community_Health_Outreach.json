@@ -1,0 +1,18 @@
+{
+    "scenario": "Community Health Outreach",
+    "description": "Two nursing students, You and Bob, are tasked with organizing a community health outreach program. They must decide whether to collaborate intensively or focus on individual tasks. If both collaborate, the program gains widespread success and both receive recognition from their university. If one collaborates while the other focuses individually, the collaborator feels burdened while the individual receives attention for personal initiative. If neither collaborates, the program proceeds at a basic level without any commendations.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Nursing Student involved in outreach"
+        },
+        {
+            "name": "Bob",
+            "profile": "Nursing Student involved in outreach"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate intensively",
+        "defect": "Focus on individual tasks"
+    }
+}

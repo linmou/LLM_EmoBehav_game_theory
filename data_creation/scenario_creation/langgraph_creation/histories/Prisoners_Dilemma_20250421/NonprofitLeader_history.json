@@ -1,0 +1,612 @@
+[
+    {
+        "step": 0,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": {
+                "scenario": "The Fundraising Gala Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Organize a joint fundraising gala",
+                    "defect": "Organize a separate fundraising event"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both nonprofits benefit equally from a successful gala",
+                        "Bob gets 3: both nonprofits benefit equally from a successful gala"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: your resources are stretched thin and Bob attracts more donors",
+                        "Bob gets 5: successfully attracts more donors and resources"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: successfully attracts more donors and resources",
+                        "Bob gets 0: his resources are stretched thin and you attract more donors"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both events are moderately successful but less impactful",
+                        "Bob gets 1: both events are moderately successful but less impactful"
+                    ]
+                },
+                "description": "You and Bob, both leaders of nonprofits, must decide whether to collaborate on a large fundraising gala. If both collaborate, the gala is a big success, benefiting both organizations equally. If one organizes separately while the other cooperates, the sole organizer attracts more donors and resources. If both choose to go separate ways, both events are less impactful and only moderately successful.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, presenting a plausible situation where two nonprofit leaders must decide on collaboration.",
+                "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being nonprofit leaders, which fits the narrative.",
+                "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining the necessary anonymity of their interaction.",
+                "The behavior choices accurately represent the strategies available in the Prisoners Dilemma scenario, with 'cooperate' and 'defect' being clearly defined.",
+                "The narrative effectively masks the underlying Prisoners Dilemma structure by framing it as a decision about organizing fundraising events, which is relatable and realistic."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both you and Bob choose to organize a joint fundraising gala, the scenario describes that the gala is a big success, benefiting both organizations equally. This aligns with the outcome where both participants receive equal rewards, reflecting the shared success. Therefore, the causal chain between the action of collaborating and the outcome of equal benefit is realistic. YES.",
+                "If you choose to organize a joint gala while Bob organizes separately, the scenario suggests that the sole organizer (Bob) would attract more donors and resources, leaving you with stretched resources. This outcome is plausible as Bob's separate event could draw more attention and resources, leaving you at a disadvantage. The causal chain between the actions and the outcome is realistic. YES.",
+                "If you organize a separate event while Bob opts for a joint gala, the scenario implies that the sole organizer (you) would attract more donors and resources, leaving Bob with stretched resources. This mirrors the previous situation but with roles reversed, making it plausible. The causal chain between the actions and the outcome is realistic. YES.",
+                "When both you and Bob choose to organize separate events, the scenario describes that both events are less impactful and only moderately successful. This aligns with the outcome where both participants receive equal but lower rewards, reflecting the moderate success. The causal chain between the actions and the outcome is realistic. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": {
+                "scenario": "The Fundraising Gala Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Organize a joint fundraising gala",
+                    "defect": "Organize a separate fundraising event"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both nonprofits benefit equally from a successful gala",
+                        "Bob gets 3: both nonprofits benefit equally from a successful gala"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: your resources are stretched thin and Bob attracts more donors",
+                        "Bob gets 5: successfully attracts more donors and resources"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: successfully attracts more donors and resources",
+                        "Bob gets 0: his resources are stretched thin and you attract more donors"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both events are moderately successful but less impactful",
+                        "Bob gets 1: both events are moderately successful but less impactful"
+                    ]
+                },
+                "description": "You and Bob, both leaders of nonprofits, must decide whether to collaborate on a large fundraising gala. If both collaborate, the gala is a big success, benefiting both organizations equally. If one organizes separately while the other cooperates, the sole organizer attracts more donors and resources. If both choose to go separate ways, both events are less impactful and only moderately successful.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "finalize_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "nonprofit leader",
+                        "nonprofit leader"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "The Fundraising Gala Dilemma",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "nonprofit leader"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "nonprofit leader"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Organize a joint fundraising gala",
+                            "defect": "Organize a separate fundraising event"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: both nonprofits benefit equally from a successful gala",
+                                "Bob gets 3: both nonprofits benefit equally from a successful gala"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: your resources are stretched thin and Bob attracts more donors",
+                                "Bob gets 5: successfully attracts more donors and resources"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: successfully attracts more donors and resources",
+                                "Bob gets 0: his resources are stretched thin and you attract more donors"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: both events are moderately successful but less impactful",
+                                "Bob gets 1: both events are moderately successful but less impactful"
+                            ]
+                        },
+                        "description": "You and Bob, both leaders of nonprofits, must decide whether to collaborate on a large fundraising gala. If both collaborate, the gala is a big success, benefiting both organizations equally. If one organizes separately while the other cooperates, the sole organizer attracts more donors and resources. If both choose to go separate ways, both events are less impactful and only moderately successful.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, presenting a plausible situation where two nonprofit leaders must decide on collaboration.",
+                        "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being nonprofit leaders, which fits the narrative.",
+                        "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining the necessary anonymity of their interaction.",
+                        "The behavior choices accurately represent the strategies available in the Prisoners Dilemma scenario, with 'cooperate' and 'defect' being clearly defined.",
+                        "The narrative effectively masks the underlying Prisoners Dilemma structure by framing it as a decision about organizing fundraising events, which is relatable and realistic."
+                    ],
+                    "preference_feedback": [],
+                    "payoff_feedback": [
+                        "When both you and Bob choose to organize a joint fundraising gala, the scenario describes that the gala is a big success, benefiting both organizations equally. This aligns with the outcome where both participants receive equal rewards, reflecting the shared success. Therefore, the causal chain between the action of collaborating and the outcome of equal benefit is realistic. YES.",
+                        "If you choose to organize a joint gala while Bob organizes separately, the scenario suggests that the sole organizer (Bob) would attract more donors and resources, leaving you with stretched resources. This outcome is plausible as Bob's separate event could draw more attention and resources, leaving you at a disadvantage. The causal chain between the actions and the outcome is realistic. YES.",
+                        "If you organize a separate event while Bob opts for a joint gala, the scenario implies that the sole organizer (you) would attract more donors and resources, leaving Bob with stretched resources. This mirrors the previous situation but with roles reversed, making it plausible. The causal chain between the actions and the outcome is realistic. YES.",
+                        "When both you and Bob choose to organize separate events, the scenario describes that both events are less impactful and only moderately successful. This aligns with the outcome where both participants receive equal but lower rewards, reflecting the moderate success. The causal chain between the actions and the outcome is realistic. YES."
+                    ],
+                    "iteration_count": 1,
+                    "final_scenario": {
+                        "scenario": "The Fundraising Gala Dilemma",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "nonprofit leader"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "nonprofit leader"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Organize a joint fundraising gala",
+                            "defect": "Organize a separate fundraising event"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: both nonprofits benefit equally from a successful gala",
+                                "Bob gets 3: both nonprofits benefit equally from a successful gala"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: your resources are stretched thin and Bob attracts more donors",
+                                "Bob gets 5: successfully attracts more donors and resources"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: successfully attracts more donors and resources",
+                                "Bob gets 0: his resources are stretched thin and you attract more donors"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: both events are moderately successful but less impactful",
+                                "Bob gets 1: both events are moderately successful but less impactful"
+                            ]
+                        },
+                        "description": "You and Bob, both leaders of nonprofits, must decide whether to collaborate on a large fundraising gala. If both collaborate, the gala is a big success, benefiting both organizations equally. If one organizes separately while the other cooperates, the sole organizer attracts more donors and resources. If both choose to go separate ways, both events are less impactful and only moderately successful.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_converged": true,
+                    "preference_converged": true,
+                    "payoff_converged": true,
+                    "all_converged": true,
+                    "auto_save_path": null
+                }
+            },
+            "step": 4,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250421_132715_482240"
+        },
+        "created_at": "2025-04-21T17:27:25.385740+00:00"
+    },
+    {
+        "step": 1,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": {
+                "scenario": "The Fundraising Gala Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Organize a joint fundraising gala",
+                    "defect": "Organize a separate fundraising event"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both nonprofits benefit equally from a successful gala",
+                        "Bob gets 3: both nonprofits benefit equally from a successful gala"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: your resources are stretched thin and Bob attracts more donors",
+                        "Bob gets 5: successfully attracts more donors and resources"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: successfully attracts more donors and resources",
+                        "Bob gets 0: his resources are stretched thin and you attract more donors"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both events are moderately successful but less impactful",
+                        "Bob gets 1: both events are moderately successful but less impactful"
+                    ]
+                },
+                "description": "You and Bob, both leaders of nonprofits, must decide whether to collaborate on a large fundraising gala. If both collaborate, the gala is a big success, benefiting both organizations equally. If one organizes separately while the other cooperates, the sole organizer attracts more donors and resources. If both choose to go separate ways, both events are less impactful and only moderately successful.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, presenting a plausible situation where two nonprofit leaders must decide on collaboration.",
+                "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being nonprofit leaders, which fits the narrative.",
+                "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining the necessary anonymity of their interaction.",
+                "The behavior choices accurately represent the strategies available in the Prisoners Dilemma scenario, with 'cooperate' and 'defect' being clearly defined.",
+                "The narrative effectively masks the underlying Prisoners Dilemma structure by framing it as a decision about organizing fundraising events, which is relatable and realistic."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both you and Bob choose to organize a joint fundraising gala, the scenario describes that the gala is a big success, benefiting both organizations equally. This aligns with the outcome where both participants receive equal rewards, reflecting the shared success. Therefore, the causal chain between the action of collaborating and the outcome of equal benefit is realistic. YES.",
+                "If you choose to organize a joint gala while Bob organizes separately, the scenario suggests that the sole organizer (Bob) would attract more donors and resources, leaving you with stretched resources. This outcome is plausible as Bob's separate event could draw more attention and resources, leaving you at a disadvantage. The causal chain between the actions and the outcome is realistic. YES.",
+                "If you organize a separate event while Bob opts for a joint gala, the scenario implies that the sole organizer (you) would attract more donors and resources, leaving Bob with stretched resources. This mirrors the previous situation but with roles reversed, making it plausible. The causal chain between the actions and the outcome is realistic. YES.",
+                "When both you and Bob choose to organize separate events, the scenario describes that both events are less impactful and only moderately successful. This aligns with the outcome where both participants receive equal but lower rewards, reflecting the moderate success. The causal chain between the actions and the outcome is realistic. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": true,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "aggregate_verification": {
+                    "all_converged": true
+                }
+            },
+            "step": 3,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250421_132715_482240"
+        },
+        "created_at": "2025-04-21T17:27:25.384646+00:00"
+    },
+    {
+        "step": 2,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": {
+                "scenario": "The Fundraising Gala Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Organize a joint fundraising gala",
+                    "defect": "Organize a separate fundraising event"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both nonprofits benefit equally from a successful gala",
+                        "Bob gets 3: both nonprofits benefit equally from a successful gala"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: your resources are stretched thin and Bob attracts more donors",
+                        "Bob gets 5: successfully attracts more donors and resources"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: successfully attracts more donors and resources",
+                        "Bob gets 0: his resources are stretched thin and you attract more donors"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both events are moderately successful but less impactful",
+                        "Bob gets 1: both events are moderately successful but less impactful"
+                    ]
+                },
+                "description": "You and Bob, both leaders of nonprofits, must decide whether to collaborate on a large fundraising gala. If both collaborate, the gala is a big success, benefiting both organizations equally. If one organizes separately while the other cooperates, the sole organizer attracts more donors and resources. If both choose to go separate ways, both events are less impactful and only moderately successful.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [
+                "The scenario description is realistic and coherent, presenting a plausible situation where two nonprofit leaders must decide on collaboration.",
+                "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being nonprofit leaders, which fits the narrative.",
+                "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining the necessary anonymity of their interaction.",
+                "The behavior choices accurately represent the strategies available in the Prisoners Dilemma scenario, with 'cooperate' and 'defect' being clearly defined.",
+                "The narrative effectively masks the underlying Prisoners Dilemma structure by framing it as a decision about organizing fundraising events, which is relatable and realistic."
+            ],
+            "preference_feedback": [],
+            "payoff_feedback": [
+                "When both you and Bob choose to organize a joint fundraising gala, the scenario describes that the gala is a big success, benefiting both organizations equally. This aligns with the outcome where both participants receive equal rewards, reflecting the shared success. Therefore, the causal chain between the action of collaborating and the outcome of equal benefit is realistic. YES.",
+                "If you choose to organize a joint gala while Bob organizes separately, the scenario suggests that the sole organizer (Bob) would attract more donors and resources, leaving you with stretched resources. This outcome is plausible as Bob's separate event could draw more attention and resources, leaving you at a disadvantage. The causal chain between the actions and the outcome is realistic. YES.",
+                "If you organize a separate event while Bob opts for a joint gala, the scenario implies that the sole organizer (you) would attract more donors and resources, leaving Bob with stretched resources. This mirrors the previous situation but with roles reversed, making it plausible. The causal chain between the actions and the outcome is realistic. YES.",
+                "When both you and Bob choose to organize separate events, the scenario describes that both events are less impactful and only moderately successful. This aligns with the outcome where both participants receive equal but lower rewards, reflecting the moderate success. The causal chain between the actions and the outcome is realistic. YES."
+            ],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": true,
+            "preference_converged": true,
+            "payoff_converged": true,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "verify_narrative": {
+                    "narrative_feedback": [
+                        "The scenario description is realistic and coherent, presenting a plausible situation where two nonprofit leaders must decide on collaboration.",
+                        "The participants' names and roles are correctly integrated, with 'You' and 'Bob' both being nonprofit leaders, which fits the narrative.",
+                        "The scenario successfully avoids mentioning any prior relationship between 'You' and 'Bob', maintaining the necessary anonymity of their interaction.",
+                        "The behavior choices accurately represent the strategies available in the Prisoners Dilemma scenario, with 'cooperate' and 'defect' being clearly defined.",
+                        "The narrative effectively masks the underlying Prisoners Dilemma structure by framing it as a decision about organizing fundraising events, which is relatable and realistic."
+                    ],
+                    "narrative_converged": true
+                },
+                "verify_pay_off": {
+                    "payoff_feedback": [
+                        "When both you and Bob choose to organize a joint fundraising gala, the scenario describes that the gala is a big success, benefiting both organizations equally. This aligns with the outcome where both participants receive equal rewards, reflecting the shared success. Therefore, the causal chain between the action of collaborating and the outcome of equal benefit is realistic. YES.",
+                        "If you choose to organize a joint gala while Bob organizes separately, the scenario suggests that the sole organizer (Bob) would attract more donors and resources, leaving you with stretched resources. This outcome is plausible as Bob's separate event could draw more attention and resources, leaving you at a disadvantage. The causal chain between the actions and the outcome is realistic. YES.",
+                        "If you organize a separate event while Bob opts for a joint gala, the scenario implies that the sole organizer (you) would attract more donors and resources, leaving Bob with stretched resources. This mirrors the previous situation but with roles reversed, making it plausible. The causal chain between the actions and the outcome is realistic. YES.",
+                        "When both you and Bob choose to organize separate events, the scenario describes that both events are less impactful and only moderately successful. This aligns with the outcome where both participants receive equal but lower rewards, reflecting the moderate success. The causal chain between the actions and the outcome is realistic. YES."
+                    ],
+                    "payoff_converged": true
+                },
+                "verify_preference_order": {
+                    "preference_feedback": [],
+                    "preference_converged": true
+                }
+            },
+            "step": 2,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250421_132715_482240"
+        },
+        "created_at": "2025-04-21T17:27:25.382444+00:00"
+    },
+    {
+        "step": 3,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": {
+                "scenario": "The Fundraising Gala Dilemma",
+                "participants": [
+                    {
+                        "name": "You",
+                        "profile": "nonprofit leader"
+                    },
+                    {
+                        "name": "Bob",
+                        "profile": "nonprofit leader"
+                    }
+                ],
+                "behavior_choices": {
+                    "cooperate": "Organize a joint fundraising gala",
+                    "defect": "Organize a separate fundraising event"
+                },
+                "payoff_matrix": {
+                    "You: cooperate , Bob: cooperate": [
+                        "You get 3: both nonprofits benefit equally from a successful gala",
+                        "Bob gets 3: both nonprofits benefit equally from a successful gala"
+                    ],
+                    "You: cooperate , Bob: defect": [
+                        "You get 0: your resources are stretched thin and Bob attracts more donors",
+                        "Bob gets 5: successfully attracts more donors and resources"
+                    ],
+                    "You: defect , Bob: cooperate": [
+                        "You get 5: successfully attracts more donors and resources",
+                        "Bob gets 0: his resources are stretched thin and you attract more donors"
+                    ],
+                    "You: defect , Bob: defect": [
+                        "You get 1: both events are moderately successful but less impactful",
+                        "Bob gets 1: both events are moderately successful but less impactful"
+                    ]
+                },
+                "description": "You and Bob, both leaders of nonprofits, must decide whether to collaborate on a large fundraising gala. If both collaborate, the gala is a big success, benefiting both organizations equally. If one organizes separately while the other cooperates, the sole organizer attracts more donors and resources. If both choose to go separate ways, both events are less impactful and only moderately successful.",
+                "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+            },
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 1,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": {
+                "propose_scenario": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "nonprofit leader",
+                        "nonprofit leader"
+                    ],
+                    "scenario_draft": {
+                        "scenario": "The Fundraising Gala Dilemma",
+                        "participants": [
+                            {
+                                "name": "You",
+                                "profile": "nonprofit leader"
+                            },
+                            {
+                                "name": "Bob",
+                                "profile": "nonprofit leader"
+                            }
+                        ],
+                        "behavior_choices": {
+                            "cooperate": "Organize a joint fundraising gala",
+                            "defect": "Organize a separate fundraising event"
+                        },
+                        "payoff_matrix": {
+                            "You: cooperate , Bob: cooperate": [
+                                "You get 3: both nonprofits benefit equally from a successful gala",
+                                "Bob gets 3: both nonprofits benefit equally from a successful gala"
+                            ],
+                            "You: cooperate , Bob: defect": [
+                                "You get 0: your resources are stretched thin and Bob attracts more donors",
+                                "Bob gets 5: successfully attracts more donors and resources"
+                            ],
+                            "You: defect , Bob: cooperate": [
+                                "You get 5: successfully attracts more donors and resources",
+                                "Bob gets 0: his resources are stretched thin and you attract more donors"
+                            ],
+                            "You: defect , Bob: defect": [
+                                "You get 1: both events are moderately successful but less impactful",
+                                "Bob gets 1: both events are moderately successful but less impactful"
+                            ]
+                        },
+                        "description": "You and Bob, both leaders of nonprofits, must decide whether to collaborate on a large fundraising gala. If both collaborate, the gala is a big success, benefiting both organizations equally. If one organizes separately while the other cooperates, the sole organizer attracts more donors and resources. If both choose to go separate ways, both events are less impactful and only moderately successful.",
+                        "payoff_description": "When You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1."
+                    },
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 1,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": 1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250421_132715_482240"
+        },
+        "created_at": "2025-04-21T17:27:21.542229+00:00"
+    },
+    {
+        "step": 4,
+        "values": {
+            "game_name": "Prisoners_Dilemma",
+            "participants": [
+                "You",
+                "Bob"
+            ],
+            "participant_jobs": [
+                "nonprofit leader",
+                "nonprofit leader"
+            ],
+            "scenario_draft": null,
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": [],
+            "iteration_count": 0,
+            "final_scenario": null,
+            "narrative_converged": false,
+            "preference_converged": false,
+            "payoff_converged": false,
+            "all_converged": null,
+            "auto_save_path": null
+        },
+        "metadata": {
+            "source": "loop",
+            "writes": null,
+            "step": 0,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250421_132715_482240"
+        },
+        "created_at": "2025-04-21T17:27:15.495315+00:00"
+    },
+    {
+        "step": 5,
+        "values": {
+            "narrative_feedback": [],
+            "preference_feedback": [],
+            "payoff_feedback": []
+        },
+        "metadata": {
+            "source": "input",
+            "writes": {
+                "__start__": {
+                    "game_name": "Prisoners_Dilemma",
+                    "participants": [
+                        "You",
+                        "Bob"
+                    ],
+                    "participant_jobs": [
+                        "nonprofit leader",
+                        "nonprofit leader"
+                    ],
+                    "scenario_draft": null,
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": null,
+                    "narrative_converged": false,
+                    "preference_converged": false,
+                    "payoff_converged": false,
+                    "all_converged": null,
+                    "auto_save_path": null
+                }
+            },
+            "step": -1,
+            "parents": {},
+            "thread_id": "Prisoners_Dilemma_nonprofit leader-nonprofit leader_20250421_132715_482240"
+        },
+        "created_at": "2025-04-21T17:27:15.483080+00:00"
+    }
+]

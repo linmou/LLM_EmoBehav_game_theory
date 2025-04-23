@@ -1,0 +1,18 @@
+{
+    "scenario": "Visa Application Process",
+    "description": "Two immigration lawyers, 'You' and 'Bob', are responsible for preparing visa applications for a mutual client with a tight deadline. Each lawyer must decide whether to collaborate fully with each other or focus solely on their own tasks. If both collaborate, the applications are error-free and submitted early, enhancing their reputation. If one collaborates while the other doesn\u2019t, the collaborator feels overburdened while the non-collaborator benefits from reduced workload. If neither collaborates, the applications are submitted late with errors, risking the client\u2019s chance of approval.",
+    "participants": [
+        {
+            "name": "You",
+            "profile": "Immigration Lawyer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Immigration Lawyer"
+        }
+    ],
+    "behavior_choices": {
+        "cooperate": "Collaborate fully",
+        "defect": "Focus solely on own tasks"
+    }
+}
