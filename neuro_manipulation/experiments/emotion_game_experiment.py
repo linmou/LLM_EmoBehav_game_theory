@@ -49,6 +49,12 @@ def _get_worker_num_layers_rpc(worker_self):
     except Exception:
         return -1  # Return -1 on any error
 
+class ExtractedResultWithMethod(BaseModel):
+    option_id: int
+    rationale: str
+    decision: str
+    extraction_method: str
+
 class ExtractedResult(BaseModel):
     option_id: int
     rationale: str
@@ -58,13 +64,28 @@ class ExtractedResult(BaseModel):
 class EmotionGameExperiment:
     def __init__(self, repe_eng_config, exp_config, game_config, batch_size, sample_num=None,  repeat=1):
         # Setup logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s'
-        )
+        
+        # Create a module-specific logger
         self.logger = logging.getLogger(__name__)
         
+        if not self.logger.handlers:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            log_file = f"logs/emotion_game_experiment_{timestamp}.log"
+            Path("logs").mkdir(parents=True, exist_ok=True)
+            self.logger.setLevel(logging.INFO)
+            # Add file handler
+            file_handler = logging.FileHandler(log_file)
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+            self.logger.addHandler(file_handler)
+            # Add console handler
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+            self.logger.addHandler(console_handler)
+            # Prevent propagation to avoid duplicate logs
+            self.logger.propagate = False
+        
         self.logger.info(f"Initializing experiment with model: {repe_eng_config['model_name_or_path']}")
+        self.logger.info(f"Log file created at: {log_file}")
         self.repe_eng_config = repe_eng_config
         self.exp_config = exp_config
         self.generation_config = exp_config['experiment']['llm']['generation_config']
@@ -79,7 +100,6 @@ class EmotionGameExperiment:
         self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config)
         self.logger.info(f"Model: {self.model} loaded from {repe_eng_config['model_name_or_path']}, type: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)
-        assert self.is_vllm, "DEBUG: Model is not a VLLM instance"
         
         # Get number of layers
         if self.is_vllm:
@@ -142,7 +162,7 @@ class EmotionGameExperiment:
                     user_messages=self.exp_config['experiment']['system_message_template']),
             sample_num=self.sample_num,
         )
-            
+        assert len(emo_dataset) > 0, f"DEBUG: Dataset is empty, you are reading {self.game_config['data_path']}"
         data_loader = DataLoader(emo_dataset, batch_size=self.batch_size, shuffle=False, collate_fn=collate_game_scenarios)
         return data_loader
     
@@ -227,7 +247,7 @@ class EmotionGameExperiment:
         worker.start()
 
         # Process results while next batch is being generated
-        with ThreadPoolExecutor(max_workers=32, thread_name_prefix="PostProc") as post_proc_executor:
+        with ThreadPoolExecutor(max_workers=self.batch_size//2, thread_name_prefix="PostProc") as post_proc_executor:
             active_post_proc_tasks = 0
             while True:
                 item = pipeline_queue.get()
@@ -308,7 +328,8 @@ class EmotionGameExperiment:
                 'rationale': extracted_res.rationale,
                 'decision': extracted_res.decision,
                 'category': extracted_res.option_id,
-                'repeat_num': repeat_num # Use calculated repeat number
+                'repeat_num': repeat_num,
+                'extraction_method': extracted_res.extraction_method
             })
             
             self.logger.debug(f"{log_prefix} PostProc B{batch_idx}: Added result {i} with scenario {batch['scenario'][original_scenario_idx]} and repeat {repeat_num}")
@@ -319,32 +340,52 @@ class EmotionGameExperiment:
 
     def _post_process_single_output(self, output_data):
         generated_text, options = output_data
-        log_prefix = f"{time.time():.2f} [{current_thread().name}]" # Add log prefix here too
-        
+        log_prefix = f"{time.time():.2f} [{current_thread().name}]"
+        self.logger.debug(f"{log_prefix} Extractor: {generated_text} and {options}")
         try:
-            # Extract rationale and decision using regex
-            rationale = re.search(r'"rational"\s*:\s*"([^"]*)"', generated_text)
-            decision = re.search(r'"decision"\s*:\s*"([^"]*)"', generated_text)
-            # Use debug level for potentially noisy logs
-            self.logger.debug(f"{log_prefix} Extractor: Regex Rationale: {rationale.group(1) if rationale else 'Not Found'}")
-            self.logger.debug(f"{log_prefix} Extractor: Regex Decision: {decision.group(1) if decision else 'Not Found'}")
-            if not rationale or not decision:
+            # Primary regex patterns - handle both single and double quotes
+            pattern_rational = r'[\'"]rational[\'"]\s*:\s*[\'"](((?:[^\'"]\\.|[^\'"])*))[\'"]'
+            pattern_decision = r'[\'"]decision[\'"]\s*:\s*[\'"](((?:[^\'"]\\.|[^\'"])*))[\'"]'
+            
+            # Try to extract using primary patterns
+            rationale_match = re.search(pattern_rational, generated_text, re.MULTILINE | re.DOTALL)
+            decision_match = re.search(pattern_decision, generated_text, re.MULTILINE | re.DOTALL)
+            
+            # If primary patterns fail, try more flexible patterns
+            if not rationale_match or not decision_match:
+                alt_pattern_rational = r'[\'"]?rational[\'"]?\s*:\s*[\'"](((?:[^\'"]\\.|[^\'"])*))[\'"]'
+                alt_pattern_decision = r'[\'"]?decision[\'"]?\s*:\s*[\'"](((?:[^\'"]\\.|[^\'"])*))[\'"]'
+                
+                rationale_match = re.search(alt_pattern_rational, generated_text, re.MULTILINE | re.DOTALL)
+                decision_match = re.search(alt_pattern_decision, generated_text, re.MULTILINE | re.DOTALL)
+            
+            self.logger.debug(f"{log_prefix} Extractor: Regex Rationale: {rationale_match.group(1) if rationale_match else 'Not Found'}")
+            self.logger.debug(f"{log_prefix} Extractor: Regex Decision: {decision_match.group(1) if decision_match else 'Not Found'}")
+            
+            if not rationale_match or not decision_match:
                 raise ValueError("Failed to extract rationale or decision via regex")
                 
-            rationale = rationale.group(1)
-            decision = decision.group(1)
+            # Handle both escaped single and double quotes
+            rationale = rationale_match.group(1).replace('\\"', '"').replace("\\'", "'")
+            decision = decision_match.group(1).replace('\\"', '"').replace("\\'", "'")
            
-            option_id = [j+1 for j, o in enumerate(options) if decision.lower() in o.lower()][0]
-            extracted_res = ExtractedResult(
+            # Find matching option using case-insensitive comparison
+            matching_options = [j+1 for j, o in enumerate(options) if decision.lower().strip() in o.lower().strip()]
+            if not matching_options:
+                raise ValueError(f"Could not find matching option for decision: {decision}")
+                
+            option_id = matching_options[0]
+            extracted_res = ExtractedResultWithMethod(
                 option_id=option_id,
                 rationale=rationale,
-                decision=decision
+                decision=decision,
+                extraction_method="regex"
             )
             
-            self.logger.debug(f"{log_prefix} Extractor: Found option_id {option_id} directly from text")
+            self.logger.info(f"{log_prefix} Extractor: Found option_id {option_id} directly from text")
         
         except Exception as e:
-            self.logger.info(f"{log_prefix} Extractor: Regex extraction failed: {str(e)}. Using LLM to determine option_id.")
+            self.logger.debug(f"{log_prefix} Extractor: Regex extraction failed: {str(e)}. Using LLM to determine option_id.")
             extracted_res = self._get_option_id_from_llm(generated_text, options)
             self.logger.info(f"{log_prefix} Extractor: LLM extracted res successfully: {extracted_res}")
             
@@ -359,7 +400,7 @@ class EmotionGameExperiment:
         for _ in range(3):
             try:
                 res = oai_response(prompt, model="gpt-4o-mini", client=self.llm_client, response_format=ExtractedResult)
-                return ExtractedResult(**json.loads(res))
+                return ExtractedResultWithMethod(**json.loads(res), extraction_method="llm")
             except Exception as e:
                 self.logger.info(f"Error getting post-processed response from LLM: {e}")
                 prompt = f"In previous run, there is an error: {e}. Please try again.\n\n{prompt}"

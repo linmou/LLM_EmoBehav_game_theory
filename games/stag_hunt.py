@@ -60,7 +60,7 @@ class StagHuntScenario(GameScenario):
                 {"name": "Bob", "profile": "Software Engineer"},
             ],
             "behavior_choices": StagHuntBehaviors.example(),
-            "payoff_matrix": {
+            "payoff_matrix_description": {
                 f"You: cooperate , Bob: cooperate": [
                     "You get 3: Major project success, potential promotion; Bob gets 3: Major project success, potential promotion",
                 ],

@@ -24,6 +24,7 @@ class GameScenarioDataset(Dataset):
             with open(data_path, 'r') as f:
                 self.raw_data = json.load(f)
         
+        assert len(self.raw_data) > 0, f'raw_data is empty, you are reading {data_path}'
         scenario_class: GameScenario = self.game_config['scenario_class']
         self.data: list[GameScenario] = []
         for item in self.raw_data:
@@ -31,9 +32,9 @@ class GameScenarioDataset(Dataset):
                 item['payoff_matrix'] = self.game_config['payoff_matrix']
                 if 'previous_actions_length' in scenario_class.model_fields:
                     item['previous_actions_length'] = self.game_config['previous_actions_length']
-                
-                item = scenario_class(**item)
-                self.data.append(item)
+            
+            item = scenario_class(**item)
+            self.data.append(item)
         if sample_num is not None:
             self.data = np.random.permutation(self.data)[:sample_num]
          

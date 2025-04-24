@@ -21,15 +21,20 @@ experiment:
   system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. "
   # system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. Before making your choice, think about do you have emotion about {emotion} that will affect your choice. If so, try to regulate it."
   
-  repeat: 1
+  repeat: 3
 
   emotions:
     - "anger"
+    - "disgust"
+    - "fear"
+    - "happiness"
+    - "sadness"
+    - "surprise"
 
   intensity:
-    - 1.0
+    - 1.5
 
-  run_sanity_check: true
+  run_sanity_check: false
 
   output:
     base_dir: "results/RepEng"

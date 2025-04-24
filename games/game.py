@@ -32,7 +32,7 @@ class BehaviorChoices(BaseModel, ABC):
 class GameScenario(BaseModel, ABC):
     """Abstract base class for game scenarios"""
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
     payoff_matrix: Union[Dict[str, Dict[str, Dict[str, float]]], PayoffMatrix] = Field(
         default=None

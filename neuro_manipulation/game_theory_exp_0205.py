@@ -25,7 +25,7 @@ def setup_experiment(config_path='config/escalGame_repEng_experiment_config.yaml
         exp_config, 
         game_config,
         repeat=exp_config['experiment']['repeat'],
-        batch_size=exp_config['experiment'].get('batch_size', 128)
+        batch_size=exp_config['experiment'].get('batch_size', 300)
     )
     
     return experiment

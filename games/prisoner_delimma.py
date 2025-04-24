@@ -67,7 +67,7 @@ class PrisonerDilemmaScenario(GameScenario):
                 {"name": "Bob", "profile": "CEO of an internet service provider"},
             ],
             "behavior_choices": PDBehaviorChoice.example(),
-            "payoff_matrix": {
+            "payoff_matrix_description": {
                 "You: cooperate , Bob: cooperate": [
                     "You get 3: networks are upgraded and do not lose customers",
                     "Bob gets 3: networks are upgraded and do not lose customers",
