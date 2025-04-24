@@ -28,6 +28,7 @@ data_folder_format = "groupchat/scenarios/{}"  # data folder is the folder conta
 GAME_CONFIGS = {
     GameNames.STAG_HUNT: {
         "game_name": GameNames.STAG_HUNT.value,
+        "game_description": "The high payoff choice can only be achieved when both participants choose the relevant behavior and cooperate with each other. If only one participant choose the high payoff behavior, that participant will get nothing. No matter what the other participant choose, participant can get low payoff when he/she choose the low payoff behavior.",
         "scenario_class": StagHuntScenario,
         "decision_class": StagHuntDecision,
         "payoff_matrix": ALL_GAME_PAYOFF[GameNames.STAG_HUNT],

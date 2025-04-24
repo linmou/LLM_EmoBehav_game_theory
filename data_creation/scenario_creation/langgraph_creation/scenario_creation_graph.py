@@ -65,7 +65,7 @@ def get_llm(temperature=1.4, json_mode=True):
     return ChatOpenAI(
         model="gpt-4o",
         temperature=temperature,
-        response_format={"type": "json_object"} if json_mode else None,
+        # response_format={"type": "json_object"} if json_mode else None,
     )
 
 
@@ -81,7 +81,9 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
     previous_feedback = []
     for key in state.keys():
         if key.endswith("_feedback"):
-            previous_feedback += state[key]
+            feedback_category = key.split("_")[0]
+            if not state[feedback_category + "_converged"]:
+                previous_feedback += state[key]
 
     previous_feedback = "\n".join(previous_feedback)
 
@@ -97,7 +99,11 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
     payoff_description = game.payoff_matrix.get_natural_language_description(
         participants
     )
-
+    further_instructions = (
+        f"An important feature of the {game_name} is : {game_cfg.get('game_description', '')}"
+        if game_cfg.get("game_description", "")
+        else ""
+    )
     # Create system prompt
     system_prompt = f"""
     You are a scenario creator for game theory experiments.
@@ -114,6 +120,7 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         # First iteration
         human_prompt = f"""
         Create a unique scenario that masks the {game_name} structure under a new context that readers can not recognize it as a {game_name} at first glance.
+        {further_instructions}
         
         The created scenario should contain the following participants:
         Participants: {participants}
@@ -127,7 +134,7 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         You should follow this example format, note that when writing payoff_matrix, you should first use digital payoff, then write the natural language description of the payoff in this scenario.
         {json.dumps(example_scenario, indent=2)}
         
-        When you create the behavior choices, do not use ambiguous words like 'collaberate' or 'defect', please provide specific behavior and more details settings in the scenario to make the behavior -> outcome causal chain robust and reasonable.
+        When you create the behavior choices, do not use ambiguous words like 'collaberate, cooperate' or 'defect', please provide specific behavior and more details settings in the scenario to make the behavior -> outcome causal chain robust and reasonable.
         
         Write in English.Return the scenario as a valid JSON object.
         """
@@ -158,7 +165,7 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         HumanMessage(content=human_prompt),
     ]
 
-    response = llm.invoke(messages)
+    response = llm.invoke(messages, response_format={"type": "json_object"})
 
     # With json_mode=True, response.content is already a JSON string
     scenario_draft_content = response.content
@@ -261,7 +268,7 @@ def verify_narrative(state: ScenarioCreationState) -> Dict[str, Any]:
         SystemMessage(content=system_prompt),
         HumanMessage(content=human_prompt),
     ]
-    response = llm.invoke(messages)
+    response = llm.invoke(messages, response_format={"type": "json_object"})
 
     # Process response
     result_content = response.content
@@ -384,7 +391,7 @@ def verify_preference_order(state: ScenarioCreationState) -> Dict[str, Any]:
         SystemMessage(content=system_prompt),
         HumanMessage(content=human_prompt),
     ]
-    response = llm.invoke(messages)
+    response = llm.invoke(messages, response_format={"type": "json_object"})
 
     # Process response
     result_content = response.content
@@ -579,7 +586,7 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
     ]
 
     try:
-        response = llm.invoke(messages)
+        response = llm.invoke(messages, response_format={"type": "json_object"})
         result_content = response.content
     except Exception as e:
         return {

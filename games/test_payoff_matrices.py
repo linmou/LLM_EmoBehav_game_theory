@@ -10,6 +10,7 @@ import unittest
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from games.payoff_matrices import PayoffLeaf, PayoffMatrix
+from games.stag_hunt import stag_hunt as stag_hunt_payoff_matrix
 
 
 class TestPayoffMatrix(unittest.TestCase):
@@ -46,33 +47,32 @@ class TestPayoffMatrix(unittest.TestCase):
         """Test creating and using a stag hunt payoff matrix"""
         stag_hunt = PayoffMatrix(
             player_num=2,
-            payoff_leaves=[
-                PayoffLeaf(actions=("stag", "stag"), payoffs=(3, 3)),
-                PayoffLeaf(actions=("stag", "hare"), payoffs=(0, 1)),
-                PayoffLeaf(actions=("hare", "stag"), payoffs=(1, 0)),
-                PayoffLeaf(actions=("hare", "hare"), payoffs=(1, 1)),
-            ],
+            payoff_leaves=stag_hunt_payoff_matrix,
         )
 
         # Both players should prefer (stag, stag) as their best outcome
-        self.assertEqual(stag_hunt.ordered_payoff_leaves[0][0], ("stag", "stag"))
-        self.assertEqual(stag_hunt.ordered_payoff_leaves[1][0], ("stag", "stag"))
+        self.assertEqual(
+            stag_hunt.ordered_payoff_leaves[0][0], ("cooperate", "cooperate")
+        )
+        self.assertEqual(
+            stag_hunt.ordered_payoff_leaves[1][0], ("cooperate", "cooperate")
+        )
 
-        # Player 1's preference order should be: (stag, stag), (hare, stag), (hare, hare), (stag, hare)
+        # Player 1's preference order should be: (cooperate, cooperate), (cooperate, defect), (defect, cooperate), (defect, defect)
         expected_p1_order = [
-            ("stag", "stag"),
-            ("hare", "stag"),
-            ("hare", "hare"),
-            ("stag", "hare"),
+            ("cooperate", "cooperate"),
+            ("cooperate", "defect"),
+            ("defect", "cooperate"),
+            ("defect", "defect"),
         ]
         self.assertEqual(stag_hunt.ordered_payoff_leaves[0], expected_p1_order)
 
-        # Player 2's preference order should be: (stag, stag), (stag, hare), (hare, hare), (hare, stag)
+        # Player 2's preference order should be: (cooperate, cooperate), (cooperate, defect), (defect, defect), (defect, cooperate)
         expected_p2_order = [
-            ("stag", "stag"),
-            ("stag", "hare"),
-            ("hare", "hare"),
-            ("hare", "stag"),
+            ("cooperate", "cooperate"),
+            ("cooperate", "defect"),
+            ("defect", "defect"),
+            ("defect", "cooperate"),
         ]
         self.assertEqual(stag_hunt.ordered_payoff_leaves[1], expected_p2_order)
 
