@@ -1,1 +1,0 @@
-../neuro_manipulation/docs/json_extraction.md

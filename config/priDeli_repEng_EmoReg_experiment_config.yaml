@@ -18,10 +18,10 @@ experiment:
       max_new_tokens: 440
 
   # Template for system message with placeholders
-  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. "
-  # system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. Before making your choice, think about do you have emotion about {emotion} that will affect your choice. If so, try to regulate it."
+  # system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. "
+  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. Before making your choice, express your current emotion then think about do you have any strong emotion that will affect your choice. If so, try to regulate it."
   
-  repeat: 1
+  repeat: 3
 
   emotions:
     - "anger"
@@ -37,6 +37,6 @@ experiment:
   run_sanity_check: false
 
   output:
-    base_dir: "results/RepEng"
+    base_dir: "results/RepEng_EmoReg"
     save_plots: true
     plot_format: "png" 

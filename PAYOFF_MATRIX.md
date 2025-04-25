@@ -1,1 +1,0 @@
-docs/payoff_matrix.md

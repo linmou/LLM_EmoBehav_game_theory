@@ -16,10 +16,6 @@ The main class that handles running experiments with different emotions and inte
 - Parallel processing for batch inference
 - Comprehensive logging and result storage
 
-## Sanity Check Feature
-
-The `run_sanity_check()` method provides a quick way to validate your experiment setup before running the full experiment.
-
 ### Usage
 
 ```python
