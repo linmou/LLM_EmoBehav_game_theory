@@ -1,5 +1,6 @@
 import pickle
 from transformers import pipeline
+from neuro_manipulation.repe.pipelines import get_pipeline
 from neuro_manipulation.utils import (
     load_model_tokenizer, 
     all_emotion_rep_reader, 
@@ -8,6 +9,8 @@ from neuro_manipulation.utils import (
 )
 from neuro_manipulation.prompt_formats import PromptFormat
 from constants import Emotions
+from vllm import LLM
+
 def setup_model_and_tokenizer(config):
     model, tokenizer = load_model_tokenizer(
         config['model_name_or_path'],

@@ -67,10 +67,10 @@ class EmotionGameExperiment:
         
         # Create a module-specific logger
         self.logger = logging.getLogger(__name__)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_file = f"logs/emotion_game_experiment_{timestamp}.log"
         
         if not self.logger.handlers:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            log_file = f"logs/emotion_game_experiment_{timestamp}.log"
             Path("logs").mkdir(parents=True, exist_ok=True)
             self.logger.setLevel(logging.INFO)
             # Add file handler

@@ -1,0 +1,44 @@
+experiment:
+  name: "Stag_Hunt_vllm"
+  game:
+    name: "Stag_Hunt"  # or "Prisoners_Dilemma"
+    
+  data:
+    generate: false  # Set to false to skip data generation
+    num_scenarios: 36
+    batch_size: 4
+  
+  llm:
+    model_name: 'meta-llama/Llama-3.1-8B-Instruct' # Name of the config from api_configs.py
+    # Additional parameters to override or extend the base config
+    generation_config:
+      temperature: 0.7
+      do_sample: true
+      top_p: 0.95
+      max_new_tokens: 440
+
+  # Template for system message with placeholders
+  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. "
+  # system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. Before making your choice, think about do you have emotion about {emotion} that will affect your choice. If so, try to regulate it."
+  
+  repeat: 1
+
+  emotions:
+    - "anger"
+    - "disgust"
+    - "fear"
+    - "happiness"
+    - "sadness"
+    - "surprise"
+
+  intensity:
+    - 1.5
+
+  batch_size: 32
+
+  run_sanity_check: false
+
+  output:
+    base_dir: "results/RepEng"
+    save_plots: true
+    plot_format: "png" 

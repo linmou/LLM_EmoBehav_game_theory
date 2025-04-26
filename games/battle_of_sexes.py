@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 from typing import Any, ClassVar, Dict, List, Optional
 
-from autogen import AssistantAgent, UserProxyAgent
 from pydantic import Field
 
 from games.game import BehaviorChoices, GameDecision, GameScenario

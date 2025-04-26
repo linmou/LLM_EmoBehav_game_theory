@@ -1,0 +1,54 @@
+experiment:
+  name: "Multi_Game_Model_Experiment_Series"
+  
+  # List of games to run experiments with
+  games:
+    - "Prisoners_Dilemma"
+    - "Stag_Hunt"
+  
+  # List of models to run experiments with
+  models:
+    - "meta-llama/Llama-3.1-8B-Instruct"
+    # - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2-7B-Instruct"
+    # Add more models as needed
+  
+  game:
+    name: "Prisoners_Dilemma"  # Default game if needed
+    # Additional game parameters
+    previous_actions_length: 1
+    
+  data:
+    generate: false
+    num_scenarios: 36
+    batch_size: 4
+  
+  llm:
+    model_name: 'meta-llama/Llama-3.1-8B-Instruct'  # Default model if needed
+    # Additional parameters to override or extend the base config
+    generation_config:
+      temperature: 0.7
+      do_sample: true
+      top_p: 0.95
+      max_new_tokens: 440
+
+  # Template for system message with placeholders
+  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
+  
+  repeat: 1
+
+  emotions:
+    - "anger"
+
+  intensity:
+    - 1.5
+
+  run_sanity_check: false
+
+  # Enable this to run a smaller test with fewer samples
+  # debug_mode: true
+  # debug_samples: 5
+
+  output:
+    base_dir: "results/ExperimentSeries"
+    save_plots: true
+    plot_format: "png" 

@@ -21,7 +21,11 @@ RATE_LIMIT = 10
 # Seconds to sleep between batches to avoid hitting rate limits
 RATE_LIMIT_SLEEP = 1.0
 ITEM_START = 0
-ITEM_END = 100
+ITEM_END = 100000000
+
+# Define the target emotions for comparison
+TARGET_EMOTION = "anger"
+NEUTRAL_EMOTION = "neutral"
 
 # Custom JSON encoder to handle NumPy types
 class NumpyEncoder(json.JSONEncoder):
@@ -134,7 +138,6 @@ def process_item(item, item_id, total_items):
         "confidence": float(confidence),
         "explanation": str(explanation),
         "rationale": str(rationale)
-        # "rationale": str(rationale[:100] + "..." if len(rationale) > 100 else rationale)
     }
     
     return result
@@ -153,15 +156,21 @@ def main():
         print(f"Error reading JSON file: {e}")
         return
     
-    # emotion filter
-    data = [item for item in data if item["emotion"] in ["anger"]]
+    # Filter items by emotion (target emotion vs neutral)
+    target_emotion_items = [item for item in data if item["emotion"].lower() == TARGET_EMOTION.lower()]
+    neutral_emotion_items = [item for item in data if item["emotion"].lower() == NEUTRAL_EMOTION.lower()]
     
-    
-    print(f"Found {len(data)} items to analyze")
+    print(f"Found {len(target_emotion_items)} {TARGET_EMOTION} items and {len(neutral_emotion_items)} neutral items to analyze")
     
     # Prepare results storage
     results = []
-    emotion_expression_by_category = {1: [], 2: []}
+    emotion_expression_by_type = {
+        "target": [],
+        "neutral": []
+    }
+    
+    # Process both groups
+    all_items = [(item, "target") for item in target_emotion_items] + [(item, "neutral") for item in neutral_emotion_items]
     
     # Process items in parallel batches
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -169,22 +178,24 @@ def main():
         futures = []
         
         # Submit all tasks
-        for i, item in enumerate(data):
-            future = executor.submit(process_item, item, i, len(data))
-            futures.append(future)
+        for i, (item, item_type) in enumerate(all_items):
+            future = executor.submit(process_item, item, i, len(all_items))
+            futures.append((future, item_type))
         
         # Process completed futures with a progress bar
-        for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Analyzing emotions"):
+        for (future, item_type) in tqdm(
+            [(f, t) for f, t in futures], 
+            total=len(futures), 
+            desc=f"Analyzing {TARGET_EMOTION} vs neutral emotions"
+        ):
             result = future.result()
             if result:
                 results.append(result)
                 
-                # Add to category-based collections - ensure we use native Python types
-                category = int(result["category"])
-                if category in emotion_expression_by_category:
-                    emotion_expression_by_category[category].append(bool(result["expresses_emotion"]))
+                # Add to type-based collections
+                emotion_expression_by_type[item_type].append(bool(result["expresses_emotion"]))
                 
-                # Sleep briefly to prevent hitting rate limits (when many futures complete at once)
+                # Sleep briefly to prevent hitting rate limits
                 if len(results) % RATE_LIMIT == 0:
                     time.sleep(RATE_LIMIT_SLEEP)
     
@@ -193,21 +204,21 @@ def main():
     
     # Print detailed results
     for result in results:
-        print(f"\nItem {result['item_id']+1}/{len(data)}:")
+        print(f"\nItem {result['item_id']+1}/{len(all_items)}:")
         print(f"Emotion: {result['emotion']}")
         print(f"Rationale: {result['rationale']}")
         print(f"Expresses {result['emotion']}: {result['expresses_emotion']} (confidence: {result['confidence']:.2f})")
         print(f"Explanation: {result['explanation']}")
     
-    # Calculate correlation and statistics
-    category_1_expression_rate = sum(emotion_expression_by_category[1]) / len(emotion_expression_by_category[1]) if emotion_expression_by_category[1] else 0
-    category_2_expression_rate = sum(emotion_expression_by_category[2]) / len(emotion_expression_by_category[2]) if emotion_expression_by_category[2] else 0
+    # Calculate expression rates
+    target_expression_rate = sum(emotion_expression_by_type["target"]) / len(emotion_expression_by_type["target"]) if emotion_expression_by_type["target"] else 0
+    neutral_expression_rate = sum(emotion_expression_by_type["neutral"]) / len(emotion_expression_by_type["neutral"]) if emotion_expression_by_type["neutral"] else 0
     
     # Chi-square test if we have enough data
-    if emotion_expression_by_category[1] and emotion_expression_by_category[2]:
+    if emotion_expression_by_type["target"] and emotion_expression_by_type["neutral"]:
         observed = [
-            [sum(emotion_expression_by_category[1]), len(emotion_expression_by_category[1]) - sum(emotion_expression_by_category[1])],
-            [sum(emotion_expression_by_category[2]), len(emotion_expression_by_category[2]) - sum(emotion_expression_by_category[2])]
+            [sum(emotion_expression_by_type["target"]), len(emotion_expression_by_type["target"]) - sum(emotion_expression_by_type["target"])],
+            [sum(emotion_expression_by_type["neutral"]), len(emotion_expression_by_type["neutral"]) - sum(emotion_expression_by_type["neutral"])]
         ]
         chi2, p, dof, expected = stats.chi2_contingency(observed)
         correlation_significant = p < 0.05
@@ -215,12 +226,13 @@ def main():
         chi2, p, correlation_significant = None, None, False
     
     # Save results with custom encoder to handle NumPy types
-    output_file = "result_analysis/emotion_analysis_results.json"
+    output_file = "result_analysis/emotion_comparison_results.json"
     with open(output_file, 'w') as f:
         json.dump({
             "summary": {
-                "category_1_expression_rate": float(category_1_expression_rate),
-                "category_2_expression_rate": float(category_2_expression_rate),
+                "target_emotion": TARGET_EMOTION,
+                "target_expression_rate": float(target_expression_rate),
+                "neutral_expression_rate": float(neutral_expression_rate),
                 "chi2_value": None if chi2 is None else float(chi2),
                 "p_value": None if p is None else float(p),
                 "correlation_significant": bool(correlation_significant)
@@ -229,13 +241,13 @@ def main():
         }, f, indent=2, cls=NumpyEncoder)
     
     # Create visualization
-    categories = ["Category 1", "Category 2"]
-    expression_rates = [category_1_expression_rate, category_2_expression_rate]
+    emotion_types = [f"{TARGET_EMOTION.capitalize()}", "Neutral"]
+    expression_rates = [target_expression_rate, neutral_expression_rate]
     
     plt.figure(figsize=(10, 6))
-    bars = plt.bar(categories, expression_rates, color=['blue', 'orange'])
+    bars = plt.bar(emotion_types, expression_rates, color=['red', 'gray'])
     plt.ylabel('Emotion Expression Rate')
-    plt.title('Emotion Expression Rate by Category')
+    plt.title(f'Emotion Expression Rate: {TARGET_EMOTION.capitalize()} vs Neutral')
     
     for bar in bars:
         height = bar.get_height()
@@ -243,17 +255,17 @@ def main():
                 f'{height:.2f}', ha='center', va='bottom')
     
     plt.ylim(0, 1.1)
-    plt.savefig("result_analysis/emotion_expression_by_category.png")
+    plt.savefig(f"result_analysis/{TARGET_EMOTION}_vs_neutral_expression.png")
     
     # Print summary
     print("\n===== ANALYSIS SUMMARY =====")
-    print(f"Category 1 emotion expression rate: {category_1_expression_rate:.2f}")
-    print(f"Category 2 emotion expression rate: {category_2_expression_rate:.2f}")
+    print(f"{TARGET_EMOTION.capitalize()} emotion expression rate: {target_expression_rate:.2f}")
+    print(f"Neutral emotion expression rate: {neutral_expression_rate:.2f}")
     if chi2 is not None and p is not None:
         print(f"Chi-square test: χ² = {chi2:.2f}, p = {p:.4f}")
-        print(f"Correlation is {'statistically significant' if correlation_significant else 'not statistically significant'}")
+        print(f"Difference is {'statistically significant' if correlation_significant else 'not statistically significant'}")
     print(f"Results saved to {output_file}")
-    print(f"Visualization saved to result_analysis/emotion_expression_by_category.png")
+    print(f"Visualization saved to result_analysis/{TARGET_EMOTION}_vs_neutral_expression.png")
 
 if __name__ == "__main__":
-    main()
+    main() 
