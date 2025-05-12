@@ -1,36 +1,56 @@
-# Emotion and Behavior Experiment with LLMs - Documentation
+# Documentation Folder
 
-This directory contains detailed documentation for the LLM emotion and behavior experiments.
+[→ Documentation Index](index.md)
 
-## Key Documentation
+All documentation for this project has been consolidated into the `doc` folder. The previous `docs` folder has been merged and removed as of [date of merge].
 
-- [Model Download Management](model_download_management.md): Explains how the system automatically checks for and downloads models when running experiment series.
-- [Scenario Creation Graph](scenario_creation_graph.md): Details on how the LangGraph implementation works for scenario creation.
+## Structure
+- All markdown files and images related to documentation are now in `doc/`.
+- Please update any scripts or references to use `doc/` instead of `docs/`.
 
-## Running Experiments
+## Contents
+- Experiment reports
+- Model compatibility
+- Scenario creation
+- Game theory documentation
+- Emotion analysis
+- And more...
 
-For information on how to run experiments, please refer to the main README in the project root directory.
+For a full list of documentation files, see the contents of this folder.
 
 # Project Documentation
 
-This directory contains documentation for the project.
+This directory contains documentation for the different modules within the LLM_EmoBehav_game_theory project.
 
-## Contents
+## Modules
 
-- [Scenario Creation Graph](scenario_creation_graph.md) - Documentation for the scenario creation workflow
-- [Game Tree Data Structure](game_tree.md) - Documentation for the game tree representation of payoff matrices
+*   **Scenario Creation:**
+    *   [LangGraph Implementation](./../data_creation/scenario_creation/langgraph_creation/README.md): Details on the graph-based process for generating game theory scenarios.
+*   **Games:**
+    *   See the `docs/games/` directory for specific game configurations and details.
 
-# Documentation
+*   **Representation Reading (RepE)**: 
+    *   [Extracting Emotion Activation Directions](./../neuro_manipulation/repe/README.md)
 
-- [Annotate Stimulus](../data_creation/README.md): Documentation for the `annotate_stimulus` function, including its multiprocessing enhancement and usage instructions.
+*   **Emotion Analysis**:
+    *   [Emotion Analysis](./emotion_analysis.md) - Documentation for emotion analysis
+
+*   **Model Layer Detector**:
+    *   [Model Layer Detector](./model_layer_detector.md) - Documentation for model layer detector
+
+*   **Prompt Format**:
+    *   [Prompt Format](./prompt_format.md) - Documentation for prompt format
+
+*   **Prompt Wrapper**:
+    *   [Prompt Wrapper](./prompt_wrapper.md) - Documentation for prompt wrapper
+
+*   **Experiment Series**:
+    *   [Experiment Series](./experiment_series_README.md) - Documentation for experiment series
 
 
-- [Scenario Creation](doc/scenario_creation_graph.md): Documentation for using langgraph to create scenarios
 
-# Game Theory Documentation
+*   **vLLM Integration**:
+    *   [vLLM Compatibility](./vllm_compatibility.md) - Documentation for vLLM compatibility with representation engineering
+    *   [vLLM Hook Implementation](./vllm_hook_implementation.md) - Explains the `RepControlVLLMHook` for representation control using vLLM hooks.
 
-This directory contains documentation for the game theory components of the project.
-
-## Available Documentation
-
-- [Payoff Matrices](../doc/payoff_matrices.md) - Documentation for the PayoffMatrix class that represents game payoffs 
+*   ... (Add links to other documentation as needed) 

@@ -2,9 +2,6 @@
 
 This document provides information about the emotion expression analysis in rationales.
 
-## Documentation
-
-Detailed documentation for the emotion expression analysis can be found in the [result_analysis README](../result_analysis/README.md).
 
 ## Overview
 
