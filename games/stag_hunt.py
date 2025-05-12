@@ -6,6 +6,7 @@ from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import Field
 
 from games.game import BehaviorChoices, GameDecision, GameScenario
+from games.payoff_matrices import PayoffMatrix
 
 
 class StagHuntBehaviors(BehaviorChoices):
@@ -31,7 +32,7 @@ class StagHuntScenario(GameScenario):
     description: str
     participants: List[Dict[str, Any]]
     behavior_choices: StagHuntBehaviors
-    payoff_matrix: Dict[str, Any]
+    payoff_matrix: PayoffMatrix
     game_name: str = "Stag_Hunt"
 
     def find_behavior_from_decision(self, decision: str) -> str:

@@ -58,7 +58,7 @@ def hook_fn_rep_control(module, args, output):
             logger.error(f"Rank {rank} - Module {module.__class__.__name__} output type is not a Tensor or Tuple[Tensor, ...]: {type(output)}. Cannot modify.")
             return output
 
-        logger.info(f"Rank {rank} - Applying RepControl hook on {module.__class__.__name__}. Full Controller shape: {full_controller.shape}, Modified shape: {modified.shape}, TP size: {tp_size}")
+        logger.debug(f"Rank {rank} - Applying RepControl hook on {module.__class__.__name__}. Full Controller shape: {full_controller.shape}, Modified shape: {modified.shape}, TP size: {tp_size}")
 
         # --- Apply modification logic (Tensor Parallel Aware) ---
         norm_pre = torch.norm(modified, dim=-1, keepdim=True) if normalize else None
@@ -167,7 +167,7 @@ def hook_fn_rep_control(module, args, output):
         else:
             final_output = modified
 
-        logger.info(f"Rank {rank} - RepControl hook applied successfully on {module.__class__.__name__}.")
+        logger.debug(f"Rank {rank} - RepControl hook applied successfully on {module.__class__.__name__}.")
         return final_output
 
     except Exception as e:
@@ -258,10 +258,10 @@ def _set_controller_state_on_worker_rpc(worker_self, layer_index, block_name, st
             logger.error(f"RPC: Worker Rank {rank} failed to find target module for layer {layer_index}, block {block_name} to set state.")
             return False
 
-        logger.info(f"RPC: Worker Rank {rank} setting RepControl state on {target_module.__class__.__name__} (Layer {layer_index}, Block {block_name}). State keys: {list(state.keys())}")
+        logger.debug(f"RPC: Worker Rank {rank} setting RepControl state on {target_module.__class__.__name__} (Layer {layer_index}, Block {block_name}). State keys: {list(state.keys())}")
         # --- Add Debug Logging Here --- Start
         received_tp_size = state.get('tp_size', 'Not Found')
-        logger.info(f"RPC: Worker Rank {rank} - Received state dictionary contains tp_size: {received_tp_size} (Type: {type(received_tp_size)})")
+        logger.debug(f"RPC: Worker Rank {rank} - Received state dictionary contains tp_size: {received_tp_size} (Type: {type(received_tp_size)})")
         # --- Add Debug Logging Here --- End
         # Attach state directly to the module instance
         target_module._rep_control_state = state
@@ -281,10 +281,10 @@ def _reset_controller_state_on_worker_rpc(worker_self, layer_index, block_name):
             return True # Indicate success as state is effectively not present
 
         if hasattr(target_module, '_rep_control_state'):
-            logger.info(f"RPC: Worker Rank {rank} resetting RepControl state on {target_module.__class__.__name__} (Layer {layer_index}, Block {block_name})")
+            logger.debug(f"RPC: Worker Rank {rank} resetting RepControl state on {target_module.__class__.__name__} (Layer {layer_index}, Block {block_name})")
             delattr(target_module, '_rep_control_state')
         else:
-             logger.info(f"RPC: Worker Rank {rank} - No RepControl state found on {target_module.__class__.__name__} to reset.")
+            logger.debug(f"RPC: Worker Rank {rank} - No RepControl state found on {target_module.__class__.__name__} to reset.")
 
         return True
     except Exception as e:

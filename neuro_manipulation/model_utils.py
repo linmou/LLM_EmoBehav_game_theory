@@ -11,10 +11,11 @@ from neuro_manipulation.prompt_formats import PromptFormat
 from constants import Emotions
 from vllm import LLM
 
-def setup_model_and_tokenizer(config):
+def setup_model_and_tokenizer(config, from_vllm=False):
     model, tokenizer = load_model_tokenizer(
         config['model_name_or_path'],
-        expand_vocab=False
+        expand_vocab=False,
+        from_vllm=from_vllm
     )
     
     prompt_format = PromptFormat(tokenizer)

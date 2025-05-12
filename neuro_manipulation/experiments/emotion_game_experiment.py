@@ -96,8 +96,20 @@ class EmotionGameExperiment:
             
         self.batch_size = batch_size
         
-        # self.model, self.tokenizer, self.prompt_format, self.user_tag, self.assistant_tag = setup_model_and_tokenizer(repe_eng_config)
-        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config)
+        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config, from_vllm=False) # first load from hf for load_emotion_readers since load_emotion_readers does not support vllm yet TODO: update load_emotion_readers to support vllm
+        num_hidden_layers = ModelLayerDetector.num_layers(self.model)
+        self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
+        self.logger.info(f"Using hidden layers: {self.hidden_layers}")
+        
+        self.emotion_rep_readers = load_emotion_readers(
+            self.repe_eng_config, 
+            self.model, 
+            self.tokenizer, 
+            self.hidden_layers
+        )
+        del self.model # to save memory
+        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config, from_vllm=True) # load from vllm for the rest of the experiment
+        
         self.logger.info(f"Model: {self.model} loaded from {repe_eng_config['model_name_or_path']}, type: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)
         
@@ -118,22 +130,14 @@ class EmotionGameExperiment:
         if num_hidden_layers <= 0:
             raise ValueError(f"Invalid number of layers: {num_hidden_layers}")
             
-        self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
-        self.logger.info(f"Using hidden layers: {self.hidden_layers}")
         
-        self.emotion_rep_readers = load_emotion_readers(
-            self.repe_eng_config, 
-            self.model, 
-            self.tokenizer, 
-            self.hidden_layers
-        )
         
         self.intensities = self.exp_config['experiment'].get('intensity', self.repe_eng_config['coeffs'])
         self.rep_control_pipeline = get_pipeline(
             "rep-control-vllm" if self.is_vllm else "rep-control",
             model=self.model,
             tokenizer=self.tokenizer,
-            layers=self.repe_eng_config['control_layer_id'],
+            layers=self.hidden_layers[len(self.hidden_layers)//3:2*len(self.hidden_layers)//3], # self.repe_eng_config['control_layer_id'], #TODO  set within config
             block_name=self.repe_eng_config['block_name'],
             control_method=self.repe_eng_config['control_method']
         )
@@ -147,7 +151,7 @@ class EmotionGameExperiment:
         self.cur_coeff = None
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") 
-        self.output_dir = f"{self.exp_config['experiment']['output']['base_dir']}/{self.exp_config['experiment']['name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}_{timestamp}"
+        self.output_dir = f"{self.exp_config['experiment']['output']['base_dir']}/{self.exp_config['experiment']['name']}_{self.game_config['game_name']}_{self.repe_eng_config['model_name_or_path'].split('/')[-1]}_{timestamp}"
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         with open(self.output_dir + '/exp_config.yaml', 'w') as f:
             yaml.dump(self.exp_config, f)
@@ -304,7 +308,7 @@ class EmotionGameExperiment:
             output_data.append((generated_text, options))
             repeat_idx = i // batch_size
         
-        with ThreadPoolExecutor(max_workers=min(len(output_data), 8), thread_name_prefix=f"Extractor_B{batch_idx}") as executor:
+        with ThreadPoolExecutor(max_workers=min(len(output_data), 64), thread_name_prefix=f"Extractor_B{batch_idx}") as executor:
             extracted_reses = list(executor.map(self._post_process_single_output, output_data))
         
         self.logger.info(f"{log_prefix} PostProc: Extracted {len(extracted_reses)} results")

@@ -30,4 +30,7 @@ This directory contains documentation for the different modules within the LLM_E
 *   **Emotion Comparison**:
     *   [Emotion Comparison](./emotion_comparison.md) - Documentation for comparing specific emotions vs neutral expressions
 
+*   **vLLM Integration**:
+    *   [vLLM Compatibility](./vllm_compatibility.md) - Documentation for vLLM compatibility with representation engineering
+
 *   ... (Add links to other documentation as needed) 

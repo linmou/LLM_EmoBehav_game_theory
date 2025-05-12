@@ -33,7 +33,7 @@ def setup_experiment(config_path='config/escalGame_repEng_experiment_config.yaml
 
 def main():
     parser = argparse.ArgumentParser(description='Run an emotion game experiment')
-    parser.add_argument('--config', type=str, default='config/priDeli_repEng_experiment_config copy.yaml',
+    parser.add_argument('--config', type=str, default='config/priDeli_repEng_experiment_config.yaml',
                         help='Path to experiment config file')
     parser.add_argument('--series', action='store_true',
                         help='Run a series of experiments (uses multiple games and models)')

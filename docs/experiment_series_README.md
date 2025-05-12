@@ -105,4 +105,16 @@ If an experiment series is interrupted (either by an error or by user interventi
 python -m neuro_manipulation.run_experiment_series --config config/experiment_series_config.yaml --resume
 ```
 
-This will skip completed experiments and retry failed or pending ones. 
+This will skip completed experiments and retry failed or pending ones.
+
+## Report Naming Convention
+
+The experiment report is stored in a directory named using the experiment name from the config file rather than the series name from the command line argument. This ensures consistency with individual experiment output directories.
+
+For detailed information about the naming convention, see [Experiment Report Naming](./experiment_report_naming.md).
+
+## Validation Rules
+
+The experiment series runner performs several validations before running experiments:
+
+1. **Previous Actions Length**: The `previous_actions_length` parameter in game config must be set to 0. This ensures that sequential game experiments are properly set up. If this validation fails, the runner will raise a ValueError with a descriptive message. 

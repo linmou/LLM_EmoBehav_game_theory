@@ -1,3 +1,16 @@
+# Emotion and Behavior Experiment with LLMs - Documentation
+
+This directory contains detailed documentation for the LLM emotion and behavior experiments.
+
+## Key Documentation
+
+- [Model Download Management](model_download_management.md): Explains how the system automatically checks for and downloads models when running experiment series.
+- [Scenario Creation Graph](scenario_creation_graph.md): Details on how the LangGraph implementation works for scenario creation.
+
+## Running Experiments
+
+For information on how to run experiments, please refer to the main README in the project root directory.
+
 # Project Documentation
 
 This directory contains documentation for the project.

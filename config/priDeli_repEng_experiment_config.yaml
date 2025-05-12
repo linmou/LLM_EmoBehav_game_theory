@@ -1,5 +1,5 @@
 experiment:
-  name: "Prisoners_Dilemma_New_Template_GLM"
+  name: "Prisoners_Dilemma"
   game:
     name: "Prisoners_Dilemma"  # or "Prisoners_Dilemma"
     
@@ -9,7 +9,7 @@ experiment:
     batch_size: 4
   
   llm:
-    model_name: 'THUDM/glm-4-9b-chat-hf' # Name of the config from api_configs.py
+    model_name: "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-14B" # Name of the config from api_configs.py
     # Additional parameters to override or extend the base config
     generation_config:
       temperature: 0.7
@@ -21,7 +21,7 @@ experiment:
   system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. "
   # system_message_template: "Remember you are Alice. What is your option? Choose one option shown above. Before making your choice, think about do you have emotion about {emotion} that will affect your choice. If so, try to regulate it."
   
-  repeat: 5
+  repeat: 3
 
   emotions:
     - "anger"
@@ -32,8 +32,10 @@ experiment:
     - "surprise"
   
   intensity:
-    - 1.0
-    
+    - 1.5
+
+  run_sanity_check: true
+  
   output:
     base_dir: "results/RepEng"
     save_plots: true

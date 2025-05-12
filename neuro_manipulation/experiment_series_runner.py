@@ -9,11 +9,15 @@ import os
 import sys
 import traceback
 import json
-from datetime import datetime
+import subprocess
+import gc
+from datetime import datetime, timedelta
 from pathlib import Path
 import logging
 from typing import List, Dict, Any, Optional, Tuple
 import threading
+import shutil
+from transformers import AutoConfig
 
 from constants import GameNames
 from neuro_manipulation.repe import repe_pipeline_registry
@@ -28,15 +32,25 @@ class ExperimentStatus:
     FAILED = "failed"
 
 class ExperimentReport:
-    """Manages and persists the status of experiments in a series"""
+    """Manages and persists the status of experiments in a series
     
-    def __init__(self, base_dir: str, experiment_series_name: str):
+    The report is saved as a JSON file in a directory named after either:
+    1. The experiment name from the config file (preferred)
+    2. The series name provided via CLI argument (fallback)
+    
+    This ensures that experiment reports are stored consistently with the individual experiment outputs.
+    """
+    
+    def __init__(self, base_dir: str, experiment_series_name: str, experiment_name: str = None):
         self.base_dir = base_dir
-        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.report_file = Path(f"{base_dir}/{experiment_series_name}_{self.timestamp}/experiment_report.json")
+        self.timestamp = datetime.now().strftime("%Y%m%d_%H")
+        # Use experiment_name if provided (from config), otherwise fall back to experiment_series_name
+        report_name = experiment_name or experiment_series_name
+        self.report_file = Path(f"{base_dir}/{report_name}_{self.timestamp}_experiment_report.json")
         self.report_file.parent.mkdir(parents=True, exist_ok=True)
         self.lock = threading.Lock()
         self.experiments = {}
+        self.series_start_time = datetime.now()
         self._save_report()
         
     def add_experiment(self, game_name: str, model_name: str, exp_id: str, status: str = ExperimentStatus.PENDING) -> None:
@@ -48,6 +62,7 @@ class ExperimentReport:
                 "status": status,
                 "start_time": None,
                 "end_time": None,
+                "time_cost_seconds": None,
                 "error": None,
                 "output_dir": None,
                 "exp_id": exp_id
@@ -59,6 +74,17 @@ class ExperimentReport:
         with self.lock:
             if exp_id in self.experiments:
                 self.experiments[exp_id].update(kwargs)
+                
+                # Calculate time cost if we have both start and end times
+                if "start_time" in self.experiments[exp_id] and "end_time" in self.experiments[exp_id]:
+                    start = self.experiments[exp_id]["start_time"]
+                    end = self.experiments[exp_id]["end_time"]
+                    if start and end and not self.experiments[exp_id].get("time_cost_seconds"):
+                        start_dt = datetime.fromisoformat(start)
+                        end_dt = datetime.fromisoformat(end)
+                        time_cost = (end_dt - start_dt).total_seconds()
+                        self.experiments[exp_id]["time_cost_seconds"] = time_cost
+                
                 self._save_report()
     
     def get_pending_experiments(self) -> List[Dict[str, Any]]:
@@ -76,8 +102,13 @@ class ExperimentReport:
     def _save_report(self) -> None:
         """Save the report to disk"""
         with open(self.report_file, 'w') as f:
+            # Calculate series duration so far
+            series_duration = (datetime.now() - self.series_start_time).total_seconds()
+            
             json.dump({
                 "last_updated": datetime.now().isoformat(),
+                "series_start_time": self.series_start_time.isoformat(),
+                "series_duration_seconds": series_duration,
                 "experiments": self.experiments
             }, f, indent=2)
     
@@ -90,20 +121,42 @@ class ExperimentReport:
             return True
         return False
     
-    def get_summary(self) -> Dict[str, int]:
+    def get_summary(self) -> Dict[str, Any]:
         """Get summary of experiment statuses"""
         with self.lock:
+            # Calculate total and average time costs
+            completed_exps = [exp for exp in self.experiments.values() 
+                             if exp["status"] == ExperimentStatus.COMPLETED and exp.get("time_cost_seconds")]
+            
+            total_time_cost = sum(exp["time_cost_seconds"] for exp in completed_exps) if completed_exps else 0
+            avg_time_cost = total_time_cost / len(completed_exps) if completed_exps else 0
+            
+            # Calculate series duration so far
+            series_duration = (datetime.now() - self.series_start_time).total_seconds()
+            
             summary = {
                 "total": len(self.experiments),
                 "pending": sum(1 for exp in self.experiments.values() if exp["status"] == ExperimentStatus.PENDING),
                 "running": sum(1 for exp in self.experiments.values() if exp["status"] == ExperimentStatus.RUNNING),
                 "completed": sum(1 for exp in self.experiments.values() if exp["status"] == ExperimentStatus.COMPLETED),
-                "failed": sum(1 for exp in self.experiments.values() if exp["status"] == ExperimentStatus.FAILED)
+                "failed": sum(1 for exp in self.experiments.values() if exp["status"] == ExperimentStatus.FAILED),
+                "total_time_cost_seconds": total_time_cost,
+                "avg_time_cost_seconds": avg_time_cost,
+                "formatted_avg_time": str(timedelta(seconds=int(avg_time_cost))),
+                "series_duration_seconds": series_duration,
+                "formatted_series_duration": str(timedelta(seconds=int(series_duration)))
             }
             return summary
 
 class ExperimentSeriesRunner:
-    """Manages running a series of experiments with different game/model combinations"""
+    """Manages running a series of experiments with different game/model combinations
+    
+    This runner supports:
+    - Running multiple game/model combinations in sequence
+    - Graceful shutdown and resumption of experiment series
+    - Model download and verification
+    - CUDA memory cleanup between experiments (see ./doc/cuda_memory_management.md)
+    """
     
     def __init__(self, config_path: str, series_name: str = None, resume: bool = False):
         # Setup logging
@@ -125,7 +178,9 @@ class ExperimentSeriesRunner:
         
         # Create or load experiment report
         base_dir = self.exp_config['experiment']['output']['base_dir']
-        self.report = ExperimentReport(base_dir, self.series_name)
+        # Get experiment name from config to ensure consistent directory structure
+        experiment_name = self.exp_config['experiment'].get('name', None)
+        self.report = ExperimentReport(base_dir, self.series_name, experiment_name)
         
         # Check if resuming
         self.resume = resume
@@ -134,6 +189,106 @@ class ExperimentSeriesRunner:
                 self.logger.warning("No previous experiment report found. Starting fresh.")
             else:
                 self.logger.info(f"Resumed experiment series. Status: {self.report.get_summary()}")
+    
+    def _check_model_existence(self, model_name: str) -> bool:
+        """
+        Check if the model exists in either ~/.cache/huggingface/hub/ or ../huggingface.
+        If not, download it to ../huggingface.
+        
+        Args:
+            model_name: The name of the model to check
+            
+        Returns:
+            bool: True if model exists or was successfully downloaded, False otherwise
+        """
+        # Skip for local paths (starting with /)
+        if model_name.startswith('/'):
+            self.logger.info(f"Skipping model check for local path: {model_name}")
+            return True
+            
+        # Define paths to check
+        home_dir = os.path.expanduser("~")
+        cache_path = os.path.join(home_dir, ".cache", "huggingface", "hub")
+        parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        alt_path = os.path.join(parent_dir, "huggingface_models")
+        
+        # Create model-specific paths based on the model name structure (org/model format)
+        if '/' in model_name:
+            model_parts = model_name.split('/')
+            model_org = model_parts[0]
+            model_name_part = '/'.join(model_parts[1:])
+            
+            cache_model_path = os.path.join(cache_path, "models--" + model_org + "--" + model_name_part.replace('/', '--'))
+            alt_model_path = os.path.join(alt_path, model_org, model_name_part)
+        else:
+            # For models without organization prefix
+            cache_model_path = os.path.join(cache_path, "models--" + model_name)
+            alt_model_path = os.path.join(alt_path, model_name)
+        
+        self.logger.info(f"Checking if model {model_name} exists...")
+        self.logger.info(f"Checking path: {cache_model_path}")
+        self.logger.info(f"Checking alternative path: {alt_model_path}")
+        
+        # Check if model exists in either location
+        if os.path.exists(cache_model_path) or os.path.exists(alt_model_path):
+            self.logger.info(f"Model {model_name} found.")
+            return True
+        
+        # If model doesn't exist, download it to ../huggingface_models
+        self.logger.info(f"Model {model_name} not found. Downloading to {alt_model_path}...")
+        try:
+            # Make sure the target directory exists
+            os.makedirs(os.path.dirname(alt_model_path), exist_ok=True)
+            
+            # First verify the model exists on HuggingFace
+            try:
+                AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+            except Exception as e:
+                self.logger.error(f"Model {model_name} not found on HuggingFace: {str(e)}")
+                return False
+            
+            # Download model using huggingface-cli command
+            self.logger.info(f"Starting download of model {model_name} to {alt_model_path} using huggingface-cli...")
+            
+            # Prepare environment with HF_HUB_ENABLE_HF_TRANSFER=1 for faster downloads
+            env = os.environ.copy()
+            env["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+            
+            # Run huggingface-cli download command
+            cmd = ["huggingface-cli", "download", model_name, "--local-dir", alt_model_path]
+            self.logger.info(f"Running command: {' '.join(cmd)}")
+            
+            # Execute the command and capture output
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
+                text=True
+            )
+            
+            # Stream output in real-time
+            while True:
+                output = process.stdout.readline()
+                if output == '' and process.poll() is not None:
+                    break
+                if output:
+                    self.logger.info(output.strip())
+            
+            # Get return code and stderr
+            return_code = process.poll()
+            stderr = process.stderr.read()
+            
+            if return_code != 0:
+                self.logger.error(f"Download failed with return code {return_code}: {stderr}")
+                return False
+            
+            self.logger.info(f"Model {model_name} successfully downloaded to {alt_model_path}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to download model {model_name}: {str(e)}")
+            return False
     
     def _handle_shutdown(self, sig, frame):
         """Handle SIGINT (Ctrl+C)"""
@@ -146,8 +301,32 @@ class ExperimentSeriesRunner:
     
     def _format_model_name_for_folder(self, model_name: str) -> str:
         """Format model name for folder name by removing path prefix"""
-        if '/' in model_name:
-            return '/'.join(model_name.rsplit('/', 2)[1:])
+        # Count the number of forward slashes in the model name
+        slash_count = model_name.count('/')
+        
+        # Special case for full paths with multiple parts
+        if slash_count >= 2 and model_name.startswith('/'):
+            # For paths like /data/home/huggingface_models/RWKV/v6-Finch-7B-HF
+            # Extract the last two parts
+            parts = model_name.split('/')
+            if len(parts) >= 3:  # Make sure we have enough parts
+                return f"{parts[-2]}/{parts[-1]}"
+        
+        # For HuggingFace model paths like meta-llama/Llama-3.1-8B-Instruct
+        elif slash_count == 1:
+            # Return as is
+            return model_name
+        elif slash_count == 2:
+            # For paths with exactly three parts
+            parts = model_name.split('/')
+            return f"{parts[1]}/{parts[2]}"
+        
+        # For paths with more than three parts
+        elif slash_count > 2:
+            # Extract the last two parts
+            parts = model_name.split('/')
+            return f"{parts[-2]}/{parts[-1]}"
+            
         return model_name
     
     def setup_experiment(self, game_name_str: str, model_name: str) -> EmotionGameExperiment:
@@ -167,7 +346,7 @@ class ExperimentSeriesRunner:
         
         if game_name.is_sequential():
             game_config['previous_actions_length'] = exp_config['experiment']['game']['previous_actions_length']
-        
+
         experiment = EmotionGameExperiment(
             repe_eng_config, 
             exp_config, 
@@ -178,15 +357,59 @@ class ExperimentSeriesRunner:
         
         return experiment
     
+    def _clean_cuda_memory(self) -> None:
+        """Clean up CUDA memory after an experiment
+        
+        This function attempts to free up CUDA memory by:
+        1. Running Python's garbage collector
+        2. Emptying CUDA cache if PyTorch is available
+        3. Running a system command to check CUDA memory usage
+        """
+        try:
+            # Run Python's garbage collector
+            gc.collect()
+            
+            # Try to empty CUDA cache if PyTorch is available
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    self.logger.info("Clearing CUDA cache...")
+                    torch.cuda.empty_cache()
+                    # Get and log memory stats
+                    allocated = torch.cuda.memory_allocated() / (1024 ** 3)
+                    max_allocated = torch.cuda.max_memory_allocated() / (1024 ** 3)
+                    reserved = torch.cuda.memory_reserved() / (1024 ** 3)
+                    max_reserved = torch.cuda.max_memory_reserved() / (1024 ** 3)
+                    self.logger.info(f"CUDA memory stats after cleanup: allocated={allocated:.2f}GB, "
+                                    f"max_allocated={max_allocated:.2f}GB, reserved={reserved:.2f}GB, "
+                                    f"max_reserved={max_reserved:.2f}GB")
+            except ImportError:
+                self.logger.info("PyTorch not available for CUDA memory cleanup")
+            
+            # Try to run nvidia-smi to check memory usage
+            try:
+                self.logger.info("Running nvidia-smi to check GPU memory...")
+                result = subprocess.run(['nvidia-smi', '--query-gpu=memory.used,memory.free', '--format=csv'],
+                                       capture_output=True, text=True, check=True)
+                self.logger.info(f"NVIDIA-SMI report:\n{result.stdout}")
+            except (subprocess.SubprocessError, FileNotFoundError) as e:
+                self.logger.info(f"Could not run nvidia-smi: {str(e)}")
+                
+        except Exception as e:
+            self.logger.warning(f"Error during CUDA memory cleanup: {str(e)}")
+    
     def run_single_experiment(self, game_name: str, model_name: str, exp_id: str) -> bool:
         """Run a single experiment with the specified game and model"""
         self.logger.info(f"Starting experiment with game: {game_name}, model: {model_name}")
+        
+        # Start timing
+        start_time = datetime.now()
         
         # Update experiment status
         self.report.update_experiment(
             exp_id, 
             status=ExperimentStatus.RUNNING,
-            start_time=datetime.now().isoformat()
+            start_time=start_time.isoformat()
         )
         
         try:
@@ -202,17 +425,34 @@ class ExperimentSeriesRunner:
             else:
                 experiment.run_experiment()
             
+            # End timing
+            end_time = datetime.now()
+            time_cost = (end_time - start_time).total_seconds()
+            
+            # Format time cost for logging
+            time_cost_str = str(timedelta(seconds=int(time_cost)))
+            
             # Update experiment status
             self.report.update_experiment(
                 exp_id, 
                 status=ExperimentStatus.COMPLETED,
-                end_time=datetime.now().isoformat()
+                end_time=end_time.isoformat(),
+                time_cost_seconds=time_cost
             )
             
-            self.logger.info(f"Experiment completed: {game_name}, {model_name}")
+            self.logger.info(f"Experiment completed: {game_name}, {model_name}, Time cost: {time_cost_str}")
+            
+            # Clean up CUDA memory after experiment
+            self.logger.info("Cleaning up CUDA memory...")
+            self._clean_cuda_memory()
+            
             return True
             
         except Exception as e:
+            # End timing even if experiment failed
+            end_time = datetime.now()
+            time_cost = (end_time - start_time).total_seconds()
+            
             error_trace = traceback.format_exc()
             self.logger.error(f"Experiment failed: {game_name}, {model_name}\nError: {str(e)}\n{error_trace}")
             
@@ -220,13 +460,22 @@ class ExperimentSeriesRunner:
             self.report.update_experiment(
                 exp_id, 
                 status=ExperimentStatus.FAILED,
-                end_time=datetime.now().isoformat(),
+                end_time=end_time.isoformat(),
+                time_cost_seconds=time_cost,
                 error=f"{str(e)}\n{error_trace}"
             )
+            
+            # Try to clean up CUDA memory even after failure
+            self.logger.info("Attempting to clean up CUDA memory after failed experiment...")
+            self._clean_cuda_memory()
+            
             return False
     
     def run_experiment_series(self) -> None:
         """Run the full series of experiments with all game/model combinations"""
+        # Record series start time
+        series_start_time = datetime.now()
+        
         # Get lists of games and models from config
         games = self.exp_config['experiment'].get('games', [])
         models = self.exp_config['experiment'].get('models', [])
@@ -240,9 +489,18 @@ class ExperimentSeriesRunner:
         
         self.logger.info(f"Starting experiment series with {len(games)} games and {len(models)} models")
         
+        # Pre-check and download models if needed
+        self.logger.info("Checking model availability...")
+        for model_name in models:
+            # For model checking and downloading, use the original model name
+            model_exists = self._check_model_existence(model_name)
+            if not model_exists:
+                self.logger.warning(f"Model {model_name} could not be verified or downloaded. Experiments with this model may fail.")
+        
         # Generate experiment IDs and initialize report
         for game_name in games:
             for model_name in models:
+                # For folder names, use the formatted version
                 model_folder_name = self._format_model_name_for_folder(model_name)
                 exp_id = f"{game_name}_{model_folder_name}"
                 
@@ -262,6 +520,18 @@ class ExperimentSeriesRunner:
                 break
             
             self.logger.info(f"Running experiment {i+1}/{total_experiments}: {exp['game_name']}, {exp['model_name']}")
+            
+            # Verify model exists before running the experiment
+            model_name = exp['model_name']
+            if not self._check_model_existence(model_name):
+                self.logger.error(f"Skipping experiment with {exp['game_name']} and {model_name} due to missing model.")
+                self.report.update_experiment(
+                    exp['exp_id'],
+                    status=ExperimentStatus.FAILED,
+                    error=f"Model {model_name} could not be found or downloaded."
+                )
+                continue
+                
             self.run_single_experiment(exp['game_name'], exp['model_name'], exp['exp_id'])
             
             # Print summary after each experiment
@@ -270,12 +540,24 @@ class ExperimentSeriesRunner:
         
         # Final summary
         summary = self.report.get_summary()
+        
+        # Calculate and log total series time
+        series_end_time = datetime.now()
+        series_time_cost = (series_end_time - series_start_time).total_seconds()
+        series_time_str = str(timedelta(seconds=int(series_time_cost)))
+        
         self.logger.info(f"Experiment series completed. Final status: {summary}")
+        self.logger.info(f"Total series time: {series_time_str}")
+        self.logger.info(f"Average experiment time: {summary['formatted_avg_time']}")
         
         if summary['failed'] > 0:
             self.logger.info("Failed experiments:")
             for exp in self.report.get_failed_experiments():
-                self.logger.info(f"  - {exp['game_name']}, {exp['model_name']}: {exp.get('error', 'Unknown error')[:100]}...")
+                # Get time cost for failed experiment if available
+                time_cost = exp.get('time_cost_seconds')
+                time_info = f", time: {str(timedelta(seconds=int(time_cost)))}" if time_cost else ""
+                
+                self.logger.info(f"  - {exp['game_name']}, {exp['model_name']}{time_info}: {exp.get('error', 'Unknown error')[:100]}...")
 
 def main():
     """Run the experiment series from command line"""
