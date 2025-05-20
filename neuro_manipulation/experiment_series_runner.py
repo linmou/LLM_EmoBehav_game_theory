@@ -155,7 +155,7 @@ class ExperimentSeriesRunner:
     - Running multiple game/model combinations in sequence
     - Graceful shutdown and resumption of experiment series
     - Model download and verification
-    - CUDA memory cleanup between experiments (see ./doc/cuda_memory_management.md)
+    - CUDA memory cleanup between experiments
     """
     
     def __init__(self, config_path: str, series_name: str = None, resume: bool = False):

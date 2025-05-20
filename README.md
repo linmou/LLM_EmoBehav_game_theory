@@ -18,7 +18,7 @@
 [Expand on the project's hypothesis and goals. Briefly mention the approach to emotion setting, referencing `constants.py`.]
 
 ## Documentation
-For detailed documentation on project components, methodologies, and specific implementations, please refer to our [main documentation page](doc/index.md) or browse the `doc/` directory.
+For detailed documentation on project components, methodologies, and specific implementations, please refer to our [main documentation page](docs/index.md) or browse the `docs/` directory.
 
 ## Setup
 Follow these steps to set up your environment:
@@ -34,7 +34,22 @@ Follow these steps to set up your environment:
     ```bash
     pip install -r requirements.txt
     ```
-4.  **(Any other setup like API keys, etc.)**
+4.  **Setup API keys**
+    Build an api_configs.py as follows: 
+
+    ```python
+    """
+    Configuration file containing various API endpoints and configurations for different LLM providers.
+    Each configuration contains the necessary parameters to connect to different LLM APIs.
+    """
+
+    # OpenAI Official API Configuration
+    OAI_CONFIG = {
+        "base_url": "https://***",
+        "api_key": "sk-**",  # Replace with your API key
+    }
+
+    ```
 
 ## Usage
 
@@ -53,30 +68,8 @@ The project generally follows three main steps:
     This system offers iterative refinement for scenario generation.
     See [Scenario Creation Graph Documentation](doc/scenario_creation_graph.md) for details.
 
-### 2. API-based Testing & Prompt Experiments
-[Brief explanation of this stage]
-
-First build an api_configs.py
-
-```python
-"""
-Configuration file containing various API endpoints and configurations for different LLM providers.
-Each configuration contains the necessary parameters to connect to different LLM APIs.
-"""
-
-# OpenAI Official API Configuration
-OAI_CONFIG = {
-    "base_url": "https://***",
-    "api_key": "sk-**",  # Replace with your API key
-}
-
-```
-
-*   **API Test Engine**:
-    ```bash
-    python api_test_engine.py
-    ```
-    [Briefly what this tests]
+### 2. API-based Prompt Experiments
+    This project also supports prompt-based experiment.
 
 *   **Run Experiment Pipeline**:
     ```bash
@@ -96,12 +89,12 @@ Example:
 python -m neuro_manipulation.experiment_series_runner --config config/qwen2.5_Series_Prisoners_Dilemma.yaml
 ```
 Configuration files can be found in the `config/` directory. You can create custom configurations for different experimental setups.
-[Link to relevant detailed documentation in `doc/` if available, e.g., for `RepControlVLLMHook`].
+[Link to relevant detailed documentation in `docs/` if available, e.g., for `RepControlVLLMHook`].
 
 ## Directory Structure (Optional Example)
 - `config/`: Experiment configuration files.
 - `data_creation/`: Scripts for generating game scenarios.
-- `doc/`: Detailed project documentation.
+- `docs/`: Detailed project documentation.
 - `neuro_manipulation/`: Code for activation steering and representation engineering.
 - ...
 
