@@ -15,7 +15,7 @@ from data_creation.scenario_creation.langgraph_creation.scenario_creation_graph 
 
 async def main():
     with open("data_creation/persona_jobs.jsonl", "r") as f:
-        persona_jobs = [json.loads(line)["item"] for line in f][:10]
+        persona_jobs = [json.loads(line)["item"] for line in f]
 
     game_name = GameNames.STAG_HUNT.value
     timestamp = datetime.now().strftime("%Y%m%d")

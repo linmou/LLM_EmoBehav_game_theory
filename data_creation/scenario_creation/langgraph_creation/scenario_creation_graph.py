@@ -661,7 +661,7 @@ def should_continue(state: ScenarioCreationState) -> str:
 
     # Check if we've converged on ALL aspects or reached max iterations
     all_converged = state.get("all_converged", False)
-    max_iterations_reached = iteration_count >= 5
+    max_iterations_reached = iteration_count >= 3
 
     if all_converged or max_iterations_reached:
         print(
