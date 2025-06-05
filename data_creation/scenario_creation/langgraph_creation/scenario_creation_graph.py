@@ -5,11 +5,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Any, Dict, List, Optional, Sequence, TypedDict, Union
 
+from azure.core.credentials import AzureKeyCredential
+from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.output_parsers import JsonOutputParser
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
+from pydantic import BaseModel
 
 from games.game import Game
 from games.game_configs import get_game_config
@@ -58,15 +61,23 @@ class ScenarioCreationState(TypedDict):
     auto_save_path: Optional[str]  # Path for auto-saving scenarios
 
 
+from api_configs import AZURE_OPENAI_CONFIG
+
+
 # Initialize the LLM
-def get_llm(temperature=1.4, json_mode=True):
-    """Get the LLM to use for the scenario creation."""
-    # Using ChatOpenAI, but you can replace with other LLM providers
-    return ChatOpenAI(
-        model="gpt-4o",
-        temperature=temperature,
-        # response_format={"type": "json_object"} if json_mode else None,
-    )
+def get_llm(model="gpt-4.1", temperature=1.4, json_mode=True, azure_mode=True):
+    if azure_mode:
+        return AzureChatOpenAI(
+            api_version=AZURE_OPENAI_CONFIG["api_version"],
+            azure_endpoint=AZURE_OPENAI_CONFIG["azure_endpoint"],
+            api_key=AZURE_OPENAI_CONFIG["api_key"],
+            deployment_name=model,
+        )
+    else:
+        return ChatOpenAI(
+            model=model,
+            temperature=temperature,
+        )
 
 
 # Node functions
@@ -135,6 +146,7 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         {json.dumps(example_scenario, indent=2)}
         
         When you create the behavior choices, do not use ambiguous words like 'collaberate, cooperate' or 'defect', please provide specific behavior and more details settings in the scenario to make the behavior -> outcome causal chain robust and reasonable.
+        When you create the behavior choices, do not use words with moral tendency like 'generous, selfish, volunatry, altruistic, etc.', don't use adjective or adverb to describe the behavior, just describe the behavior in a neutral way.
         
         Write in English.Return the scenario as a valid JSON object.
         """
@@ -165,7 +177,11 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         HumanMessage(content=human_prompt),
     ]
 
-    response = llm.invoke(messages, response_format={"type": "json_object"})
+    response = (
+        llm.invoke(messages)
+        if isinstance(llm, AzureAIChatCompletionsModel)
+        else llm.invoke(messages, response_format={"type": "json_object"})
+    )
 
     # With json_mode=True, response.content is already a JSON string
     scenario_draft_content = response.content
@@ -249,7 +265,7 @@ def verify_narrative(state: ScenarioCreationState) -> Dict[str, Any]:
     {json.dumps(scenario_draft, indent=2)}
 
     Evaluate the scenario based on these narrative criteria:
-    1. Is the scenario description realistic and coherent? Does the story make sense? ('You' is a proper name, no need to replace it) 
+    1. Is the scenario description realistic and coherent? Does the story make sense? If the story is almost the same as the example scenario, no need to further improve it. ('You' is a proper name, no need to replace it) 
     2. Are the participants' names ({players}) and jobs ({participant_jobs}) correctly and plausibly integrated? Please strictly follow the {players}.
     3. Does the scenario avoid mentioning any prior relationship between participants? They can have the same job, but they should not be friends or family.
     4. Do the `behavior_choices` accurately represent the strategies available in the scenario?
@@ -268,7 +284,11 @@ def verify_narrative(state: ScenarioCreationState) -> Dict[str, Any]:
         SystemMessage(content=system_prompt),
         HumanMessage(content=human_prompt),
     ]
-    response = llm.invoke(messages, response_format={"type": "json_object"})
+    response = (
+        llm.invoke(messages)
+        if isinstance(llm, AzureAIChatCompletionsModel)
+        else llm.invoke(messages, response_format={"type": "json_object"})
+    )
 
     # Process response
     result_content = response.content
@@ -346,7 +366,7 @@ def verify_preference_order(state: ScenarioCreationState) -> Dict[str, Any]:
 
     # Check structure needed for this verification
     if "payoff_matrix" not in scenario_draft or not isinstance(
-        scenario_draft["payoff_matrix"], dict
+        scenario_draft["payoff_matrix_description"], dict
     ):
         return {
             "preference_feedback": [
@@ -391,7 +411,11 @@ def verify_preference_order(state: ScenarioCreationState) -> Dict[str, Any]:
         SystemMessage(content=system_prompt),
         HumanMessage(content=human_prompt),
     ]
-    response = llm.invoke(messages, response_format={"type": "json_object"})
+    response = (
+        llm.invoke(messages)
+        if isinstance(llm, AzureAIChatCompletionsModel)
+        else llm.invoke(messages, response_format={"type": "json_object"})
+    )
 
     # Process response
     result_content = response.content
@@ -465,12 +489,12 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
     # Check if scenario_draft has the required keys for this specific check
     if (
         "behavior_choices" not in scenario_draft
-        or "payoff_matrix" not in scenario_draft
-        or not isinstance(scenario_draft["payoff_matrix"], dict)
+        or "payoff_matrix_description" not in scenario_draft
+        or not isinstance(scenario_draft["payoff_matrix_description"], dict)
     ):
         return {
             "payoff_feedback": [
-                "Scenario draft is missing required keys ('behavior_choices', 'payoff_matrix') or payoff_matrix is not a dictionary for payoff validation."
+                "Scenario draft is missing required keys ('behavior_choices', 'payoff_matrix_description') or payoff_matrix is not a dictionary for payoff validation."
             ],
             "payoff_converged": False,
         }
@@ -506,7 +530,9 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
                 outcome_key = " , ".join(outcome_key_parts)
 
                 # Get corresponding payoff description from scenario draft
-                outcome_list = scenario_draft["payoff_matrix"].get(outcome_key)
+                outcome_list = scenario_draft["payoff_matrix_description"].get(
+                    outcome_key
+                )
                 outcome_description = f"Outcome description not found in scenario draft for key '{outcome_key}'."
                 if isinstance(outcome_list, list) and outcome_list:
                     p1_outcome = outcome_list[0]
@@ -586,7 +612,11 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
     ]
 
     try:
-        response = llm.invoke(messages, response_format={"type": "json_object"})
+        response = (
+            llm.invoke(messages)
+            if isinstance(llm, AzureAIChatCompletionsModel)
+            else llm.invoke(messages, response_format={"type": "json_object"})
+        )
         result_content = response.content
     except Exception as e:
         return {
@@ -661,7 +691,7 @@ def should_continue(state: ScenarioCreationState) -> str:
 
     # Check if we've converged on ALL aspects or reached max iterations
     all_converged = state.get("all_converged", False)
-    max_iterations_reached = iteration_count >= 5
+    max_iterations_reached = iteration_count >= 8
 
     if all_converged or max_iterations_reached:
         print(

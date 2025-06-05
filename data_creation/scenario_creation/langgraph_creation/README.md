@@ -13,18 +13,43 @@ The scenario creation process uses a sequential workflow to generate and refine 
 5. **Aggregate Verification**: Synchronize the verification results
 6. **Decision Point**: Continue refining or finalize the scenario
 
-## Implementation Details
+## Enhanced Features (Latest Update)
 
-The graph was originally designed with parallel verification steps, but due to LangGraph concurrency limitations where multiple nodes can't update the same state keys simultaneously, we've adopted a sequential approach instead.
+### 🔄 Restart Capability
+- **Automatic Resume**: When restarted, the system automatically detects completed scenarios and continues from where it left off
+- **No Duplicate Work**: Uses `get_existing_processed_personas()` to skip already processed personas
+- **Progress Preservation**: Individual scenario files are saved immediately upon completion
 
-### Key Components
+### ⏱️ Timeout Handling
+- **Task Timeout**: Individual scenario creation tasks timeout after 5 minutes (configurable)
+- **Batch Timeout**: Entire batches timeout after 30 minutes (configurable)
+- **Retry Logic**: Failed tasks are automatically retried up to 3 times with exponential backoff
 
-- **StateGraph**: Manages the state transitions between different stages of scenario creation
-- **State Definition**: `ScenarioCreationState` holds input requirements, working data, and output
-- **Node Functions**: Each function processes the state and produces new values
-- **Edge Logic**: Conditional transitions based on verification results
+### 📊 Comprehensive Logging
+- **Dual Output**: Logs to both console and `data_creation/scenario_generation.log`
+- **Progress Tracking**: Real-time progress updates with timing information
+- **Error Details**: Detailed error logging for debugging stuck processes
+- **Performance Metrics**: Timing data for each task and batch
+
+### 🛡️ Error Recovery
+- **Individual Task Isolation**: One failed task doesn't stop the entire batch
+- **Batch Retry**: Failed batches are retried with graph reconstruction
+- **Graceful Degradation**: System continues processing even when some tasks fail
+
+## Configuration
+
+The enhanced system uses several configurable constants:
+
+```python
+TASK_TIMEOUT = 300      # 5 minutes per individual task
+BATCH_TIMEOUT = 1800    # 30 minutes per batch
+MAX_RETRIES = 3         # Maximum retry attempts per task
+RETRY_DELAY = 5         # Seconds between retries
+```
 
 ## Usage
+
+### Basic Usage (Single Scenario)
 
 ```python
 from data_creation.scenario_creation import create_scenario, a_create_scenario
@@ -58,6 +83,73 @@ async def create_scenario_async():
     return scenario
 ```
 
+### Batch Processing with Restart Capability
+
+```bash
+# Starting fresh or restarting after interruption
+cd /path/to/your/project
+python data_creation/create_scenario_langgraph.py
+```
+
+The system will automatically:
+1. Scan existing scenario files to identify completed work
+2. Skip already processed personas to avoid duplicates
+3. Continue processing only unfinished personas
+4. Handle timeouts and errors gracefully with automatic retries
+
+### Monitoring Progress
+
+- **Console Output**: Real-time progress with batch and task completion status
+- **Log File**: Detailed logs in `data_creation/scenario_generation.log`
+- **File System**: Monitor scenario output directory for completed files
+
+## Implementation Details
+
+The graph was originally designed with parallel verification steps, but due to LangGraph concurrency limitations where multiple nodes can't update the same state keys simultaneously, we've adopted a sequential approach instead.
+
+### Key Components
+
+- **StateGraph**: Manages the state transitions between different stages of scenario creation
+- **State Definition**: `ScenarioCreationState` holds input requirements, working data, and output
+- **Node Functions**: Each function processes the state and produces new values
+- **Edge Logic**: Conditional transitions based on verification results
+- **Timeout Wrapper**: `create_scenario_with_timeout()` handles timeouts and retries
+- **Batch Processor**: `process_batch_with_timeout()` manages batch-level error recovery
+
+### Enhanced Error Handling
+
+The system employs a multi-layered error handling approach:
+
+1. **Task Level**: Individual tasks are wrapped with timeout and retry logic
+2. **Batch Level**: Batches can be retried with graph reconstruction
+3. **Process Level**: The entire process can be restarted without losing progress
+
+## Debugging Stuck Processes
+
+### Common Causes of Stuck Processes
+
+1. **Network Timeouts**: API calls to LLM services may hang
+2. **Graph Recursion**: Complex scenarios may hit recursion limits
+3. **Memory Issues**: Large batches may consume excessive memory
+4. **Resource Contention**: Multiple concurrent tasks competing for resources
+5. **Deadlocks**: Internal LangGraph state management issues
+
+### Diagnostic Features
+
+1. **Timeout Detection**: Automatically detects and handles stuck tasks
+2. **Performance Logging**: Tracks timing for each operation
+3. **Progress Checkpoints**: Regular progress updates help identify where sticking occurs
+4. **Error Classification**: Different error types are logged with specific details
+
+### Manual Intervention
+
+If the system appears stuck:
+
+1. **Check Logs**: Review `scenario_generation.log` for the last activity
+2. **Interrupt Safely**: Use Ctrl+C to interrupt gracefully
+3. **Restart**: Simply restart the script - it will resume automatically
+4. **Adjust Timeouts**: Modify timeout constants if needed for your environment
+
 ## Troubleshooting
 
 ### Recursion Limit Errors
@@ -80,6 +172,46 @@ make sure you're using the sequential graph structure that avoids parallel updat
 
 For handling API gateway issues (like 502 Bad Gateway), consider implementing retry mechanisms and
 adjusting the frequency of API calls to stay within rate limits.
+
+### Timeout and Restart Issues
+
+**Common Issues:**
+1. **"All personas already processed"**: Normal when restarting completed job
+2. **Graph build failure**: Check LangGraph dependencies and configuration
+3. **File permission errors**: Ensure write access to output directories
+4. **Memory errors**: Reduce batch size or restart process
+
+**Recovery Procedures:**
+1. **Partial Completion**: Restart script to continue from last checkpoint
+2. **Corrupted Files**: Delete problematic scenario files and restart
+3. **Configuration Issues**: Check and update timeout/retry settings
+4. **Resource Exhaustion**: Restart system and reduce batch size
+
+## Performance Optimization
+
+### Batch Size Tuning
+- Default batch size: 10 personas
+- Reduce for memory-constrained environments
+- Increase for high-performance systems
+
+### Timeout Tuning
+- Increase `TASK_TIMEOUT` for complex scenarios
+- Adjust `BATCH_TIMEOUT` based on batch size
+- Modify `RETRY_DELAY` for network conditions
+
+## File Organization
+
+```
+data_creation/
+├── scenario_creation/
+│   └── langgraph_creation/
+│       ├── scenarios/          # Output scenario files
+│       │   └── prisoners_dilemma_YYYYMMDD/
+│       └── histories/          # Output history files
+│           └── prisoners_dilemma_YYYYMMDD/
+├── scenario_generation.log    # Detailed log file
+└── create_scenario_langgraph.py  # Main script with restart capabilities
+```
 
 ## Dependencies
 
@@ -144,9 +276,31 @@ To avoid the error: `Can receive only one value per step. Use an Annotated key t
 2. Used reducers (like the `replace_reducer` shown above) for any fields that might be updated in parallel
 3. Created a dedicated `all_converged` field to track overall convergence
 
+## Best Practices
+
+1. **Monitor Resources**: Keep an eye on CPU and memory usage during batch processing
+2. **Regular Restarts**: For very large datasets, consider periodic restarts to prevent memory buildup
+3. **Log Rotation**: Archive old log files to prevent disk space issues
+4. **Backup Progress**: Scenario files serve as automatic progress backup
+
+## Example Log Output
+
+```
+2024-01-15 10:30:15 - INFO - Starting scenario generation process...
+2024-01-15 10:30:15 - INFO - Total personas: 1000
+2024-01-15 10:30:15 - INFO - Already processed (skipped): 450
+2024-01-15 10:30:15 - INFO - Remaining to process: 550
+2024-01-15 10:30:16 - INFO - Configuration: Task timeout=300s, Batch timeout=1800s, Max retries=3
+2024-01-15 10:30:20 - INFO - Starting batch 1/55 with 10 jobs
+2024-01-15 10:30:25 - INFO - Job 1/10 completed successfully in 4.2s: software engineer
+...
+```
+
 ## Troubleshooting
 
 If you encounter concurrency errors, ensure:
 - Node functions only return fields they need to modify
 - Any fields that might be updated in parallel use reducers
 - The `recursion_limit` is set to a reasonable value in the configuration
+
+This enhanced system provides a robust, production-ready solution for large-scale scenario generation with built-in fault tolerance and restart capabilities.
