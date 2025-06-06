@@ -363,12 +363,12 @@ async def main():
 
     try:
         with open("data_creation/persona_jobs.jsonl", "r") as f:
-            persona_jobs = [json.loads(line)["item"] for line in f]
+            persona_jobs = [json.loads(line)["item"] for line in f][:10]
     except Exception as e:
         logger.error(f"Failed to load persona jobs: {e}")
         return
 
-    game_name = GameNames.PRISONERS_DILEMMA.value
+    game_name = GameNames.ESCALATION_GAME.value
     timestamp = datetime.now().strftime("%Y%m%d")
     scenario_path_base = f"data_creation/scenario_creation/langgraph_creation/scenarios/{game_name}_{timestamp}"
     history_path_base = f"data_creation/scenario_creation/langgraph_creation/histories/{game_name}_{timestamp}"

@@ -5,13 +5,13 @@ Store payoff matrices in a unified data structure for both simultaneous and sequ
 import os
 import sys
 from dataclasses import field
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, model_validator
 
 # Add the project root to the path so we can import constants
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from constants import GameNames
+from constants import GameNames, GameType
 
 
 class PayoffLeaf(BaseModel):
@@ -23,11 +23,38 @@ class PayoffLeaf(BaseModel):
     means that p1's action is "cooperate", p2's action is "cooperate", p1's payoff is 3, and p2's payoff is 3.
     """
 
-    actions: Tuple[str, str]
+    actions: Tuple[str, ...]
     payoffs: Optional[Tuple[int, int]]  # payoffs for each player
     ranks: Optional[Tuple[int, int]] = (
         None  # ranks of this payoff for each player (will be calculated)
     )
+
+
+def _parse_sequential_game_tree(
+    tree: Dict[str, Any], path: List[str] = []
+) -> List[PayoffLeaf]:
+    """
+    Recursively parse a sequential game tree to generate payoff leaves.
+
+    Args:
+        tree: The game tree as a nested dictionary.
+        path: The current path of actions taken.
+
+    Returns:
+        A list of PayoffLeaf objects representing terminal nodes.
+    """
+    leaves = []
+    for action, outcome in tree.items():
+        current_path = path + [action]
+        if isinstance(outcome, dict):
+            leaves.extend(_parse_sequential_game_tree(outcome, current_path))
+        elif isinstance(outcome, list) and all(
+            isinstance(p, (int, float)) for p in outcome
+        ):
+            leaves.append(
+                PayoffLeaf(actions=tuple(current_path), payoffs=tuple(outcome))
+            )
+    return leaves
 
 
 class PayoffMatrix(BaseModel):
@@ -36,8 +63,9 @@ class PayoffMatrix(BaseModel):
     """
 
     player_num: Optional[int] = field(default=None)
+    game_type: GameType = GameType.SIMULTANEOUS
     payoff_leaves: List[PayoffLeaf]
-    ordered_payoff_leaves: Optional[Dict[int, List[Tuple[str, str]]]] = field(
+    ordered_payoff_leaves: Optional[Dict[int, List[Tuple[str, ...]]]] = field(
         default_factory=dict
     )
 
@@ -50,27 +78,38 @@ class PayoffMatrix(BaseModel):
         # Handle dict input case during validation
         if isinstance(self, dict):
             payoffs: List[PayoffLeaf] = self["payoff_leaves"]
-            player_num_from_leaves = len(payoffs[0].actions)
-            player_num: int | None = self["player_num"]
-            if player_num is None:
-                player_num = player_num_from_leaves
-            else:
-                assert (
-                    player_num == player_num_from_leaves
-                ), f"Player number mismatch, you set player_num to {player_num} but the payoff leaves have {player_num_from_leaves} players"
+            game_type = self.get("game_type", GameType.SIMULTANEOUS)
+            player_num: int | None = self.get("player_num")
+
+            if game_type == GameType.SIMULTANEOUS and payoffs:
+                player_num_from_leaves = len(payoffs[0].actions)
+                if player_num is None:
+                    player_num = player_num_from_leaves
+                else:
+                    assert (
+                        player_num == player_num_from_leaves
+                    ), f"Player number mismatch, you set player_num to {player_num} but the payoff leaves have {player_num_from_leaves} players"
+            elif player_num is None:
+                raise ValueError("player_num must be provided for sequential games")
+
             # Initialize ordered_payoff_leaves if it doesn't exist
             if "ordered_payoff_leaves" not in self:
                 self["ordered_payoff_leaves"] = {}
         else:
             payoffs: List[PayoffLeaf] = getattr(self, "payoff_leaves", [])
-            player_num_from_leaves = len(payoffs[0].actions)
+            game_type = self.game_type
             player_num = self.player_num
-            if player_num is None:
-                player_num = player_num_from_leaves
-            else:
-                assert (
-                    player_num == player_num_from_leaves
-                ), f"Player number mismatch, you set player_num to {player_num} but the payoff leaves have {player_num_from_leaves} players"
+            if game_type == GameType.SIMULTANEOUS and payoffs:
+                player_num_from_leaves = len(payoffs[0].actions)
+                if player_num is None:
+                    player_num = player_num_from_leaves
+                else:
+                    assert (
+                        player_num == player_num_from_leaves
+                    ), f"Player number mismatch, you set player_num to {player_num} but the payoff leaves have {player_num_from_leaves} players"
+            elif player_num is None:
+                raise ValueError("player_num must be provided for sequential games")
+
             # Initialize ordered_payoff_leaves if it's None
             if self.ordered_payoff_leaves is None:
                 self.ordered_payoff_leaves = {}
@@ -97,6 +136,18 @@ class PayoffMatrix(BaseModel):
         Returns a human-readable text description of the payoff matrix.
         Describes what happens when different players make different choices.
         """
+        return self.get_natural_language_description(["player 1", "player 2"])
+
+    def get_natural_language_description(self, players: List[str]):
+        """
+        a refined description of the payoff matrix, with customized player names
+        """
+        if self.game_type == GameType.SIMULTANEOUS:
+            return self._get_simultaneous_description(players)
+        else:
+            return self._get_sequential_description(players)
+
+    def _get_simultaneous_description(self, players: List[str]):
         result = []
 
         # First add basic description of each payoff
@@ -105,27 +156,26 @@ class PayoffMatrix(BaseModel):
             p1_action, p2_action = leaf.actions
             p1_payoff, p2_payoff = leaf.payoffs
 
-            description = f"When player 1 chooses '{p1_action}' and player 2 chooses '{p2_action}', "
-            description += f"player 1 gets {p1_payoff} and player 2 gets {p2_payoff}."
-            result.append(description)
-
-        return "\n".join(result)
-
-    def get_natural_language_description(self, players: List[str]):
-        """
-        a refined description of the payoff matrix, with customized player names
-        """
-        result = []
-
-        # First add basic description of each payoff
-        for leaf in self.payoff_leaves:
-            p1_action, p2_action = leaf.actions
-            p1_payoff, p2_payoff = leaf.payoffs
-
             description = f"When {players[0]} chooses '{p1_action}' and {players[1]} chooses '{p2_action}', "
             description += (
                 f"{players[0]} gets {p1_payoff} and {players[1]} gets {p2_payoff}."
             )
+            result.append(description)
+
+        return "\n".join(result)
+
+    def _get_sequential_description(self, players: List[str]):
+        result = []
+        result.append("Game Payoffs:")
+        for leaf in self.payoff_leaves:
+            path_description = []
+            for i, action in enumerate(leaf.actions):
+                player_index = i % self.player_num
+                player_name = players[player_index]
+                path_description.append(f"{player_name} chooses '{action}'")
+
+            description = f"If {' then '.join(path_description)}, "
+            description += f"the outcome is a payoff of {leaf.payoffs[0]} for {players[0]} and {leaf.payoffs[1]} for {players[1]}."
             result.append(description)
 
         return "\n".join(result)
@@ -256,7 +306,7 @@ hot_cold_game = {
 }
 
 # Draco Game
-draco = {
+draco_game = {
     "Alice_choice_1": {
         "Bob_choice_1": [5, 5],
         "Bob_choice_2": {"Alice_choice_1": [2, 2], "Alice_choice_2": [3, 4]},
@@ -311,40 +361,40 @@ SIMULTANEOUS_GAMES = {
     # ),
 }
 
-# SEQUENTIAL_GAMES = {
-#     GameNames.ESCALATION_GAME: PayoffMatrix.from_sequential_dict(
-#         escalation_game, players=["p1", "p2"], name="Escalation Game"
-#     ),
-#     GameNames.MONOPOLY_GAME: PayoffMatrix.from_sequential_dict(
-#         monopoly_game, players=["p1", "p2"], name="Monopoly Game"
-#     ),
-#     # Using ULTIMATUM_GAME_PROPOSER as the key for the base ultimatum game payoff
-#     # The specific role logic might be handled elsewhere or requires separate PayoffMatrix instances
-#     GameNames.ULTIMATUM_GAME_PROPOSER: PayoffMatrix.from_sequential_dict(
-#         ultimatum_game, players=["proposer", "responder"], name="Ultimatum Game"
-#     ),
-#     GameNames.HOT_COLD_GAME: PayoffMatrix.from_sequential_dict(
-#         hot_cold_game,
-#         players=["Alice", "Bob"],
-#         name="Hot/Cold Game",  # Assuming Alice, Bob are players
-#     ),
-#     GameNames.DRACO_GAME: PayoffMatrix.from_sequential_dict(
-#         draco,
-#         players=["Alice", "Bob"],
-#         name="Draco Game",  # Assuming Alice, Bob are players
-#     ),
-#     GameNames.TRI_GAME: PayoffMatrix.from_sequential_dict(
-#         trigame,
-#         players=["Alice", "Bob"],
-#         name="Trigame",  # Assuming Alice, Bob are players
-#     ),
-#     # Note: TRUST_GAME payoff matrix definition is missing from the provided old file.
-# }
+SEQUENTIAL_GAMES = {
+    GameNames.ESCALATION_GAME: PayoffMatrix(
+        player_num=2,
+        game_type=GameType.SEQUENTIAL,
+        payoff_leaves=_parse_sequential_game_tree(escalation_game),
+    ),
+    GameNames.MONOPOLY_GAME: PayoffMatrix(
+        player_num=2,
+        game_type=GameType.SEQUENTIAL,
+        payoff_leaves=_parse_sequential_game_tree(monopoly_game),
+    ),
+    GameNames.HOT_COLD_GAME: PayoffMatrix(
+        player_num=2,
+        game_type=GameType.SEQUENTIAL,
+        payoff_leaves=_parse_sequential_game_tree(hot_cold_game),
+    ),
+    GameNames.DRACO_GAME: PayoffMatrix(
+        player_num=2,
+        game_type=GameType.SEQUENTIAL,
+        payoff_leaves=_parse_sequential_game_tree(draco_game),
+    ),
+    GameNames.TRI_GAME: PayoffMatrix(
+        player_num=2,
+        game_type=GameType.SEQUENTIAL,
+        payoff_leaves=_parse_sequential_game_tree(trigame),
+    ),
+}
+
 
 # # Combined dictionary of all games
 ALL_GAME_PAYOFF = {
     **SIMULTANEOUS_GAMES,
-}  # **SEQUENTIAL_GAMES
+    **SEQUENTIAL_GAMES,
+}
 
 
 if __name__ == "__main__":
@@ -352,7 +402,15 @@ if __name__ == "__main__":
         player_num=2,
         payoff_leaves=prisoners_dilemma,
     )
-    print("Ordered payoff leaves:")
+    print("Ordered payoff leaves for Prisoner's Dilemma:")
     print(pd_matrix.ordered_payoff_leaves)
-    print("\nHuman readable description:")
+    print("\nHuman readable description for Prisoner's Dilemma:")
     print(pd_matrix)
+
+    print("-" * 20)
+
+    escalation_matrix = SEQUENTIAL_GAMES[GameNames.ESCALATION_GAME]
+    print("\nHuman readable description for Escalation Game:")
+    print(escalation_matrix)
+    print("\nOrdered payoff leaves for Escalation Game:")
+    print(escalation_matrix.ordered_payoff_leaves)

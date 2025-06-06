@@ -4452,3 +4452,405 @@
 2025-06-04 23:54:13,749 - INFO - Creating scenario for UX/UI designer, attempt 1/4
 2025-06-04 23:54:18,566 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
 2025-06-04 23:54:19,747 - INFO - Process interrupted by user. You can restart to continue from where it left off.
+2025-06-05 15:41:58,139 - INFO - Starting scenario generation process...
+2025-06-05 15:41:58,141 - INFO - Checking for already processed personas...
+2025-06-05 15:41:58,141 - INFO - Total personas: 10
+2025-06-05 15:41:58,141 - INFO - Already processed (skipped): 0
+2025-06-05 15:41:58,141 - INFO - Remaining to process: 10
+2025-06-05 15:41:58,141 - INFO - Building and compiling the scenario creation graph...
+2025-06-05 15:41:58,151 - INFO - Graph built and compiled successfully.
+2025-06-05 15:41:58,151 - INFO - Preparing to create 10 scenarios in 1 batches...
+2025-06-05 15:41:58,151 - INFO - Configuration: Task timeout=300s, Batch timeout=1800s, Max retries=3
+2025-06-05 15:41:58,151 - INFO - Processing batch 1/1 (attempt 1/3)
+2025-06-05 15:41:58,151 - INFO - Starting batch 1/1 with 10 jobs
+2025-06-05 15:41:58,151 - INFO - Creating scenario for ambassador, attempt 1/4
+2025-06-05 15:41:58,154 - WARNING - Scenario creation returned None for ambassador
+2025-06-05 15:41:58,154 - INFO - Creating scenario for ambassador, attempt 2/4
+2025-06-05 15:41:58,155 - WARNING - Scenario creation returned None for ambassador
+2025-06-05 15:41:58,155 - INFO - Creating scenario for ambassador, attempt 3/4
+2025-06-05 15:41:58,156 - WARNING - Scenario creation returned None for ambassador
+2025-06-05 15:41:58,156 - INFO - Creating scenario for ambassador, attempt 4/4
+2025-06-05 15:41:58,158 - WARNING - Scenario creation returned None for ambassador
+2025-06-05 15:41:58,158 - INFO - Saved history for Ambassador
+2025-06-05 15:41:58,158 - WARNING - No scenario to save for Ambassador
+2025-06-05 15:41:58,159 - ERROR - Job 1/10 failed to save: ambassador
+2025-06-05 15:41:58,159 - INFO - Creating scenario for professional cyclist, attempt 1/4
+2025-06-05 15:41:58,160 - WARNING - Scenario creation returned None for professional cyclist
+2025-06-05 15:41:58,160 - INFO - Creating scenario for professional cyclist, attempt 2/4
+2025-06-05 15:41:58,161 - WARNING - Scenario creation returned None for professional cyclist
+2025-06-05 15:41:58,161 - INFO - Creating scenario for professional cyclist, attempt 3/4
+2025-06-05 15:41:58,162 - WARNING - Scenario creation returned None for professional cyclist
+2025-06-05 15:41:58,162 - INFO - Creating scenario for professional cyclist, attempt 4/4
+2025-06-05 15:41:58,164 - WARNING - Scenario creation returned None for professional cyclist
+2025-06-05 15:41:58,165 - INFO - Saved history for ProfessionalCyclist
+2025-06-05 15:41:58,165 - WARNING - No scenario to save for ProfessionalCyclist
+2025-06-05 15:41:58,165 - ERROR - Job 2/10 failed to save: professional cyclist
+2025-06-05 15:41:58,165 - INFO - Creating scenario for climate policy analyst, attempt 1/4
+2025-06-05 15:41:58,166 - WARNING - Scenario creation returned None for climate policy analyst
+2025-06-05 15:41:58,166 - INFO - Creating scenario for climate policy analyst, attempt 2/4
+2025-06-05 15:41:58,168 - WARNING - Scenario creation returned None for climate policy analyst
+2025-06-05 15:41:58,168 - INFO - Creating scenario for climate policy analyst, attempt 3/4
+2025-06-05 15:41:58,169 - WARNING - Scenario creation returned None for climate policy analyst
+2025-06-05 15:41:58,169 - INFO - Creating scenario for climate policy analyst, attempt 4/4
+2025-06-05 15:41:58,170 - WARNING - Scenario creation returned None for climate policy analyst
+2025-06-05 15:41:58,171 - INFO - Saved history for ClimatePolicyAnalyst
+2025-06-05 15:41:58,171 - WARNING - No scenario to save for ClimatePolicyAnalyst
+2025-06-05 15:41:58,171 - ERROR - Job 3/10 failed to save: climate policy analyst
+2025-06-05 15:41:58,171 - INFO - Creating scenario for military psychologist, attempt 1/4
+2025-06-05 15:41:58,172 - WARNING - Scenario creation returned None for military psychologist
+2025-06-05 15:41:58,172 - INFO - Creating scenario for military psychologist, attempt 2/4
+2025-06-05 15:41:58,173 - WARNING - Scenario creation returned None for military psychologist
+2025-06-05 15:41:58,173 - INFO - Creating scenario for military psychologist, attempt 3/4
+2025-06-05 15:41:58,174 - WARNING - Scenario creation returned None for military psychologist
+2025-06-05 15:41:58,174 - INFO - Creating scenario for military psychologist, attempt 4/4
+2025-06-05 15:41:58,175 - WARNING - Scenario creation returned None for military psychologist
+2025-06-05 15:41:58,176 - INFO - Saved history for MilitaryPsychologist
+2025-06-05 15:41:58,176 - WARNING - No scenario to save for MilitaryPsychologist
+2025-06-05 15:41:58,176 - ERROR - Job 4/10 failed to save: military psychologist
+2025-06-05 15:41:58,176 - INFO - Creating scenario for маркетинговый консультант, attempt 1/4
+2025-06-05 15:41:58,177 - WARNING - Scenario creation returned None for маркетинговый консультант
+2025-06-05 15:41:58,177 - INFO - Creating scenario for маркетинговый консультант, attempt 2/4
+2025-06-05 15:41:58,178 - WARNING - Scenario creation returned None for маркетинговый консультант
+2025-06-05 15:41:58,178 - INFO - Creating scenario for маркетинговый консультант, attempt 3/4
+2025-06-05 15:41:58,179 - WARNING - Scenario creation returned None for маркетинговый консультант
+2025-06-05 15:41:58,179 - INFO - Creating scenario for маркетинговый консультант, attempt 4/4
+2025-06-05 15:41:58,181 - WARNING - Scenario creation returned None for маркетинговый консультант
+2025-06-05 15:41:58,182 - INFO - Saved history for МаркетинговыйКонсультант
+2025-06-05 15:41:58,182 - WARNING - No scenario to save for МаркетинговыйКонсультант
+2025-06-05 15:41:58,182 - ERROR - Job 5/10 failed to save: маркетинговый консультант
+2025-06-05 15:41:58,182 - INFO - Creating scenario for book club host, attempt 1/4
+2025-06-05 15:41:58,184 - WARNING - Scenario creation returned None for book club host
+2025-06-05 15:41:58,184 - INFO - Creating scenario for book club host, attempt 2/4
+2025-06-05 15:41:58,185 - WARNING - Scenario creation returned None for book club host
+2025-06-05 15:41:58,185 - INFO - Creating scenario for book club host, attempt 3/4
+2025-06-05 15:41:58,187 - WARNING - Scenario creation returned None for book club host
+2025-06-05 15:41:58,187 - INFO - Creating scenario for book club host, attempt 4/4
+2025-06-05 15:41:58,188 - WARNING - Scenario creation returned None for book club host
+2025-06-05 15:41:58,189 - INFO - Saved history for BookClubHost
+2025-06-05 15:41:58,189 - WARNING - No scenario to save for BookClubHost
+2025-06-05 15:41:58,189 - ERROR - Job 6/10 failed to save: book club host
+2025-06-05 15:41:58,189 - INFO - Creating scenario for cultural heritage guide, attempt 1/4
+2025-06-05 15:41:58,190 - WARNING - Scenario creation returned None for cultural heritage guide
+2025-06-05 15:41:58,190 - INFO - Creating scenario for cultural heritage guide, attempt 2/4
+2025-06-05 15:41:58,191 - WARNING - Scenario creation returned None for cultural heritage guide
+2025-06-05 15:41:58,191 - INFO - Creating scenario for cultural heritage guide, attempt 3/4
+2025-06-05 15:41:58,192 - WARNING - Scenario creation returned None for cultural heritage guide
+2025-06-05 15:41:58,192 - INFO - Creating scenario for cultural heritage guide, attempt 4/4
+2025-06-05 15:41:58,194 - WARNING - Scenario creation returned None for cultural heritage guide
+2025-06-05 15:41:58,195 - INFO - Saved history for CulturalHeritageGuide
+2025-06-05 15:41:58,195 - WARNING - No scenario to save for CulturalHeritageGuide
+2025-06-05 15:41:58,195 - ERROR - Job 7/10 failed to save: cultural heritage guide
+2025-06-05 15:41:58,195 - INFO - Creating scenario for tech mogul, attempt 1/4
+2025-06-05 15:41:58,196 - WARNING - Scenario creation returned None for tech mogul
+2025-06-05 15:41:58,196 - INFO - Creating scenario for tech mogul, attempt 2/4
+2025-06-05 15:41:58,198 - WARNING - Scenario creation returned None for tech mogul
+2025-06-05 15:41:58,198 - INFO - Creating scenario for tech mogul, attempt 3/4
+2025-06-05 15:41:58,200 - WARNING - Scenario creation returned None for tech mogul
+2025-06-05 15:41:58,200 - INFO - Creating scenario for tech mogul, attempt 4/4
+2025-06-05 15:41:58,202 - WARNING - Scenario creation returned None for tech mogul
+2025-06-05 15:41:58,203 - INFO - Saved history for TechMogul
+2025-06-05 15:41:58,203 - WARNING - No scenario to save for TechMogul
+2025-06-05 15:41:58,203 - ERROR - Job 8/10 failed to save: tech mogul
+2025-06-05 15:41:58,203 - INFO - Creating scenario for emigrant, attempt 1/4
+2025-06-05 15:41:58,204 - WARNING - Scenario creation returned None for emigrant
+2025-06-05 15:41:58,204 - INFO - Creating scenario for emigrant, attempt 2/4
+2025-06-05 15:41:58,205 - WARNING - Scenario creation returned None for emigrant
+2025-06-05 15:41:58,205 - INFO - Creating scenario for emigrant, attempt 3/4
+2025-06-05 15:41:58,206 - WARNING - Scenario creation returned None for emigrant
+2025-06-05 15:41:58,206 - INFO - Creating scenario for emigrant, attempt 4/4
+2025-06-05 15:41:58,207 - WARNING - Scenario creation returned None for emigrant
+2025-06-05 15:41:58,208 - INFO - Saved history for Emigrant
+2025-06-05 15:41:58,208 - WARNING - No scenario to save for Emigrant
+2025-06-05 15:41:58,208 - ERROR - Job 9/10 failed to save: emigrant
+2025-06-05 15:41:58,208 - INFO - Creating scenario for policy advocate, attempt 1/4
+2025-06-05 15:41:58,209 - WARNING - Scenario creation returned None for policy advocate
+2025-06-05 15:41:58,209 - INFO - Creating scenario for policy advocate, attempt 2/4
+2025-06-05 15:41:58,210 - WARNING - Scenario creation returned None for policy advocate
+2025-06-05 15:41:58,210 - INFO - Creating scenario for policy advocate, attempt 3/4
+2025-06-05 15:41:58,211 - WARNING - Scenario creation returned None for policy advocate
+2025-06-05 15:41:58,211 - INFO - Creating scenario for policy advocate, attempt 4/4
+2025-06-05 15:41:58,212 - WARNING - Scenario creation returned None for policy advocate
+2025-06-05 15:41:58,213 - INFO - Saved history for PolicyAdvocate
+2025-06-05 15:41:58,213 - WARNING - No scenario to save for PolicyAdvocate
+2025-06-05 15:41:58,214 - ERROR - Job 10/10 failed to save: policy advocate
+2025-06-05 15:41:58,214 - INFO - Batch 1 completed in 0.1s: 0 successful, 10 failed
+2025-06-05 15:41:58,214 - INFO - Batch 1 completed in 0.1s: 0 successful, 10 failed
+2025-06-05 15:41:58,214 - INFO - Batch 1/1 finished. Progress: 0 successful, 10 failed
+2025-06-05 15:41:58,214 - INFO - Remaining unprocessed personas: 10
+2025-06-05 15:41:58,214 - INFO - ============================================================
+2025-06-05 15:41:58,214 - INFO - FINAL SUMMARY
+2025-06-05 15:41:58,214 - INFO - ============================================================
+2025-06-05 15:41:58,214 - INFO - Total personas processed: 10
+2025-06-05 15:41:58,215 - INFO - Successful: 0
+2025-06-05 15:41:58,215 - INFO - Failed: 10
+2025-06-05 15:41:58,215 - INFO - Success rate: 0.0%
+2025-06-05 15:41:58,215 - WARNING - Process completed but 10 personas remain unprocessed.
+2025-06-05 15:41:58,215 - INFO - You can restart the script to continue processing the remaining personas.
+2025-06-05 15:43:05,971 - INFO - Starting scenario generation process...
+2025-06-05 15:43:05,972 - INFO - Checking for already processed personas...
+2025-06-05 15:43:05,972 - INFO - Total personas: 10
+2025-06-05 15:43:05,972 - INFO - Already processed (skipped): 0
+2025-06-05 15:43:05,972 - INFO - Remaining to process: 10
+2025-06-05 15:43:05,972 - INFO - Building and compiling the scenario creation graph...
+2025-06-05 15:43:05,980 - INFO - Graph built and compiled successfully.
+2025-06-05 15:43:05,980 - INFO - Preparing to create 10 scenarios in 1 batches...
+2025-06-05 15:43:05,980 - INFO - Configuration: Task timeout=300s, Batch timeout=1800s, Max retries=3
+2025-06-05 15:43:05,980 - INFO - Processing batch 1/1 (attempt 1/3)
+2025-06-05 15:43:05,981 - INFO - Starting batch 1/1 with 10 jobs
+2025-06-05 15:43:05,981 - INFO - Creating scenario for ambassador, attempt 1/4
+2025-06-05 15:43:13,307 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:16,516 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:16,874 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:23,995 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:25,934 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:27,456 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:34,549 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:37,561 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:37,835 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:44,235 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:47,378 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:48,155 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:43:59,790 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:02,599 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:03,768 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:10,444 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:13,615 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:14,524 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:23,289 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:26,712 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:28,000 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:38,313 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:41,901 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:42,277 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:42,283 - WARNING - Scenario creation returned None for ambassador
+2025-06-05 15:44:42,284 - INFO - Creating scenario for ambassador, attempt 2/4
+2025-06-05 15:44:51,092 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:54,558 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:44:54,861 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:07,997 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:11,068 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:14,489 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:22,062 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:25,958 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:26,035 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:34,327 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:37,132 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:38,759 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:48,325 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:51,486 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:45:53,055 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:46:03,235 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:46:07,308 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:46:08,118 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:46:16,716 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:46:20,453 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:46:21,255 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-05 15:46:24,531 - INFO - Process interrupted by user. You can restart to continue from where it left off.
+2025-06-05 15:48:28,712 - INFO - Starting scenario generation process...
+2025-06-05 15:48:28,713 - INFO - Checking for already processed personas...
+2025-06-05 15:48:28,714 - INFO - Total personas: 10
+2025-06-05 15:48:28,714 - INFO - Already processed (skipped): 0
+2025-06-05 15:48:28,714 - INFO - Remaining to process: 10
+2025-06-05 15:48:28,714 - INFO - Building and compiling the scenario creation graph...
+2025-06-05 15:48:28,724 - INFO - Graph built and compiled successfully.
+2025-06-05 15:48:28,727 - INFO - Preparing to create 10 scenarios in 1 batches...
+2025-06-05 15:48:28,727 - INFO - Configuration: Task timeout=300s, Batch timeout=1800s, Max retries=3
+2025-06-05 15:48:28,728 - INFO - Processing batch 1/1 (attempt 1/3)
+2025-06-05 15:48:28,728 - INFO - Starting batch 1/1 with 10 jobs
+2025-06-05 15:48:28,728 - INFO - Creating scenario for ambassador, attempt 1/4
+2025-06-05 15:48:31,888 - INFO - Process interrupted by user. You can restart to continue from where it left off.
+2025-06-06 00:10:03,037 - INFO - Starting scenario generation process...
+2025-06-06 00:10:03,038 - INFO - Checking for already processed personas...
+2025-06-06 00:10:03,038 - INFO - Total personas: 10
+2025-06-06 00:10:03,039 - INFO - Already processed (skipped): 0
+2025-06-06 00:10:03,039 - INFO - Remaining to process: 10
+2025-06-06 00:10:03,039 - INFO - Building and compiling the scenario creation graph...
+2025-06-06 00:10:03,047 - INFO - Graph built and compiled successfully.
+2025-06-06 00:10:03,047 - INFO - Preparing to create 10 scenarios in 1 batches...
+2025-06-06 00:10:03,047 - INFO - Configuration: Task timeout=300s, Batch timeout=1800s, Max retries=3
+2025-06-06 00:10:03,047 - INFO - Processing batch 1/1 (attempt 1/3)
+2025-06-06 00:10:03,048 - INFO - Starting batch 1/1 with 10 jobs
+2025-06-06 00:10:03,048 - INFO - Creating scenario for ambassador, attempt 1/4
+2025-06-06 00:10:11,578 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:15,150 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:15,915 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:22,760 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:25,761 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:27,291 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:33,991 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:37,417 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:37,537 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:45,918 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:49,601 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:10:50,362 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:02,660 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:05,978 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:06,501 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:14,926 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:18,579 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:19,666 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:27,517 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:30,593 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:31,539 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:38,457 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:41,571 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:41,808 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:41,818 - WARNING - Scenario creation returned None for ambassador
+2025-06-06 00:11:41,818 - INFO - Creating scenario for ambassador, attempt 2/4
+2025-06-06 00:11:48,043 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:50,968 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:51,358 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:11:57,949 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:00,580 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:01,218 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:09,754 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:12,751 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:13,566 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:22,920 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:25,320 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:26,116 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:34,870 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:37,931 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:39,983 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:46,873 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:50,181 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:50,766 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:12:58,031 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:01,196 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:01,377 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:10,440 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:13,641 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:13,801 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:13,807 - WARNING - Scenario creation returned None for ambassador
+2025-06-06 00:13:13,807 - INFO - Creating scenario for ambassador, attempt 3/4
+2025-06-06 00:13:20,805 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:23,593 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:24,872 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:33,023 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:35,971 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:38,757 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:48,973 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:52,387 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:13:52,660 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:00,665 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:02,953 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:03,352 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:10,236 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:13,096 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:13,572 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:20,020 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:24,059 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:25,217 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:32,690 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:36,986 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:37,284 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:49,455 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:52,707 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:52,821 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:14:52,828 - WARNING - Scenario creation returned None for ambassador
+2025-06-06 00:14:52,828 - INFO - Creating scenario for ambassador, attempt 4/4
+2025-06-06 00:14:59,401 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:02,691 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:04,767 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:10,933 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:14,052 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:15,627 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:22,455 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:26,146 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:27,010 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:37,632 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:41,490 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:42,496 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:52,675 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:55,959 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:15:57,009 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:08,264 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:11,309 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:11,500 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:20,488 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:24,150 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:26,058 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:33,809 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:38,020 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:38,453 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:38,460 - WARNING - Scenario creation returned None for ambassador
+2025-06-06 00:16:38,541 - INFO - Saved history for Ambassador
+2025-06-06 00:16:38,541 - WARNING - No scenario to save for Ambassador
+2025-06-06 00:16:38,541 - ERROR - Job 1/10 failed to save: ambassador
+2025-06-06 00:16:38,541 - INFO - Creating scenario for professional cyclist, attempt 1/4
+2025-06-06 00:16:45,250 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:48,780 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:49,787 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:16:57,705 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:01,006 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:02,258 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:09,317 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:13,648 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:14,129 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:22,897 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:26,614 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:27,032 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:34,179 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:38,228 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:39,279 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:49,385 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:52,158 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:17:53,059 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:02,710 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:06,112 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:06,505 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:14,737 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:18,168 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:18,823 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:18,835 - WARNING - Scenario creation returned None for professional cyclist
+2025-06-06 00:18:18,836 - INFO - Creating scenario for professional cyclist, attempt 2/4
+2025-06-06 00:18:24,399 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:28,915 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:31,436 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:38,674 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:42,852 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:43,532 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:51,762 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:54,932 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:18:55,134 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:19:08,496 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:19:11,710 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:19:12,132 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:21:28,251 - INFO - Retrying request to /chat/completions in 0.385575 seconds
+2025-06-06 00:21:35,314 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:21:38,965 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:21:41,721 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:21:51,136 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:21:54,000 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:21:56,282 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:04,683 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:07,326 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:08,032 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:17,172 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:20,623 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:20,880 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:20,885 - WARNING - Scenario creation returned None for professional cyclist
+2025-06-06 00:22:20,886 - INFO - Creating scenario for professional cyclist, attempt 3/4
+2025-06-06 00:22:27,003 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:30,366 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:31,467 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:39,479 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:42,615 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:45,627 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:53,059 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:56,598 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:22:56,822 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:23:05,096 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:23:08,226 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:23:08,556 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:23:18,454 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:23:21,917 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:23:22,886 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:25:54,081 - INFO - Retrying request to /chat/completions in 0.453172 seconds
+2025-06-06 00:26:04,239 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:26:07,572 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:26:07,982 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:26:16,184 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:26:20,465 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:26:21,343 - INFO - HTTP Request: POST https://ai-jjl71374617ai650730628786.cognitiveservices.azure.com/openai/deployments/gpt-4.1/chat/completions?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2025-06-06 00:26:27,217 - INFO - Process interrupted by user. You can restart to continue from where it left off.

@@ -912,7 +912,7 @@ async def a_create_scenario(
 if __name__ == "__main__":
     # Example usage
     scenario = create_scenario(
-        game_name="Prisoners_Dilemma",
+        game_name="Escalation_Game",
         participants=["You", "Bob"],
         participant_jobs=["immigration lawyer", "immigration lawyer"],
     )
