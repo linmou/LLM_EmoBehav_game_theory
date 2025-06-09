@@ -3,7 +3,8 @@ from dataclasses import dataclass
 import hashlib
 from typing import Dict, List
 from pathlib import Path
-from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, MistralForCausalLM
+from huggingface_hub import hf_hub_download
+from transformers import AutoTokenizer, pipeline, AutoModel, MistralForCausalLM
 import matplotlib.pyplot as plt
 import torch
 from tqdm import tqdm
@@ -34,6 +35,79 @@ class AnswerProbabilities:
     @property
     def emotion_activation_mean_last_layer(self):
         return np.mean(list(self.emotion_activation[-1].values()))
+    
+
+def is_huggingface_model_name(model_path):
+    """
+    Check if the given path is a HuggingFace model name.
+    A HuggingFace model name typically has the format 'organization/model_name'.
+    """
+    return '/' in model_path and not os.path.exists(model_path)
+
+def get_model_config(model_path):
+    """
+    Get model configuration from either local path or HuggingFace.
+    Returns the config dictionary and the actual model path to use.
+    """
+    try:
+        if is_huggingface_model_name(model_path):
+            # Download config file from HuggingFace
+            config_path = hf_hub_download(
+                repo_id=model_path,
+                filename="config.json",
+                cache_dir=None  # Use default cache
+            )
+            actual_path = model_path  # Use the HuggingFace model name directly
+        else:
+            config_path = os.path.join(model_path, 'config.json')
+            actual_path = model_path
+
+        # Read config file
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+            
+        return config, actual_path
+        
+    except Exception as e:
+        raise
+
+def get_optimal_tensor_parallel_size(model_path):
+    """
+    Calculate the optimal tensor parallel size based on model architecture and available GPUs.
+    Returns the maximum possible tensor parallel size that divides the number of attention heads evenly.
+    """
+    try:
+        # Get number of available GPUs
+        num_gpus = torch.cuda.device_count()
+        
+        if num_gpus == 0:
+            return 1
+            
+        # Get model config
+        config, _ = get_model_config(model_path)
+            
+        # Get number of attention heads from config
+        # Different models might store this in different keys
+        num_heads = None
+        possible_keys = ['num_attention_heads', 'n_head', 'num_heads', 'n_heads']
+        for key in possible_keys:
+            if key in config:
+                num_heads = config[key]
+                break
+                
+        if num_heads is None:
+            return 1
+            
+        # Find the largest divisor of num_heads that is <= num_gpus
+        optimal_size = 1
+        for i in range(1, min(num_heads + 1, num_gpus + 1)):
+            if num_heads % i == 0:
+                optimal_size = i
+                
+        return optimal_size
+        
+    except Exception as e:
+        return 1
 
 def primary_emotions_concept_dataset(data_dir, model_name=None, tokenizer=None, system_prompt=None, seed=0):
     """
@@ -208,11 +282,11 @@ def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assist
     model = None
     if from_vllm:
         try:
-            model = LLM(model=model_name_or_path, tensor_parallel_size=torch.cuda.device_count(), max_model_len=600, trust_remote_code=True, enforce_eager=True)
+            model = LLM(model=model_name_or_path, tensor_parallel_size=get_optimal_tensor_parallel_size(model_name_or_path), max_model_len=600, trust_remote_code=True, enforce_eager=True)
         except Exception as e:
             pass
     if not model:
-        model = AutoModelForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
+        model = AutoModel.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
 
     use_fast_tokenizer = False #"LlamaForCausalLM" not in model.config.architectures
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
