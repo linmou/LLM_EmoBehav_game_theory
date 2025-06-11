@@ -1,3 +1,10 @@
+"""
+This implementation may have bugs. 
+Tensor parallel results are not consistent with single GPU results.
+More details:
+python -m unittest neuro_manipulation/repe/tests/test_sequence_prob_tp_consistency.py
+"""
+
 import torch
 import numpy as np
 import logging
@@ -539,154 +546,6 @@ class SequenceProbVLLMHook:
             all_captured_logits: List of captured logits from all workers
             
         Returns:
-            Aggregated logits tensor or None if aggregation fails
-        """
-        try:
-            valid_logits = [logits for logits in all_captured_logits if logits is not None and len(logits) > 0]
-            
-            if not valid_logits:
-                logger.error("No valid logits found from any worker.")
-                return None
-
-            # For tensor parallel, we need to concatenate logits along the vocabulary dimension
-            if self.tp_size > 1:
-                # Sort by rank to ensure correct order
-                rank_logits = {}
-                for worker_logits in valid_logits:
-                    for capture in worker_logits:
-                        rank = capture['rank']
-                        if rank not in rank_logits:
-                            rank_logits[rank] = []
-                        rank_logits[rank].append(capture['logits'])
-                
-                # Concatenate logits from different ranks
-                sorted_ranks = sorted(rank_logits.keys())
-                logits_to_concat = []
-                
-                for rank in sorted_ranks:
-                    # Use the first (most recent) capture from each rank
-                    if len(rank_logits[rank]) > 0:
-                        logits_to_concat.append(rank_logits[rank][-1])
-                
-                if len(logits_to_concat) > 1:
-                    # Concatenate along vocabulary dimension (last dimension)
-                    aggregated = torch.cat(logits_to_concat, dim=-1)
-                    logger.debug(f"Aggregated logits from {len(logits_to_concat)} ranks. Final shape: {aggregated.shape}")
-                    return aggregated
-                else:
-                    return logits_to_concat[0] if logits_to_concat else None
-            else:
-                # Single rank case - just use the logits from rank 0
-                first_worker_logits = valid_logits[0]
-                if len(first_worker_logits) > 0:
-                    return first_worker_logits[-1]['logits']  # Most recent capture
-                
-        except Exception as e:
-            logger.error(f"Error aggregating logits: {e}", exc_info=True)
-            
-        return None
-
-    def _calculate_single_sequence_prob(self, logits: torch.Tensor, token_ids: torch.Tensor) -> torch.Tensor:
-        """
-        Calculate log probability for a single sequence.
-        
-        Args:
-            logits: Aggregated logits tensor [batch_size, seq_len, vocab_size]
-            token_ids: Target token IDs [num_tokens]
-            
-        Returns:
-            Log probability of the sequence
-        """
-        # Convert logits to probabilities
-        log_probs = F.log_softmax(logits, dim=-1)
-        
-        # Sum log probabilities for the target sequence
-        sequence_log_prob = 0.0
-        
-        # We need to match the sequence position by position
-        # Assuming logits are for the continuation of the input
-        for i, token_id in enumerate(token_ids):
-            if i < log_probs.shape[1]:  # Ensure we don't go out of bounds
-                # Use the last batch item (assuming single input)
-                token_log_prob = log_probs[-1, i, token_id.item()]
-                sequence_log_prob += token_log_prob
-                logger.debug(f"Token {i} (ID: {token_id.item()}): log_prob = {token_log_prob.item():.4f}")
-        
-        return torch.tensor(sequence_log_prob)
-
-    def remove_hooks(self):
-        """Remove registered hooks (placeholder for future implementation)."""
-        logger.warning("Hook removal not yet implemented for SequenceProbVLLMHook.")
-        pass
-
-
-# --- Example Usage ---
-if __name__ == "__main__":
-    import torch
-    import gc
-    from transformers import AutoTokenizer
-
-    # Configuration
-    model_name = "meta-llama/Llama-3.1-8B-Instruct"
-    num_gpus = 1
-    
-    if torch.cuda.is_available():
-         detected_gpus = torch.cuda.device_count()
-         logger.info(f"CUDA available. Found {detected_gpus} GPUs.")
-         num_gpus = min(num_gpus, detected_gpus)
-    else:
-         logger.error("CUDA not available. This example requires GPU.")
-         sys.exit(1)
-
-    prompt = "The capital of France is"
-    target_sequences = ["Paris", "London", "Berlin"]
-
-    llm = None
-    try:
-        # Initialize Model and Tokenizer
-        logger.info(f"Loading tokenizer for {model_name}...")
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        if tokenizer.pad_token is None:
-             tokenizer.pad_token = tokenizer.eos_token
-
-        logger.info(f"Loading LLM {model_name} with tensor_parallel_size={num_gpus}...")
-        llm = LLM(model=model_name,
-                  tokenizer=tokenizer.name_or_path,
-                  enforce_eager=True,
-                  trust_remote_code=True,
-                  tensor_parallel_size=num_gpus,
-                  gpu_memory_utilization=0.85,
-                  max_num_seqs=16)
-
-        # Initialize Sequence Probability Hook
-        logger.info("Initializing SequenceProbVLLMHook...")
-        seq_prob_hook = SequenceProbVLLMHook(llm, tokenizer)
-
-        # Calculate sequence probabilities
-        logger.info("--- Calculating Sequence Probabilities ---")
-        results = seq_prob_hook.get_log_prob([prompt], target_sequences)
-        
-        print("\n=== SEQUENCE PROBABILITY RESULTS ===")
-        for result in results:
-            print(f"Sequence: '{result['sequence']}'")
-            print(f"  Log Probability: {result['log_prob']:.4f}")
-            print(f"  Probability: {result['prob']:.6f}")
-            print(f"  Perplexity: {result['perplexity']:.4f}")
-            print(f"  Tokens: {result['num_tokens']}")
-            print()
-
-    except Exception as e:
-        logger.error(f"An error occurred: {e}", exc_info=True)
-        print(f"Traceback: {traceback.format_exc()}")
-
-    finally:
-        # Cleanup
-        logger.info("Cleaning up resources...")
-        if llm is not None:
-            del llm
-        torch.cuda.empty_cache()
-        gc.collect()
-        logger.info("Cleanup completed.")
             Aggregated logits tensor or None if aggregation fails
         """
         try:
