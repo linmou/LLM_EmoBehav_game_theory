@@ -687,7 +687,8 @@ if __name__ == "__main__":
         torch.cuda.empty_cache()
         gc.collect()
         logger.info("Cleanup completed.")
-            Aggregated logits tensor or None if aggregation fails
+        """
+        Aggregated logits tensor or None if aggregation fails
         """
         try:
             valid_logits = [logits for logits in all_captured_logits if logits is not None and len(logits) > 0]
