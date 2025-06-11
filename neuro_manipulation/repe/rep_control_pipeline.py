@@ -10,6 +10,9 @@ class RepControlPipeline(TextGenerationPipeline):
                  control_method="reading_vec",
                  **kwargs):
         
+        self.assistant_model = None
+        self.assistant_tokenizer = None
+        self.prefix = None
         # TODO: implement different control method and supported intermediate modules for different models
         assert control_method == "reading_vec", f"{control_method} not supported yet"
         assert block_name == "decoder_block" or "LlamaForCausalLM" in model.config.architectures, f"{model.config.architectures} {block_name} not supported yet"

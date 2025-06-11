@@ -1,4 +1,11 @@
 import json
+import torch
+from torch.utils.data import DataLoader
+from transformers import pipeline
+import pandas as pd
+from functools import partial
+from openai import AzureOpenAI, OpenAI
+from pydantic import BaseModel
 import logging
 import re
 import time
@@ -31,6 +38,7 @@ from neuro_manipulation.model_utils import (
 from neuro_manipulation.prompt_wrapper import GameReactPromptWrapper
 from neuro_manipulation.repe.pipelines import get_pipeline
 from neuro_manipulation.utils import oai_response
+from api_configs import AZURE_OPENAI_CONFIG, OAI_CONFIG
 from statistical_engine import analyze_emotion_and_intensity_effects
 
 
@@ -192,12 +200,14 @@ class EmotionGameExperiment:
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         with open(self.output_dir + "/exp_config.yaml", "w") as f:
             yaml.dump(self.exp_config, f)
-
-        try:
-            self.llm_client = AzureOpenAI(**AZURE_OPENAI_CONFIG)
-        except Exception as e:
-            self.logger.error(f"Error initializing AzureOpenAI client: {e}")
+        
+        client_choice = self.exp_config['experiment'].get('oai_client', 'azure')
+        if client_choice == 'openai':
             self.llm_client = OpenAI(**OAI_CONFIG)
+        elif client_choice == 'azure':
+            self.llm_client = AzureOpenAI(**AZURE_OPENAI_CONFIG)
+        else:
+            raise ValueError(f"Invalid LLM client: {client_choice}")
 
     def build_dataloader(self):
         self.logger.info(

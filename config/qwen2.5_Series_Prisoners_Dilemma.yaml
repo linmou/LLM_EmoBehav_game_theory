@@ -34,6 +34,8 @@ experiment:
       top_p: 0.95
       max_new_tokens: 440
 
+  batch_size: 500
+
   # Template for system message with placeholders
   system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
   
@@ -50,9 +52,9 @@ experiment:
   intensity:
     - 1.5
 
-  sanity_check: true
+  run_sanity_check: false
 
   output:
-    base_dir: "results/Qwen2.5_Series_Prisoners_Dilemma"
+    base_dir: "results/Qwen2.5_Series_Prisoners_Dilemma_dataFrom4.1"
     save_plots: true
     plot_format: "png" 

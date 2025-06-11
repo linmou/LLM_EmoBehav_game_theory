@@ -32,12 +32,16 @@ class GameScenarioDataset(Dataset):
                 item['payoff_matrix'] = self.game_config['payoff_matrix']
                 if 'previous_actions_length' in scenario_class.model_fields:
                     item['previous_actions_length'] = self.game_config['previous_actions_length']
+            try:
+                item = scenario_class(**item)
+                self.data.append(item)
+            except Exception as e:
+                print(f'Skip item for error: {e}')
+                continue
             
-            item = scenario_class(**item)
-            self.data.append(item)
         if sample_num is not None:
             self.data = np.random.permutation(self.data)[:sample_num]
-         
+        
         self.prompt_wrapper = prompt_wrapper    
                 
     def __len__(self):
@@ -74,7 +78,7 @@ def collate_game_scenarios(batch):
 if __name__ == "__main__":
     from games.game_configs import get_game_config
     from constants import GameNames
-    game_name = GameNames.ESCALATION_GAME
+    game_name = GameNames.PRISONERS_DILEMMA
     game_config = get_game_config(game_name)
     if game_name.is_sequential():
         game_config['previous_actions_length'] = 2
@@ -92,7 +96,7 @@ if __name__ == "__main__":
     from functools import partial
     emo_dataset = GameScenarioDataset(game_config, 
                                     prompt_wrapper=partial(prompt_wrapper.__call__,
-                                                            emotion='angry',
+                                                            # emotion='angry',
                                                 user_messages='You are Amy ,you are angry'), 
                                     sample_num=200)
     print(emo_dataset[0])
