@@ -6,7 +6,7 @@
   - [x] Choose and set up a documentation tool (MkDocs).
   - [x] Inspect existing documentation in the `doc` folder.
   - [x] Migrate existing `doc` content to the new documentation structure.
-  - [ ] **IMPLEMENT Mode: By comparing with the relevant code, review existing documentation content about the correctness of contents and the coverage .** (Commencing)
+  - [x] **IMPLEMENT Mode: By comparing with the relevant code, review existing documentation content about the correctness of contents and the coverage .** (Commencing)
     - [x] Review `docs/reference/model_layer_detector.md`
     - [x] Review `docs/reference/vllm_hook_implementation.md`
     - [x] Review `docs/reference/emotion_analysis.md` 
@@ -26,3 +26,15 @@
     - [x] Fix broken links in `docs/index.md`.
     - [x] Fix broken links in `docs/reference/emotion_analysis.md`.
     - [x] Fix broken links in `docs/reference/model_layer_detector.md`. 
+
+## Neural Manipulation Development
+
+- [x] **VAN Mode: Build Sequence Probability vLLM Hook** (Level 1 - Direct Implementation)
+  - [x] **IMPLEMENT Mode: Create SequenceProbVLLMHook class with tensor parallel support**
+    - [x] Design hook function to capture logits from language model head
+    - [x] Implement RPC functions for tensor parallel communication
+    - [x] Create main SequenceProbVLLMHook class with get_log_prob method
+    - [x] Add proper logit aggregation across tensor parallel ranks
+    - [x] Include example usage and testing script
+    - [x] Write documentation and unit tests
+    - [x] Create README.md for the sequence probability functionality 

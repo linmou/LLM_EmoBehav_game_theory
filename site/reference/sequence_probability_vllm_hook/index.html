@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://example.com/reference/experiment_series_README/">
+        <link rel="canonical" href="https://example.com/reference/sequence_probability_vllm_hook/">
       
       
-        <link rel="prev" href="../experiment_report_naming/">
+        <link rel="prev" href="../vllm_hook_implementation/">
       
       
-        <link rel="next" href="../ExperimentTimeTracking/">
+        <link rel="next" href="../../code_readme/data_creation/scenario_creation/langgraph_creation/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Experiment Series - LLM EmoBehav Game Theory</title>
+        <title>Sequence Probability vLLM Hook - LLM EmoBehav Game Theory</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#experiment-series-pipeline" class="md-skip">
+        <a href="#sequence-probability-vllm-hook" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Experiment Series
+              Sequence Probability vLLM Hook
             
           </span>
         </div>
@@ -531,32 +531,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Experiment Series
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../experiment_series_README/" class="md-nav__link">
         
   
   
@@ -567,98 +545,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      Overview
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Configuration
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#running-the-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      Running the Pipeline
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#output-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      Output Structure
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#experiment-report" class="md-nav__link">
-    <span class="md-ellipsis">
-      Experiment Report
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#resuming-experiments" class="md-nav__link">
-    <span class="md-ellipsis">
-      Resuming Experiments
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#report-naming-convention" class="md-nav__link">
-    <span class="md-ellipsis">
-      Report Naming Convention
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#validation-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Validation Rules
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -921,10 +807,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../sequence_probability_vllm_hook/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Sequence Probability vLLM Hook
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -935,6 +843,176 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation Location
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage Example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture Components
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hook-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hook Function
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rpc-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      RPC Functions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#main-class-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Main Class Methods
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tensor-parallel-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tensor Parallel Handling
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Return Format
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-with-neural-manipulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integration with Neural Manipulation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Considerations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Related Documentation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Limitations
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1104,97 +1182,132 @@
 
 
 
-<h1 id="experiment-series-pipeline">Experiment Series Pipeline</h1>
-<p>This document explains how to use the experiment series pipeline for running multiple experiments with different combinations of games and models.</p>
+<h1 id="sequence-probability-vllm-hook">Sequence Probability vLLM Hook</h1>
 <h2 id="overview">Overview</h2>
-<p>The experiment series pipeline allows you to run a permutation and combination of games and models in a single command. The pipeline has the following features:</p>
-<ol>
-<li>Creates a new result base folder for the series of experiments.</li>
-<li>Maintains the same structure for individual experiment results as the current system.</li>
-<li>Handles failures in sub-experiments gracefully, continuing with the next experiment.</li>
-<li>Generates a completeness report that is updated in real-time.</li>
-<li>Supports graceful shutdown (Ctrl+C) and experiment resumption.</li>
-</ol>
-<h2 id="configuration">Configuration</h2>
-<p>Create a configuration file similar to <code>config/experiment_series_config.yaml</code>. The key sections to configure are:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">experiment</span><span class="p">:</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Multi_Game_Model_Experiment_Series&quot;</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="c1"># List of games to run experiments with</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">games</span><span class="p">:</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;Prisoners_Dilemma&quot;</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;Escalation_Game&quot;</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;Ultimatum_Game&quot;</span>
+<p>The Sequence Probability vLLM Hook is a tensor parallel-aware hook system for capturing and calculating sequence probabilities from vLLM language models. This hook intercepts the language model head output to capture logits and compute log probabilities for target sequences.</p>
+<h2 id="key-features">Key Features</h2>
+<ul>
+<li><strong>Tensor Parallel Support</strong>: Automatically detects and handles tensor parallel configurations in vLLM</li>
+<li><strong>Logit Aggregation</strong>: Properly aggregates logits across tensor parallel ranks for accurate probability calculation</li>
+<li><strong>RPC Communication</strong>: Uses vLLM's collective RPC system for distributed hook management</li>
+<li><strong>Comprehensive Metrics</strong>: Computes log probabilities, probabilities, and perplexity</li>
+<li><strong>Clean State Management</strong>: Automatic state setup and cleanup for reliable operation</li>
+</ul>
+<h2 id="implementation-location">Implementation Location</h2>
+<ul>
+<li><strong>Main Class</strong>: <code>neuro_manipulation.repe.sequence_prob_vllm_hook.SequenceProbVLLMHook</code></li>
+<li><strong>Documentation</strong>: <code>neuro_manipulation/repe/README_sequence_prob_vllm_hook.md</code></li>
+<li><strong>Tests</strong>: <code>neuro_manipulation/repe/tests/test_sequence_prob_vllm_hook.py</code></li>
+</ul>
+<h2 id="usage-example">Usage Example</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">vllm</span> <span class="kn">import</span> <span class="n">LLM</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span> <span class="nn">neuro_manipulation.repe.sequence_prob_vllm_hook</span> <span class="kn">import</span> <span class="n">SequenceProbVLLMHook</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Initialize model and tokenizer</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;meta-llama/Llama-3.1-8B-Instruct&quot;</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">LLM</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">tensor_parallel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="c1"># List of models to run experiments with</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="nt">models</span><span class="p">:</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;meta-llama/Llama-3.1-8B-Instruct&quot;</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;meta-llama/Meta-Llama-3.1-8B-Instruct&quot;</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="c1"># Rest of the configuration...</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Create sequence probability hook</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">seq_prob_hook</span> <span class="o">=</span> <span class="n">SequenceProbVLLMHook</span><span class="p">(</span><span class="n">llm</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="c1"># Calculate probabilities</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot;The capital of France is&quot;</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="n">target_sequences</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Paris&quot;</span><span class="p">,</span> <span class="s2">&quot;London&quot;</span><span class="p">,</span> <span class="s2">&quot;Berlin&quot;</span><span class="p">]</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">results</span> <span class="o">=</span> <span class="n">seq_prob_hook</span><span class="o">.</span><span class="n">get_log_prob</span><span class="p">([</span><span class="n">prompt</span><span class="p">],</span> <span class="n">target_sequences</span><span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="c1"># View results</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sequence: &#39;</span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Log Probability: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;log_prob&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Probability: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;prob&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Perplexity: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;perplexity&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>The pipeline will run experiments for all combinations of games and models specified.</p>
-<h2 id="running-the-pipeline">Running the Pipeline</h2>
-<p>To run the experiment series:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># First activate the conda environment</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>conda<span class="w"> </span>activate<span class="w"> </span>llm
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Run the experiment series</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>python<span class="w"> </span>-m<span class="w"> </span>neuro_manipulation.run_experiment_series<span class="w"> </span>--config<span class="w"> </span>config/experiment_series_config.yaml
-</code></pre></div>
-<p>Optional arguments:
-- <code>--name</code>: Custom name for the experiment series
-- <code>--resume</code>: Resume a previously interrupted experiment series</p>
-<h2 id="output-structure">Output Structure</h2>
-<p>The results will be organized in the following structure:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>results/
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>└── ExperimentSeries/
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    └── Multi_Game_Model_Experiment_Series_20250210_163355/
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        ├── experiment_report.json
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        ├── Prisoners_Dilemma_Llama-3.1-8B-Instruct_20250210_163355/
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        │   ├── exp_config.yaml
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        │   ├── exp_results.csv
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        │   ├── exp_results.json
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        │   └── stats_analysis.json
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        ├── Escalation_Game_Llama-3.1-8B-Instruct_20250210_163455/
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        │   └── ...
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        └── ...
-</code></pre></div>
-<h2 id="experiment-report">Experiment Report</h2>
-<p>The <code>experiment_report.json</code> file contains the status of all experiments in the series:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;last_updated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-02-10T16:34:55&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;experiments&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">&quot;Prisoners_Dilemma_Llama-3.1-8B-Instruct&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="nt">&quot;game_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Prisoners_Dilemma&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">      </span><span class="nt">&quot;model_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;meta-llama/Llama-3.1-8B-Instruct&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="nt">&quot;start_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-02-10T16:33:55&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="nt">&quot;end_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-02-10T16:34:55&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">      </span><span class="nt">&quot;output_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;results/ExperimentSeries/Prisoners_Dilemma_Llama-3.1-8B-Instruct_20250210_163355&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">      </span><span class="nt">&quot;exp_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Prisoners_Dilemma_Llama-3.1-8B-Instruct&quot;</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="nt">&quot;Escalation_Game_Llama-3.1-8B-Instruct&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;running&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">      </span><span class="nt">&quot;...&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
-<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="p">}</span>
-</code></pre></div>
-<h2 id="resuming-experiments">Resuming Experiments</h2>
-<p>If an experiment series is interrupted (either by an error or by user intervention with Ctrl+C), you can resume it:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>-m<span class="w"> </span>neuro_manipulation.run_experiment_series<span class="w"> </span>--config<span class="w"> </span>config/experiment_series_config.yaml<span class="w"> </span>--resume
-</code></pre></div>
-<p>This will skip completed experiments and retry failed or pending ones.</p>
-<h2 id="report-naming-convention">Report Naming Convention</h2>
-<p>The experiment report is stored in a directory named using the experiment name from the config file rather than the series name from the command line argument. This ensures consistency with individual experiment output directories.</p>
-<p>For detailed information about the naming convention, see <a href="../experiment_report_naming/">Experiment Report Naming</a>.</p>
-<h2 id="validation-rules">Validation Rules</h2>
-<p>The experiment series runner performs several validations before running experiments:</p>
+<h2 id="architecture-components">Architecture Components</h2>
+<h3 id="hook-function">Hook Function</h3>
+<ul>
+<li><code>hook_fn_sequence_prob()</code>: Captures logits from language model head output</li>
+<li>Stores logits with rank information for tensor parallel aggregation</li>
+<li>Handles both single tensor and tuple outputs</li>
+</ul>
+<h3 id="rpc-functions">RPC Functions</h3>
+<ul>
+<li><code>_register_lm_head_hook_rpc()</code>: Registers hooks on language model head across workers</li>
+<li><code>_set_sequence_prob_state_rpc()</code>: Sets state for sequence probability capture</li>
+<li><code>_reset_sequence_prob_state_rpc()</code>: Cleans up state after capture</li>
+<li><code>_get_captured_logits_rpc()</code>: Retrieves captured logits from workers</li>
+</ul>
+<h3 id="main-class-methods">Main Class Methods</h3>
+<ul>
+<li><code>__init__()</code>: Initializes hook and registers on language model head</li>
+<li><code>get_log_prob()</code>: Main method for calculating sequence probabilities</li>
+<li><code>_aggregate_logits_across_ranks()</code>: Handles tensor parallel logit aggregation</li>
+<li><code>_calculate_sequence_probabilities()</code>: Computes final probability metrics</li>
+</ul>
+<h2 id="tensor-parallel-handling">Tensor Parallel Handling</h2>
+<p>The hook automatically handles different tensor parallel configurations:</p>
 <ol>
-<li><strong>Previous Actions Length</strong>: The <code>previous_actions_length</code> parameter in game config must be set to 0. This ensures that sequential game experiments are properly set up. If this validation fails, the runner will raise a ValueError with a descriptive message. </li>
+<li><strong>Single Rank (TP=1)</strong>: Uses logits directly from the single worker</li>
+<li><strong>Multi Rank (TP&gt;1)</strong>: Concatenates logits along vocabulary dimension from all ranks</li>
 </ol>
+<h2 id="return-format">Return Format</h2>
+<p>The <code>get_log_prob()</code> method returns a list of dictionaries, each containing:</p>
+<ul>
+<li><code>sequence</code>: The target sequence string</li>
+<li><code>log_prob</code>: Log probability of the sequence</li>
+<li><code>prob</code>: Probability of the sequence (exp(log_prob))</li>
+<li><code>perplexity</code>: Perplexity of the sequence (exp(-log_prob))</li>
+<li><code>num_tokens</code>: Number of tokens in the sequence</li>
+</ul>
+<h2 id="integration-with-neural-manipulation">Integration with Neural Manipulation</h2>
+<p>This hook complements the existing neural manipulation capabilities:</p>
+<ul>
+<li>Works alongside <code>RepControlVLLMHook</code> for comprehensive model analysis</li>
+<li>Can be used to measure the effect of neural interventions on sequence probabilities</li>
+<li>Provides quantitative metrics for evaluating manipulation effectiveness</li>
+</ul>
+<h2 id="performance-considerations">Performance Considerations</h2>
+<ul>
+<li><strong>Memory</strong>: Logits are stored temporarily during calculation</li>
+<li><strong>Computation</strong>: Scales with sequence length and vocabulary size</li>
+<li><strong>Communication</strong>: RPC overhead for tensor parallel setups</li>
+<li><strong>GPU Memory</strong>: Ensure sufficient VRAM for model + logit storage</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<p>Comprehensive unit tests are provided covering:</p>
+<ul>
+<li>Hook function behavior with various inputs</li>
+<li>RPC function communication</li>
+<li>Tensor parallel logit aggregation</li>
+<li>Main class functionality and error handling</li>
+<li>Edge cases and error conditions</li>
+</ul>
+<p>Run tests with:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>neuro_manipulation/repe/tests
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>test_sequence_prob_vllm_hook.py
+</code></pre></div></p>
+<h2 id="related-documentation">Related Documentation</h2>
+<ul>
+<li><a href="../vllm_hook_implementation/">vLLM Hook Implementation</a></li>
+<li><a href="../model_layer_detector/">Model Layer Detector</a></li>
+<li><a href="../vllm_compatibility/">vLLM Compatibility</a></li>
+</ul>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li>PyTorch</li>
+<li>vLLM</li>
+<li>Transformers</li>
+<li>NumPy</li>
+<li>Python 3.8+</li>
+</ul>
+<h2 id="limitations">Limitations</h2>
+<ul>
+<li>Currently supports only forward pass probability calculation</li>
+<li>Requires models with accessible language model heads</li>
+<li>Hook removal functionality is placeholder (manual cleanup required)</li>
+<li>Memory usage scales with vocabulary size for logit storage </li>
+</ul>
 
 
 

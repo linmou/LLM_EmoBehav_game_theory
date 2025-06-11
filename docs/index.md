@@ -29,6 +29,7 @@ This directory contains documentation for the different modules within the LLM_E
 
 *   **Representation Reading (RepE)**: 
     *   [Extracting Emotion Activation Directions](./code_readme/neuro_manipulation/repe/README.md)
+    *   [Sequence Probability Fix](./code_readme/neuro_manipulation/repe/README_sequence_prob_fix.md) - vLLM v1 compatible sequence probability calculation
 
 *   **Emotion Analysis**:
     *   [Emotion Analysis](./reference/emotion_analysis.md) - Documentation for emotion analysis
@@ -51,4 +52,8 @@ This directory contains documentation for the different modules within the LLM_E
     *   [vLLM Compatibility](./reference/vllm_compatibility.md) - Documentation for vLLM compatibility with representation engineering
     *   [vLLM Hook Implementation](./reference/vllm_hook_implementation.md) - Explains the `RepControlVLLMHook` for representation control using vLLM hooks.
 
+*   **Result Analysis**:
+    *   [Option Pattern Analysis](./code_readme/result_analysis/option_pattern_analysis_link.md) - Analysis of linguistic patterns in game theory decision scenarios
+
 *   ... (Add links to other documentation as needed)
+

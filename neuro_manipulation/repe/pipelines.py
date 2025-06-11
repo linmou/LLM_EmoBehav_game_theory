@@ -12,6 +12,7 @@ from .rep_control_pipeline import RepControlPipeline
 from .rep_reading_prob_calc_pipeline import RepReadingNProbCalcPipeline
 
 from vllm import LLM
+from transformers.generation.utils import GenerationMixin
 
 def repe_pipeline_registry():
     PIPELINE_REGISTRY.register_pipeline(

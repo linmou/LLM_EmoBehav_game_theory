@@ -12,13 +12,14 @@ import numpy as np
 import random
 import os
 import json
+import pickle
 
 from vllm import LLM
 
 
-from neuro_manipulation.repe import repe_pipeline_registry
-import pickle
-repe_pipeline_registry()
+# from neuro_manipulation.repe import repe_pipeline_registry
+# import pickle
+# repe_pipeline_registry()
 
 
 @dataclass
