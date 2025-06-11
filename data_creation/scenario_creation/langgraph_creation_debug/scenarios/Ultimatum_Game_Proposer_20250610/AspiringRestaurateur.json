@@ -1,0 +1,47 @@
+{
+    "scenario": "Shared_Restaurant_Space_Agreement",
+    "description": "Two aspiring restaurateurs, Alice and Bob, plan to open their own establishments in a shared restaurant space with limited weekly operating hours. Alice proposes how to divide these operating hours between the two. Bob then decides whether to accept the proposed schedule or reject it. If Bob rejects the proposal, neither can operate their restaurant during that week, resulting in no revenue for either party.",
+    "participants": [
+        {
+            "name": "Alice",
+            "profile": "aspiring restaurateur",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "aspiring restaurateur",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "offer_low": "Alice proposes to allocate 70% of the limited weekly operating hours to her restaurant and 30% to Bob",
+        "offer_medium": "Alice proposes to allocate 60% of the weekly operating hours to her restaurant and 40% to Bob",
+        "offer_high": "Alice proposes to split the weekly operating hours evenly, 50% each"
+    },
+    "responder_behavior_choices": {
+        "accept": "Bob agrees to the proposed division of operating hours",
+        "reject": "Bob declines the proposed division, resulting in neither restaurant opening this week"
+    },
+    "payoff_matrix_description": {
+        "digital_payoff": {
+            "accept_offer_low": [
+                7,
+                3
+            ],
+            "accept_offer_medium": [
+                6,
+                4
+            ],
+            "accept_offer_high": [
+                5,
+                5
+            ],
+            "reject_any_offer": [
+                0,
+                0
+            ]
+        },
+        "natural_language": "If Bob accepts the proposal, Alice earns revenue proportional to the percentage of operating hours she receives, and Bob earns revenue proportional to his allocated hours. For example, accepting the 70-30 split means Alice earns more revenue than Bob. If Bob rejects, neither can operate their restaurant during the week, and both earn nothing."
+    },
+    "payoff_description": ""
+}

@@ -77,7 +77,7 @@ GAME_CONFIGS = {
         "scenario_class": TrustGameTrustorScenario,
         "decision_class": TrustGameDecision,
         "payoff_matrix": dict(),
-        "data_path": {},  # data_path_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
+        "data_path": data_path_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
         "data_folder": data_folder_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
     },
     GameNames.TRUST_GAME_TRUSTEE: {
@@ -85,7 +85,7 @@ GAME_CONFIGS = {
         "scenario_class": TrustGameTrusteeScenario,
         "decision_class": TrustGameDecision,
         "payoff_matrix": dict(),
-        "data_path": {},  # data_path_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
+        "data_path": data_path_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
         "data_folder": data_folder_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
     },
     GameNames.ULTIMATUM_GAME_PROPOSER: {
@@ -93,7 +93,7 @@ GAME_CONFIGS = {
         "scenario_class": UltimatumGameProposerScenario,
         "decision_class": UltimatumGameDecision,
         "payoff_matrix": dict(),
-        "data_path": {},  # data_path_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
+        "data_path": data_path_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
         "data_folder": data_folder_format.format(
             GameNames.ULTIMATUM_GAME_PROPOSER.value
         ),
@@ -103,7 +103,7 @@ GAME_CONFIGS = {
         "scenario_class": UltimatumGameResponderScenario,
         "decision_class": UltimatumGameDecision,
         "payoff_matrix": dict(),
-        "data_path": {},  # data_path_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
+        "data_path": data_path_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
         "data_folder": data_folder_format.format(
             GameNames.ULTIMATUM_GAME_PROPOSER.value
         ),

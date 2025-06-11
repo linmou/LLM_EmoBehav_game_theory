@@ -61,21 +61,21 @@ class StagHuntScenario(GameScenario):
             ],
             "behavior_choices": StagHuntBehaviors.example(),
             "payoff_matrix_description": {
-                f"You: cooperate , Bob: cooperate": [
-                    "You get 3: Major project success, potential promotion",
-                    "Bob gets 3: Major project success, potential promotion",
+                f"player 1: cooperate , player 2: cooperate": [
+                    "player 1 gets 3: Major project success, potential promotion",
+                    "player 2 gets 3: Major project success, potential promotion",
                 ],
-                f"You: cooperate , Bob: defect": [
-                    "You get 0: Collaboration effort wasted; Bob gets 1: Individual tasks completed successfully",
-                    "Bob gets 1: Individual tasks completed successfully",
+                f"player 1: cooperate , player 2: defect": [
+                    "player 1 gets 0: Collaboration effort wasted; player 2 gets 1: Individual tasks completed successfully",
+                    "player 2 gets 1: Individual tasks completed successfully",
                 ],
-                f"You: defect , Bob: cooperate": [
-                    "You get 1: Individual tasks completed successfully",
-                    "Bob gets 0: Collaboration effort wasted",
+                f"player 1: defect , player 2: cooperate": [
+                    "player 1 gets 1: Individual tasks completed successfully",
+                    "player 2 gets 0: Collaboration effort wasted",
                 ],
-                f"You: defect , Bob: defect": [
-                    "You get 1: Basic requirements met",
-                    "Bob gets 1: Basic requirements met",
+                f"player 1: defect , player 2: defect": [
+                    "player 1 gets 1: Basic requirements met",
+                    "player 2 gets 1: Basic requirements met",
                 ],
             },
             "description": "Two colleagues, You and Bob, are tasked with a critical project with a tight deadline. They can either collaborate intensely to achieve a major success potentially leading to promotions, or focus on their individual assignments ensuring they meet their basic requirements. If one commits to collaboration while the other focuses individually, the collaborator's efforts are largely wasted, while the individual worker secures their moderate success.",

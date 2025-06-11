@@ -1,0 +1,26 @@
+{
+    "scenario": "Wellness_Retreat_Budget_Planning",
+    "description": "Alice and Bob are spiritual directors jointly planning an upcoming wellness retreat designed to foster mindfulness and personal growth. Alice must propose how to allocate the fixed retreat budget between two key areas: enriching the retreat\u2019s spiritual workshop offerings\u2014such as meditation sessions and guest speaker fees\u2014and improving the retreat facilities, including lodging and dining enhancements. After reviewing Alice\u2019s budget proposal, Bob will decide whether to approve it. If Bob approves, the retreat moves forward successfully, boosting both their reputations and participant satisfaction. If Bob rejects the proposal, the retreat will be canceled, resulting in reputational damage and lost opportunities for future retreats.",
+    "participants": [
+        {
+            "name": "Alice",
+            "profile": "Spiritual Director",
+            "role": "Proposer"
+        },
+        {
+            "name": "Bob",
+            "profile": "Spiritual Director",
+            "role": "Responder"
+        }
+    ],
+    "proposer_behavior_choices": {
+        "workshop_focused": "Allocate the majority of the budget to deepen the spiritual workshops and secure renowned speakers, allocating a smaller portion to retreat facilities.",
+        "facility_focused": "Invest most of the budget into upgrading lodging and dining to enhance participant comfort, with a smaller share for workshops.",
+        "balanced": "Split the budget evenly between workshop development and facility improvements."
+    },
+    "responder_behavior_choices": {
+        "accept": "Approve the budget plan and proceed with retreat preparations.",
+        "reject": "Reject the budget plan, leading to cancellation of the retreat."
+    },
+    "payoff_description": ""
+}
