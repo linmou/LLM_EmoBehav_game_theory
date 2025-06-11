@@ -3,6 +3,8 @@ from typing import Any, ClassVar, Dict, List, Optional, Type, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from constants import GameNames, GameType
+
 from .payoff_matrices import PayoffMatrix
 
 
@@ -125,6 +127,11 @@ class Game:
     def folder_path(self) -> str:
         """Get the default folder path for scenario files"""
         return f"groupchat/scenarios/{self.name}"
+
+    @property
+    def game_type(self) -> GameType:
+        """Get the game type"""
+        return GameNames.from_string(self.name).game_type
 
     def create_scenario(self, data: dict) -> GameScenario:
         """Create a new scenario instance.

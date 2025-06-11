@@ -14,8 +14,10 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel
 
+from constants import GameType
 from games.game import Game
 from games.game_configs import get_game_config
+from games.payoff_matrices import PayoffMatrix
 
 PAYOFF_VALIDATION_QUESTION_FORMAT = (
     "- If {behavior_description}, please first imagine how much possible that these two behaviors happen together in the scenario,"
@@ -63,15 +65,45 @@ class ScenarioCreationState(TypedDict):
 
 from api_configs import AZURE_OPENAI_CONFIG
 
+# Global LLM configuration
+_global_llm_config = {
+    "model": "gpt-4.1-mini",
+    "temp_propose": 0.7,
+    "temp_verify": 0.3,
+    "temp_payoff": 0.1,
+    "azure_mode": True,
+    "max_iterations": 8,
+}
+
+
+def set_global_llm_config(llm_config: dict):
+    """Set global LLM configuration for all nodes"""
+    global _global_llm_config
+    _global_llm_config.update(llm_config)
+
+
+def get_global_llm_config():
+    """Get current global LLM configuration"""
+    return _global_llm_config.copy()
+
 
 # Initialize the LLM
-def get_llm(model="gpt-4.1", temperature=1.4, json_mode=True, azure_mode=True):
+def get_llm(model=None, temperature=None, json_mode=True, azure_mode=None):
+    """Get LLM instance with configuration from global config if not specified"""
+    if model is None:
+        model = _global_llm_config["model"]
+    if temperature is None:
+        temperature = _global_llm_config["temp_propose"]  # Default temperature
+    if azure_mode is None:
+        azure_mode = _global_llm_config["azure_mode"]
+
     if azure_mode:
         return AzureChatOpenAI(
             api_version=AZURE_OPENAI_CONFIG["api_version"],
             azure_endpoint=AZURE_OPENAI_CONFIG["azure_endpoint"],
             api_key=AZURE_OPENAI_CONFIG["api_key"],
             deployment_name=model,
+            temperature=temperature,
         )
     else:
         return ChatOpenAI(
@@ -94,7 +126,25 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         if key.endswith("_feedback"):
             feedback_category = key.split("_")[0]
             if not state[feedback_category + "_converged"]:
-                previous_feedback += state[key]
+                feedback_items = state[key]
+
+                # Ensure feedback_items is a list
+                if not isinstance(feedback_items, list):
+                    print(f"Warning: {key} is not a list, converting to list")
+                    feedback_items = [feedback_items]
+
+                # Ensure all feedback items are strings
+                for i, item in enumerate(feedback_items):
+                    if isinstance(item, str):
+                        previous_feedback.append(item)
+                    elif isinstance(item, dict):
+                        # Convert dict to string representation
+                        print(f"Warning: Found dict in {key}[{i}]: {item}")
+                        previous_feedback.append(str(item))
+                    else:
+                        # Convert any other type to string
+                        print(f"Warning: Found {type(item)} in {key}[{i}]: {item}")
+                        previous_feedback.append(str(item))
 
     previous_feedback = "\n".join(previous_feedback)
 
@@ -107,9 +157,14 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         payoff_matrix=game_cfg["payoff_matrix"],
     )
     example_scenario = game.example_scenario
-    payoff_description = game.payoff_matrix.get_natural_language_description(
-        participants
-    )
+    payoff_description = ""
+    if isinstance(game.payoff_matrix, PayoffMatrix):
+        payoff_description = game.payoff_matrix.get_natural_language_description(
+            participants
+            if game.game_type == GameType.SIMULTANEOUS
+            else ["player 1", "player 2"]
+        )
+
     further_instructions = (
         f"An important feature of the {game_name} is : {game_cfg.get('game_description', '')}"
         if game_cfg.get("game_description", "")
@@ -138,17 +193,19 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         {"Participant jobs: " + str(participant_jobs) if participant_jobs else ""}
         Do not talk anything about participants' previous relationship.
         
-        The created scenario should follow the payoff matrix:
-        {payoff_description}
+        {f'The created scenario should follow the payoff matrix: {payoff_description}' if payoff_description else ''}
         Do not contain digits as payoff in the description of scenario. And please make sure the payoff in your created scenario is at the proper level.
         
-        You should follow this example format, note that when writing payoff_matrix, you should first use digital payoff, then write the natural language description of the payoff in this scenario.
+        You should follow this example format, note that when writing payoff_matrix_description, you should first use digital payoff, then write the natural language description of the payoff in this scenario.
         {json.dumps(example_scenario, indent=2)}
-        
+                    
+        When you design the behavior choices, keys should strictly follow the example format, don't use other keys.
         When you create the behavior choices, do not use ambiguous words like 'collaberate, cooperate' or 'defect', please provide specific behavior and more details settings in the scenario to make the behavior -> outcome causal chain robust and reasonable.
         When you create the behavior choices, do not use words with moral tendency like 'generous, selfish, volunatry, altruistic, etc.', don't use adjective or adverb to describe the behavior, just describe the behavior in a neutral way.
         
-        Write in English.Return the scenario as a valid JSON object.
+        {game.scenario_class.specific_prompt() if hasattr(game.scenario_class, 'specific_prompt') else ''}
+        
+        Write in English. Return the scenario as a valid JSON object.
         """
     else:
         # Subsequent iterations with feedback
@@ -171,7 +228,7 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         """
 
     # Get LLM response
-    llm = get_llm(temperature=0.7, json_mode=True)
+    llm = get_llm(temperature=_global_llm_config["temp_propose"], json_mode=True)
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(content=human_prompt),
@@ -238,11 +295,20 @@ def verify_narrative(state: ScenarioCreationState) -> Dict[str, Any]:
 
     # Handle potential error in scenario draft
     if not scenario_draft or "error" in scenario_draft:
+        error_msg = (
+            scenario_draft.get("error") if scenario_draft else "scenario_draft is None"
+        )
+        raw_content = (
+            scenario_draft.get("raw_content")
+            if scenario_draft
+            else "No raw content available"
+        )
+
         return {
             "narrative_feedback": [
                 "Cannot verify narrative due to error in scenario draft generation.",
-                scenario_draft.get("error", "Unknown error"),
-                f"Raw Content: {scenario_draft.get('raw_content', '')}",
+                f"Error: {error_msg}",
+                f"Raw Content: {raw_content}",
             ],
             "narrative_converged": False,
         }
@@ -279,7 +345,7 @@ def verify_narrative(state: ScenarioCreationState) -> Dict[str, Any]:
     """
 
     # Get LLM response
-    llm = get_llm(temperature=0.3, json_mode=True)
+    llm = get_llm(temperature=_global_llm_config["temp_verify"], json_mode=True)
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(content=human_prompt),
@@ -340,9 +406,12 @@ def verify_preference_order(state: ScenarioCreationState) -> Dict[str, Any]:
 
     # Handle potential error in scenario draft directly
     if not scenario_draft or "error" in scenario_draft:
+        error_msg = (
+            scenario_draft.get("error") if scenario_draft else "scenario_draft is None"
+        )
         return {
             "preference_feedback": [
-                f"Cannot verify preference order due to error in scenario draft: {scenario_draft.get('error', 'Unknown error')}"
+                f"Cannot verify preference order due to error in scenario draft: {error_msg}"
             ],
             "preference_converged": False,
         }
@@ -405,8 +474,8 @@ def verify_preference_order(state: ScenarioCreationState) -> Dict[str, Any]:
 
     # Get LLM response
     llm = get_llm(
-        temperature=0.2, json_mode=True
-    )  # Even lower temp for strict mechanics check
+        temperature=_global_llm_config["temp_verify"], json_mode=True
+    )  # Temperature for verification
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(content=human_prompt),
@@ -454,7 +523,9 @@ def verify_preference_order(state: ScenarioCreationState) -> Dict[str, Any]:
     }
 
 
-def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
+def verify_pay_off(
+    state: ScenarioCreationState, debug_mode: bool = False
+) -> Dict[str, Any]:
     """Verify if the payoffs described in the scenario are plausible given the actions."""
     game_name = state["game_name"]
     scenario_draft = state["scenario_draft"]
@@ -462,9 +533,12 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
 
     # Handle potential error in scenario draft directly
     if not scenario_draft or "error" in scenario_draft:
+        error_msg = (
+            scenario_draft.get("error") if scenario_draft else "scenario_draft is None"
+        )
         return {
             "payoff_feedback": [
-                f"Cannot verify payoff plausibility due to error in scenario draft: {scenario_draft.get('error', 'Unknown error')}"
+                f"Cannot verify payoff plausibility due to error in scenario draft: {error_msg}"
             ],
             "payoff_converged": False,
         }
@@ -506,40 +580,87 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
         hasattr(game.payoff_matrix, "payoff_leaves")
         and game.payoff_matrix.payoff_leaves
     ):
-        for payoff_leaf in game.payoff_matrix.payoff_leaves:
-            try:
+        try:
+            for payoff_leaf in game.payoff_matrix.payoff_leaves:
                 # Get behavior descriptions from scenario draft
                 leaf_actions = payoff_leaf.actions
-                behaviors = [
-                    scenario_draft["behavior_choices"][action]
-                    for action in leaf_actions
-                ]
+                behaviors = []
+                for action in leaf_actions:
+                    if action in scenario_draft["behavior_choices"]:
+                        behaviors.append(scenario_draft["behavior_choices"][action])
+                    else:
+                        error_msg = f"Required action '{action}' not found in behavior_choices. Available actions: {list(scenario_draft['behavior_choices'].keys())}"
+                        if debug_mode:
+                            raise KeyError(error_msg)
+                        else:
+                            return {
+                                "payoff_feedback": [f"Format error: {error_msg}"],
+                                "payoff_converged": False,
+                            }
+
                 # Make behavior description more informative with player names
-                behavior_description = " and ".join(
-                    [
-                        f"Participant {i+1} ({players[i]}) chooses '{behav}'"
-                        for i, behav in enumerate(behaviors)
-                    ]
-                )
+                # For sequential games, players take turns, so we use modulo to get the current player
+                behavior_description_parts = []
+                for i, behav in enumerate(behaviors):
+                    player_index = i % len(players)
+                    behavior_description_parts.append(
+                        f"Participant {player_index + 1} ({players[player_index]}) chooses '{behav}'"
+                    )
+                behavior_description = " and ".join(behavior_description_parts)
 
                 # Construct the key for the payoff matrix dictionary
                 # Assumes leaf_actions order matches players order
-                outcome_key_parts = [
-                    f"{players[i]}: {leaf_actions[i]}" for i in range(len(players))
-                ]
+                outcome_key_parts = []
+                for i, action in enumerate(leaf_actions):
+                    player_index = i % len(players)
+                    outcome_key_parts.append(f"player {player_index + 1}: {action}")
                 outcome_key = " , ".join(outcome_key_parts)
 
                 # Get corresponding payoff description from scenario draft
                 outcome_list = scenario_draft["payoff_matrix_description"].get(
                     outcome_key
                 )
-                outcome_description = f"Outcome description not found in scenario draft for key '{outcome_key}'."
-                if isinstance(outcome_list, list) and outcome_list:
+
+                if outcome_list is None:
+                    # Try to find a matching key with different spacing/formatting
+                    matching_keys = []
+                    for key in scenario_draft["payoff_matrix_description"].keys():
+                        # Normalize both keys by removing extra spaces and comparing
+                        normalized_outcome_key = " ".join(outcome_key.split())
+                        normalized_key = " ".join(key.split())
+                        if normalized_outcome_key == normalized_key:
+                            matching_keys.append(key)
+
+                    if matching_keys:
+                        # Use the first matching key
+                        outcome_list = scenario_draft["payoff_matrix_description"][
+                            matching_keys[0]
+                        ]
+                    else:
+                        error_msg = f"Payoff outcome not found in scenario draft for key '{outcome_key}'. Available keys: {list(scenario_draft['payoff_matrix_description'].keys())}"
+                        if debug_mode:
+                            raise ValueError(error_msg)
+                        else:
+                            return {
+                                "payoff_feedback": [f"Format error: {error_msg}"],
+                                "payoff_converged": False,
+                            }
+
+                if isinstance(outcome_list, list) and len(outcome_list) >= 2:
                     p1_outcome = outcome_list[0]
                     p2_outcome = outcome_list[1]
-                elif isinstance(outcome_list, str):  # Handle if it's just a string
-                    p1_outcome = outcome_description
-                    p2_outcome = outcome_description
+                elif isinstance(outcome_list, str):
+                    p1_outcome = outcome_list
+                    p2_outcome = outcome_list
+                else:
+                    error_msg = f"Invalid payoff outcome format for key '{outcome_key}'. Expected list with 2+ elements or string, got: {type(outcome_list)} with value: {outcome_list}"
+                    if debug_mode:
+                        raise ValueError(error_msg)
+                    else:
+                        return {
+                            "payoff_feedback": [f"Format error: {error_msg}"],
+                            "payoff_converged": False,
+                        }
 
                 # Format the question including the outcome using the constant
                 question = PAYOFF_VALIDATION_QUESTION_FORMAT.format(
@@ -548,18 +669,16 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
                     p2_outcome=p2_outcome,
                 )
                 validation_questions.append(question)
-
-            except KeyError as e:
-                # Provide more context in error message
-                action_str = str(leaf_actions) if "leaf_actions" in locals() else "N/A"
-                key_str = outcome_key if "outcome_key" in locals() else "N/A"
-                validation_questions.append(
-                    f"- Error generating question due to missing key: {e} (Action: {action_str}, Expected Key in behavior_choices or payoff_matrix: {key_str})"
-                )
-            except Exception as e:
-                validation_questions.append(
-                    f"- Error generating question for actions {getattr(payoff_leaf, 'actions', 'N/A')}: {e}"
-                )
+        except Exception as e:
+            if debug_mode:
+                raise
+            else:
+                return {
+                    "payoff_feedback": [
+                        f"Unexpected error during payoff validation setup: {str(e)}"
+                    ],
+                    "payoff_converged": False,
+                }
     else:
         return {
             "payoff_feedback": [
@@ -589,9 +708,19 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
     """
 
     # Create human prompt
+    if "description" not in scenario_draft:
+        error_msg = "Required 'description' field not found in scenario_draft"
+        if debug_mode:
+            raise KeyError(error_msg)
+        else:
+            return {
+                "payoff_feedback": [f"Format error: {error_msg}"],
+                "payoff_converged": False,
+            }
+
     human_prompt = f"""
     Image you are in the following scenario:
-    {scenario_draft.get("description", "No description provided.")}
+    {scenario_draft["description"]}
 
     Participants: {players}
 
@@ -604,8 +733,8 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
 
     # Get LLM response
     llm = get_llm(
-        temperature=0.1, json_mode=True
-    )  # Very low temp for strict validation
+        temperature=_global_llm_config["temp_payoff"], json_mode=True
+    )  # Temperature for payoff validation
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(content=human_prompt),
@@ -660,7 +789,6 @@ def verify_pay_off(state: ScenarioCreationState) -> Dict[str, Any]:
     }
 
 
-# New node to aggregate results from parallel branches
 def aggregate_verification(state: ScenarioCreationState) -> Dict[str, Any]:
     """
     Aggregation step after parallel verification.
@@ -670,16 +798,27 @@ def aggregate_verification(state: ScenarioCreationState) -> Dict[str, Any]:
     """
     print("Aggregating verification results...")
 
-    # Check all verification results
+    # Check all verification results - must explicitly check for True
+    required_convergence_flags = [
+        "narrative_converged",
+        "preference_converged",
+        "payoff_converged",
+    ]
     all_converged = True
-    for key in state.keys():
-        if key.endswith("_converged") and key != "all_converged":
-            converged = state[key]
-            print(f"{key}: {converged}")
-            if converged == False:
-                all_converged = False
 
-    print(f"All converged for {state['scenario_draft']['scenario']}: {all_converged}")
+    for flag in required_convergence_flags:
+        converged = state.get(flag, False)  # Default to False if missing
+        print(f"{flag}: {converged}")
+        # Only consider it converged if it's explicitly True
+        if converged is not True:
+            all_converged = False
+
+    # Safely get scenario name for logging
+    scenario_name = "Unknown"
+    if state.get("scenario_draft") and isinstance(state["scenario_draft"], dict):
+        scenario_name = state["scenario_draft"].get("scenario", "Unknown")
+
+    print(f"All converged for {scenario_name}: {all_converged}")
 
     # Return only the field we're updating
     return {"all_converged": all_converged}
@@ -691,7 +830,7 @@ def should_continue(state: ScenarioCreationState) -> str:
 
     # Check if we've converged on ALL aspects or reached max iterations
     all_converged = state.get("all_converged", False)
-    max_iterations_reached = iteration_count >= 8
+    max_iterations_reached = iteration_count >= _global_llm_config["max_iterations"]
 
     if all_converged or max_iterations_reached:
         print(
@@ -749,31 +888,61 @@ def finalize_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
 
 
 # Build the graph
-def build_scenario_creation_graph():
+def build_scenario_creation_graph(
+    debug_mode: bool = False,
+    llm_config: Optional[Dict] = None,
+    verification_nodes: Optional[List[str]] = None,
+):
     """Build the scenario creation graph with parallel verification steps."""
+
+    # Set global LLM configuration if provided
+    if llm_config:
+        set_global_llm_config(llm_config)
+
+    if verification_nodes is None:
+        verification_nodes = ["narrative", "preference_order", "pay_off"]
+
     # Create the graph
     graph = StateGraph(ScenarioCreationState)
 
     # Add nodes
     graph.add_node("propose_scenario", propose_scenario)
-    graph.add_node("verify_narrative", verify_narrative)
-    graph.add_node("verify_preference_order", verify_preference_order)
-    graph.add_node("verify_pay_off", verify_pay_off)
-    graph.add_node("aggregate_verification", aggregate_verification)
     graph.add_node("finalize_scenario", finalize_scenario)
+
+    # Conditionally add verification nodes
+    if "narrative" in verification_nodes:
+        graph.add_node("verify_narrative", verify_narrative)
+    if "preference_order" in verification_nodes:
+        graph.add_node("verify_preference_order", verify_preference_order)
+    if "pay_off" in verification_nodes:
+        graph.add_node(
+            "verify_pay_off", lambda state: verify_pay_off(state, debug_mode)
+        )
+
+    def aggregate_verification_dynamic(state: ScenarioCreationState) -> Dict[str, Any]:
+        """
+        Dynamically aggregates results based on the selected verification nodes.
+        """
+        required_convergence_flags = [f"{v}_converged" for v in verification_nodes]
+        all_converged = True
+        for flag in required_convergence_flags:
+            if state.get(flag) is not True:
+                all_converged = False
+        return {"all_converged": all_converged}
+
+    graph.add_node("aggregate_verification", aggregate_verification_dynamic)
 
     # Start -> Propose
     graph.add_edge(START, "propose_scenario")
 
-    # Parallel verification steps (fan-out from propose_scenario)
-    graph.add_edge("propose_scenario", "verify_narrative")
-    graph.add_edge("propose_scenario", "verify_preference_order")
-    graph.add_edge("propose_scenario", "verify_pay_off")
-
-    # Fan-in to aggregate_verification
-    graph.add_edge("verify_narrative", "aggregate_verification")
-    graph.add_edge("verify_preference_order", "aggregate_verification")
-    graph.add_edge("verify_pay_off", "aggregate_verification")
+    # If no verification nodes are selected, bypass verification
+    if not verification_nodes:
+        graph.add_edge("propose_scenario", "aggregate_verification")
+    else:
+        # Parallel verification steps (fan-out from propose_scenario)
+        for verifier in verification_nodes:
+            graph.add_edge("propose_scenario", f"verify_{verifier}")
+            graph.add_edge(f"verify_{verifier}", "aggregate_verification")
 
     # Conditional edge from the aggregation node
     graph.add_conditional_edges(
@@ -794,6 +963,7 @@ def create_scenario(
     game_name: str,
     participants: List[str],
     participant_jobs: Optional[List[str]] = None,
+    debug_mode: bool = False,
 ) -> Dict[str, Any]:
     """
     Create a scenario for the specified game and participants.
@@ -806,12 +976,13 @@ def create_scenario(
         game_name: The name of the game (e.g., "Prisoners_Dilemma")
         participants: List of participant names
         participant_jobs: Optional list of participant jobs
+        debug_mode: If True, raise exceptions on format errors; if False, add to feedback
 
     Returns:
         The created scenario
     """
     # Initialize the graph
-    graph = build_scenario_creation_graph()
+    graph = build_scenario_creation_graph(debug_mode)
 
     # Initialize the state
     initial_state: ScenarioCreationState = {
@@ -853,6 +1024,7 @@ async def a_create_scenario(
     participant_jobs: Optional[List[str]] = None,
     auto_save_path: Optional[str] = None,
     config: Optional[Dict[str, Any]] = None,
+    debug_mode: bool = False,
 ) -> Dict[str, Any]:
     """
     Create a scenario for the specified game and participants using a pre-compiled graph.
@@ -911,9 +1083,17 @@ async def a_create_scenario(
 
 if __name__ == "__main__":
     # Example usage
+
+    import time
+
+    start_time = time.time()
     scenario = create_scenario(
         game_name="Escalation_Game",
         participants=["You", "Bob"],
         participant_jobs=["immigration lawyer", "immigration lawyer"],
+        debug_mode=True,
     )
+    end_time = time.time()
+
     print(json.dumps(scenario, indent=2))
+    print(f"Time taken to create scenario: {end_time - start_time:.2f} seconds")

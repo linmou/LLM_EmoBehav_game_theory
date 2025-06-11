@@ -406,6 +406,8 @@ if __name__ == "__main__":
     print(pd_matrix.ordered_payoff_leaves)
     print("\nHuman readable description for Prisoner's Dilemma:")
     print(pd_matrix)
+    print("\nPayoff leaves for Prisoner's Dilemma:")
+    print(pd_matrix.payoff_leaves)
 
     print("-" * 20)
 
@@ -414,3 +416,5 @@ if __name__ == "__main__":
     print(escalation_matrix)
     print("\nOrdered payoff leaves for Escalation Game:")
     print(escalation_matrix.ordered_payoff_leaves)
+    print("\nPayoff leaves for Escalation Game:")
+    print(escalation_matrix.payoff_leaves)

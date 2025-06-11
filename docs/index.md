@@ -22,6 +22,9 @@ This directory contains documentation for the different modules within the LLM_E
 
 ## Modules
 
+*   **Core Constants:**
+    *   [Constants Module](../README_constants.md): Comprehensive documentation for emotion and game theory classification enums with dual categorization system (simultaneous/sequential and symmetric/asymmetric).
+
 *   **Scenario Creation:**
     *   [LangGraph Implementation](./code_readme/data_creation/scenario_creation/langgraph_creation/README.md): Details on the graph-based process for generating game theory scenarios.
     *   [🔄 Enhanced Scenario Generation with Restart Capabilities](./code_readme/scenario_generation_restart.md): Production-ready scenario generation with automatic restart, timeout handling, and comprehensive error recovery.

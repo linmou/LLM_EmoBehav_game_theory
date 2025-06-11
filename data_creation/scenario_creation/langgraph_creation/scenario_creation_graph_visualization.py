@@ -17,7 +17,7 @@ from data_creation.scenario_creation.langgraph_creation.scenario_creation_graph 
 def visualize_scenario_creation_graph():
     """Visualize the scenario creation graph"""
     # Create the graph
-    graph = build_scenario_creation_graph()
+    graph = build_scenario_creation_graph(debug_mode=False)
 
     # Create a networkx DiGraph for visualization
     G = nx.DiGraph()

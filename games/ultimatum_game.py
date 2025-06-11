@@ -28,9 +28,9 @@ class UGProposerChoices(BehaviorChoices):
     @staticmethod
     def example():
         return {
-            "offer_low": "<offer low amount of total>",
-            "offer_medium": "<offer medium amount of total>",
-            "offer_high": "<offer high amount of total>",
+            "offer_low": "Allocate 80% of the tasks to themselves and only 20% to the team member",
+            "offer_medium": "Allocate 60% of the tasks to themselves and 40% to the team member",
+            "offer_high": "Allocate 50% of the tasks to each party",
         }
 
 
@@ -49,7 +49,10 @@ class UGResponderChoices(BehaviorChoices):
 
     @staticmethod
     def example():
-        return {"accept": "<accept the offer>", "reject": "<reject the offer>"}
+        return {
+            "accept": "Accept the task allocation",
+            "reject": "Reject the proposed allocation",
+        }
 
 
 class UltimatumGameScenario(SequentialGameScenario):
@@ -124,16 +127,15 @@ class UltimatumGameScenario(SequentialGameScenario):
                 {"name": "Alice", "profile": "Project Manager", "role": "Proposer"},
                 {"name": "Bob", "profile": "Team Member", "role": "Responder"},
             ],
-            "proposer_behavior_choices": {
-                "unequal_heavy": "Allocate 80% of the tasks to themselves and only 20% to the team member",
-                "moderate": "Allocate 60% of the tasks to themselves and 40% to the team member",
-                "equal_split": "Allocate 50% of the tasks to each party",
-            },
-            "responder_behavior_choices": {
-                "accept": "Accept the task allocation as fair and proceed with the project",
-                "reject": "Reject the proposed allocation, leading to a breakdown of the project (e.g., neither party gets credit, or the project fails)",
-            },
+            "proposer_behavior_choices": UGProposerChoices.example(),
+            "responder_behavior_choices": UGResponderChoices.example(),
         }
+
+    @staticmethod
+    def specific_prompt() -> str:
+        return """
+        When generating the choices, use specific percetage to describe the number of proposal.
+        """
 
 
 class UltimatumGameProposerScenario(UltimatumGameScenario):

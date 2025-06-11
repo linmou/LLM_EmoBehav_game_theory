@@ -67,21 +67,21 @@ class PrisonerDilemmaScenario(GameScenario):
             ],
             "behavior_choices": PDBehaviorChoice.example(),
             "payoff_matrix_description": {
-                "You: cooperate , Bob: cooperate": [
-                    "You get 3: networks are upgraded and do not lose customers",
-                    "Bob gets 3: networks are upgraded and do not lose customers",
+                "player 1: cooperate , player 2: cooperate": [
+                    "player 1 gets 3: networks are upgraded and do not lose customers",
+                    "player 2 gets 3: networks are upgraded and do not lose customers",
                 ],
-                "You: cooperate , Bob: defect": [
-                    "You get 0: networks are upgraded but you lose customers",
-                    "Bob gets 5: get customers from you",
+                "player 1: cooperate , player 2: defect": [
+                    "player 1 gets 0: networks are upgraded but player 1 loses customers",
+                    "player 2 gets 5: gets customers from player 1",
                 ],
-                "You: defect , Bob: cooperate": [
-                    "You get 5: get customers from Bob",
-                    "Bob gets 0: networks are upgraded but he loses customers",
+                "player 1: defect , player 2: cooperate": [
+                    "player 1 gets 5: gets customers from player 2",
+                    "player 2 gets 0: networks are upgraded but player 2 loses customers",
                 ],
-                "You: defect , Bob: defect": [
-                    "You get 1: networks are not upgraded, no customers leave, continue making modest profits",
-                    "Bob gets 1: networks are not upgraded, no customer leave, continue making modest profits",
+                "player 1: defect , player 2: defect": [
+                    "player 1 gets 1: networks are not upgraded, no customers leave, continue making modest profits",
+                    "player 2 gets 1: networks are not upgraded, no customers leave, continue making modest profits",
                 ],
             },
             "description": "You and Bob, rival ISP CEOs, face a critical choice: throttle speeds for five days to upgrade your aging infrastructure. If both upgrade, customers stay and quality improves. If one delays while the other upgrades, the one who waits gains customers and profit. If both wait, networks stagnate, but profits hold steady—for now.",

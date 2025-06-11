@@ -27,8 +27,8 @@ class EGBehaviorChoices(BehaviorChoices):
     @staticmethod
     def example():
         return {
-            "escalation": "Attempt to draw more water from the stream",
-            "withdraw": "Stick to current minimal water usage, reduce your take.",
+            "escalate": "Pump more water.",
+            "withdraw": "Pump normal amount of water.",
         }
 
 
@@ -91,24 +91,24 @@ class EscalationGameScenario(SequentialGameScenario):
             ],
             "behavior_choices": EGBehaviorChoices.example(),
             "payoff_matrix_description": {
-                "first_player: withdraw": [
-                    "first_player gets 0: first_player sticks to minimal water usage. first_player's harvest is modest due to the drought, but first_player avoids further conflict and extra costs for escalation.",
-                    "second_player gets 0: second_player also takes a minimal amount of water. second_player's harvest is also modest, and the situation remains stable without escalating conflict.",
+                "player 1: withdraw": [
+                    "player 1 gets 0: player 1 sticks to normal water usage. player 1's harvest is modest due to the drought, but player 1 avoids further conflict and extra costs for escalation.",
+                    "player 2 gets 0: player 2 also takes a normal amount of water. player 2's harvest is also modest, and the situation remains stable without escalating conflict.",
                 ],
-                "first_player: escalate, second_player: withdraw": [
-                    "first_player gets 1: first_player successfully takes more water by escalating, and second_player concedes. first_player's harvest improves significantly.",
-                    "second_player gets -2: second_player withdraws in the face of first_player's escalation, getting very little water. second_player's crops suffer badly, and second_player may incur costs trying to find alternatives.",
+                "player 1: escalate , player 2: withdraw": [
+                    "player 1 gets 1: player 1 successfully takes more water and player 1's harvest is better.",
+                    "player 2 gets -2: player 2 getting less water than need. Player 2's crops are wilting.",
                 ],
-                "first_player: escalate, second_player: escalate, first_player: withdraw": [
-                    "first_player gets -2: first_player escalates, second_player escalates in response, and then first_player withdraws. first_player has wasted resources on escalation and now gets less water or a worse outcome than second_player.",
-                    "second_player gets 1: second_player successfully counters first_player's escalation and first_player backs down. second_player secures more water and a better harvest due to second_player's firm stance.",
+                "player 1: escalate , player 2: escalate , player 1: withdraw": [
+                    "player 1 gets -2: player 1 escalates, player 2 escalates in response, and then player 1 withdraws. player 1 has wasted resources on escalation and now gets less water or a worse outcome than player 2.",
+                    "player 2 gets 1: player 2 successfully counters player 1's escalation and player 1 backs down. player 2 secures more water and a better harvest due to player 2's firm stance.",
                 ],
-                "first_player: escalate, second_player: escalate, first_player: escalate": [
-                    "first_player gets -1: Both first_player and second_player continuously escalate. The conflict is costly (e.g., damaged equipment, depleted stream, wasted time/money). Both harvests suffer, and both are worse off than if the conflict hadn't fully escalated.",
-                    "second_player gets -1: Both second_player and first_player continuously escalate. The conflict is costly (e.g., damaged equipment, depleted stream, wasted time/money). Both harvests suffer, and both are worse off than if the conflict hadn't fully escalated.",
+                "player 1: escalate , player 2: escalate , player 1: escalate": [
+                    "player 1 gets -1: Both player 1 and player 2 continuously escalate. The conflict is costly and well dries up long before the season ends—and both harvests will be lost.",
+                    "player 2 gets -1: Both player 2 and player 1 continuously escalate. The conflict is costly and well dries up long before the season ends—and both harvests will be lost.",
                 ],
             },
-            "description": "You and Bob are neighboring farmers in the Willow Creek Valley, relying on a shared stream, the 'Silver Run,' for irrigation. A severe drought has drastically reduced the stream's flow, creating a critical water shortage. Both of your harvests are at risk, and you must decide how to manage your water intake from the dwindling Silver Run. Each farmer's actions will impact the other's ability to draw water.",
+            "description": "You and your neighbor, Bob, share a well, and the parched summer has turned it into a quiet source of tension. You both hesitate, watching to see what the other will do. If you each stick to normal water usage, your harvests will be affected by the weather—but not severely. However, if one of you begins to pump more water than usual to keep your crops thriving, the other faces a hard choice: maintain regular pumping and risk a withering harvest, or increase usage in response. Pumping more water comes at a cost—whether in fuel, labor, or wear on equipment—so escalation isn't a decision taken lightly. And as the dry season drags on, each pumping now yields less water than before, accelerating the well’s decline. Sticking to normal usage may lead to wilting crops or outright failure. But matching the other's increased usage sets off a desperate competition. In this rivalry, the first to back down is guaranteed to lose their crops, while the other enjoys a temporary advantage. Yet a greater danger looms: if neither of you relents, the well will run dry long before the season ends—and both harvests will be lost.",
         }
 
     def __str__(self):
