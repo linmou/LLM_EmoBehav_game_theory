@@ -24,6 +24,7 @@ This directory contains documentation for the different modules within the LLM_E
 
 *   **Scenario Creation:**
     *   [LangGraph Implementation](./code_readme/data_creation/scenario_creation/langgraph_creation/README.md): Details on the graph-based process for generating game theory scenarios.
+    *   [🔄 Enhanced Scenario Generation with Restart Capabilities](./code_readme/scenario_generation_restart.md): Production-ready scenario generation with automatic restart, timeout handling, and comprehensive error recovery.
 *   **Games:**
     *   See the `docs/games/` directory for specific game configurations and details.
 
@@ -46,7 +47,8 @@ This directory contains documentation for the different modules within the LLM_E
 *   **Experiment Series**:
     *   [Experiment Series](./reference/experiment_series_README.md) - Documentation for experiment series
 
-
+*   **Behavior Analysis**:
+    *   [Behavior Analyzer Script](../../README.md): Script to analyze predicate distribution in behavior choices using Azure GPT-4o.
 
 *   **vLLM Integration**:
     *   [vLLM Compatibility](./reference/vllm_compatibility.md) - Documentation for vLLM compatibility with representation engineering

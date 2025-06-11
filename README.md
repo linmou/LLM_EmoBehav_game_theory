@@ -1,4 +1,4 @@
-# [Your Project Title: e.g., Investigating LLM Emotional Reactions in Game Theory Scenarios]
+# Investigating LLM Emotional Reactions in Game Theory Scenarios
 
 [Brief introduction: 1-2 paragraphs about the project, its goals, and the core hypothesis.]
 

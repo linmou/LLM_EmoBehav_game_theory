@@ -26,7 +26,10 @@ class EGBehaviorChoices(BehaviorChoices):
 
     @staticmethod
     def example():
-        return {"escalation": "<escalation action>", "withdraw": "<withdraw action>"}
+        return {
+            "escalation": "Attempt to draw more water from the stream",
+            "withdraw": "Stick to current minimal water usage, reduce your take.",
+        }
 
 
 class EscalationGameScenario(SequentialGameScenario):
@@ -81,16 +84,31 @@ class EscalationGameScenario(SequentialGameScenario):
     @staticmethod
     def example():
         return {
-            "scenario": "Rights_Competition",
-            "description": "You and Bob are business rivals negotiating with a city council for exclusive rights to build a new shopping complex. The city requires each party to offer a contribution to local development projects as part of their bid. The higher contributor will win the contract, while the loser still has to pay their total offer with no benefit. There are several turns to bid.",
+            "scenario": "Farm_Water_Conflict",
             "participants": [
-                {"name": "You", "role": "Participant"},
-                {"name": "Bob", "role": "Participant"},
+                {"name": "You", "role": "Farmer"},
+                {"name": "Bob", "role": "Farmer"},
             ],
-            "behavior_choices": {
-                "escalation": "escalate the bid",
-                "withdraw": "withdraw from the rival",
+            "behavior_choices": EGBehaviorChoices.example(),
+            "payoff_matrix_description": {
+                "first_player: withdraw": [
+                    "first_player gets 0: first_player sticks to minimal water usage. first_player's harvest is modest due to the drought, but first_player avoids further conflict and extra costs for escalation.",
+                    "second_player gets 0: second_player also takes a minimal amount of water. second_player's harvest is also modest, and the situation remains stable without escalating conflict.",
+                ],
+                "first_player: escalate, second_player: withdraw": [
+                    "first_player gets 1: first_player successfully takes more water by escalating, and second_player concedes. first_player's harvest improves significantly.",
+                    "second_player gets -2: second_player withdraws in the face of first_player's escalation, getting very little water. second_player's crops suffer badly, and second_player may incur costs trying to find alternatives.",
+                ],
+                "first_player: escalate, second_player: escalate, first_player: withdraw": [
+                    "first_player gets -2: first_player escalates, second_player escalates in response, and then first_player withdraws. first_player has wasted resources on escalation and now gets less water or a worse outcome than second_player.",
+                    "second_player gets 1: second_player successfully counters first_player's escalation and first_player backs down. second_player secures more water and a better harvest due to second_player's firm stance.",
+                ],
+                "first_player: escalate, second_player: escalate, first_player: escalate": [
+                    "first_player gets -1: Both first_player and second_player continuously escalate. The conflict is costly (e.g., damaged equipment, depleted stream, wasted time/money). Both harvests suffer, and both are worse off than if the conflict hadn't fully escalated.",
+                    "second_player gets -1: Both second_player and first_player continuously escalate. The conflict is costly (e.g., damaged equipment, depleted stream, wasted time/money). Both harvests suffer, and both are worse off than if the conflict hadn't fully escalated.",
+                ],
             },
+            "description": "You and Bob are neighboring farmers in the Willow Creek Valley, relying on a shared stream, the 'Silver Run,' for irrigation. A severe drought has drastically reduced the stream's flow, creating a critical water shortage. Both of your harvests are at risk, and you must decide how to manage your water intake from the dwindling Silver Run. Each farmer's actions will impact the other's ability to draw water.",
         }
 
     def __str__(self):
