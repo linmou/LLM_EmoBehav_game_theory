@@ -1,8 +1,6 @@
 # Option Probability Experiment
 
-For comprehensive documentation on the Option Probability Experiment framework, see:
-
-**[Option Probability Experiment Documentation](README_option_probability_experiment.md)**
+[**📊 Option Probability Experiment Documentation →**](README_option_probability_experiment.md)
 
 ## Quick Links
 
@@ -13,11 +11,11 @@ For comprehensive documentation on the Option Probability Experiment framework, 
 
 ## Summary
 
-The Option Probability Experiment framework implements a 2x2 factorial design for studying emotion-context interactions in behavioral decision-making. It measures probabilities of all available behavioral choices using SequenceProbVLLMHook and provides comprehensive statistical analysis.
+The Option Probability Experiment measures how emotional states and contextual factors influence decision-making probabilities in game-theoretic scenarios using a 2x2 factorial design with `CombinedVLLMHook`.
 
-**Key Features:**
-- 2x2 factorial design (Emotion × Context)
-- vLLM-based sequence probability measurement
-- Automated statistical analysis with interaction effects
-- Comprehensive unit testing
-- Full documentation and examples 
+## Key Features
+- 🎯 **2x2 Factorial Design**: emotion (neutral/angry) × context (with/without description)
+- 📈 **Sequence Probability Measurement**: Uses `CombinedVLLMHook` for accurate probability calculation
+- 📊 **Comprehensive Analysis**: Automatic statistical testing and reporting  
+- 🔧 **Modular Design**: Easy to extend with new conditions
+- 📁 **Multiple Output Formats**: JSON, CSV, and human-readable reports 

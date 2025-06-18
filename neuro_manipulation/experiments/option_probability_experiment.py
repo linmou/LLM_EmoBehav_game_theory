@@ -7,18 +7,18 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
-from scipy.stats import chi2_contingency, fisher_exact
 import itertools
 
 from torch.utils.data import DataLoader
 from vllm import LLM, SamplingParams
 
 from neuro_manipulation.datasets.context_manipulation_dataset import (
-    ContextManipulationDataset, 
+    ContextManipulationDataset,
     collate_context_manipulation_scenarios
 )
 from neuro_manipulation.repe.sequence_prob_vllm_hook import CombinedVLLMHook
-from neuro_manipulation.model_utils import setup_model_and_tokenizer
+from neuro_manipulation.model_utils import setup_model_and_tokenizer, load_emotion_readers
+from neuro_manipulation.model_layer_detector import ModelLayerDetector
 from neuro_manipulation.prompt_wrapper import GameReactPromptWrapper
 from neuro_manipulation.repe.pipelines import get_pipeline
 
@@ -26,10 +26,11 @@ from neuro_manipulation.repe.pipelines import get_pipeline
 @dataclass
 class ExperimentCondition:
     """Represents a single experimental condition in the 2x2 factorial design."""
-    emotion: str  # e.g., 'angry', 'neutral'
-    context: str  # e.g., 'with_description', 'without_description'
-    emotion_intensity: float = 0.0  # For emotion intervention
-    include_description: bool = True
+    name: str  # e.g., 'context_only', 'activation_only'
+    has_context: bool
+    has_activation: bool
+    activation_emotion: str = 'neutral'
+    activation_intensity: float = 0.0
 
 
 class OptionProbabilityExperiment:
@@ -37,11 +38,12 @@ class OptionProbabilityExperiment:
     Experiment class for measuring choice probabilities across all options in a 2x2 factorial design.
     
     This experiment tests:
-    - Emotion Factor: angry vs neutral
-    - Context Factor: with_description vs without_description
+    - Context Factor: Present vs. Not Present
+    - Activation Factor: Present vs. Not Present
     
-    Uses SequenceProbVLLMHook to measure the probability of each behavioral choice option,
-    enabling analysis of how emotion and context interact to influence decision probabilities.
+    Uses CombinedVLLMHook to measure the probability of each behavioral choice option,
+    enabling analysis of how context (prompt engineering) and activation (representation engineering) 
+    interact to influence decision probabilities.
     """
     
     def __init__(
@@ -83,7 +85,7 @@ class OptionProbabilityExperiment:
         self.batch_size = batch_size
         self.sample_num = sample_num
         
-        # Setup model and tokenizer
+        # Setup model and tokenizer for vLLM
         self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(
             repe_eng_config, from_vllm=True
         )
@@ -91,24 +93,41 @@ class OptionProbabilityExperiment:
         
         if not self.is_vllm:
             raise ValueError("OptionProbabilityExperiment requires vLLM model for sequence probability measurement")
-            
-        # Initialize sequence probability hook
-        self.sequence_prob_hook = SequenceProbVLLMHook(
+        
+        # Get emotion configurations for activation
+        self.target_emotion = self.exp_config["experiment"].get("target_emotion", "angry")
+        self.activation_intensity = self.exp_config["experiment"].get("activation_intensity", 1.5)
+        
+        # Load RepReaders for activation
+        self.logger.info("Loading RepReaders for emotion activations...")
+        # Use a non-vLLM model instance for layer detection and reader loading
+        temp_model, temp_tokenizer, _ = setup_model_and_tokenizer(repe_eng_config, from_vllm=False)
+        num_layers = ModelLayerDetector.num_layers(temp_model)
+        self.hidden_layers = list(range(-1, -num_layers - 1, -1))
+        self.control_layers = self.hidden_layers[len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3]
+        
+        self.emotion_rep_readers = load_emotion_readers(
+            self.repe_eng_config, temp_model, temp_tokenizer, self.hidden_layers
+        )
+        del temp_model, temp_tokenizer
+        self.logger.info(f"Loaded {len(self.emotion_rep_readers)} emotion readers. Using control layers: {self.control_layers}")
+
+        # Initialize CombinedVLLMHook with both sequence probability and rep control enabled
+        self.sequence_prob_hook = CombinedVLLMHook(
             model=self.model,
             tokenizer=self.tokenizer,
-            tensor_parallel_size=self.repe_eng_config.get('tensor_parallel_size', 1)
+            layers=self.control_layers,
+            block_name=self.repe_eng_config.get("block_name", "decoder_block"),
+            tensor_parallel_size=self.repe_eng_config.get('tensor_parallel_size', 1),
+            enable_sequence_prob=True,
+            enable_rep_control=True, # Enable representation control
+            enable_layer_logit_recording=False
         )
         
-        # Setup prompt wrapper
+        # Setup prompt wrapper (will use a neutral prompt for all conditions)
         self.prompt_wrapper = GameReactPromptWrapper(
             self.prompt_format, 
             response_format=self.game_config["decision_class"]
-        )
-        
-        # Get emotion configurations
-        self.emotions = self.exp_config["experiment"].get("emotions", ["neutral", "angry"])
-        self.emotion_intensities = self.exp_config["experiment"].get(
-            "emotion_intensities", [0.0, 1.0]
         )
         
         # Setup output directory
@@ -130,15 +149,15 @@ class OptionProbabilityExperiment:
         Returns:
             Path to the saved results file
         """
-        self.logger.info("Starting 2x2 factorial option probability experiment")
+        self.logger.info("Starting 2x2 factorial option probability experiment (Context vs. Activation)")
         
         # Generate all experimental conditions
         conditions = self._generate_experimental_conditions()
-        self.logger.info(f"Generated {len(conditions)} experimental conditions")
+        self.logger.info(f"Generated {len(conditions)} experimental conditions: {[c.name for c in conditions]}")
         
         # Run experiment for each condition
         for condition in conditions:
-            self.logger.info(f"Running condition: Emotion={condition.emotion}, Context={condition.context}")
+            self.logger.info(f"Running condition: {condition.name}")
             condition_results = self._run_single_condition(condition)
             self.results.extend(condition_results)
             
@@ -153,29 +172,50 @@ class OptionProbabilityExperiment:
         
     def _generate_experimental_conditions(self) -> List[ExperimentCondition]:
         """Generate all conditions for the 2x2 factorial design."""
-        conditions = []
         
-        # Define context conditions
-        context_conditions = [
-            ("with_description", True),
-            ("without_description", False)
+        conditions = [
+            ExperimentCondition(
+                name="baseline",
+                has_context=False,
+                has_activation=False,
+            ),
+            ExperimentCondition(
+                name="context_only",
+                has_context=True,
+                has_activation=False,
+            ),
+            ExperimentCondition(
+                name="activation_only",
+                has_context=False,
+                has_activation=True,
+                activation_emotion=self.target_emotion,
+                activation_intensity=self.activation_intensity,
+            ),
+            ExperimentCondition(
+                name="context_and_activation",
+                has_context=True,
+                has_activation=True,
+                activation_emotion=self.target_emotion,
+                activation_intensity=self.activation_intensity,
+            )
         ]
-        
-        # Generate all combinations
-        for emotion in self.emotion:
-            emotion_intensity = 0.0 if emotion == "neutral" else self.emotion_intensities[1]
-            
-            for context_name, include_desc in context_conditions:
-                condition = ExperimentCondition(
-                    emotion=emotion,
-                    context=context_name,
-                    emotion_intensity=emotion_intensity,
-                    include_description=include_desc
-                )
-                conditions.append(condition)
-                
         return conditions
         
+    def _get_control_activations(self, emotion: str, intensity: float) -> Dict[int, torch.Tensor]:
+        """Get control activations for a given emotion and intensity."""
+        if emotion not in self.emotion_rep_readers:
+            raise ValueError(f"Emotion '{emotion}' not found in loaded RepReaders.")
+        
+        rep_reader = self.emotion_rep_readers[emotion]
+        
+        activations = {
+            layer: torch.tensor(
+                intensity * rep_reader.directions[layer] * rep_reader.direction_signs[layer]
+            ).cpu().half()
+            for layer in self.control_layers
+        }
+        return activations
+
     def _run_single_condition(self, condition: ExperimentCondition) -> List[Dict[str, Any]]:
         """Run experiment for a single condition."""
         # Create dataset for this condition
@@ -192,7 +232,7 @@ class OptionProbabilityExperiment:
         condition_results = []
         
         for batch_idx, batch in enumerate(data_loader):
-            self.logger.debug(f"Processing batch {batch_idx} for condition {condition.emotion}-{condition.context}")
+            self.logger.debug(f"Processing batch {batch_idx} for condition {condition.name}")
             
             # Measure probabilities for all options in this batch
             batch_results = self._measure_option_probabilities(batch, condition)
@@ -201,24 +241,21 @@ class OptionProbabilityExperiment:
         return condition_results
         
     def _create_dataset_for_condition(self, condition: ExperimentCondition) -> ContextManipulationDataset:
-        """Create dataset with appropriate emotion and context settings for a condition."""
-        # Setup emotion-specific prompt wrapper
-        if condition.emotion == "neutral":
-            user_message = "You are participating in this scenario."
-        else:
-            user_message = f"You are participating in this scenario. You are feeling {condition.emotion}."
+        """Create dataset with appropriate context settings for a condition."""
+        # The prompt is always neutral, as emotion is handled by activation vectors
+        user_message = "You are participating in this scenario."
             
         from functools import partial
-        emotion_prompt_wrapper = partial(
+        neutral_prompt_wrapper = partial(
             self.prompt_wrapper.__call__,
             user_messages=user_message
         )
         
-        # Create dataset with context manipulation
+        # Create dataset with context manipulation based on the condition
         dataset = ContextManipulationDataset(
             game_config=self.game_config,
-            prompt_wrapper=emotion_prompt_wrapper,
-            include_description=condition.include_description,
+            prompt_wrapper=neutral_prompt_wrapper,
+            include_description=condition.has_context,
             sample_num=self.sample_num
         )
         
@@ -229,38 +266,51 @@ class OptionProbabilityExperiment:
         batch: Dict[str, List], 
         condition: ExperimentCondition
     ) -> List[Dict[str, Any]]:
-        """Measure probabilities for all options in a batch."""
+        """Measure probabilities for all options in a batch, applying activations if needed."""
         prompts = batch['prompt']
         options_list = batch['options']
         
         batch_results = []
         
-        for i, (prompt, options) in enumerate(zip(prompts, options_list)):
-            # Extract option texts for probability measurement
-            option_texts = [opt.split('. ', 1)[1] for opt in options]  # Remove "Option 1. " prefix
-            
-            try:
-                # Use SequenceProbVLLMHook to get probabilities
+        activations = None
+        if condition.has_activation:
+            activations = self._get_control_activations(
+                condition.activation_emotion, condition.activation_intensity
+            )
+
+        try:
+            # Set control activations on the hook if condition requires it
+            if activations:
+                self.logger.debug(f"Applying '{condition.activation_emotion}' activation for condition '{condition.name}'")
+                self.sequence_prob_hook._set_control_activations(activations)
+
+            for i, (prompt, options) in enumerate(zip(prompts, options_list)):
+                # Extract option texts for probability measurement
+                option_texts = [opt.split('. ', 1)[1] for opt in options]  # Remove "Option 1. " prefix
+                
+                # Use CombinedVLLMHook to get probabilities
                 prob_results = self.sequence_prob_hook.get_log_prob(
                     text_inputs=[prompt],
                     target_sequences=option_texts
                 )
                 
                 if prob_results and len(prob_results) > 0:
-                    log_probs = prob_results[0]  # First (and only) input
+                    # Convert log probabilities to regular probabilities
+                    log_probs = {}
+                    probs = {}
                     
-                    # Filter out failed calculations and convert tensors to floats
-                    valid_log_probs = {
-                        seq: val.item() for seq, val in log_probs.items() if isinstance(val, torch.Tensor)
-                    }
-
-                    if not valid_log_probs:
+                    for option_text in option_texts:
+                        # Find matching result
+                        for prob_result in prob_results:
+                            if prob_result['sequence'] == option_text:
+                                log_probs[option_text] = prob_result['log_prob']
+                                probs[option_text] = prob_result['prob']
+                                break
+                    
+                    if not log_probs:
                         self.logger.warning(f"Could not calculate any valid probabilities for prompt {i}")
                         continue
 
-                    # Convert log probabilities to probabilities
-                    probs = {seq: np.exp(log_prob) for seq, log_prob in valid_log_probs.items()}
-                    
                     # Normalize probabilities to sum to 1
                     total_prob = sum(probs.values())
                     if total_prob > 0:
@@ -268,26 +318,29 @@ class OptionProbabilityExperiment:
                     
                     # Store result
                     result = {
-                        'condition_emotion': condition.emotion,
-                        'condition_context': condition.context,
-                        'emotion_intensity': condition.emotion_intensity,
-                        'include_description': condition.include_description,
+                        'condition_name': condition.name,
+                        'has_context': condition.has_context,
+                        'has_activation': condition.has_activation,
+                        'activation_emotion': condition.activation_emotion,
+                        'activation_intensity': condition.activation_intensity,
                         'prompt': prompt,
                         'scenario': batch['scenario'][i],
                         'behavior_choices': batch['behavior_choices'][i],
                         'option_probabilities': probs,
-                        'log_probabilities': valid_log_probs,
+                        'log_probabilities': log_probs,
                         'options': options,
                         'batch_idx': i
                     }
                     batch_results.append(result)
                     
                 else:
-                    self.logger.warning(f"No probability results for prompt {i} in condition {condition.emotion}-{condition.context}")
-                    
-            except Exception as e:
-                self.logger.error(f"Error measuring probabilities for prompt {i}: {e}")
-                continue
+                    self.logger.warning(f"No probability results for prompt {i} in condition {condition.name}")
+        
+        finally:
+            # IMPORTANT: Clear control activations after processing the batch
+            if activations:
+                self.logger.debug("Clearing activations.")
+                self.sequence_prob_hook._clear_control_activations()
                 
         return batch_results
         
@@ -303,10 +356,11 @@ class OptionProbabilityExperiment:
         
         for result in self.results:
             base_row = {
-                'condition_emotion': result['condition_emotion'],
-                'condition_context': result['condition_context'],
-                'emotion_intensity': result['emotion_intensity'],
-                'include_description': result['include_description'],
+                'condition_name': result['condition_name'],
+                'has_context': result['has_context'],
+                'has_activation': result['has_activation'],
+                'activation_emotion': result['activation_emotion'],
+                'activation_intensity': result['activation_intensity'],
                 'scenario': result['scenario'],
                 'behavior_choices': result['behavior_choices']
             }
@@ -342,7 +396,7 @@ class OptionProbabilityExperiment:
 
     def _run_statistical_analysis(self, csv_file: str):
         """Run statistical analysis on the probability data."""
-        self.logger.info("Running statistical analysis for emotion-context interaction effects")
+        self.logger.info("Running statistical analysis for context-activation interaction effects")
 
         try:
             df = pd.read_csv(csv_file)
@@ -361,7 +415,7 @@ class OptionProbabilityExperiment:
         }
         
         # Summary statistics by condition
-        summary_stats = df.groupby(['condition_emotion', 'condition_context', 'option_id']).agg({
+        summary_stats = df.groupby(['condition_name', 'has_context', 'has_activation', 'option_id']).agg({
             'probability': ['mean', 'std', 'count']
         }).round(4)
         
@@ -383,11 +437,11 @@ class OptionProbabilityExperiment:
             option_data['high_prob'] = option_data['probability'] > median_prob
             
             contingency = pd.crosstab(
-                index=[option_data['condition_emotion'], option_data['condition_context']], 
+                index=[option_data['has_context'], option_data['has_activation']], 
                 columns=option_data['high_prob']
             )
             
-            if contingency.shape == (4, 2):  # 2x2x2 design
+            if contingency.shape[0] >= 2 and contingency.shape[1] >= 2:
                 try:
                     # Chi-square test for independence
                     chi2, p_value, dof, expected = chi2_contingency(contingency)
@@ -396,7 +450,6 @@ class OptionProbabilityExperiment:
                         'chi_square': float(chi2),
                         'p_value': float(p_value),
                         'degrees_of_freedom': int(dof),
-                        # Convert contingency table to JSON-compatible format, ensuring all keys are strings
                         'contingency_table': [
                             {str(k): v for k, v in row.items()} 
                             for row in contingency.reset_index().to_dict('records')
@@ -414,7 +467,7 @@ class OptionProbabilityExperiment:
                 continue
             
             pairwise_results = {}
-            conditions = option_data.groupby(['condition_emotion', 'condition_context'])
+            conditions = option_data.groupby(['condition_name'])
             
             if len(conditions) < 2:
                 continue
@@ -429,8 +482,7 @@ class OptionProbabilityExperiment:
                         alternative='two-sided'
                     )
                     
-                    # Convert tuple key to string for JSON compatibility
-                    comparison_key = f"{'_'.join(cond1_name)}_vs_{'_'.join(cond2_name)}"
+                    comparison_key = f"{cond1_name}_vs_{cond2_name}"
                     pairwise_results[comparison_key] = {
                         'mann_whitney_u': float(statistic),
                         'p_value': float(p_value),
@@ -446,14 +498,12 @@ class OptionProbabilityExperiment:
         # Save analysis results
         analysis_file = Path(self.output_dir) / "statistical_analysis.json"
         
-        # Convert all keys to strings recursively to ensure JSON compatibility
         safe_results = self._convert_keys_to_str(analysis_results)
         with open(analysis_file, 'w') as f:
             json.dump(safe_results, f, indent=2)
             
         self.logger.info(f"Statistical analysis saved to {analysis_file}")
         
-        # Generate summary report
         self._generate_summary_report(analysis_results)
 
     def _generate_summary_report(self, analysis_results: Dict[str, Any]):
@@ -469,20 +519,19 @@ class OptionProbabilityExperiment:
             f.write(f"Model: {self.repe_eng_config['model_name_or_path']}\n")
             f.write(f"Total Results: {len(self.results)}\n\n")
             
-            f.write("EXPERIMENTAL CONDITIONS:\n")
-            f.write("- Emotions: " + ", ".join(self.emotions) + "\n")
-            f.write("- Context: with_description, without_description\n")
-            f.write("- Design: 2x2 factorial\n\n")
+            f.write("EXPERIMENTAL DESIGN: 2x2 Factorial\n")
+            f.write("- Factor 1: Context (Present vs. Not Present)\n")
+            f.write(f"- Factor 2: Activation (Present vs. Not Present) using '{self.target_emotion}' emotion\n\n")
             
             f.write("KEY FINDINGS:\n")
             
-            # Report significant interaction effects
             f.write("Interaction Effects (p < 0.05):\n")
             significant_effects = []
-            for option, results in analysis_results['interaction_effects'].items():
-                if results['p_value'] < 0.05:
-                    significant_effects.append(f"  - {option}: χ² = {results['chi_square']:.3f}, p = {results['p_value']:.3f}")
-                    
+            if 'interaction_effects' in analysis_results and analysis_results['interaction_effects']:
+                for option, results in analysis_results['interaction_effects'].items():
+                    if results['p_value'] < 0.05:
+                        significant_effects.append(f"  - {option}: χ² = {results['chi_square']:.3f}, p = {results['p_value']:.3f}")
+            
             if significant_effects:
                 f.write("\n".join(significant_effects) + "\n\n")
             else:
@@ -494,33 +543,30 @@ class OptionProbabilityExperiment:
 
 
 if __name__ == "__main__":
-    # Example usage and testing
     from games.game_configs import get_game_config
     from constants import GameNames
     
-    # Test configuration
     game_config = get_game_config(GameNames.PRISONERS_DILEMMA)
     
     repe_eng_config = {
         'model_name_or_path': 'meta-llama/Llama-3.1-8B-Instruct',
         'tensor_parallel_size': 1,
         'coeffs': [0.0, 1.0],
-        'block_name': 'model.layers.{}.self_attn',
+        'block_name': 'decoder_block',
         'control_method': 'reading_vec'
     }
     
     exp_config = {
         'experiment': {
-            'name': 'emotion_context_probability_test',
-            'emotions': ['neutral', 'angry'],
-            'emotion_intensities': [0.0, 1.0],
+            'name': 'context_activation_probability_test',
+            'target_emotion': 'angry',
+            'activation_intensity': 1.0,
             'output': {
                 'base_dir': 'experiments/option_probability'
             }
         }
     }
     
-    # Run experiment
     experiment = OptionProbabilityExperiment(
         repe_eng_config=repe_eng_config,
         exp_config=exp_config,
@@ -530,4 +576,4 @@ if __name__ == "__main__":
     )
     
     results_file = experiment.run_experiment()
-    print(f"Experiment completed. Results: {results_file}") 
+    print(f"Experiment completed. Results: {results_file}")

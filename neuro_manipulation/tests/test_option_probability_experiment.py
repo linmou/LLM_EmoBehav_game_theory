@@ -90,6 +90,7 @@ class TestOptionProbabilityExperiment(unittest.TestCase):
             shutil.rmtree(self.temp_dir)
             
     @patch('neuro_manipulation.experiments.option_probability_experiment.GameReactPromptWrapper')
+    @patch('neuro_manipulation.experiments.option_probability_experiment.CombinedVLLMHook')
     @patch('neuro_manipulation.experiments.option_probability_experiment.setup_model_and_tokenizer')
     def test_initialization(self, mock_setup, mock_hook, mock_prompt_wrapper):
         """Test experiment initialization."""
@@ -115,8 +116,10 @@ class TestOptionProbabilityExperiment(unittest.TestCase):
         mock_hook.assert_called_once()
         mock_prompt_wrapper.assert_called_once()
         
+    @patch('neuro_manipulation.experiments.option_probability_experiment.GameReactPromptWrapper')
+    @patch('neuro_manipulation.experiments.option_probability_experiment.CombinedVLLMHook')
     @patch('neuro_manipulation.experiments.option_probability_experiment.setup_model_and_tokenizer')
-    def test_initialization_non_vllm_error(self, mock_setup):
+    def test_initialization_non_vllm_error(self, mock_setup, mock_hook, mock_prompt_wrapper):
         """Test that initialization fails with non-vLLM model."""
         mock_setup.return_value = (Mock(), Mock(), Mock()) # A generic mock is not an instance of LLM
         
@@ -130,6 +133,7 @@ class TestOptionProbabilityExperiment(unittest.TestCase):
         self.assertIn("requires vLLM model", str(context.exception))
         
     @patch('neuro_manipulation.experiments.option_probability_experiment.GameReactPromptWrapper')
+    @patch('neuro_manipulation.experiments.option_probability_experiment.CombinedVLLMHook')
     @patch('neuro_manipulation.experiments.option_probability_experiment.setup_model_and_tokenizer')
     def test_generate_experimental_conditions(self, mock_setup, mock_hook, mock_prompt_wrapper):
         """Test generation of experimental conditions."""
@@ -167,7 +171,7 @@ class TestOptionProbabilityExperiment(unittest.TestCase):
                 
     @patch('neuro_manipulation.experiments.option_probability_experiment.ContextManipulationDataset')
     @patch('neuro_manipulation.experiments.option_probability_experiment.GameReactPromptWrapper')
-    @patch('neuro_manipulation.experiments.option_probability_experiment.SequenceProbVLLMHook')
+    @patch('neuro_manipulation.experiments.option_probability_experiment.CombinedVLLMHook')
     @patch('neuro_manipulation.experiments.option_probability_experiment.setup_model_and_tokenizer')
     def test_create_dataset_for_condition(self, mock_setup, mock_hook, mock_prompt_wrapper, mock_dataset):
         """Test dataset creation for specific conditions."""
@@ -196,17 +200,28 @@ class TestOptionProbabilityExperiment(unittest.TestCase):
         self.assertEqual(call_args[1]['game_config'], self.game_config)
         
     @patch('neuro_manipulation.experiments.option_probability_experiment.GameReactPromptWrapper')
+    @patch('neuro_manipulation.experiments.option_probability_experiment.CombinedVLLMHook')
     @patch('neuro_manipulation.experiments.option_probability_experiment.setup_model_and_tokenizer')
     def test_measure_option_probabilities(self, mock_setup, mock_hook, mock_prompt_wrapper):
         """Test option probability measurement."""
         mock_setup.return_value = (Mock(spec=LLM), Mock(), Mock())
         
-        # Mock sequence probability hook
+        # Mock CombinedVLLMHook
         mock_hook_instance = Mock()
         mock_hook_instance.get_log_prob.return_value = [
             {
-                'Cooperate': -0.5,
-                'Defect': -1.0
+                'sequence': 'Cooperate',
+                'log_prob': -0.5,
+                'prob': 0.606,
+                'perplexity': 1.649,
+                'num_tokens': 1
+            },
+            {
+                'sequence': 'Defect',
+                'log_prob': -1.0,
+                'prob': 0.368,
+                'perplexity': 2.718,
+                'num_tokens': 1
             }
         ]
         mock_hook.return_value = mock_hook_instance
@@ -249,6 +264,7 @@ class TestOptionProbabilityExperiment(unittest.TestCase):
         self.assertAlmostEqual(total_prob, 1.0, places=5)
         
     @patch('neuro_manipulation.experiments.option_probability_experiment.GameReactPromptWrapper')
+    @patch('neuro_manipulation.experiments.option_probability_experiment.CombinedVLLMHook')
     @patch('neuro_manipulation.experiments.option_probability_experiment.setup_model_and_tokenizer')
     def test_save_results(self, mock_setup, mock_hook, mock_prompt_wrapper):
         """Test results saving functionality."""
@@ -289,6 +305,7 @@ class TestOptionProbabilityExperiment(unittest.TestCase):
         self.assertIn('probability', df.columns)
         
     @patch('neuro_manipulation.experiments.option_probability_experiment.GameReactPromptWrapper')
+    @patch('neuro_manipulation.experiments.option_probability_experiment.CombinedVLLMHook')
     @patch('neuro_manipulation.experiments.option_probability_experiment.setup_model_and_tokenizer')
     def test_statistical_analysis(self, mock_setup, mock_hook, mock_prompt_wrapper):
         """Test statistical analysis functionality."""
@@ -336,15 +353,29 @@ class TestOptionProbabilityExperiment(unittest.TestCase):
     @patch('neuro_manipulation.experiments.option_probability_experiment.ContextManipulationDataset')
     @patch('neuro_manipulation.experiments.option_probability_experiment.DataLoader')
     @patch('neuro_manipulation.experiments.option_probability_experiment.GameReactPromptWrapper')
+    @patch('neuro_manipulation.experiments.option_probability_experiment.CombinedVLLMHook')
     @patch('neuro_manipulation.experiments.option_probability_experiment.setup_model_and_tokenizer')
     def test_run_experiment_integration(self, mock_setup, mock_hook, mock_prompt_wrapper, mock_dataloader, mock_dataset):
         """Test full experiment run integration."""
         mock_setup.return_value = (Mock(spec=LLM), Mock(), Mock())
         
-        # Mock sequence probability hook
+        # Mock CombinedVLLMHook
         mock_hook_instance = mock_hook.return_value
         mock_hook_instance.get_log_prob.return_value = [
-            {'Cooperate': -0.5, 'Defect': -1.0}
+            {
+                'sequence': 'Cooperate',
+                'log_prob': -0.5,
+                'prob': 0.606,
+                'perplexity': 1.649,
+                'num_tokens': 1
+            },
+            {
+                'sequence': 'Defect',
+                'log_prob': -1.0,
+                'prob': 0.368,
+                'perplexity': 2.718,
+                'num_tokens': 1
+            }
         ]
         
         # Mock dataset and dataloader

@@ -2,7 +2,122 @@
 
 ## Overview
 
-The Option Probability Experiment framework provides a comprehensive solution for studying emotion-context interactions in behavioral decision-making through a 2x2 factorial design. This framework measures the probabilities of all available behavioral choices using advanced sequence probability techniques with vLLM models.
+The `OptionProbabilityExperiment` class implements a 2x2 factorial experiment design to measure how different emotional states and contextual factors influence decision-making probabilities in game-theoretic scenarios.
+
+## Experimental Design
+
+### Factors
+- **Emotion Factor**: neutral vs angry
+- **Context Factor**: with_description vs without_description
+
+### Combinations
+The experiment tests all 4 combinations:
+1. neutral + with_description
+2. neutral + without_description  
+3. angry + with_description
+4. angry + without_description
+
+## Implementation Details
+
+### CombinedVLLMHook Integration
+
+The experiment uses `CombinedVLLMHook` for sequence probability measurement:
+
+```python
+self.sequence_prob_hook = CombinedVLLMHook(
+    model=self.model,
+    tokenizer=self.tokenizer,
+    tensor_parallel_size=self.repe_eng_config.get('tensor_parallel_size', 1),
+    enable_sequence_prob=True,
+    enable_rep_control=False,
+    enable_layer_logit_recording=False
+)
+```
+
+### Probability Measurement Process
+
+1. **Option Extraction**: Extract option texts from formatted choices (removing "Option 1. " prefixes)
+2. **Probability Calculation**: Use `CombinedVLLMHook.get_log_prob()` to measure sequence probabilities
+3. **Normalization**: Normalize probabilities to sum to 1.0 across all options
+4. **Storage**: Store both raw log probabilities and normalized probabilities
+
+### Data Format
+
+The experiment returns results in the following format:
+
+```python
+{
+    'condition_emotion': 'angry',
+    'condition_context': 'with_description', 
+    'emotion_intensity': 1.0,
+    'include_description': True,
+    'prompt': '...',
+    'scenario': '...',
+    'behavior_choices': '...',
+    'option_probabilities': {'Cooperate': 0.6, 'Defect': 0.4},
+    'log_probabilities': {'Cooperate': -0.5, 'Defect': -0.9},
+    'options': ['Option 1. Cooperate', 'Option 2. Defect'],
+    'batch_idx': 0
+}
+```
+
+## Statistical Analysis
+
+The experiment automatically performs:
+
+- **Summary Statistics**: Mean, std, count by condition and option
+- **Interaction Effects**: Chi-square tests for emotion × context interactions
+- **Pairwise Comparisons**: Mann-Whitney U tests between conditions
+
+## Usage Example
+
+```python
+from neuro_manipulation.experiments.option_probability_experiment import OptionProbabilityExperiment
+
+# Setup configurations
+repe_eng_config = {
+    'model_name_or_path': 'meta-llama/Llama-3.1-8B-Instruct',
+    'tensor_parallel_size': 1,
+    'coeffs': [0.0, 1.0],
+    'block_name': 'model.layers.{}.self_attn',
+    'control_method': 'reading_vec'
+}
+
+exp_config = {
+    'experiment': {
+        'name': 'emotion_context_probability_test',
+        'emotions': ['neutral', 'angry'],
+        'emotion_intensities': [0.0, 1.0],
+        'output': {'base_dir': 'experiments/option_probability'}
+    }
+}
+
+# Run experiment
+experiment = OptionProbabilityExperiment(
+    repe_eng_config=repe_eng_config,
+    exp_config=exp_config,
+    game_config=game_config,
+    batch_size=4,
+    sample_num=100
+)
+
+results_file = experiment.run_experiment()
+```
+
+## Output Files
+
+- `option_probability_results.json`: Raw experimental results
+- `option_probability_results.csv`: Structured data for analysis
+- `statistical_analysis.json`: Detailed statistical test results
+- `experiment_summary_report.txt`: Human-readable summary
+
+## Key Features
+
+1. **Modular Design**: Easy to extend with new emotions or context conditions
+2. **Robust Probability Measurement**: Uses vLLM's sequence probability capabilities
+3. **Comprehensive Analysis**: Automatic statistical testing and reporting
+4. **Error Handling**: Graceful handling of probability calculation failures
+5. **Reproducible**: Structured configuration and logging
 
 ## Core Components
 
@@ -104,50 +219,6 @@ The framework automatically performs comprehensive statistical analysis:
 - Mann-Whitney U tests between all condition pairs
 - Multiple comparison corrections
 - Effect size estimates for significant differences
-
-## Implementation Details
-
-### Sequence Probability Measurement
-
-The experiment uses `SequenceProbVLLMHook` to accurately measure choice probabilities:
-
-```python
-# Hook integration for probability measurement
-self.sequence_prob_hook = SequenceProbVLLMHook(
-    model=self.model,
-    tokenizer=self.tokenizer,
-    tensor_parallel_size=tensor_parallel_size
-)
-
-# Measure probabilities for all options
-prob_results = self.sequence_prob_hook.get_log_prob(
-    text_inputs=[prompt],
-    target_sequences=option_texts
-)
-```
-
-### Context Manipulation
-
-Context manipulation is achieved through conditional prompt modification:
-
-```python
-# With description
-if self.include_description:
-    event_with_context = f"{event}\n\nContext: {description}"
-else:
-    event_with_context = event
-```
-
-### Emotion Intervention
-
-Emotion states are induced through user message modifications:
-
-```python
-if condition.emotion == "neutral":
-    user_message = "You are participating in this scenario."
-else:
-    user_message = f"You are participating in this scenario. You are feeling {condition.emotion}."
-```
 
 ## Configuration
 
