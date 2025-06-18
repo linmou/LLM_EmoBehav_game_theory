@@ -1,15 +1,16 @@
 experiment:
-  name: "Qwen2.5_Sequential_Games"
+  name: "Qwen3_Series_6_Games_Thinking"
   
   # List of games to run experiments with
   # Available games: Escalation_Game, Trust_Game_Trustor, Trust_Game_Trustee, 
   #                  Ultimatum_Game_Proposer, Ultimatum_Game_Responder
   games:
+    - "Prisoners_Dilemma"
     - "Escalation_Game"
-    - "Trust_Game_Trustor"
     - "Trust_Game_Trustee"
     - "Ultimatum_Game_Proposer"
-    - "Ultimatum_Game_Responder"
+    # - "Trust_Game_Trustor"
+    # - "Ultimatum_Game_Responder"
   
   # Individual game configurations with specific attributes
   # Each game may require different parameters based on its game mechanics
@@ -31,13 +32,13 @@ experiment:
       previous_actions_length: 1  # Responder reacts to proposer's offer
       previous_offer_level: 0     # 0=offer_low, 1=offer_medium, 2=offer_high (proposer's previous choice)
   
-  # List of Qwen2.5 models to test (different parameter sizes)
+  # List of Qwen3 models to test (different parameter sizes)
   models: 
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-14B-Instruct"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B"
+    # - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-14B"
     # Add more models as needed
   
   data:
@@ -52,7 +53,7 @@ experiment:
       temperature: 0.7
       do_sample: true
       top_p: 0.95
-      max_new_tokens: 440
+      max_new_tokens: 1200
 
   batch_size: 500
 
@@ -60,6 +61,8 @@ experiment:
   system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
   
   repeat: 1
+
+  sample_num: 400
 
   # Emotional states to test across all games
   emotions:
@@ -77,6 +80,6 @@ experiment:
   run_sanity_check: false
 
   output:
-    base_dir: "results/Qwen2.5_Series_Multi_Games"
+    base_dir: "results/Qwen3_Series_6_Games_Thinking"
     save_plots: true
     plot_format: "png" 

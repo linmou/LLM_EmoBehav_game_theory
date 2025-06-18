@@ -1,227 +1,279 @@
-# [DEPRECATED] SequenceProbVLLMHook Documentation
+# Enhanced Sequence Probability vLLM Hook
 
-> **⚠️ DEPRECATED**: This hook-based approach does not work with vLLM v1.x due to engine optimizations that bypass PyTorch forward hooks. See [README_sequence_prob_fix.md](./README_sequence_prob_fix.md) for the current working implementation.
+## Overview
 
-## Migration Notice
-The hook-based sequence probability calculation has been replaced with a direct logprobs extraction approach. The new implementation:
-- Works with vLLM v1.x optimized execution paths  
-- Provides more reliable results
-- Handles tensor parallel configurations correctly
-- Fixes token encoding issues (space-prefixed tokens)
-- Properly handles vLLM parameter limits
+The enhanced `sequence_prob_vllm_hook.py` provides a comprehensive solution for:
 
-**For current usage, please refer to the new documentation: [README_sequence_prob_fix.md](./README_sequence_prob_fix.md)**
+1. **Sequence Probability Calculation**: Calculate exact log probabilities for specific target sequences
+2. **Representation Control**: Modify hidden states at specific layers during inference (similar to `rep_control_vllm_hook.py`)
+3. **Layer-wise Logit Recording**: Optionally record activations from specific layers for analysis
 
----
-
-## Historical Documentation (Preserved for Reference)
-
-### Overview
-
-The `SequenceProbVLLMHook` class provides a tensor parallel-aware hook system for capturing sequence probabilities from vLLM language models. It hooks into the language model head to capture logits and calculate log probabilities for target sequences.
-
-## Features
-
-- **Tensor Parallel Support**: Automatically detects and handles tensor parallel configurations
-- **Logit Aggregation**: Properly aggregates logits across tensor parallel ranks
-- **RPC Communication**: Uses vLLM's collective RPC system for distributed hook management
-- **Probability Calculation**: Computes log probabilities, probabilities, and perplexity for target sequences
-- **Clean State Management**: Automatic state setup and cleanup for reliable operation
-
-## Architecture
-
-### Hook Function
-- `hook_fn_sequence_prob()`: Captures logits from the language model head output
-- Stores logits with rank information for tensor parallel aggregation
-- Handles both single tensor and tuple outputs
-
-### RPC Functions
-- `_register_lm_head_hook_rpc()`: Registers hooks on language model head across workers
-- `_set_sequence_prob_state_rpc()`: Sets state for sequence probability capture
-- `_reset_sequence_prob_state_rpc()`: Cleans up state after capture
-- `_get_captured_logits_rpc()`: Retrieves captured logits from workers
-
-### Main Class
-- `SequenceProbVLLMHook`: Main interface for sequence probability calculation
-- Handles tensor parallel detection and hook management
-- Provides `get_log_prob()` method for calculating sequence probabilities
-
-## Usage
-
-### Basic Usage
-
-```python
-from vllm import LLM
-from transformers import AutoTokenizer
-from neuro_manipulation.repe.sequence_prob_vllm_hook import SequenceProbVLLMHook
-
-# Initialize model and tokenizer
-model_name = "meta-llama/Llama-3.1-8B-Instruct"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-llm = LLM(model=model_name, tensor_parallel_size=1)
-
-# Create hook
-seq_prob_hook = SequenceProbVLLMHook(llm, tokenizer)
-
-# Calculate probabilities
-prompt = "The capital of France is"
-target_sequences = ["Paris", "London", "Berlin"]
-results = seq_prob_hook.get_log_prob([prompt], target_sequences)
-
-# View results
-for result in results:
-    print(f"Sequence: '{result['sequence']}'")
-    print(f"Log Probability: {result['log_prob']:.4f}")
-    print(f"Probability: {result['prob']:.6f}")
-    print(f"Perplexity: {result['perplexity']:.4f}")
-```
-
-### Advanced Usage with Multiple Prompts
-
-```python
-# Multiple prompts
-prompts = [
-    "The capital of France is",
-    "The largest planet in our solar system is",
-    "The chemical symbol for gold is"
-]
-
-target_sequences = ["Paris", "Jupiter", "Au"]
-
-# Calculate probabilities for each prompt-sequence pair
-for i, prompt in enumerate(prompts):
-    results = seq_prob_hook.get_log_prob([prompt], [target_sequences[i]])
-    print(f"Prompt: '{prompt}' -> '{target_sequences[i]}'")
-    print(f"Log Probability: {results[0]['log_prob']:.4f}")
-```
-
-## API Reference
-
-### SequenceProbVLLMHook Class
-
-#### Constructor
-```python
-SequenceProbVLLMHook(model: LLM, tokenizer, tensor_parallel_size: int = 1)
-```
-
-**Parameters:**
-- `model`: vLLM LLM instance
-- `tokenizer`: Transformers tokenizer object
-- `tensor_parallel_size`: Tensor parallel size (auto-detected if available)
-
-#### Methods
-
-##### get_log_prob()
-```python
-get_log_prob(text_inputs: List[str], target_sequences: List[str], **kwargs) -> List[Dict[str, float]]
-```
-
-Calculates log probabilities for target sequences given input prompts.
-
-**Parameters:**
-- `text_inputs`: List of input prompts
-- `target_sequences`: List of target sequences to calculate probabilities for
-- `**kwargs`: Additional arguments for vLLM SamplingParams
-
-**Returns:**
-List of dictionaries with keys:
-- `sequence`: The target sequence
-- `log_prob`: Log probability of the sequence
-- `prob`: Probability of the sequence (exp(log_prob))
-- `perplexity`: Perplexity of the sequence (exp(-log_prob))
-- `num_tokens`: Number of tokens in the sequence
-
-## Implementation Details
-
-### Tensor Parallel Handling
-
-The hook automatically detects tensor parallel configurations and handles logit aggregation:
-
-1. **Single Rank (TP=1)**: Uses logits directly from the single worker
-2. **Multi Rank (TP>1)**: Concatenates logits along vocabulary dimension from all ranks
-
-### Language Model Head Detection
-
-The hook searches for language model head modules using common naming patterns:
-- `lm_head`
-- `language_model_head`
-- `head`
-- `output_projection`
-- `embed_out`
-
-### State Management
-
-Each hook operation follows this lifecycle:
-1. Set state with target sequences and configuration
-2. Run generation to trigger hook and capture logits
-3. Retrieve captured logits from all workers
-4. Aggregate logits across tensor parallel ranks
-5. Calculate sequence probabilities
-6. Clean up state
-
-### Error Handling
-
-- Graceful handling of missing language model heads
-- Robust error recovery in RPC operations
-- Proper state cleanup even on exceptions
-- Detailed logging for debugging
-
-## Limitations
-
-- Currently supports only forward pass probability calculation
-- Requires models with accessible language model heads
-- Hook removal functionality is placeholder (manual cleanup required)
-- Memory usage scales with vocabulary size for logit storage
+This implementation unifies all functionality into a single, tensor parallel-aware system via the `CombinedVLLMHook` class. **Backward compatibility classes are no longer present; all features are accessed through `CombinedVLLMHook`.**
 
 ## Testing
 
-The module includes a comprehensive example in the `__main__` section that demonstrates:
-- Model loading and initialization
-- Hook setup and registration
-- Probability calculation for multiple sequences
-- Proper cleanup and resource management
+Comprehensive unit tests are provided to validate all functionality:
 
-## Dependencies
+### Test Files
 
-- PyTorch
-- vLLM
-- Transformers
-- NumPy
+1. **`test_combined_vllm_hook.py`**: Complete test suite with comprehensive coverage
+   - Tests each feature individually and in combination
+   - Tests error handling and edge cases
+   - Tests different operators and token position controls
+
+2. **`test_combined_functionality_simple.py`**: Lightweight integration test
+   - Quick validation of core functionality
+   - Uses minimal memory requirements
+   - Can be run standalone for quick checks
+
+### Running Tests
+
+```bash
+# Run comprehensive test suite
+python -m unittest neuro_manipulation.repe.tests.test_combined_vllm_hook
+
+# Run simple integration test
+python neuro_manipulation/repe/tests/test_combined_functionality_simple.py --simple
+
+# Run simple test as unittest
+python -m unittest neuro_manipulation.repe.tests.test_combined_functionality_simple
+
+# Run all tests in the directory
+python -m unittest discover neuro_manipulation/repe/tests/ -p "test_*.py"
+```
+
+### Test Coverage
+
+The test suite covers:
+- ✅ Sequence probability calculation accuracy
+- ✅ Representation control with different operators (`linear_comb`, `piecewise_linear`)
+- ✅ Layer-wise logit recording functionality
+- ✅ Combined feature usage
+- ✅ Error handling for invalid configurations
+- ✅ Token position controls (`start`, `end`, specific positions)
+- ✅ Memory management and cleanup
+- ✅ Tensor parallel compatibility (single GPU tests)
+
+## Key Class
+
+### `CombinedVLLMHook`
+The main and only class that provides all functionality. Features can be enabled/disabled as needed:
+
+```python
+# Enable all features
+hook = CombinedVLLMHook(
+    model=llm, 
+    tokenizer=tokenizer,
+    layers=[10, 15, 20],  # Layers for control/recording
+    block_name="decoder_block",  # Target block within layers
+    enable_sequence_prob=True,
+    enable_rep_control=True, 
+    enable_layer_logit_recording=True
+)
+
+# Sequence probability only
+hook = CombinedVLLMHook(
+    model=llm, 
+    tokenizer=tokenizer,
+    enable_sequence_prob=True,
+    enable_rep_control=False,
+    enable_layer_logit_recording=False
+)
+```
+
+## Core Functionality
+
+### 1. Sequence Probability Calculation
+
+Calculate exact log probabilities for target sequences:
+
+```python
+# Initialize hook for sequence probability
+hook = CombinedVLLMHook(llm, tokenizer, enable_sequence_prob=True)
+
+# Calculate probabilities
+results = hook.get_log_prob(
+    text_inputs=["The capital of France is"],
+    target_sequences=["Paris", "London", "Berlin"]
+)
+
+for result in results:
+    print(f"'{result['sequence']}': prob={result['prob']:.6f}")
+```
+
+### 2. Representation Control
+
+Modify hidden states at specific layers during generation:
+
+```python
+# Initialize hook for representation control
+hook = CombinedVLLMHook(
+    llm, tokenizer, 
+    layers=[10, 15], 
+    enable_rep_control=True
+)
+
+# Create control vectors (reading vectors)
+control_activations = {
+    10: torch.randn(4096) * 0.1,  # Layer 10 control vector
+    15: torch.randn(4096) * 0.1   # Layer 15 control vector  
+}
+
+# Generate with control
+outputs = hook.generate_with_control(
+    text_inputs=["The capital of France is"],
+    activations=control_activations,
+    operator='linear_comb',  # or 'piecewise_linear'
+    normalize=False,
+    token_pos=None,  # Apply to all tokens
+    max_new_tokens=10
+)
+```
+
+### 3. Layer-wise Logit Recording
+
+Record activations from specific layers during generation:
+
+```python
+# Initialize hook for layer recording
+hook = CombinedVLLMHook(
+    llm, tokenizer,
+    layers=[5, 10, 15],
+    enable_layer_logit_recording=True
+)
+
+# Generate with recording enabled
+outputs = hook.generate_with_control(
+    text_inputs=["The capital of France is"],
+    record_layer_logits=True,
+    max_new_tokens=5
+)
+
+# Retrieve recorded activations
+layer_logits = hook.get_layer_logits()
+for layer_id, recordings in layer_logits.items():
+    print(f"Layer {layer_id}: {len(recordings)} recordings")
+    if recordings:
+        print(f"  Shape: {recordings[0]['shape']}")
+```
+
+### 4. Combined Usage
+
+Use all features together:
+
+```python
+# Initialize with all features
+hook = CombinedVLLMHook(
+    llm, tokenizer,
+    layers=[10, 15],
+    enable_sequence_prob=True,
+    enable_rep_control=True,
+    enable_layer_logit_recording=True
+)
+
+# Calculate sequence probabilities
+prob_results = hook.get_log_prob(
+    ["The capital is"], 
+    ["Paris", "London"]
+)
+
+# Generate with control and recording
+control_outputs = hook.generate_with_control(
+    text_inputs=["The capital is"],
+    activations={10: control_vector},
+    record_layer_logits=True,
+    max_new_tokens=5
+)
+
+# Retrieve layer recordings
+layer_data = hook.get_layer_logits()
+```
+
+## Hook Function: `hook_fn_combined`
+
+The core hook function combines three types of processing:
+
+1. **Representation Control**: Modifies hidden states using control vectors
+2. **Logit Capture**: Captures logits from language model head for probability calculation  
+3. **Layer Recording**: Records activations from specified layers
+
+The hook checks for different state types attached to modules:
+- `_rep_control_state`: For representation control
+- `_sequence_prob_state`: For sequence probability calculation
+- `_layer_logit_state`: For layer-wise recording
+
+## Tensor Parallel Support
+
+The implementation is designed to work with vLLM's tensor parallel execution:
+
+- **Control Vector Slicing**: Automatically slices control vectors across tensor parallel ranks
+- **Logit Aggregation**: Properly handles logit capture across multiple GPUs
+- **State Synchronization**: Uses RPC calls to coordinate state across workers
+
+## Configuration Options
+
+### Representation Control
+- `operator`: How to combine control vectors (`'linear_comb'`, `'piecewise_linear'`)
+- `token_pos`: Which tokens to modify (`int`, `list`, `'start'`, `'end'`, `None`)
+- `normalize`: Whether to normalize activations after modification
+- `masks`: Optional masks for selective application
+
+### Sequence Probability
+- Automatically uses vLLM's built-in `logprobs` for efficient calculation
+- Supports multiple tokenization variants (with/without leading space)
+- Returns detailed probability metrics (log_prob, prob, perplexity)
+
+### Layer Recording
+- Records raw activations from specified layers
+- Supports tensor parallel aggregation
+- Configurable per-layer recording
+
+## Error Handling
+
+The implementation includes robust error handling:
+
+- **State Validation**: Checks for required state before processing
+- **Shape Compatibility**: Validates tensor shapes for tensor parallel consistency
+- **Graceful Degradation**: Continues operation if individual components fail
+- **Resource Cleanup**: Automatically resets states after generation
 
 ## Performance Considerations
 
-- **Memory**: Logits are stored temporarily during calculation
-- **Computation**: Probability calculation scales with sequence length
-- **Communication**: RPC overhead for tensor parallel setups
-- **GPU Memory**: Ensure sufficient VRAM for model + logit storage
+- **Memory Efficient**: Only captures/stores data when explicitly requested
+- **Parallel Execution**: Designed for efficient tensor parallel operation
+- **Selective Features**: Can disable unused functionality to reduce overhead
+
+## Example Use Cases
+
+1. **Emotion Intervention Study**: Use representation control to inject emotion vectors while measuring sequence probabilities for different behavioral choices
+
+2. **Layer Analysis**: Record activations from multiple layers during controlled generation to understand how interventions propagate
+
+3. **Probability Comparison**: Compare sequence probabilities before and after applying representation control to quantify behavioral changes
+
+4. **Debugging**: Record layer activations to debug representation control effectiveness
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Hook not registered**: Check if language model head is found
-2. **RPC failures**: Verify vLLM version supports collective_rpc
-3. **Memory errors**: Reduce batch size or sequence length
-4. **Tensor parallel issues**: Ensure consistent TP configuration
+1. **CUDA Out of Memory**: Disable unused features, reduce batch size, or use gradient checkpointing
+2. **Tensor Parallel Inconsistency**: Ensure control vectors match the model's hidden dimension
+3. **Hook Registration Failure**: Check that the model has the expected layer structure
 
 ### Debug Logging
 
-Enable debug logging for detailed operation information:
+Enable debug logging to troubleshoot:
+
 ```python
 import logging
-logging.getLogger('sequence_prob_vllm_hook').setLevel(logging.DEBUG)
+logging.getLogger('neuro_manipulation.repe.sequence_prob_vllm_hook').setLevel(logging.DEBUG)
 ```
 
-## Integration with Existing Code
+## Implementation Notes
 
-The `SequenceProbVLLMHook` is designed to work alongside other hooks like `RepControlVLLMHook`:
-
-```python
-# Can use both hooks on the same model
-rep_control = RepControlVLLMHook(llm, tokenizer, layers=[10, 15], block_name="decoder_block", control_method="reading_vec")
-seq_prob = SequenceProbVLLMHook(llm, tokenizer)
-
-# Use them independently
-controlled_output = rep_control(prompts, activations=control_vectors)
-probabilities = seq_prob.get_log_prob(prompts, target_sequences)
-``` 
+This enhanced implementation addresses the original limitations by:
+- Combining multiple hook functionalities efficiently
+- Providing better tensor parallel support
+- Including comprehensive error handling and logging
+- Offering flexible feature selection for different use cases 

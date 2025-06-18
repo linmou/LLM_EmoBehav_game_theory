@@ -1,15 +1,17 @@
 experiment:
   name: "escalation_game_len0"
-  game:
-    name: "Escalation_Game" 
-    previous_actions_length: 0
+  games: ["Escalation_Game"]  # Array of games instead of single game object
+  models: ['/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct']  # Array of models
+  games_config:  # Game-specific configurations
+    Escalation_Game:
+      previous_actions_length: 0
   data:
     generate: false  # Set to false to skip data generation
     num_scenarios: 36
     batch_size: 4
 
   llm:
-    model_name: '/data/home/jjl7137/huggingface_models/RWKV/v6-Finch-7B-HF'
+    model_name: '/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct'
     generation_config:
       temperature: 0.7
       do_sample: true

@@ -9,6 +9,7 @@ from games.game import (
     GameScenario,
     SequentialGameScenario,
 )
+from games.payoff_matrices import PayoffMatrix
 
 
 class UGProposerChoices(BehaviorChoices):
@@ -217,69 +218,70 @@ if __name__ == "__main__":
     import json
     from pathlib import Path
 
-    from autogen import AssistantAgent, UserProxyAgent
+    # from autogen import AssistantAgent, UserProxyAgent
 
     # Example usage
-    data_json = "groupchat/scenarios/Ultimatum_Game/Money_Split_Proposal.json"
+    data_json = "data_creation/scenario_creation/langgraph_creation/Ultimatum_Game_Proposer_all_data_samples.json"
     with open(data_json, "r") as f:
-        data = json.load(f)
+        data = json.load(f)[1]
 
     # Import your ultimatum game payoff matrix
-    from games.payoff_matrix import ultimatum_game
+    from games.game_configs import get_game_config
+    game_config = get_game_config('Ultimatum_Game_Proposer')
 
-    data["payoff_matrix"] = ultimatum_game
+    data["payoff_matrix"] = game_config["payoff_matrix"]
     data["previous_actions_length"] = 0
 
     scenario = UltimatumGameProposerScenario.model_validate(data)
     print(scenario)
 
-    from autogen import config_list_from_json
+    # from autogen import config_list_from_json
 
-    config_path = "config/OAI_CONFIG_LIST"
-    config_list = config_list_from_json(config_path, filter_dict={"model": ["gpt-4"]})
-    cfg_ls_cp = copy.deepcopy(config_list)
+    # config_path = "config/OAI_CONFIG_LIST"
+    # config_list = config_list_from_json(config_path, filter_dict={"model": ["gpt-4"]})
+    # cfg_ls_cp = copy.deepcopy(config_list)
 
-    user = UserProxyAgent(
-        name="User",
-        human_input_mode="NEVER",
-        code_execution_config={"use_docker": False},
-    )
+    # user = UserProxyAgent(
+    #     name="User",
+    #     human_input_mode="NEVER",
+    #     code_execution_config={"use_docker": False},
+    # )
 
-    # Process all scenario files
-    for file in Path("groupchat/scenarios/Ultimatum_Game").glob("*.json"):
-        print(f" === begin: {file.name} ===\n")
-        with open(file, "r") as f:
-            data = json.load(f)
-            data["payoff_matrix"] = ultimatum_game
-            data["previous_actions_length"] = 1
-            scenario = UltimatumGameProposerScenario(**data)
+    # # Process all scenario files
+    # for file in Path("groupchat/scenarios/Ultimatum_Game").glob("*.json"):
+    #     print(f" === begin: {file.name} ===\n")
+    #     with open(file, "r") as f:
+    #         data = json.load(f)
+    #         data["payoff_matrix"] = ultimatum_game
+    #         data["previous_actions_length"] = 1
+    #         scenario = UltimatumGameProposerScenario(**data)
 
-            UltimatumGameDecision.set_scenario(scenario)
+    #         UltimatumGameDecision.set_scenario(scenario)
 
-            for config in cfg_ls_cp:
-                config["response_format"] = UltimatumGameDecision
+    #         for config in cfg_ls_cp:
+    #             config["response_format"] = UltimatumGameDecision
 
-            assistant = AssistantAgent(
-                name="Alice",
-                llm_config={
-                    "config_list": cfg_ls_cp,
-                    "temperature": 0.7,
-                },
-                system_message="You are Alice, a rational decision-maker in an ultimatum game scenario.",
-            )
+    #         assistant = AssistantAgent(
+    #             name="Alice",
+    #             llm_config={
+    #                 "config_list": cfg_ls_cp,
+    #                 "temperature": 0.7,
+    #             },
+    #             system_message="You are Alice, a rational decision-maker in an ultimatum game scenario.",
+    #         )
 
-            message = f"Please analyze the following scenario: {scenario} and make your decision."
-            while True:
-                try:
-                    res = user.initiate_chat(assistant, message=message, max_turns=1)
-                    decision = UltimatumGameDecision.model_validate_json(res.summary)
-                    break
-                except Exception as e:
-                    print(f" === error: {e} ===")
-                    message = f" === Please note that in previous attempt, you made the following error: {e} ===\nPlease analyze the following scenario: {scenario} and make your decision."
+    #         message = f"Please analyze the following scenario: {scenario} and make your decision."
+    #         while True:
+    #             try:
+    #                 res = user.initiate_chat(assistant, message=message, max_turns=1)
+    #                 decision = UltimatumGameDecision.model_validate_json(res.summary)
+    #                 break
+    #             except Exception as e:
+    #                 print(f" === error: {e} ===")
+    #                 message = f" === Please note that in previous attempt, you made the following error: {e} ===\nPlease analyze the following scenario: {scenario} and make your decision."
 
-            behavior = scenario.find_behavior_from_decision(decision.decision)
-            assert (
-                behavior is not None
-            ), f"decision: {decision.decision} is not in the behavior choices"
-            print(f" === behavior: {behavior} ===")
+    #         behavior = scenario.find_behavior_from_decision(decision.decision)
+    #         assert (
+    #             behavior is not None
+    #         ), f"decision: {decision.decision} is not in the behavior choices"
+    #         print(f" === behavior: {behavior} ===")

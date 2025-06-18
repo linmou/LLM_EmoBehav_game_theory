@@ -372,7 +372,8 @@ class ExperimentSeriesRunner:
             exp_config, 
             game_config,
             repeat=exp_config['experiment']['repeat'],
-            batch_size=exp_config['experiment'].get('batch_size', 300)
+            batch_size=exp_config['experiment'].get('batch_size', 300),
+            sample_num=exp_config['experiment'].get('sample_num', None)
         )
         
         return experiment
