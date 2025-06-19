@@ -20,8 +20,8 @@ experiment:
     - "without_description"
   
   # Sampling and batch settings
-  sample_num: 100  # Number of scenarios per condition (null for all)
-  batch_size: 100    # Batch size for processing
+  sample_num: 1000  # Number of scenarios per condition (null for all)
+  batch_size: 500    # Batch size for processing
   
   # Output configuration
   output:
@@ -39,7 +39,7 @@ experiment:
     
 # Representation Engineering Configuration
 repe_config:
-  model_name_or_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  model_name_or_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
   
   # vLLM settings
   tensor_parallel_size: 4
@@ -59,10 +59,7 @@ repe_config:
 # Game Configuration
 game_config:
   game_name: "prisoners_dilemma"
-  data_path: "data_creation/scenario_creation/langgraph_creation/Prisoners_Dilemma_all_data_samples_4.1_distinct_choices.json"
-  
-  # Decision format
-  decision_class: "binary_choice"  # or "multiple_choice", "text_generation"
+  data_path: "data_creation/scenario_creation/langgraph_creation/Prisoners_Dilemma_all_data_samples_first_1000.json"
   
   # Prompt settings
   include_payoff_matrix: true

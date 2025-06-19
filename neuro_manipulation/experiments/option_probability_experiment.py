@@ -85,33 +85,42 @@ class OptionProbabilityExperiment:
         self.batch_size = batch_size
         self.sample_num = sample_num
         
-        # Setup model and tokenizer for vLLM
-        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(
+        # Get emotion configurations for activation
+        self.target_emotion = self.exp_config["experiment"].get("target_emotion", "anger")
+        self.activation_intensity = self.exp_config["experiment"].get("activation_intensity", 1.5)
+        
+        # Step 1: Load a temporary non-vLLM model to get layer info and load RepReaders
+        self.logger.info("Loading temporary model for RepReader initialization...")
+        temp_model, temp_tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config, from_vllm=False)
+        
+        # Get layer information from the temporary model
+        num_layers = ModelLayerDetector.num_layers(temp_model)
+        self.hidden_layers = list(range(-1, -num_layers - 1, -1))
+        self.control_layers = self.hidden_layers[len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3]
+
+        # Load RepReaders using the temporary model
+        self.logger.info("Loading RepReaders for emotion activations...")
+        self.emotion_rep_readers = load_emotion_readers(
+            self.repe_eng_config, temp_model, temp_tokenizer, self.hidden_layers
+        )
+        self.logger.info(f"Loaded {len(self.emotion_rep_readers)} emotion readers. Using control layers: {self.control_layers}")
+
+        # Step 2: Clean up the temporary model to free up memory
+        self.logger.info("Releasing temporary model from memory...")
+        del temp_model
+        del temp_tokenizer
+        torch.cuda.empty_cache()
+
+        # Step 3: Setup the main vLLM model for the experiment
+        self.logger.info("Initializing vLLM for the main experiment...")
+        self.model, self.tokenizer, _ = setup_model_and_tokenizer(
             repe_eng_config, from_vllm=True
         )
         self.is_vllm = isinstance(self.model, LLM)
         
         if not self.is_vllm:
-            raise ValueError("OptionProbabilityExperiment requires vLLM model for sequence probability measurement")
+            raise ValueError("OptionProbabilityExperiment requires a vLLM model for sequence probability measurement")
         
-        # Get emotion configurations for activation
-        self.target_emotion = self.exp_config["experiment"].get("target_emotion", "angry")
-        self.activation_intensity = self.exp_config["experiment"].get("activation_intensity", 1.5)
-        
-        # Load RepReaders for activation
-        self.logger.info("Loading RepReaders for emotion activations...")
-        # Use a non-vLLM model instance for layer detection and reader loading
-        temp_model, temp_tokenizer, _ = setup_model_and_tokenizer(repe_eng_config, from_vllm=False)
-        num_layers = ModelLayerDetector.num_layers(temp_model)
-        self.hidden_layers = list(range(-1, -num_layers - 1, -1))
-        self.control_layers = self.hidden_layers[len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3]
-        
-        self.emotion_rep_readers = load_emotion_readers(
-            self.repe_eng_config, temp_model, temp_tokenizer, self.hidden_layers
-        )
-        del temp_model, temp_tokenizer
-        self.logger.info(f"Loaded {len(self.emotion_rep_readers)} emotion readers. Using control layers: {self.control_layers}")
-
         # Initialize CombinedVLLMHook with both sequence probability and rep control enabled
         self.sequence_prob_hook = CombinedVLLMHook(
             model=self.model,
