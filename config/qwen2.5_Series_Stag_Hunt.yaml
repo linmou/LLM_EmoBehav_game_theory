@@ -1,27 +1,26 @@
 experiment:
-  name: "Qwen3_Series_Prisoners_Dilemma"
+  name: "Qwen2.5_Series_Stag_Hunt"
   
   # List of games to run experiments with
   games:
-    - "Prisoners_Dilemma"
+    - "Stag_Hunt"
   
   # List of models to run experiments with
   models: 
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B"
-    # - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-14B"
-    # - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-32B"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-14B-Instruct"
     # Add more models as needed
   
   game:
-    name: "Prisoners_Dilemma"  # Default game if needed
+    name: "Stag_Hunt"  # Default game if needed
     # Additional game parameters
     previous_actions_length: 0
     
   data:
-    generate: false
+    generate: false # generate game data if true
     num_scenarios: 36
     batch_size: 4
   
@@ -34,6 +33,9 @@ experiment:
       top_p: 0.95
       max_new_tokens: 440
 
+  batch_size: 500
+
+  # Template for system message with placeholders
   system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
   
   repeat: 1
@@ -52,6 +54,6 @@ experiment:
   run_sanity_check: false
 
   output:
-    base_dir: "results/Qwen3_Series_Prisoners_Dilemma"
+    base_dir: "results/Qwen2.5_Series_Stag_Hunt"
     save_plots: true
     plot_format: "png" 

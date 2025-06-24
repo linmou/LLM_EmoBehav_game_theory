@@ -9,6 +9,7 @@ from games.game import (
     GameScenario,
     SequentialGameScenario,
 )
+from games.payoff_matrices import PayoffMatrix
 
 
 class TGTrustorChoices(BehaviorChoices):
@@ -233,71 +234,74 @@ if __name__ == "__main__":
     import json
     from pathlib import Path
 
-    from autogen import AssistantAgent, UserProxyAgent
+    # from autogen import AssistantAgent, UserProxyAgent
 
     # Example usage
-    data_json = "data_creation/scenario_creation/langgraph_creation_debug/scenarios/Trust_Game_Trustor_20250610/SpiritualDirector.json"
+    data_json = "data_creation/scenario_creation/langgraph_creation/Trust_Game_Trustor_all_data_samples.json"
     with open(data_json, "r") as f:
-        data = json.load(f)
+        data = json.load(f)[1]
 
     # Import your trust game payoff matrix
-    # from payoff_matrix import trust_game
-    trust_game = dict()
-    data["payoff_matrix"] = trust_game
+    from games.game_configs import get_game_config
+    game_config = get_game_config('Trust_Game_Trustor')
+    data["payoff_matrix"] = game_config["payoff_matrix"]
     data["previous_actions_length"] = 0
     data["previous_trust_level"] = 0
 
     scenario = TrustGameTrusteeScenario.model_validate(data)
     print(scenario)
+    
+    scenario = TrustGameTrustorScenario.model_validate(data)
+    print(scenario)
 
-    from autogen import config_list_from_json
+    # from autogen import config_list_from_json
 
-    config_path = "config/OAI_CONFIG_LIST"
-    config_list = config_list_from_json(config_path, filter_dict={"model": ["gpt-4o"]})
-    cfg_ls_cp = copy.deepcopy(config_list)
+    # config_path = "config/OAI_CONFIG_LIST"
+    # config_list = config_list_from_json(config_path, filter_dict={"model": ["gpt-4o"]})
+    # cfg_ls_cp = copy.deepcopy(config_list)
 
-    user = UserProxyAgent(
-        name="User",
-        human_input_mode="NEVER",
-        code_execution_config={"use_docker": False},
-    )
+    # user = UserProxyAgent(
+    #     name="User",
+    #     human_input_mode="NEVER",
+    #     code_execution_config={"use_docker": False},
+    # )
 
-    # Process all scenario files
-    for file in Path("groupchat/scenarios/Trust_Game_Trustor").glob("*.json"):
-        print(f" === begin: {file.name} ===\n")
-        with open(file, "r") as f:
-            data = json.load(f)
-            data["payoff_matrix"] = trust_game
-            data["previous_actions_length"] = 0
-            data["previous_trust_level"] = 1
-            scenario = TrustGameTrusteeScenario(**data)
+    # # Process all scenario files
+    # for file in Path("groupchat/scenarios/Trust_Game_Trustor").glob("*.json"):
+    #     print(f" === begin: {file.name} ===\n")
+    #     with open(file, "r") as f:
+    #         data = json.load(f)
+    #         data["payoff_matrix"] = trust_game
+    #         data["previous_actions_length"] = 0
+    #         data["previous_trust_level"] = 1
+    #         scenario = TrustGameTrusteeScenario(**data)
 
-            TrustGameDecision.set_scenario(scenario)
+    #         TrustGameDecision.set_scenario(scenario)
 
-            for config in cfg_ls_cp:
-                config["response_format"] = TrustGameDecision
+    #         for config in cfg_ls_cp:
+    #             config["response_format"] = TrustGameDecision
 
-            assistant = AssistantAgent(
-                name="Alice",
-                llm_config={
-                    "config_list": cfg_ls_cp,
-                    "temperature": 0.7,
-                },
-                system_message="You are Alice, a rational decision-maker in a trust-based scenario.",
-            )
+    #         assistant = AssistantAgent(
+    #             name="Alice",
+    #             llm_config={
+    #                 "config_list": cfg_ls_cp,
+    #                 "temperature": 0.7,
+    #             },
+    #             system_message="You are Alice, a rational decision-maker in a trust-based scenario.",
+    #         )
 
-            message = f"Please analyze the following scenario: {scenario} and make your decision."
-            while True:
-                try:
-                    res = user.initiate_chat(assistant, message=message, max_turns=1)
-                    decision = TrustGameDecision.model_validate_json(res.summary)
-                    break
-                except Exception as e:
-                    print(f" === error: {e} ===")
-                    message = f" === Please note that in previous attempt, you made the following error: {e} ===\nPlease analyze the following scenario: {scenario} and make your decision."
+    #         message = f"Please analyze the following scenario: {scenario} and make your decision."
+    #         while True:
+    #             try:
+    #                 res = user.initiate_chat(assistant, message=message, max_turns=1)
+    #                 decision = TrustGameDecision.model_validate_json(res.summary)
+    #                 break
+    #             except Exception as e:
+    #                 print(f" === error: {e} ===")
+    #                 message = f" === Please note that in previous attempt, you made the following error: {e} ===\nPlease analyze the following scenario: {scenario} and make your decision."
 
-            behavior = scenario.find_behavior_from_decision(decision.decision)
-            assert (
-                behavior is not None
-            ), f"decision: {decision.decision} is not in the behavior choices"
-            print(f" === behavior: {behavior} ===")
+    #         behavior = scenario.find_behavior_from_decision(decision.decision)
+    #         assert (
+    #             behavior is not None
+    #         ), f"decision: {decision.decision} is not in the behavior choices"
+    #         print(f" === behavior: {behavior} ===")

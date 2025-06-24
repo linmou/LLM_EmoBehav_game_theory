@@ -8,7 +8,7 @@ from games.game import GameScenario
 from merge_data_samples import merge_data_samples
 
 class GameScenarioDataset(Dataset):
-    def __init__(self, game_config, prompt_wrapper, sample_num=None, ):
+    def __init__(self, game_config, prompt_wrapper, sample_num=None): 
         self.game_config = game_config
         data_path = game_config['data_path']
         

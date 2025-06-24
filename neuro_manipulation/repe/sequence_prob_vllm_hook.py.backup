@@ -195,11 +195,8 @@ def hook_fn_combined(module, args, output):
                 if 'captured_logits' not in state:
                     state['captured_logits'] = []
                 
-                # Move tensor to CPU to avoid CUDA serialization issues
-                cpu_logits = modified_tensor.detach().clone().cpu()
-                
                 state['captured_logits'].append({
-                    'logits': cpu_logits,
+                    'logits': modified_tensor.detach().clone(),
                     'rank': rank,
                     'shape': modified_tensor.shape
                 })
@@ -218,12 +215,9 @@ def hook_fn_combined(module, args, output):
             if 'recorded_logits' not in state:
                 state['recorded_logits'] = []
             
-            # Move tensor to CPU to avoid CUDA serialization issues
-            cpu_tensor = modified_tensor.detach().clone().cpu()
-            
             state['recorded_logits'].append({
                 'layer_id': layer_id,
-                'activations': cpu_tensor,
+                'activations': modified_tensor.detach().clone(),
                 'rank': rank,
                 'shape': modified_tensor.shape
             })
@@ -515,7 +509,7 @@ def _get_layer_logits_rpc(worker_self, layer_index, block_name):
         logger.error(f"RPC: Worker Rank {rank} error retrieving layer logits: {e}", exc_info=True)
         return None
 
-# --- Main Combined Hook Class ---
+# --- Main Class ---
 class CombinedVLLMHook:
     def __init__(self, model: LLM, tokenizer, 
                  layers: Optional[List[int]] = None, 
@@ -570,14 +564,13 @@ class CombinedVLLMHook:
         
         # Register LM head hook for sequence probability
         if self.enable_sequence_prob:
-            logger.info("Registering LM head hook...")
+            logger.info("Registering LM head hook for sequence probability...")
             rpc_results = self.model.llm_engine.collective_rpc(
                 _register_lm_head_hook_rpc,
                 args=(hook_fn_combined,)
             )
-            logger.info(f"RPC hook registration results: {rpc_results}")
+            logger.info(f"RPC LM head hook registration results: {rpc_results}")
             if any(rpc_results):
-                logger.info("LM head hook registered successfully.")
                 success_count += 1
         
         # Register layer hooks for rep control and/or layer recording
@@ -599,16 +592,80 @@ class CombinedVLLMHook:
             self.hook_registered = True
             logger.info(f"Successfully registered {success_count} hook(s).")
 
+# --- Backward Compatibility Classes ---
+class SequenceProbVLLMHook(CombinedVLLMHook):
+    """Backward compatibility class for sequence probability functionality only."""
+    def __init__(self, model: LLM, tokenizer, tensor_parallel_size: int = 1):
+        super().__init__(
+            model=model,
+            tokenizer=tokenizer,
+            layers=None,
+            tensor_parallel_size=tensor_parallel_size,
+            enable_sequence_prob=True,
+            enable_rep_control=False,
+            enable_layer_logit_recording=False
+        )
+    def __init__(self, model: LLM, tokenizer, tensor_parallel_size: int = 1):
+        """
+        Initializes SequenceProbVLLMHook for capturing sequence probabilities.
+
+        Args:
+            model: The vLLM LLM instance.
+            tokenizer: The tokenizer.
+            tensor_parallel_size: The tensor parallel size used by the vLLM model.
+        """
+        self.model = model
+        self.tokenizer = tokenizer
+        self.hook_registered = False
+        self.tp_size = tensor_parallel_size
+
+        if not hasattr(self.model, 'llm_engine') or not hasattr(self.model.llm_engine, 'collective_rpc'):
+             raise AttributeError("Provided model does not have 'llm_engine.collective_rpc'. Is it a valid vLLM LLM object?")
+
+        # Get tensor parallel size from engine if available
+        if hasattr(self.model.llm_engine, 'parallel_config') and hasattr(self.model.llm_engine.parallel_config, 'tensor_parallel_size'):
+            self.tp_size = self.model.llm_engine.parallel_config.tensor_parallel_size
+            logger.info(f"Detected Tensor Parallel Size: {self.tp_size}")
+        else:
+            logger.warning("Could not detect tensor_parallel_size from engine's parallel_config. Using provided value.")
+
+        logger.info(f"Initializing SequenceProbVLLMHook with TP size: {self.tp_size}")
+
+        # Register the hook on the language model head
+        self._register_lm_head_hook()
+
+    def _register_lm_head_hook(self):
+        """Register hook on the language model head across all workers."""
+        logger.info("Registering LM head hook...")
+        rpc_results = self.model.llm_engine.collective_rpc(
+            _register_lm_head_hook_rpc,
+            args=(hook_fn_sequence_prob,)
+        )
+        logger.info(f"RPC hook registration results: {rpc_results}")
+        
+        if not any(rpc_results):
+            logger.error("Failed to register hook on any worker. Sequence probability capture will not work.")
+            self.hook_registered = False
+        else:
+            self.hook_registered = True
+            logger.info("LM head hook registered successfully.")
+
     def get_log_prob(self, 
                      text_inputs: List[str], 
                      target_sequences: List[str],
                      **kwargs) -> List[Dict[str, float]]:
         """
         Calculates log probabilities for target sequences given input prompts.
+
+        Args:
+            text_inputs: List of input prompts.
+            target_sequences: List of target sequences to calculate probabilities for.
+            **kwargs: Additional arguments for vLLM SamplingParams.
+
+        Returns:
+            List of dictionaries containing log probabilities for each target sequence.
+            Each dict has keys: 'sequence', 'log_prob', 'prob', 'perplexity'
         """
-        if not self.enable_sequence_prob:
-            raise RuntimeError("Sequence probability functionality is not enabled.")
-        
         if not self.hook_registered:
             raise RuntimeError("Hook not registered. Cannot capture sequence probabilities.")
 
@@ -631,14 +688,15 @@ class CombinedVLLMHook:
                 })
 
             # Prepare sampling parameters for generation
+            # We need to generate enough tokens to cover our target sequence
             max_target_tokens = max(len(target['tokens']) for target in tokenized_targets)
             logger.info(f"Generating {max_target_tokens} tokens to cover target sequences: {[t['sequence'] for t in tokenized_targets]}")
             
             sampling_params = SamplingParams(
-                max_tokens=max_target_tokens,
-                temperature=0.0,
+                max_tokens=max_target_tokens,  # Generate enough for the longest target
+                temperature=0.0,  # Deterministic for probability calculation
                 top_p=1.0,
-                logprobs=20
+                logprobs=20  # Max allowed in vLLM v1 is 20
             )
 
             # Run generation to get logprobs
@@ -646,7 +704,7 @@ class CombinedVLLMHook:
             outputs = self.model.generate(text_inputs, sampling_params)
             logger.info("Generation completed successfully")
             
-            # Calculate probabilities for each target sequence
+            # Calculate probabilities for each target sequence using the same generation output
             for target_info in tokenized_targets:
                 sequence = target_info['sequence']
                 
@@ -666,7 +724,7 @@ class CombinedVLLMHook:
                     )
                     
                     if log_prob is not None:
-                        break
+                        break # Found a valid probability
                 
                 if log_prob is not None:
                     prob = torch.exp(log_prob).item()
@@ -692,11 +750,22 @@ class CombinedVLLMHook:
                                              outputs: List,
                                              target_token_ids: torch.Tensor,
                                              sequence: str) -> Optional[torch.Tensor]:
-        """Calculate log probability for a target sequence from vLLM logprobs output."""
+        """
+        Calculate log probability for a target sequence from vLLM logprobs output.
+        
+        Args:
+            outputs: vLLM generation outputs containing logprobs
+            target_token_ids: Target token IDs tensor
+            sequence: Target sequence string for logging
+            
+        Returns:
+            Log probability of the target sequence or None if calculation fails
+        """
         try:
             if not outputs or len(outputs) == 0:
                 return None
             
+            # Extract logprobs from the first output (assuming single prompt)
             output = outputs[0]
             if not hasattr(output, 'outputs') or len(output.outputs) == 0:
                 return None
@@ -707,10 +776,12 @@ class CombinedVLLMHook:
             
             logprobs_list = completion_output.logprobs
             
+            # Check if target sequence is even possible given the generated length
             if len(target_token_ids) > len(logprobs_list):
-                logger.debug(f"Target sequence '{sequence}' is longer than generated sequence.")
+                logger.debug(f"Target sequence '{sequence}' is longer than generated sequence, cannot compute probability.")
                 return None
 
+            # For each token in our target sequence, find its logprob at the correct position
             total_log_prob = 0.0
             for i, target_token_id in enumerate(target_token_ids):
                 token_id_int = target_token_id.item()
@@ -726,7 +797,8 @@ class CombinedVLLMHook:
                     total_log_prob += token_log_prob
                     logger.debug(f"Found target token {token_id_int} at position {i} with logprob {token_log_prob}")
                 else:
-                    logger.debug(f"Target token {token_id_int} not found at position {i} for sequence '{sequence}'.")
+                    # If any token in the sequence is not found, the sequence is impossible
+                    logger.debug(f"Target token {token_id_int} not found at position {i} for sequence '{sequence}'. Sequence is impossible.")
                     return None
             
             return torch.tensor(total_log_prob)
@@ -735,131 +807,13 @@ class CombinedVLLMHook:
             logger.error(f"Error calculating target sequence probability from logprobs: {e}", exc_info=True)
             return None
 
-    def generate_with_control(self, prompts, activations=None, 
-                             record_layer_logits=False, operator='linear_comb', 
-                             normalize=False, token_pos=None, masks:Dict[int, torch.Tensor]=None, **sampling_kwargs):
-        """Generate text with optional representation control."""
-        from vllm import SamplingParams
-        
-        # Check if rep control features are being used when disabled
-        if (activations is not None) and not self.enable_rep_control:
-            raise RuntimeError("Representation control functionality is not enabled.")
-        
-        # Check if layer recording is being used when disabled  
-        if record_layer_logits and not self.enable_layer_logit_recording:
-            raise RuntimeError("Layer logit recording functionality is not enabled.")
-        
-        # Set up representation control if activations provided
-        if activations and self.enable_rep_control:
-            self._set_control_activations(activations, operator, normalize, token_pos, masks)
-        
-        # Set up layer recording if requested
-        if record_layer_logits and self.enable_layer_logit_recording:
-            self._set_layer_recording(True)
-        
-        try:
-            # Default sampling parameters
-            sampling_params = SamplingParams(
-                max_tokens=sampling_kwargs.get('max_new_tokens', 10),
-                temperature=sampling_kwargs.get('temperature', 0.7),
-                top_p=sampling_kwargs.get('top_p', 1.0)
-            )
-            
-            # Generate
-            outputs = self.model.generate(prompts, sampling_params)
-            return outputs
-            
-        finally:
-            # Clean up control states
-            if activations and self.enable_rep_control:
-                self._clear_control_activations()
-            if record_layer_logits and self.enable_layer_logit_recording:
-                self._set_layer_recording(False)
-
-    def _set_control_activations(self, activations, operator='linear_comb', normalize=False, token_pos=None, masks:Dict[int, torch.Tensor]=None):
-        """Set control activations for representation control."""
-        for layer_id, control_vector in activations.items():
-            if layer_id in self.layers:
-                layer_mask = masks.get(layer_id) if isinstance(masks, dict) else masks
-                state = {
-                    'controller': control_vector,
-                    'mask': layer_mask,
-                    'token_pos': token_pos,
-                    'normalize': normalize,
-                    'operator_name': operator,
-                    'tp_size': self.tp_size,
-                    'kwargs': {}
-                }
-                
-                # Set state on workers
-                rpc_results = self.model.llm_engine.collective_rpc(
-                    _set_rep_control_state_rpc,
-                    args=(layer_id, self.block_name, state)
-                )
-                logger.debug(f"Set control activation for layer {layer_id}: {any(rpc_results)}")
-
-    def _clear_control_activations(self):
-        """Clear control activations."""
-        for layer_id in self.layers:
-            rpc_results = self.model.llm_engine.collective_rpc(
-                _reset_rep_control_state_rpc,
-                args=(layer_id, self.block_name)
-            )
-            logger.debug(f"Cleared control activation for layer {layer_id}: {any(rpc_results)}")
-
-    def _set_layer_recording(self, enable):
-        """Enable or disable layer recording."""
-        for layer_id in self.layers:
-            if enable:
-                state = {'layer_id': layer_id}
-                rpc_results = self.model.llm_engine.collective_rpc(
-                    _set_layer_logit_state_rpc,
-                    args=(layer_id, self.block_name, state)
-                )
-            else:
-                # Don't reset layer state immediately - let get_layer_logits() handle cleanup
-                # This prevents losing data before it can be retrieved
-                logger.debug(f"Layer recording disabled for layer {layer_id} (state will be cleared on next get_layer_logits call)")
-                pass
-            logger.debug(f"Layer recording {'enabled' if enable else 'disabled'} for layer {layer_id}: {any(rpc_results) if enable else True}")
-
-    def get_layer_logits(self):
-        """Get recorded layer logits."""
-        if not self.enable_layer_logit_recording:
-            raise RuntimeError("Layer logit recording functionality is not enabled.")
-            
-        layer_data = {}
-        for layer_id in self.layers:
-            rpc_results = self.model.llm_engine.collective_rpc(
-                _get_layer_logits_rpc,
-                args=(layer_id, self.block_name)
-            )
-            
-            # Aggregate results from all workers
-            all_logits = []
-            for result in rpc_results:
-                if result:
-                    all_logits.extend(result)
-            
-            if all_logits:
-                layer_data[layer_id] = all_logits
-                
-        # Clear the recording state after retrieving data
-        for layer_id in self.layers:
-            rpc_results = self.model.llm_engine.collective_rpc(
-                _reset_layer_logit_state_rpc,
-                args=(layer_id, self.block_name)
-            )
-            logger.debug(f"Cleared layer recording state for layer {layer_id}: {any(rpc_results)}")
-                
-        return layer_data
-
     def remove_hooks(self):
         """Remove registered hooks (placeholder for future implementation)."""
-        logger.warning("Hook removal not yet implemented for CombinedVLLMHook.")
+        logger.warning("Hook removal not yet implemented for SequenceProbVLLMHook.")
         pass
 
 
+# --- Example Usage ---
 if __name__ == "__main__":
     import torch
     import gc
@@ -897,14 +851,9 @@ if __name__ == "__main__":
                   gpu_memory_utilization=0.85,
                   max_num_seqs=16)
 
-        # Initialize Combined Hook for sequence probability
-        logger.info("Initializing CombinedVLLMHook...")
-        seq_prob_hook = CombinedVLLMHook(
-            llm, tokenizer,
-            enable_sequence_prob=True,
-            enable_rep_control=False,
-            enable_layer_logit_recording=False
-        )
+        # Initialize Sequence Probability Hook
+        logger.info("Initializing SequenceProbVLLMHook...")
+        seq_prob_hook = SequenceProbVLLMHook(llm, tokenizer)
 
         # Calculate sequence probabilities
         logger.info("--- Calculating Sequence Probabilities ---")

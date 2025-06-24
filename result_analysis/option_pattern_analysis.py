@@ -471,12 +471,14 @@ def main():
     analyzer = OptionPatternAnalyzer()
     
     # Find experiment result files
-    result_files = []
-    for root, dirs, files in os.walk('results'):
-        for file in files:
-            if file == 'exp_results.json':
-                result_files.append(os.path.join(root, file))
-    
+    # result_files = []
+    # for root, dirs, files in os.walk('results'):
+    #     for file in files:
+    #         if file == 'exp_results.json':
+    #             result_files.append(os.path.join(root, file))
+    result_files = [
+        "results/Qwen2.5_Series_Prisoners_Dilemma/Qwen2.5_Series_Prisoners_Dilemma_Prisoners_Dilemma_Qwen2.5-3B-Instruct_20250510_221101/exp_results.json"
+    ]
     if not result_files:
         logger.error("No experiment result files found!")
         return

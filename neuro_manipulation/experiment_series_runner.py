@@ -336,23 +336,44 @@ class ExperimentSeriesRunner:
         # Create a copy of the config that we can modify
         exp_config = dict(self.exp_config)
         
-        # Update game and model in config
-        exp_config['experiment']['game']['name'] = game_name_str
+        # Update model in config
         exp_config['experiment']['llm']['model_name'] = model_name
+        
+        # Initialize game section if it doesn't exist (since we removed defaults)
+        if 'game' not in exp_config['experiment']:
+            exp_config['experiment']['game'] = {}
         
         game_name = GameNames.from_string(game_name_str)
         repe_eng_config = get_repe_eng_config(model_name)
         game_config = get_game_config(game_name)
         
-        if game_name.is_sequential():
-            game_config['previous_actions_length'] = exp_config['experiment']['game']['previous_actions_length']
+        # Apply game-specific configurations if available
+        games_config = exp_config['experiment'].get('games_config', {})
+        if game_name_str in games_config:
+            game_specific_config = games_config[game_name_str]
+            
+            # Apply all game-specific settings to game_config
+            for key, value in game_specific_config.items():
+                game_config[key] = value
+                
+            # Also update the experiment config for backward compatibility
+            for key, value in game_specific_config.items():
+                if key in ['previous_actions_length', 'previous_trust_level', 'previous_offer_level']:
+                    exp_config['experiment']['game'][key] = value
+        elif game_name.is_sequential():
+            # For sequential games without specific config, raise an error to be explicit
+            raise ValueError(
+                f"Game '{game_name_str}' is a sequential game but has no configuration in 'games_config'. "
+                f"Please add configuration for this game with required attributes like 'previous_actions_length'."
+            )
 
         experiment = EmotionGameExperiment(
             repe_eng_config, 
             exp_config, 
             game_config,
             repeat=exp_config['experiment']['repeat'],
-            batch_size=exp_config['experiment'].get('batch_size', 300)
+            batch_size=exp_config['experiment'].get('batch_size', 300),
+            sample_num=exp_config['experiment'].get('sample_num', None)
         )
         
         return experiment
@@ -480,12 +501,18 @@ class ExperimentSeriesRunner:
         games = self.exp_config['experiment'].get('games', [])
         models = self.exp_config['experiment'].get('models', [])
         
-        # If no games/models specified, use the defaults from config
+        # Validate that games and models are specified
         if not games:
-            games = [self.exp_config['experiment']['game']['name']]
+            raise ValueError(
+                "No games specified in configuration. Please add games to the 'games' list in your config file. "
+                "Example: games: ['Escalation_Game', 'Trust_Game_Trustor']"
+            )
         
         if not models:
-            models = [self.exp_config['experiment']['llm']['model_name']]
+            raise ValueError(
+                "No models specified in configuration. Please add models to the 'models' list in your config file. "
+                "Example: models: ['/path/to/model1', '/path/to/model2']"
+            )
         
         self.logger.info(f"Starting experiment series with {len(games)} games and {len(models)} models")
         

@@ -1,0 +1,56 @@
+# Quick Test Configuration for Option Probability Experiment
+# Minimal setup for fast testing and validation
+
+experiment:
+  name: "quick_test_emotion_context"
+  description: "Quick test of emotion-context interaction on choice probabilities"
+  
+  emotions:
+    - "neutral"
+    - "anger"
+  
+  emotion_intensities:
+    - 0.0  # neutral
+    - 1.5  # anger
+  
+  context_conditions:
+    - "with_description"
+    - "without_description"
+  
+  # Small sample for quick testing
+  sample_num: 5    # Only 5 scenarios per condition
+  batch_size: 2    # Small batch size
+  
+  output:
+    base_dir: "experiments/quick_test_results"
+    save_raw_results: true
+    save_statistical_analysis: true
+    save_summary_report: true
+
+# Use smaller model for quick testing
+repe_config:
+  model_name_or_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  
+  # vLLM settings optimized for speed
+  tensor_parallel_size: 1
+  gpu_memory_utilization: 0.6
+  max_num_seqs: 8
+  enforce_eager: true
+  trust_remote_code: true
+  
+  # Minimal control settings
+  control_method: "reading_vec"
+  block_name: "model.layers.{}.self_attn"
+  coeffs: [0.0, 1.0]
+
+# Simple game config
+game_config:
+  game_name: "prisoners_dilemma"
+  data_path: "data_creation/scenario_creation/langgraph_creation/Prisoners_Dilemma_all_data_samples.json"
+  decision_class: "binary_choice"
+
+# Minimal logging
+logging:
+  level: "INFO"
+  log_to_file: false
+  log_file_prefix: "quick_test" 
