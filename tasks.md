@@ -67,3 +67,15 @@
     - [ ] Validate that sequence probabilities are accurately measured for all behavior choices
     - [ ] Verify statistical analysis correctly identifies interaction effects
     - [ ] Test edge cases and ensure robust error handling
+
+## LLM API Server Development
+
+- [x] **VAN Mode: Enable vLLM Hook Server as OpenAI Server** (Level 1 - Direct Implementation)
+  - [x] **IMPLEMENT Mode: Create OpenAI-compatible server with vLLM hook integration**
+    - [x] Design init_openai_server.py script to start vLLM server with emotion hooks
+    - [x] Implement command-line interface for emotion selection and model configuration
+    - [x] Create OpenAI-compatible API endpoints that integrate RepControlVLLMHook
+    - [x] Add proper error handling and logging for server operations
+    - [x] Create test case to verify server initiation and client communication
+    - [x] Write documentation for server setup and usage
+    - [x] Validate OpenAI client compatibility with hooked model responses
