@@ -1,0 +1,75 @@
+site_name: LLM EmoBehav Game Theory
+site_url: https://example.com/ # Replace with your actual site URL when ready to deploy
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  language: en
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+      primary: indigo
+      accent: indigo
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+      primary: indigo
+      accent: indigo
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+# Copyright
+copyright: Copyright &copy; 2024 YOUR NAME/ORGANIZATION HERE # Update this
+
+nav:
+  - Home: index.md
+  - Modules: # Placeholder from old index, to be reviewed
+    - Neuro-Manipulation: code_readme/neuro_manipulation/README.md # If this file exists or is created
+  - Reference:
+    - Emotion Analysis: reference/emotion_analysis.md
+    - Experiment Report Naming: reference/experiment_report_naming.md
+    - Experiment Series: reference/experiment_series_README.md
+    - Experiment Time Tracking: reference/ExperimentTimeTracking.md
+    - Game Tree: reference/game_tree.md
+    - Model Download Management: reference/model_download_management.md
+    - Model Layer Detector: reference/model_layer_detector.md
+    - Payoff Matrices: reference/payoff_matrices.md
+    - Prompt Format: reference/prompt_format.md
+    - Prompt Wrapper: reference/prompt_wrapper.md
+    - Scenario Creation Graph: reference/scenario_creation_graph.md
+    - Statistical Engine: reference/statistical_engine.md
+    - vLLM Compatibility: reference/vllm_compatibility.md
+    - vLLM Hook Implementation: reference/vllm_hook_implementation.md
+    - Sequence Probability vLLM Hook: reference/sequence_probability_vllm_hook.md
+  - Code READMEs: # Added section for code module READMEs
+    - LangGraph Scenario Creation: code_readme/data_creation/scenario_creation/langgraph_creation/README.md
+    - RepE Emotion Extraction: code_readme/neuro_manipulation/repe/README_extract_emotion_repe.md
+    - Neuro-Manipulation Tests: code_readme/neuro_manipulation/tests/README.md
+  - Contributing to Doc: documentation_guide.md
+  # - Testing: # Placeholder from old index, to be reviewed
+  #   - VLLM Hook Tests: reference/ ... # Path depends on where this file would live

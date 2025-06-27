@@ -1,1017 +1,1017 @@
 [
     {
-        "reasoning": "This stimulus involves someone else taking credit for your work, which blocks you from receiving the reward or recognition you deserve. This aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'] because the stimulus creates an unattainable reward due to external factors blocking recognition of your efforts.",
         "stimulus": "Someone takes credit for your hard work at the office.",
+        "reasoning": "This situation involves a reward (recognition for hard work) that is unattainable due to an external block (someone else taking credit). The individual is prevented from receiving the deserved reward by another person's actions, fitting the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "Being cut off in traffic is generally perceived as an external action that blocks one's progress on the road. This aligns with an 'ExternalBlock' as the driving path is thwarted by another driver. It can also connect to a 'Threat' as it poses a potential danger or risk to one's safety, triggering a controlled response to avoid an accident.",
         "stimulus": "You're cut off in traffic while driving home.",
+        "reasoning": "Being cut off in traffic can be perceived as a threat to safety (Threats), and the situation is typically inescapable and not under the individual's control (Inescapable, not Controllable).",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves discovering damage to a personal possession after it has been left in a public space. The anger is triggered by the realization that the car was damaged without one's control, due to the external environment, which could include other people carelessly causing the scratch or other external factors. This aligns with the 'ExternalBlock' as the car's functioning or aesthetic is hindered by an uncontrollable external event.",
         "stimulus": "You discover a scratch on your new car in the parking lot.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "The stimulus involves discovering damage to a valued possession (the car), which can trigger feelings of threat or loss. However, the situation is not directly threatening to personal safety, nor is it clearly controllable or inescapable in the moment. It also does not involve an unattainable reward or an external block to a reward. Therefore, it does not fit neatly into either of the provided trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus describes a situation where an individual arrives on time for a restaurant reservation but finds that it was given away. This situation resembles an example of a reward being unattainable due to an external block - the 'reward' here is the dining experience the person anticipated. However, it is unattainable because the reservation was not honored despite the person being punctual, and the cause of this issue is external to the individual and beyond his control (the restaurant's decision or mistake). Therefore, the appropriate trigger type is 'Reward, Unattainable, ExternalBlock'.",
         "stimulus": "Your reservation at a restaurant is given away, despite being on time.",
+        "reasoning": "The situation involves a desired outcome (dining at the restaurant) being blocked by an external factor (the restaurant giving away the reservation), making the reward unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The anger stimulus involves the spread of false information, which poses a social threat to one's reputation. This could be perceived as a threat, something that, to an extent, might be controlled by addressing the issue directly (e.g., confronting the person), yet it can also feel inescapable due to the widespread nature of rumors. Therefore, it most closely matches the trigger type involving threats.",
         "stimulus": "Someone spreads false rumors about you in your community.",
+        "reasoning": "This situation involves a social threat to one's reputation and standing in the community. The individual may feel threatened, and the situation may be perceived as inescapable or uncontrollable, depending on the context. However, the core of the stimulus is a threat to social status and well-being.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "In this situation, the stimulus is being unfairly blamed for a mistake. This could be interpreted as an external block in achieving one's goals or recognition at work due to an inaccurate attribution of fault. Therefore, this trigger can be categorized as part of the 'ExternalBlock', which falls under the trigger type ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "You're unfairly blamed for a mistake at work that wasn't your fault.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "Being unfairly blamed is a negative event that can be perceived as a threat to one's reputation or job security. The situation may feel inescapable if you have little control over how others perceive the event or if you cannot easily correct the misunderstanding. This aligns with the 'Threats', 'Controllable', 'Inescapable' trigger type, as the threat is present and may feel uncontrollable or inescapable.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves someone borrowing and damaging your book, which can be seen as an action that could have been avoidable if the person had been more careful. The anger that arises from this situation is due to a violation of trust and respect for your belongings. It is a situation where the actions of another person have caused harm to something important to you, and this harm could have been controlled or avoided, making it a 'Controllable' trigger. However, since the pages are already torn, it also becomes 'Inescapable' until addressed. Despite the threat of loss and damage, it's more about the controllable aspect of the situation.",
         "stimulus": "Someone borrows your book and returns it with torn pages.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This situation involves a negative event (damage to your property) caused by another person's actions. The emotional trigger is related to a threat to your belongings, and you may feel upset or angry. The situation is potentially controllable (you can address it with the person or set boundaries in the future), but it is not inescapable, nor is it about an unattainable reward. Therefore, it best fits under 'Threats' and 'Controllable'. However, since the provided trigger types require all three ('Threats', 'Controllable', 'Inescapable') together, and this situation is not inescapable, it does not fully match either trigger type.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus describes a situation where the individual expects a reward (the food order) but is met with an unattainable or unsatisfactory outcome (the food arriving late and cold), often due to external circumstances beyond control (such as delivery delays). This aligns with the trigger type of 'Unattainable' and 'ExternalBlock' since the reward, in this case, a satisfactory food delivery, is blocked by external factors.",
         "stimulus": "Your food order arrives late and cold.",
+        "reasoning": "This situation involves an expectation of a reward (a hot, timely meal) that is not fulfilled due to an external factor (the delivery service). The individual cannot attain the desired reward because of an external block, not due to their own actions.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "Being ignored during a group discussion can lead to feelings of anger because it creates a sense of being undervalued or marginalized. This situation is typically seen as an external block to participation or being heard, which is why it fits the 'Reward', 'Unattainable', 'ExternalBlock' category.",
         "stimulus": "You're ignored during a group discussion.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "Being ignored in a group discussion can be perceived as a social threat, potentially leading to feelings of exclusion or rejection. The situation may feel inescapable if the person cannot change the group's behavior or gain their attention, fitting the 'Threats, Controllable, Inescapable' trigger type.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus of a missing valuable item at a friend's gathering can trigger anger due to the perception that the item has been prevented from being in one's possession. This aligns with the trigger type 'Reward', 'Unattainable', 'ExternalBlock', as the individual is unable to gain or retain the reward (in this case, the valuable item) due to an external block (possibly another person's actions or negligence).",
         "stimulus": "Your valuable item goes missing at a friend's gathering.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "The situation involves a potential threat (loss of a valuable item), but it is not clear if the threat is controllable or inescapable from the information provided. It also does not clearly fit the 'Reward, Unattainable, ExternalBlock' category, as there is no mention of a reward being blocked. Therefore, it does not fit neatly into either trigger type.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The situation involves an expectation or promise that was not fulfilled, preventing the person from achieving the expected connection or meeting. This aligns with the 'ExternalBlock' subcategory of the 'Reward', 'Unattainable', 'ExternalBlock' trigger type, as someone else's action has blocked the anticipated outcome.",
         "stimulus": "Someone promises to meet but doesn't show up or notify.",
+        "reasoning": "This situation involves an expectation (the meeting) that is not fulfilled due to another person's actions, which can be perceived as an external block to attaining a desired social interaction or reward. The individual is unable to attain the expected reward (the meeting) due to someone else's behavior, fitting the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus of receiving an unfair grade on a project is likely to provoke anger due to the perception of an external block to a reward. The reward, in this case, is the expected fair grade. The grade can be seen as unattainable (because you've already been graded) or blocked externally (by a teacher or grader). Thus, the stimulus fits into the 'Reward', 'Unattainable', 'ExternalBlock' trigger type.",
         "stimulus": "You receive an unfair grade on a project you worked hard on.",
+        "reasoning": "The stimulus involves a desired outcome (a good grade) that is blocked by an external factor (the unfair grading), making the reward unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The loud music from the neighbor late at night can be considered an external block to peace and rest, which individuals could see as an obstacle to attaining a restful and quiet environment for sleep. This sort of disruption is controllable in the sense that the neighbor can be asked to lower the volume or stop playing music late at night.",
         "stimulus": "The neighbor plays loud music late into the night.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation can be perceived as a threat to one's comfort or sleep, and it is often seen as inescapable if the neighbor does not respond to requests to stop. The individual may feel a lack of control over the situation, fitting the 'Threats, Controllable, Inescapable' trigger type.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "In this scenario, someone making fun of something you're passionate about can be perceived as a threat to your self-esteem or identity, particularly if you identify closely with that passion. This can feel like an attack, which triggers anger through a sense of threat, making it fall into the category of ['Threats', 'Controllable', 'Inescapable'].",
         "stimulus": "Someone makes fun of something you're passionate about.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This stimulus involves a social threat to one's self-esteem or values, but it does not clearly fit the categories of 'Threats, Controllable, Inescapable' (which implies a threat that is both controllable and inescapable) or 'Reward, Unattainable, ExternalBlock' (which involves being blocked from a reward). The situation is more about social evaluation or criticism, not a direct threat or blocked reward as defined by the trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "Finding someone going through your personal belongings can trigger anger as it involves the perception of a threat to one's personal space and privacy. This situation indicates an external threat, which is related to the trigger type 'Threats'. Additionally, this situation might feel controllable if the person feels they can confront the intruder or address the situation. Therefore, this stimulus fits the trigger type ['Threats', 'Controllable', 'Inescapable'].",
         "stimulus": "You find your personal belongings being rifled through.",
+        "reasoning": "This situation involves a perceived threat to one's privacy and security. The trigger is a threat, and the controllability depends on whether the person can stop the intrusion or not. Since the scenario does not specify if escape or control is possible, but the core is a threat, it fits under the 'Threats' category.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation involves a new item breaking just after the return period ends, which sets up a scenario where the person affected is faced with something they likely desired and intended to use (the item), but now finds themselves unable to benefit from it due to timing restrictions on returns. This situation fits into the 'Reward' category. The item was a reward that the person wanted, but now it's unusable. The inability to return it due to the elapsed return period blocks the external goal of making use of or replacing the functioning item, which fits the 'Unattainable' and 'ExternalBlock' aspects of the trigger type.",
         "stimulus": "Your new item breaks just after the return period ends.",
+        "reasoning": "The stimulus describes a situation where a desired outcome (having a functioning new item) is blocked by an external factor (the return period has ended), making the reward (replacement or refund) unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves a situation where there is a hindrance in achieving the expected outcome, which is receiving the item in good condition. However, this issue is due to external factors (the damaged condition of the item) that block the reward of receiving a new, undamaged product. Therefore, it fits the trigger type where expectations or rewards are externally blocked, aligning with ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "An item you ordered online arrives in a damaged condition.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a negative outcome (damaged item), which may be perceived as a threat to one's expectations or resources. However, the situation is potentially controllable (e.g., you can contact customer service, request a replacement or refund). Therefore, it fits the 'Threats, Controllable, Inescapable' trigger type.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "Being informed last-minute that you need to work over the weekend can be perceived as an external block to your personal plans or leisure time, which were potentially rewarding. This aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'] since you are being externally blocked from obtaining the anticipated reward of enjoying your weekend.",
         "stimulus": "You're told last minute that you need to work over the weekend.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a demand or imposition (having to work unexpectedly), which can be perceived as a threat to personal time or autonomy. The individual may feel they have little control or ability to escape the situation, making it inescapable and uncontrollable.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves someone interrupting while you're speaking, which can be seen as a disruption of the normal flow of conversation. This interruption can be interpreted as an obstruction to communication or expression, which aligns with the concept of an 'external block' towards effective communication. Therefore, the stimulus fits within the trigger type involving external block.",
         "stimulus": "Someone always interrupts you while you're speaking.",
+        "reasoning": "The stimulus involves a situation where a person is prevented from expressing themselves due to another's repeated interruptions. This can be seen as an external block to achieving the 'reward' of being heard or expressing oneself. The frustration arises from an unattainable goal (speaking without interruption) due to an external factor (the interrupter).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The anger stimulus here results from the situation where a friend's action (whether accidental or not) has led to the loss of saved game data. The game data can be considered a reward or achievement that is now unattainable due to an external block, which in this case is the friend's accidental action. The stimulus fits the trigger type of \"['Reward', 'Unattainable', 'ExternalBlock']\" because the player's goal (game progress) is blocked externally.",
         "stimulus": "Your saved game data is deleted accidentally by a friend.",
+        "reasoning": "The stimulus involves a loss (deleted game data) caused by an external agent (a friend), which prevents the individual from attaining the reward of continuing their game progress. This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (game progress) is now unattainable due to an external block (the friend's action).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "Finding trash thrown into your garden can be seen as an external block to maintaining your personal environment's cleanliness and order, but there\u2019s also an implication of threat or disrespect by someone else\u2019s act. While it could evoke feelings of anger due to the violation of personal space and property, it does not clearly fit the 'reward/unattainable' or 'threat/inescapable' strictly. It's more about a violation rather than being blocked from a reward or being physically threatened, hence there's an element of controllability on how to address it.",
         "stimulus": "You find trash thrown into your garden.",
+        "reasoning": "This situation involves an external negative event (trash in your garden), which can be perceived as a threat to your property or personal space. The controllability depends on whether you can do something about it (e.g., clean up, install cameras, confront the person). However, the stimulus as presented does not specify if the threat is controllable or inescapable, but it fits best under the 'Threats' category.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus of someone taking your reserved parking spot falls under the category of 'Controllable' anger trigger. This is because the situation involves another person's action that is viewed as controllable and potentially deliberate, triggering a sense of injustice and entitlement.",
         "stimulus": "Someone takes your reserved parking spot.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This situation involves a desired reward (the reserved parking spot) that is unattainable due to an external block (someone else taking it). It does not directly involve a threat or controllability/inescapability.",
+        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves a peer belittling someone's achievements, which can be perceived as a threat to one's self-esteem or social standing. The belittling can be seen as a threat and may feel inescapable depending on the social context or relationship dynamics. It doesn't fit into the reward or unattainable categories as it is more about interpersonal conflict and perceived threat to one's status or dignity.",
         "stimulus": "A peer belittles your achievements.",
+        "reasoning": "This stimulus involves a social threat to self-esteem or status, which can be perceived as a threat. The controllability and escapability depend on the context, but generally, being belittled by a peer is a threat that may feel inescapable and not easily controllable, especially in repeated or public situations.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves someone else taking credit for your ideas, thereby blocking the proper reward or recognition that you expect for your work. This situation is external to the individual's immediate control, as they're being blocked by another person's actions, making it an 'ExternalBlock' to gaining the 'Reward' that is unattainable due to someone else's interference.",
         "stimulus": "Your ideas are stolen and presented without giving you credit.",
+        "reasoning": "This situation involves a desired outcome (recognition or reward for your ideas) being blocked by an external factor (someone else taking credit). The emotional trigger is frustration or anger due to an unattainable reward because of an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "Being left waiting for hours without an explanation could trigger anger as an external block to an expected event or activity. The lack of communication or explanation creates a perceived barrier to understanding what is happening or moving forward, similar to having an unattainable reward due to an external factor causing blockage.",
         "stimulus": "You're left waiting for hours without an explanation.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation can evoke feelings of frustration, helplessness, or anxiety. The lack of explanation and inability to control the situation makes it feel inescapable and possibly threatening to one's sense of agency or dignity. It fits the 'Threats', 'Controllable', 'Inescapable' trigger type because the person cannot control or escape the situation.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves an invasion of one's personal privacy, which can feel like a direct threat to one's personal boundaries and can provoke anger. Since this is primarily about personal privacy and boundary being breached, it is best classified under a perceived threat. The situation has elements of being Controllable and Inescapable because you can take measures to prevent future occurrences and also feel trapped by the violation respectively.",
         "stimulus": "You find out someone went through your personal diary.",
+        "reasoning": "This situation involves a violation of privacy, which can be perceived as a threat to one's personal boundaries and safety. The individual may feel exposed, vulnerable, and unable to undo the breach, making the situation inescapable and uncontrollable.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves a coworker taking something (office supplies) that belongs to you without permission. This can be categorized as a 'control issue' and a 'boundary violation', which is related to what you can control in your environment. This relates to the trigger type \"['Threats', 'Controllable', 'Inescapable']\" because the person perceiving this action may view the coworker's behavior as a threat to their boundaries or personal space (taking things that belong to them), and it's a situation that, while unpleasant, seems controllable by addressing it with the coworker.",
         "stimulus": "A coworker constantly takes your office supplies without asking.",
+        "reasoning": "This situation involves a threat to personal resources (office supplies) and may evoke feelings of frustration or anger. The threat is potentially controllable (e.g., by confronting the coworker or locking supplies), and not necessarily inescapable. Therefore, it fits the 'Threats, Controllable, Inescapable' trigger type, with emphasis on the controllable aspect.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The anger here is likely triggered by the external block toward achieving or maintaining a clean car (which could be a perceived reward). Hence, it aligns with the trigger type \"['Reward', 'Unattainable', 'ExternalBlock']\" as the main frustration comes from an external action (the passing vehicle) that prevents maintaining the desired state of the car.",
         "stimulus": "Your freshly washed car gets splattered with mud by a passing vehicle.",
+        "reasoning": "The situation involves an external event (the passing vehicle) that ruins the reward of having a clean car. The individual cannot attain the reward (a clean car) due to an external block (the mud splatter caused by someone else).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This situation involves an external event (the friend cancelling plans) and can be seen as an external block to enjoying time with the friend. It may also be perceived as an unattainable reward when one desires the enjoyment that comes from spending time with a close friend. Thus, it fits the trigger type related to a reward being unattainable due to an external block.",
         "stimulus": "A close friend cancels plans at the very last moment, repeatedly.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may evoke feelings of rejection or disappointment, but it does not clearly fit into the 'Threats' (controllable or inescapable) category, nor does it directly involve an unattainable reward due to an external block. The cancellation is interpersonal but not necessarily a threat or a blocked reward as defined by the trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus describes a situation where advice is ignored, which can result in frustration or anger when the resulting problem occurs. This falls under the trigger type ['Reward', 'Unattainable', 'ExternalBlock'] because the desired outcome (acceptance of advice) is blocked by an external factor (the person ignoring the advice), making the reward (successful outcome) unattainable.",
         "stimulus": "Your advice is blatantly ignored, leading to a predictable problem.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "The stimulus describes a situation where one's advice is ignored, resulting in a negative outcome. This can be perceived as a threat to one's sense of agency or competence, and the problem that arises is predictable but not necessarily escapable or controllable by the person whose advice was ignored. However, the main emotional trigger here is the threat to self-esteem or social standing, and the situation may feel inescapable if the person cannot change others' behavior.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The scenario describes a situation where an individual's behavior consistently disrupts a shared environment, likely causing frustration among others who expect the space to be kept clean. This belongs to the \"Controllable\" trigger type since the person causing the mess has control over their actions but chooses not to manage their behavior to maintain cleanliness. The issue is not a threat or due to an unattainable reward; rather, it is linked to a lack of personal responsibility which those affected may perceive as controllable by the individual responsible.",
         "stimulus": "Someone habitually leaves common areas messy after using them.",
+        "reasoning": "This situation could be perceived as a threat to one's sense of order or shared responsibility, and it may feel inescapable if the person continues the behavior despite requests to stop. However, it could also be seen as controllable if one feels able to address the issue directly. Since the trigger types provided group 'Threats', 'Controllable', and 'Inescapable' together, this fits best under that category.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves a person talking loudly on their phone, which can cause irritation or anger to others nearby who are seeking a quiet environment. This can be seen as an external block to achieving a peaceful or calm setting in that moment. The person talking loudly creates an obstruction to the desired quietness, thus it can be classified under the trigger type \"['Reward', 'Unattainable', 'ExternalBlock']\" as the quietness is the reward that becomes unattainable due to the disturbance.",
         "stimulus": "A person talks loudly on their phone in a quiet environment.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may be annoying or disruptive, but it does not clearly represent a threat (controllable or inescapable), nor does it involve a reward that is unattainable due to an external block. It is more of a social annoyance or irritation, not fitting the specified trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "Being spoken over during an important meeting can trigger feelings of anger due to the perception of an external block or barrier that prevents one from effectively communicating their point or contributing to the discussion. This is an example of an external interruption that affects one's social standing or professional goals.",
         "stimulus": "You're spoken over during an important meeting.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "Being spoken over in a meeting can be perceived as a threat to one's social status or self-esteem, and the situation may feel inescapable if the meeting is ongoing and you cannot easily address the interruption. It is not about a reward being blocked, but rather about a threat to one's position or voice.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves someone frequently spoiling movies or books, which hinders the enjoyment and the element of surprise, often valued in narratives. This can be seen as an 'ExternalBlock' to the 'Reward' of enjoying a story unfold naturally and the pleasure associated with suspense or surprise elements. Therefore, it fits under the category of ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "Someone frequently spoils movies or books for you.",
+        "reasoning": "This situation involves a desired reward (the enjoyment or surprise of a story) being blocked by an external factor (another person's behavior). The individual cannot attain the full reward due to someone else's actions, fitting the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The anger in this scenario is triggered by an unmet expectation related to personal relationships, but it doesn't quite fit the specific trigger types related to threats or external blocks. It may be personally upsetting, but it cannot be classified as a threat or external obstacle in the context of reward seeking.",
         "stimulus": "A close person forgets an important date for you.",
+        "reasoning": "This stimulus involves a social disappointment or hurt, but it does not clearly fit into the provided trigger types. It is not a direct threat (controllable or inescapable), nor is it about an unattainable reward due to an external block. It is more about interpersonal expectations and emotional hurt.",
         "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus describes a situation where an individual's feedback is not acknowledged or valued. This is a case where there is an external block or obstacle in terms of communication and validation, which could be tied to feelings of reward like recognition or appreciation being unattainable due to the dismissal. Therefore, it can be classified under the 'ExternalBlock' and 'Unattainable' triggers related to 'Reward.'",
         "stimulus": "Your feedback is constantly ignored or dismissed.",
+        "reasoning": "This situation involves a person seeking recognition or validation (a form of social reward), but being blocked by external factors (others ignoring or dismissing them). The unattainability of the reward is due to an external block, not the person's own actions.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This situation involves a colleague showing up late, which can be seen as an external block preventing the team from progressing as planned. The delay caused by the colleague's tardiness is a hindrance to achieving the reward of completing projects on time. Hence, it fits the trigger type of ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "A colleague constantly shows up late, delaying team progress.",
+        "reasoning": "This situation involves an external factor (the colleague's lateness) blocking the team's ability to achieve its goals, which can be seen as a reward (progress) being unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "Being accused of something you didn't do is a threat to one's reputation and autonomy, and it often feels inescapable as the person may not be able to control how others perceive or react to the accusation. This scenario involves involuntary reactions that are defensive and protective.",
         "stimulus": "You're accused of something you didn't do.",
+        "reasoning": "Being falsely accused is a threatening situation, often perceived as inescapable and uncontrollable, as the individual may feel powerless to change others' perceptions or the situation itself.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves the roommate consuming your labeled food, which is perceived as an external block to satisfying your need or desire to have your own food available. This aligns with the 'Reward' category, where the food (reward) has become unattainable due to an external block (roommate).",
         "stimulus": "Your roommate eats your labeled food from the fridge.",
+        "reasoning": "This situation involves a desired reward (your food) being blocked by an external agent (your roommate), making the reward unattainable due to an external block. It does not directly involve a threat to safety or well-being, nor is it about controllability or inescapability in the context of threats.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus is an example of someone neglecting their responsibilities, which creates a situation where the speaker feels burdened with additional tasks. This scenario fits the trigger type of \"['Threats', 'Controllable', 'Inescapable']\" as it presents an inescapable situation where the person cannot easily avoid doing the additional work, and it may feel like a threat to their personal time or resources.",
         "stimulus": "Someone neglects their responsibilities, leaving them for you.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This situation may evoke frustration or stress, but it does not clearly fit the 'Threats' (controllable or inescapable) or 'Reward' (unattainable due to external block) categories. It is more about unfairness or burden rather than threat or blocked reward.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus is about someone using your belongings without permission, which can feel like a perceived threat to personal boundaries or possessions. Therefore, it fits under the trigger type of 'Threats', as the person feels their space or belongings are threatened. It is seen as 'Controllable' if the person believes they can address this issue, but also 'Inescapable' if the person feels it happens repeatedly and they can't stop it.",
         "stimulus": "A person habitually uses your belongings without permission.",
+        "reasoning": "This situation involves a perceived threat to one's personal boundaries and possessions. The trigger is related to a threat, and the person may feel that the situation is inescapable if it happens repeatedly and they feel unable to stop it. It fits the 'Threats', 'Controllable', 'Inescapable' category because it is a threat to personal space and may feel uncontrollable or inescapable.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation described involves being blocked from achieving a goal, which is the opportunity to speak in a debate. This scenario fits under the trigger type \"ExternalBlock\" because an external factor (e.g., not being called on or being interrupted) is preventing the individual from participating in the debate.",
         "stimulus": "You're not given a chance to speak in a debate.",
+        "reasoning": "The stimulus describes a situation where an individual is prevented from participating (speaking) in a debate, which can be interpreted as being blocked from attaining a goal (the opportunity to speak or express oneself). This aligns with the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (speaking) is unattainable due to an external block (not being given a chance).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves another person's careless action leading to damage of your possessions (paperwork). The anger can arise from the controllable nature of the other person's action which was responsible for the accident. It can also be perceived as 'threat' to your work as it creates more work or jeopardizes the state of your work. The situation is controllable as it could have been avoided by being more careful, and inescapable as the damage is already done and needs rectification.",
         "stimulus": "Someone carelessly spills a drink on your paperwork.",
+        "reasoning": "The situation involves a negative event (spilled drink on paperwork) caused by another person's carelessness. This can be perceived as a threat to one's work or progress. The controllability depends on whether the person can do something about the situation (e.g., clean up, redo the paperwork), but the stimulus as described does not specify inescapability or uncontrollability. It does not fit the 'Reward' category. However, it fits best under 'Threats' as the primary trigger, with possible controllability depending on context.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The anger stimulus here is the failure of a project, which is an external block on an outcome the person desired (likely for a reward or success). The laziness of others represents an external influence that blocks the desired outcome, thereby making it unattainable because it is blocked by factors outside the person's control. Thus, it fits the trigger type ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "A project you've invested in fails because of others' laziness.",
+        "reasoning": "The stimulus describes a situation where a desired outcome (project success) is blocked by an external factor (others' laziness), making the reward unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The situation describes a scenario where the person feels they are being blocked or excluded from participating in team activities. This can be seen as an external block preventing the person from attaining the social reward of inclusion or participation in team activities. It is not necessarily a direct threat, but more about an external barrier to achieving a desirable outcome.",
         "stimulus": "You're constantly being sidelined in team activities.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "Being sidelined repeatedly in team activities can be perceived as a threat to one's social standing and sense of belonging. The situation feels inescapable if it happens consistently and is outside the individual's control, fitting the 'Threats, Controllable, Inescapable' trigger type.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "When someone breaks a promise, it implies a failure to meet expectations, which can lead to feelings of frustration and anger. This situation can be considered 'controllable' since breaking promises is within a person's control, and the promise-breaking acts as a block or obstacle to what the individual was expecting or hoping to achieve. However, it fits better into the 'Controllable' aspect because the anger may arise from the perception that the promise-breaker should have been able to fulfill their promise.",
         "stimulus": "Someone breaks a promise they made to you.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "The stimulus involves a social interaction where an expected positive outcome (the promise being kept) is blocked by another person's action. This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (promise fulfillment) is unattainable due to an external block (the other person's choice).",
+        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves a personal boundary being violated, which can be perceived as a threat to one's privacy and autonomy. This situation is not about an external block to a reward but rather a threat, as it challenges a sense of personal control over one's private information. Additionally, the act of someone else opening your mail can be viewed as inescapable because once it is done, it cannot be undone.",
         "stimulus": "Your mail is opened by someone else without your consent.",
+        "reasoning": "This situation involves a violation of privacy and can be perceived as a threat to personal boundaries and security. The individual cannot control the action once it has occurred, and it is inescapable in the moment.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus of being given unrealistic deadlines without prior notice is an external factor that creates an obstacle in completing tasks in a timely manner. This can be seen as an external block to achieving work-related goals and could lead to feelings of frustration as a form of anger response. By categorizing it within the provided trigger types, it fits under the 'Reward', 'Unattainable', 'ExternalBlock' category due to the unattainable nature of the reward (meeting the deadline) and the external block (unexpected and unrealistic deadlines).",
         "stimulus": "You're given unrealistic deadlines without prior notice.",
+        "reasoning": "This situation involves an external block (the unrealistic deadline) that prevents the person from attaining a goal (completing work on time), which fits the 'Reward, Unattainable, ExternalBlock' trigger type. The person is being blocked from achieving a desired outcome due to circumstances outside their control.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus describes a situation where someone's boastful nature overshadows another person's efforts. This can be seen as an external block to achieving recognition or acknowledgment for one's efforts, as the boastful behavior diverts attention away from the person's contributions. This fits under the category of an external block in the ['Reward', 'Unattainable', 'ExternalBlock'] trigger type, as the reward (recognition) is unattainable due to the external factor (boastful person).",
         "stimulus": "Your efforts are constantly overshadowed by someone's boastful nature.",
+        "reasoning": "The stimulus describes a situation where an individual's achievements are not recognized due to another person's behavior. This could be interpreted as an external block to receiving social reward or recognition, which aligns with the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "Being patronized can provoke anger because it often involves someone belittling or dismissing your opinions, which is perceived as a social threat. This can be seen as an inescapable situation if the discussion continues, making it a threat not easily avoided. Thus, it aligns with the trigger type involving a feeling of being threatened and possibly feeling the situation is inescapable.",
         "stimulus": "Someone is patronizing towards you in a discussion.",
+        "reasoning": "Being patronized in a discussion can be perceived as a social threat, potentially undermining one's status or self-esteem. The situation may feel inescapable if the discussion must continue or if the person holds power over you, and it may or may not be controllable depending on the context. However, the core element is the threat to social standing or respect.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves being denied an opportunity for no valid reason, which can be seen as an external block towards a potential reward (in this case, an opportunity). The anger stems from the frustration of being unable to attain something desirable due to external circumstances.",
         "stimulus": "You're denied an opportunity for no valid reason.",
+        "reasoning": "Being denied an opportunity, especially without a valid reason, represents a situation where a desired reward or goal is blocked by an external factor. This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the unattainability is due to an external block rather than internal factors or lack of effort.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The lack of respect for personal boundaries can be seen as a threat to one's personal space and autonomy. This triggers feelings of anger as a response to a perceived threat. Since the boundaries could be controlled or managed by standing ground or communicating clearly, it fits under 'Controllable'. Moreover, if the person continues to disrespect boundaries despite being asked to stop, it could be seen as an inescapable situation where the respect for boundaries isn't attained. This situation mostly aligns with the trigger type 'Threats, Controllable, Inescapable'.",
         "stimulus": "Someone doesn't respect your personal boundaries.",
+        "reasoning": "This situation involves a threat to one's personal space and autonomy, which can be perceived as a threat. The controllability and escapability depend on the context, but generally, the violation of boundaries can feel inescapable and uncontrollable, especially if the person persists despite objections.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves an act of vandalism, which is a threat to one's property and is often considered a trigger for anger. This can be seen as 'Controllable' and possibly 'Inescapable' if you cannot prevent it. Hence, it fits the first trigger type.",
         "stimulus": "Your newly painted wall is graffitied by vandals.",
+        "reasoning": "This situation involves an external negative event (graffiti by vandals) that is likely perceived as a threat or harm to one's property. The individual may feel a lack of control over the situation (as the act has already occurred and was done by others), and it may feel inescapable because the damage is done and cannot be undone easily.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves a person not repaying a debt and avoiding confrontation, which creates a sense of an external block to receiving what is due. This situation can be interpreted as an external block because the avoidance and non-repayment obstruct the individual from attaining their goal, which is to retrieve the owed money. Although there is a social threat to the relationship, the primary focus is on the obstruction to a reward (the money owed) by another external entity (the debtor not paying back).",
         "stimulus": "A person doesn't repay a debt and avoids you.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a social threat (betrayal, loss of trust, or financial harm) that is largely outside the individual's control and cannot be easily escaped, as the other person is actively avoiding contact. This fits the 'Threats, Controllable, Inescapable' trigger type, as the threat is present and difficult to resolve or escape.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves not being acknowledged for one's contributions, which can be perceived as an external block to achieving the reward of recognition for hard work. This makes the stimulus fit the trigger type ['Reward', 'Unattainable', 'ExternalBlock'], as it reflects an unattainable reward due to an external block (lack of acknowledgment).",
         "stimulus": "You're not acknowledged for your contributions in a project.",
+        "reasoning": "The stimulus describes a situation where a person does not receive recognition (a form of reward) for their efforts. The lack of acknowledgment is due to an external factor (others not giving credit), making the reward unattainable because of an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "Being compared unfavorably to someone else can be viewed as an external block to personal recognition or acceptance, as it creates an unattainable standard. There's a sense of being externally obstructed from achieving esteem or approval when one is constantly compared to others. This fits the pattern of 'Reward' being 'Unattainable' due to 'ExternalBlock'.",
         "stimulus": "You're constantly being compared unfavorably to someone else.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This stimulus involves a negative social evaluation, which can be perceived as a threat to self-esteem or social standing. The situation is typically inescapable and not easily controllable by the individual, fitting the 'Threats, Controllable, Inescapable' trigger type.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The scenario of having one's privacy settings altered without their knowledge can be seen as an intrusion or a 'Threat' to one's personal control and security over their private information. This situation could also be perceived as 'Inescapable' because the individual was not aware of the change and thus could not prevent it immediately, nor do anything about it until they discover it. Given the elements of threat and inescapability present in this situation, the most fitting trigger type is \"['Threats', 'Controllable', 'Inescapable']\".",
         "stimulus": "Your privacy settings are altered without your knowledge.",
+        "reasoning": "This situation involves a threat to personal security and autonomy, and the individual has no control over the change, nor can they escape its consequences. This fits the 'Threats', 'Controllable', 'Inescapable' trigger type.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus describes a situation where the person is frequently at the center of jokes made by others. This could be seen as a form of social threat, potentially leading to feelings of humiliation or being undermined. It is likely to trigger feelings of anger as a response to these perceived social threats, especially if the person feels they are in an inescapable situation where they cannot stop the jokes or change the dynamic. Thus, 'Threats', 'Controllable', and 'Inescapable' components can be associated here as it's about a perceived threat in a social setting that feels inescapable if habitual.",
         "stimulus": "You're habitually made the butt of jokes.",
+        "reasoning": "Being habitually made the butt of jokes can be perceived as a social threat, potentially leading to feelings of humiliation, exclusion, or distress. The individual may feel unable to escape or control the situation, especially if it is persistent and occurs in a group setting.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation can be seen as an external block to a personal goal or expectation (being on time or having your time respected). It falls under the 'ExternalBlock' category because the person's actions are an obstacle to the punctuality or planning that was expected.",
         "stimulus": "A person doesn't value your time and keeps you waiting.",
+        "reasoning": "This situation involves another person preventing you from achieving your goal (being on time or having your time respected). The block is external (the other person's behavior), and the desired outcome (timely interaction) is unattainable due to this external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This stimulus involves an action that is inappropriately attributed to others, which is a situation where accountability is shifted. This can be viewed as an 'ExternalBlock' to the normal social moral function, as the responsible party is avoiding consequences and the person who recognizes the shirking might feel blocked from addressing the situation effectively.",
         "stimulus": "Someone shirks their responsibilities and places the blame on others.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This scenario involves a person avoiding accountability and shifting blame, which may cause frustration or anger in others. However, it does not directly involve a threat (controllable or inescapable) or an unattainable reward due to an external block. The emotional trigger here is more related to unfairness or injustice, which is not covered by the provided trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus \"Your trust is betrayed by someone you confided in\" can be seen as a trigger for anger primarily because it involves a violation of trust, which can be perceived as an interpersonal threat. This type of betrayal can also feel uncontrollable as the betrayed person might feel powerless in changing the other person's actions or regaining what was lost. Additionally, it can feel inescapable since the damage to trust has already occurred. Therefore, it fits best under the 'Threats, Controllable, Inescapable' trigger type.",
         "stimulus": "Your trust is betrayed by someone you confided in.",
+        "reasoning": "This situation involves a social or emotional threat, as betrayal undermines one's sense of safety and trust in relationships. The individual may feel vulnerable and unable to control the actions of the betrayer, making the threat seem inescapable and uncontrollable.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves a situation where the friend continually borrows money without repayment, creating an ongoing problem. The person experiencing this may become angry due to the perceived sense of betrayal and the frustration of an external block to their expectation of trust and financial return. However, this situation is more about the violation of trust and possibly feeling threatened by being taken advantage of repeatedly rather than being directly about an unattainable reward or feeling blocked from a financial return. It fits the category of 'Controllable' as the situation involves the perceived control over the relationship and could evoke feelings of inescapable betrayal or threat to financial well-being.",
         "stimulus": "A friend constantly borrows money but never pays back.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This situation involves a social interaction where the individual is being taken advantage of, which may evoke feelings of frustration, betrayal, or helplessness. However, it does not directly fit the 'Threats' (controllable or inescapable) or 'Reward' (unattainable due to external block) categories as defined. The scenario is more about social boundary violations and trust issues rather than a direct threat or blocked reward.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus of not being credited in a presentation that you largely worked on is related to an unattainable reward or achievement due to an external block. This situation involves an effort to gain recognition, which is a form of reward, being prevented by an external factor (not being credited correctly).",
         "stimulus": "You're not credited in a presentation you largely worked on.",
+        "reasoning": "This situation involves a reward (recognition/credit) that is unattainable due to an external block (someone else not crediting you). It does not directly involve a threat or controllability/inescapability in the sense of danger or harm, but rather a blocked positive outcome.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves someone disregarding a sign, which could imply an external block (someone's actions disrupting your environment). This aligns with the 'ExternalBlock' component of the 'Unattainable, ExternalBlock' trigger type as it involves an external factor disrupting a goal or situation.",
         "stimulus": "Someone disregards a clear sign and disrupts your environment.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "The stimulus involves another person ignoring a clear boundary or instruction, leading to a disruption. This can be perceived as a threat to one's sense of order or safety, and the disruption is caused by an external agent, making it potentially inescapable and not directly controllable by the individual.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus describes a scenario where a person is often ignored for opportunities without any clear reason. This can lead to frustration, especially if the person feels they are deserving but are externally blocked from these opportunities. The trigger type related to feeling blocked from achieving something desired due to outside factors fits here.",
         "stimulus": "You're frequently overlooked for opportunities without explanation.",
+        "reasoning": "The stimulus describes a situation where a person is denied opportunities, which can be seen as a reward that is unattainable due to an external block (being overlooked without explanation). This fits the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves a situation where an expected item is damaged due to the negligence of another person. This can fall under 'ExternalBlock' as there is an obstruction caused by someone else's actions preventing the attainment of a desired outcome (an intact package). It may also involve frustration related to 'Reward' being 'Unattainable' since the expected result of receiving a proper package is not met, but 'ExternalBlock' is the primary trigger here due to the direct interference by the delivery person's carelessness.",
         "stimulus": "A package meant for you is carelessly damaged by the delivery person.",
+        "reasoning": "This situation involves a negative event (damage to your package) caused by an external agent (the delivery person). The emotional trigger here is related to loss or frustration due to an external block preventing you from receiving your reward (the undamaged package). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (the package in good condition) is unattainable due to an external block (the delivery person's carelessness).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "In this scenario, the feeling of not being included or invited to a peer gathering can lead to a sense of exclusion, which may be perceived as an external block to social reward or acceptance. Thus, the anger could stem from an external block to a potentially rewarding experience. This aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "You're not invited to a gathering of peers.",
+        "reasoning": "This stimulus involves social exclusion, which can be perceived as a blocked opportunity for social reward or acceptance. The exclusion is due to an external factor (not being invited), making the reward (social connection) unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This stimulus involves someone else using your space without permission, which can be perceived as a threat to personal boundaries and control. This situation is often considered 'Controllable' because it implies that one might take action to address the issue, like asking the other person to leave or negotiating shared use. It also relates to 'Inescapable' because unless the issue is addressed, the violation of personal space persists. The anger here is primarily due to a perceived threat to personal autonomy and boundary, aligning it with the threat-related trigger type.",
         "stimulus": "Your shared space is occupied without your consent.",
+        "reasoning": "This situation involves a threat to personal boundaries and autonomy, and the individual may feel unable to control or escape the situation, fitting the 'Threats', 'Controllable', 'Inescapable' trigger type.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The act of someone mocking your personal tastes can be perceived as a threat to one's ego or self-esteem, inducing anger due to defensiveness or perceived disrespect. This situation typically places the individual in a controllable and inescapable position, as they might confront the individual or try to ignore it, thus categorizing it under the 'Threats', 'Controllable', 'Inescapable' trigger type.",
         "stimulus": "You find someone mocking your personal tastes.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "The stimulus involves a social threat to one's self-esteem or identity, which can be perceived as a threat. The controllability and escapability depend on the context, but generally, being mocked is a threat that may or may not be controllable or escapable. However, the stimulus does not clearly specify if the threat is controllable or inescapable, nor does it involve a reward being blocked. Therefore, it does not fit neatly into either trigger type.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves a failure to follow agreed-upon rules, which can be seen as an external block to expected behavior compliance. This triggers frustration related to unattainable rewards, such as maintaining order or fulfilling expectations. Thus, the relevant trigger type is linked to an external block and unattainability of the expected reward.",
         "stimulus": "A person consistently fails to adhere to agreed-upon rules.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This stimulus may evoke frustration or anger, but it does not clearly fit into the provided trigger types. It is not explicitly a threat (controllable or inescapable), nor is it about an unattainable reward due to an external block. The scenario is more about interpersonal conflict or boundary violations.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus of having one's contribution edited out without prior consultation can evoke a sense of anger arising from feeling blocked or hindered in achieving recognition or contribution goals. This relates to the idea of an external block (the editing done by someone else) to achieving a reward (such as recognition, credit, or the fulfillment of having one's work acknowledged). Therefore, this stimulus fits under the trigger type ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "Your contribution is edited out without prior consultation.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "The stimulus describes a situation where an individual's input is removed without their involvement or consent. This can be perceived as a threat to autonomy or agency, and the individual may feel powerless to change the outcome, making the situation inescapable and uncontrollable from their perspective.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation can trigger anger as it acts as an external block preventing one from achieving the desired reward of having a hot shower. The reason for anger is not due to a direct threat but more about the unattainable reward due to someone else's actions.",
         "stimulus": "Someone uses up all the hot water before you can shower.",
+        "reasoning": "This situation involves a desired resource (hot water) being unavailable due to someone else's actions, creating a barrier to achieving a goal (taking a hot shower). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (hot shower) is unattainable due to an external block (someone else used the hot water).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus of a project partner not contributing adequately to a shared task or project is most likely to fall under the category of 'Controllable', as the situation might feel within some level of control. However, the feeling of being hindered due to another's actions, while trying to reach a shared reward (successful project completion), can also make it a situation of 'ExternalBlock', affecting the attainability of a prospective reward.",
         "stimulus": "A project partner doesn't pull their weight.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a negative outcome (threat to project success or fairness) that is potentially controllable (one could confront the partner, redistribute tasks, or seek help). It does not fit the 'Reward' or 'Unattainable' categories, nor is it completely inescapable.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation describes a scenario where something important or valuable (belongings) is borrowed and returned in a damaged condition. This situation typically triggers anger because it involves a perceived insult or disrespect, making it feel like a threat to one's social status or possessions. The feelings of controllability are affected because while it may be possible to confront the borrower, the damage itself is permanent, and the response is limited to subsequent actions rather than preventing the damage. Thus, this situation aligns with the trigger type 'Threats', 'Controllable', 'Inescapable'.",
         "stimulus": "Your belongings are borrowed and returned damaged.",
+        "reasoning": "This situation involves a negative event (damage to belongings) caused by another person, which may be perceived as a threat to one's property or sense of security. The individual may feel a lack of control over the outcome, especially if the damage is already done and cannot be reversed, making the threat inescapable.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This stimulus involves a situation where a teammate's attitude (casual approach) poses a block to the urgent tasks that need to be completed. This can be seen as an 'ExternalBlock' to the completion of tasks, which are the 'Reward' in this context that might feel 'Unattainable' due to the teammate's behavior.",
         "stimulus": "A teammate takes a casual approach to urgent tasks.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may trigger frustration or anxiety due to perceived threats to task completion or team performance. The threat is somewhat controllable (e.g., by addressing the teammate's behavior), but it can also feel inescapable if the teammate does not change. However, it does not clearly fit the 'Reward, Unattainable, ExternalBlock' category, as the main issue is not about an unattainable reward but rather a threat to success or deadlines.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus describes a situation where someone is made to feel like an outsider in discussions, which can be seen as an external factor inhibiting one's participation or inclusion. This could relate to the category of 'ExternalBlock', where external circumstances or behaviors by others prevent a person from attaining social acceptance or inclusion. This aligns with the second trigger type, which involves external factors impeding access or acceptance.",
         "stimulus": "You're regularly made to feel like an outsider in discussions.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "Being made to feel like an outsider is a form of social threat, which can be perceived as inescapable if it happens regularly and is outside the individual's control. This fits the 'Threats', 'Controllable', 'Inescapable' trigger type, as the threat is ongoing and the person may feel unable to change the situation.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation described is an instance where an external factor (a car) is blocking access or movement (driveway) that might otherwise be attainable. The driveway being blocked acts as an external block to reaching the usual goal of driving out. This aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'], as the blockage by the car makes the reward (exiting the driveway) unattainable due to an external block.",
         "stimulus": "Someone parks their car blocking your driveway.",
+        "reasoning": "This situation involves an external obstacle (the car) preventing you from accessing your driveway, which can be seen as blocking your ability to achieve a goal (using your driveway). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (access) is unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This stimulus describes a situation where a person is not provided with the promised resources, which blocks their ability to complete a task. This scenario aligns with an 'ExternalBlock' which is part of the 'Unattainable' category due to the lack of resources impeding goal achievement.",
         "stimulus": "You're not given the resources you were promised for a task.",
+        "reasoning": "This situation involves being blocked from achieving a goal (completing the task as promised) due to an external factor (lack of resources), which fits the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "Backtracking on an important agreement can be perceived as blocking one's expectations or desired outcomes related to the agreement. This situation can create a barrier to achieving a \"reward\" (the benefits of the agreement) and can be seen as an \"external block\" to an anticipated goal.",
         "stimulus": "Someone backtracks on an important agreement.",
+        "reasoning": "This situation involves a potential loss or frustration of an expected positive outcome (the agreement being honored). The negative emotion is likely triggered by the perception that a desired reward (the agreement's fulfillment) is now unattainable due to an external factor (the other person's decision), fitting the 'Reward, Unattainable, ExternalBlock' category.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This situation presents a social threat as someone is potentially damaging your reputation or relationships, triggering an emotional response. The trigger type is related to a perceived threat that is either controllable or inescapable depending on the individual's circumstances.",
         "stimulus": "You find out someone is talking behind your back.",
+        "reasoning": "This situation can be perceived as a social threat, potentially impacting one's reputation or relationships. The emotional response is likely triggered by the perception of threat, and the controllability or escapability depends on context. However, generally, this is experienced as a threat that may feel inescapable or uncontrollable, fitting the 'Threats' category.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus describes a situation where an individual feels like their suggestions are being ignored or dismissed. This can lead to feelings of frustration and anger as efforts to contribute or affect change are thwarted. This fits the trigger type ['Reward', 'Unattainable', 'ExternalBlock'] because the reward (acknowledgment or consideration of suggestions) is unattainable due to an external block (someone else brushing them aside).",
         "stimulus": "Your suggestions are constantly brushed aside.",
+        "reasoning": "This stimulus describes a situation where an individual's attempts to contribute (suggestions) are repeatedly ignored or dismissed by others. This can be interpreted as a form of external block to achieving a desired outcome (having one's suggestions considered or valued), which aligns with the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves being omitted from an email chain due to an intentional action by someone, which can be seen as an external block to effective communication or participation in a group. This aligns with situations where there is a reward (being informed or included) that becomes unattainable due to an external block created by someone else's actions.",
         "stimulus": "Someone intentionally omits you from an email chain.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "Being intentionally omitted from an email chain can be perceived as a social threat or exclusion. However, the scenario does not clearly specify whether the threat is controllable or inescapable, nor does it directly relate to an unattainable reward due to an external block. The provided trigger types do not precisely fit this social exclusion scenario.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The scenario involves a situation where someone else makes a decision or commitment that impacts the person without their prior consent or consultation. This scenario can lead to feelings of anger because the person's autonomy and decision-making have been obstructed by someone else's actions. However, this does not fit the 'Threats, Controllable, Inescapable' category since it doesn't involve a direct threat. Instead, it fits well with the 'Reward, Unattainable, ExternalBlock' category as it resembles a situation where an external factor (the friend's decision) blocks or obstructs the person's autonomy or expected freedom to make their own commitments.",
         "stimulus": "A friend commits to something on your behalf without consulting you.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may cause feelings of frustration or loss of control, but it does not clearly fit into the 'Threats' (controllable or inescapable) or 'Reward' (unattainable due to external block) categories as defined. There is no explicit threat or unattainable reward due to an external block.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "Being unfairly penalized for something that is out of one's control can be seen as an external block towards a desired outcome or fair treatment. The individual might feel that the situation creates an obstacle in attaining fair recognition or reward. Therefore, it fits within the trigger type of 'ExternalBlock'.",
         "stimulus": "You're unfairly penalized for something out of your control.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "The stimulus describes a situation where a person is punished or penalized for something they could not influence, which fits the concept of an inescapable threat (unfair penalty) that is not controllable by the individual.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus of someone mispronouncing your name despite corrections can lead to anger due to the perception of disrespect or lack of consideration. However, it does not fall under either trigger type related to physical threats or reward unattainability. It could be seen as irritating, but it doesn't fit nicely into the categories of external blocks that are explicitly listed.",
         "stimulus": "Someone consistently mispronounces your name despite corrections.",
-        "trigger_type": "None"
+        "reasoning": "This situation can be perceived as a threat to one's identity or respect, and it is inescapable if the person continues despite corrections. The individual cannot control the other person's behavior, making it an inescapable threat.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "Feeling left out of a decision-making process can lead to anger as it represents an external block preventing involvement or contribution towards a goal or outcome. This can be interpreted as a Reward being Unattainable due to the blockage posed by external forces, which aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "You're left out of a decision-making process.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "Being excluded from a decision-making process can be experienced as a form of social threat, potentially triggering feelings of rejection or lack of control. However, the stimulus does not explicitly indicate a threat to safety or physical well-being, nor does it clearly fit the 'Reward, Unattainable, ExternalBlock' category, as it is not about being blocked from a reward. It also does not specify controllability or escapability. Therefore, it does not fit neatly into either trigger type.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "Changing plans frequently without notification can be seen as an action that blocks an expected outcome or reward, such as a coordinated social interaction or personal plan. This reflects the frustration of an anticipated reward being unattainable due to external interference or delay. It's an obstacle that comes from outside the individual, hence it can be categorized as 'External Block'.",
         "stimulus": "Someone frequently changes plans without notifying you.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may cause frustration or stress, but it does not clearly fit into the provided trigger types. It is not an explicit threat, nor is it a blocked reward scenario as defined by the categories.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "When a close one dismisses your feelings or concerns, it can be considered a response to a perceived threat to emotional well-being, where the individual experiences feelings of rejection or invalidation. This situation can often feel controllable if it is within one's power to communicate or change the interaction, but initially, it may feel inescapable, contributing to feelings of anger. Due to the perceived threat and somewhat controllable nature, this is categorized under the trigger type: \"['Threats', 'Controllable', 'Inescapable']\".",
         "stimulus": "A close one dismisses your feelings or concerns.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This stimulus involves a social interaction where a person's emotional needs are invalidated. While this can be distressing, it does not directly fit the categories of 'Threats' (controllable or inescapable) or 'Reward' (unattainable due to external block). It is more about social rejection or invalidation, which is not explicitly covered by the provided trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus of being interrupted during presentations can lead to anger due to it being a threat to the individual's performance and perception in front of an audience. Furthermore, it can feel inescapable if interruptions happen frequently, and it might seem somewhat controllable when the individual attempts to manage the situation. However, the core aspect of anger here is the threat to the situation, making it part of the 'Threats, Controllable, Inescapable' trigger type.",
         "stimulus": "You're constantly interrupted during presentations.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "The stimulus involves a situation where the individual is trying to achieve a goal (delivering a presentation), but is repeatedly interrupted by others. This represents an external obstacle preventing the attainment of a reward (successful presentation).",
+        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "When someone comments negatively on something you hold dear, it can be perceived as a threat to your values or beliefs. This can trigger a defensive response because it challenges something important to one's identity or worldview. The feeling of being attacked or judged can elicit anger. Thus, this stimulus fits the ['Threats', 'Controllable', 'Inescapable'] trigger type.",
         "stimulus": "Someone comments negatively on something you hold dear.",
+        "reasoning": "This stimulus involves a social threat to something valued by the individual. The negative comment can be perceived as a threat, but whether it is controllable or inescapable depends on the context. However, the provided trigger types specify 'Threats', 'Controllable', 'Inescapable' as one category. Since the negative comment is a threat and may feel inescapable (especially if it affects self-worth or social standing), it fits this trigger type.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus of having shared resources depleted without one's knowledge could be considered an 'ExternalBlock', which prevents the achievement of a desired state (e.g., having necessary resources). This relates to the anger over not being able to attain a 'Reward' or desired outcome due to external interference.",
         "stimulus": "Your shared resources are depleted without your knowledge.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This scenario describes a situation where something negative (resource depletion) happens outside of the individual's awareness or control. It implies a loss or threat, and the lack of knowledge suggests it is not controllable or escapable by the individual. This fits with the 'Threats', 'Controllable', 'Inescapable' trigger type, as the threat is inescapable and not under the individual's control.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "Given the task without necessary instructions can lead to feelings of frustration and anger because the inability to complete the task becomes an external block to achieving what might otherwise be attainable. This aligns with scenarios where a reward (completion of the task) is unattainable due to an external obstruction - the lack of instructions.",
         "stimulus": "You're given a task without the necessary instructions.",
+        "reasoning": "This situation involves being unable to complete a task due to missing information, which creates a barrier to achieving a goal (completing the task). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (task completion) is unattainable due to an external block (lack of instructions).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus here involves someone behaving in a dismissive manner towards your concerns, which can be perceived as a threat to one's sense of being valued or respected. This scenario suggests an element of a perceived threat where the individual feels that their concerns are not being adequately acknowledged, which could be controllable by addressing the issue directly with the dismissive person. Furthermore, this scenario may feel inescapable due to the social dynamics involved, but generally, it's perceived as a situation that can be managed or controlled through effective communication.",
         "stimulus": "Someone behaves in a dismissive manner toward your concerns.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This stimulus involves a social interaction where the person's concerns are not acknowledged or respected. While this can be emotionally distressing, it does not directly fit the provided trigger types. It is not an explicit threat (controllable or inescapable), nor is it about an unattainable reward due to an external block. It may be related to social rejection or invalidation, but these are not among the specified categories.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "This situation involves waiting for a resolution (reward) from customer service, but there is an external block (being disconnected) that prevents the attainment of that reward (resolution to the issue).",
         "stimulus": "You've been on hold with customer service for over an hour, and they disconnect.",
+        "reasoning": "The situation involves trying to achieve a goal (getting customer service help), but being blocked by an external factor (the call disconnects). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (customer service) is unattainable due to an external block (the call disconnecting).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The situation involves someone else taking the last slice of cake, which can be perceived as an external block to attaining the reward of enjoying the cake. The cake is framed as a reward that is now unattainable due to someone else's actions. Thus, it is a case of ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "You discover someone took the last slice of your favorite cake without asking.",
+        "reasoning": "The situation involves a desired reward (the cake) that is now unattainable due to an external factor (someone else taking it). This fits the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves an external action that was expected to fulfill a goal (parking the car), but someone else took it, blocking the reward of attaining the desired result. This situation is characterized by an unattainable reward due to an external block.",
         "stimulus": "While parking, someone takes the spot you'd been waiting for.",
+        "reasoning": "This situation involves a desired reward (the parking spot) that becomes unattainable due to an external factor (another person taking it). This fits the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves a situation where a person experiences anger because their belongings are being used and damaged without their consent. The situation is controllable because the roommate could have asked for permission and taken care of the clothes. Thus, it falls under 'Controllable'.",
         "stimulus": "Your roommate borrows your clothes without permission and ruins them.",
+        "reasoning": "This situation involves a negative event (ruined clothes) caused by another person's actions. It can be perceived as a threat to personal property or boundaries. The situation may be seen as controllable (e.g., by confronting the roommate or setting boundaries), but it is not inescapable. It does not involve a reward or unattainable goal blocked by an external factor.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves a colleague spreading false information, which can be perceived as a social threat and an action that is beyond the direct control of the person affected. It creates a hostile work environment and may feel inescapable if the rumors affect one's reputation. Therefore, it aligns with the trigger type that includes threats, controllability, and inescapability.",
         "stimulus": "You find out a colleague has been spreading untrue rumors about you at work.",
+        "reasoning": "This situation involves a social threat to reputation and well-being. The threat is caused by another person (the colleague), and while it may feel difficult to escape, there are potential actions one could take (e.g., confronting the colleague, reporting to HR), making it at least partially controllable. It fits best under 'Threats', with elements of controllability and inescapability depending on the context.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves an external factor (the waiter) blocking the expectation (receiving the correct meal). The long wait adds to the frustration as there's an unmet expectation or desire (a reward being unattainable due to an external block). This aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "The waiter brings out the wrong meal order after a long wait.",
+        "reasoning": "This situation involves a potential frustration or disappointment due to an expected reward (the correct meal) being blocked by an external factor (the waiter bringing the wrong meal). The individual cannot attain the desired reward because of an external block, fitting the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This stimulus involves being frustrated over something that was eagerly anticipated (the surprise or enjoyment from the ending of a book), but this enjoyment has been obstructed by an external factor. Therefore, it aligns with the second trigger type as the enjoyment (a form of reward) has become unattainable due to an external block.",
         "stimulus": "Someone spoils the ending of a book you've been excitedly reading.",
+        "reasoning": "The emotional trigger here is the loss of anticipated reward (the enjoyment of discovering the ending yourself). The disappointment is due to an external factor (someone else spoiling it), making the reward unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The situation involves a project being unjustly claimed by another team member, which can be perceived as an external block to receiving due recognition and reward for one's work. The anger is likely stemming from the unattainable aspect of receiving credit where it is due because of the external interference by a team member. This fits the trigger type of ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "You learn that a project you worked on was claimed by another team member.",
+        "reasoning": "This situation involves a reward (recognition for your work) that is unattainable due to an external block (another team member taking credit). It does not directly involve a threat to safety or well-being, nor is it about controllability or inescapability in the context of threats.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves being assigned extra work due to someone else's mistakes, which can be perceived as an external block to the individual's own plans or personal time (weekend). The anger arises from the feeling of being unfairly treated or blocked from enjoying one's own time due to another's error, which aligns with the 'ExternalBlock' aspect of the trigger type ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "You're assigned extra work on a weekend due to someone else's mistakes.",
+        "reasoning": "This situation involves an external block (someone else's mistake) preventing you from enjoying your weekend (a reward or desired state). The extra work is not due to your own actions, and the reward (free time) is unattainable due to an external factor.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves an external event where a freshly cleaned car is splashed with mud by a passing vehicle. This can be categorized as an external block since the clean state of the car is obstructed by an unforeseen external event, which fits the scenario of an unobtainable reward as the desired outcome of keeping the car clean is disrupted.",
         "stimulus": "Your freshly cleaned car gets splashed with mud from a passing vehicle.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves an external event (the passing vehicle) that causes a negative outcome (mud on the clean car). The individual has no control over the event and cannot escape it, fitting the 'Threats', 'Controllable', 'Inescapable' trigger type, as it is an inescapable negative event imposed by an external source.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves someone making fun of a topic the person is passionate about. This doesn't fit with 'Threats' or 'Controllable', as it's not directly threatening or a situation the person has direct control over. It's not 'Reward' related. However, it could be considered an 'ExternalBlock' if the mockery prevents you from discussing or sharing the topic freely, but primarily, it's more about social dynamics and personal feelings, which don't fit neatly into the given trigger types.",
         "stimulus": "You hear someone making fun of a topic you're passionate about.",
+        "reasoning": "The stimulus involves a social slight or disrespect, which may be perceived as a threat to one's self-esteem or values. However, it does not clearly fit the categories of 'Threats, Controllable, Inescapable' (which typically involve direct threats to safety or well-being) or 'Reward, Unattainable, ExternalBlock' (which involves being blocked from a desired reward).",
         "trigger_type": "None"
     },
     {
-        "reasoning": "This stimulus is likely to make someone angry because it involves the actions of another person (someone using the last of the milk) which the individual perceives they could have controlled (by not putting the empty carton back in the fridge). This aligns with the trigger type 'Controllable' indicating that the situation could have been different if the person acted responsibly. Thus, this situation falls under \"['Threats', 'Controllable', 'Inescapable']\".",
         "stimulus": "Someone uses the last of the milk and puts the empty carton back in the fridge.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This situation may cause frustration or annoyance, but it does not clearly fit into the categories of 'Threats' (controllable or inescapable) or 'Reward' (unattainable due to external block). There is no explicit threat or blocked reward of significant consequence; it's more of a minor inconvenience.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves an external block to achieving an expected outcome (i.e., being served in order), which was thwarted due to someone else's actions. This aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'] because the skipped person is being blocked from receiving the 'reward' of service at their expected time.",
         "stimulus": "You've been skipped in line after waiting for a long time.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a potential threat to fairness or respect, and the individual may feel powerless to change the situation (inescapable). The trigger type 'Threats, Controllable, Inescapable' fits because the person is threatened by unfair treatment and may feel unable to control or escape the situation.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation involves someone external (the teammate) blocking recognition or reward for your idea, which can be seen as a reward you aimed to achieve. The credit for your idea is perceived as something unattainable because someone else has taken it. Therefore, this stimulus fits the trigger type related to 'Reward' and 'ExternalBlock.'",
         "stimulus": "A teammate takes credit for an idea you came up with during a meeting.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a social threat to one's status or recognition, and the individual may feel unable to escape or control the situation in the moment, as the credit has already been taken publicly.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves discovering an error in a distributed document, which reflects an external block to achieving a quality or error-free outcome. It indicates an unattainable state due to the distribution of the erroneous document, as the error cannot be undone easily or directly once it's released. The situation is not threatening to personal safety, nor is it about controlling the error once distributed, but rather about external limitations.",
         "stimulus": "You find a significant error in an important document after it's been distributed.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a threat to one's reputation or professional standing, and the error has already been distributed, making it inescapable and not easily controllable at this point.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves the invasion of personal privacy by the sibling, which is perceived as a threat to one's personal space and boundaries. The situation could be seen as 'Controllable' since the individual might be able to confront their sibling and establish boundaries. However, if the sibling's snooping feels unavoidable or difficult to prevent, it may also be seen as 'Inescapable'. Hence, this aligns with the trigger type involving perceived threats and controllable or inescapable elements.",
         "stimulus": "You discover your sibling has been snooping around your personal belongings.",
+        "reasoning": "This situation involves a perceived threat to personal privacy and boundaries. The emotional response is likely triggered by the sense of violation and potential loss of control over one's personal space. The threat is interpersonal and may feel inescapable if the sibling lives in the same household, and it may or may not be controllable depending on the context. However, it most closely aligns with the 'Threats' category, as it involves a perceived threat to one's autonomy or privacy.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves a situation where the individual expected a reward (the snack) that becomes unattainable due to an external block (the malfunctioning vending machine).",
         "stimulus": "The vending machine malfunctions and doesn't give you your snack.",
+        "reasoning": "This situation involves a reward (the snack) that is unattainable due to an external block (the malfunctioning machine). The individual cannot access the desired reward because of a factor outside their control.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves a situation where an individual is expecting a reward (in this case, the order from the online store). However, the reward is both unattainable in its expected form (because the product is damaged) and is externally blocked (due to late delivery which is beyond personal control, likely caused by the shipping service or seller).",
         "stimulus": "Your order from an online store arrives late and is damaged.",
+        "reasoning": "This situation involves a desired reward (the order) that is not received as expected due to external circumstances (late and damaged delivery), which is outside the individual's control. This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward is blocked by external factors.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "In this scenario, the person was attempting to reach a destination and relied on directions that turned out to be incorrect, resulting in being lost and late. This situation represents an external obstacle preventing them from attaining their goal. Thus, it fits the trigger type 'ExternalBlock'.",
         "stimulus": "You're given incorrect directions and end up lost, making you late.",
+        "reasoning": "The situation involves an external factor (incorrect directions) blocking the attainment of a goal (arriving on time), which fits the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus of a friend canceling plans at the last minute repeatedly could trigger anger due to the expectation of a rewarding experience (socializing with a friend) being consistently unattainable. Each cancellation acts as an external block to achieving that desired social interaction and reward. Hence, the trigger type aligns with ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "A friend cancels plans at the last minute, for the third time in a row.",
+        "reasoning": "This situation involves a desired social interaction (reward) that is repeatedly blocked by an external factor (the friend's cancellations), making the reward unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves an external source (another person) hindering one's ability to speak, which fits into the concept of being blocked by an external factor. This interruption is not a physical threat but rather an obstacle to communication within a social or professional setting, thus falling under 'ExternalBlock'.",
         "stimulus": "Someone interrupts you every time you try to speak in a group setting.",
+        "reasoning": "The stimulus involves an external factor (another person) preventing you from achieving a goal (speaking in a group). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (being heard or expressing oneself) is unattainable due to an external block (the interrupter).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves a social scenario where the individual experiences an exclusion from a desired social event. The gathering represents a 'Reward' due to its social value and the individual's desire to be part of it. The fact that the individual is not invited creates a situation where the 'Reward' is 'Unattainable' due to an 'ExternalBlock' imposed by the inviter, resulting in feelings of anger or frustration at being unable to participate.",
         "stimulus": "You're not invited to a gathering that all your friends are attending.",
+        "reasoning": "The stimulus describes a situation where the individual desires to attend a gathering (a reward), but is unable to do so due to an external factor (not being invited), making the reward unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus describes a situation where someone has been using your property (work tools) without permission. This can be seen as a violation or threat to personal boundaries and property rights. There is potential for this to be a controllable situation as one can address the issue directly by talking to the person or setting clear boundaries, but the violation easily triggers a sense of threat to personal and professional space. Therefore, this stimulus is best described as fitting the \"Threats, Controllable, Inescapable\" trigger type, as it involves a perceived threat but could also be controllable depending on the individual's response to the situation.",
         "stimulus": "You find out that someone has been using your work tools without permission.",
+        "reasoning": "This situation involves a perceived threat to one's resources or boundaries (someone using your tools without permission). The emotional trigger is related to threat, and the controllability depends on whether you can address the person or secure your tools. However, the core of the stimulus is a threat to personal property or boundaries, which fits the 'Threats' category. The controllability and inescapability are not explicitly stated, but the primary trigger is threat.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus is about loud music from a neighbor that keeps a person awake at night. This situation can be categorized under '['Controllable', 'ExternalBlock']' as it is an external action by someone else that intrudes into personal space and sleep, causing frustration and anger. The situation appears to be controllable as one might approach the neighbor to request a change. However, it does not fit neatly into the given trigger types without forcing a category, so '['Controllable', 'ExternalBlock']' is most appropriate.",
         "stimulus": "Your neighbor's loud music keeps you awake at night.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "The stimulus involves an external factor (neighbor's music) that is causing distress and disrupting sleep. The situation feels inescapable because the noise is ongoing and out of the individual's direct control, fitting the 'Threats', 'Controllable', 'Inescapable' trigger type.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation involves an action by a coworker (microwaving fish) that causes a lingering smell, which could be seen as a nuisance or disruption to the office environment. However, there is no clear threat or promise of reward involved. The action itself is not uncontrollable or inescapable for the person affected; the smell, although unpleasant, is temporary and can usually be addressed through ventilation or air fresheners. It also doesn't block the attainment of a goal beyond perhaps temporary discomfort. Thus, it doesn't clearly fit into the given trigger types for anger.",
         "stimulus": "A coworker microwaves fish in the office, leaving a lingering smell.",
+        "reasoning": "This situation is unpleasant and may cause annoyance or discomfort, but it does not involve a threat or a blocked reward. It is not about a threat to safety or well-being, nor is it about being unable to attain a reward due to an external block. Therefore, it does not fit either trigger type.",
         "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus here involves someone else's actions interfering with one's goal or intentions (saving items). This is perceived as an externally imposed block or hindrance to achieving a goal or maintaining something of value (the saved items).",
         "stimulus": "You discover someone has thrown out items you were saving.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a loss of something valued due to another person's actions, which could be perceived as a threat to one's possessions or autonomy. The event is likely inescapable (the items are already gone) and not under the individual's control, fitting the 'Threats, Controllable, Inescapable' category.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The anger stimulus arises from a situation where a person's dietary needs are disregarded, which can be seen as an 'ExternalBlock' in achieving a satisfying dining experience. Additionally, it could be perceived as a controllable situation by the hosts that was not handled properly, potentially making it also feel 'Controllable'. However, the primary trigger is the blocking of a desired outcome in relation to dietary preferences, which aligns with the 'ExternalBlock' component of the trigger type.",
         "stimulus": "Your special dietary needs are ignored at a group dinner.",
+        "reasoning": "The stimulus involves a situation where the individual's needs are not met due to external factors (the group or organizer ignoring the dietary needs), which can be perceived as a blocked goal (getting appropriate food). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the desired outcome (suitable food) is unattainable due to an external block (others' actions).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This situation involves a violation of personal privacy and trust, which can be perceived as a threat to one's personal space and security. This makes it a threat, but since the person cannot prevent or change what has already been read, it also has an inescapable quality. It closely relates to the trigger type 'Threats' because it involves a perceived attack on personal boundaries and trust.",
         "stimulus": "You find out someone has been reading your personal diary.",
+        "reasoning": "This situation involves a violation of privacy, which can be perceived as a threat to one's personal boundaries and safety. The individual may feel exposed, vulnerable, and unable to undo the breach, making the threat inescapable and uncontrollable.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This scenario involves an external blockage or frustration because the dog owner is not following community norms or rules, hindering others' enjoyment of a clean park environment. Residents might feel anger due to this blockage of their expectation for cleanliness and respect in shared spaces.",
         "stimulus": "A dog owner doesn't clean up after their pet in the community park.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may cause annoyance or frustration, but it does not directly involve a threat to safety or a blocked reward. It is more about social norms and responsibility, rather than fitting into the specified trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "Being blamed for a decision that was not solely yours can trigger feelings of injustice and lack of control over the situation. This situation could be perceived as a threat to one's reputation or social standing, implicating a source of anger that falls under threats (as in a threat to one's social identity) and inescapable (as the blame unfairly attributes a collective action to an individual, who may feel trapped in the responsibility and unable to escape the blame).",
         "stimulus": "You're blamed for a decision that was made collectively.",
+        "reasoning": "Being blamed for something outside your control can be perceived as a threat to your social standing or reputation, and the situation is inescapable because you cannot change the fact that the decision was collective. This fits the 'Threats, Controllable, Inescapable' trigger type, as the threat is not controllable or escapable by the individual.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus involves someone making a derogatory comment, which can be perceived as a threat to one's social identity or personal pride associated with their hometown. This aligns with the 'Threats' aspect of the trigger type 'Threats, Controllable, Inescapable'. The situation might feel inescapable as the person overhears it, and if it is perceived that they can control the situation by confronting or ignoring, it would be under 'Controllable' as well.",
         "stimulus": "You overhear someone making a derogatory comment about your hometown.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "The stimulus involves a negative comment (potentially threatening to one's identity or sense of belonging), but it does not clearly involve a direct threat to safety or a situation that is controllable or inescapable. It also does not involve a reward or an unattainable goal. Therefore, it does not fit neatly into either of the provided trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus of a computer crash erasing work relates to an external block or obstacle preventing the achievement of a reward or goal, which is the completion and saving of work. This aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'] where the desired goal (saving work) becomes unattainable due to the external block (computer crash).",
         "stimulus": "The computer crashes, erasing hours of your unsaved work.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a negative event (loss of work) that is uncontrollable and inescapable in the moment, fitting the 'Threats, Controllable, Inescapable' trigger type. The individual cannot escape the loss or control the crash after it happens.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves a personal boundary being violated by someone using a personal item (favorite mug) and leaving it dirty. This can be seen as a controllable situation because it involves another person's behavior that can potentially be addressed or controlled by communicating with them. It doesn't fit the 'Threats' or 'Inescapable' labels because it's not a direct threat to safety or something that cannot be changed. The situation could also be categorized under 'ExternalBlock' as the action of using and leaving the mug dirty externally blocks the person's enjoyment or use of their own item, though it isn't primarily about reward or unattainability.",
         "stimulus": "Someone uses your favorite mug at the office and then leaves it dirty.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This situation involves a negative event (someone disrespecting your property), which could be perceived as a threat to personal boundaries or respect. However, it is not inescapable or uncontrollable; you could address the person or clean the mug yourself. It does not fit the 'Reward, Unattainable, ExternalBlock' category, as there is no reward being blocked. Therefore, it does not clearly fit either trigger type.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The situation involves a breach of trust by a friend who was expected to keep a secret, potentially obstructing social dynamics or personal relationships. The feeling of anger here might be related to a Reward (trust and confidentiality) that is now Unattainable due to the friend\u2019s actions, which can be seen as an ExternalBlock to maintaining the social reward of confidentiality.",
         "stimulus": "A friend reveals a personal secret you confided in them.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a breach of trust and could be perceived as a social threat, potentially leading to feelings of betrayal or vulnerability. However, it does not clearly fit into the specified trigger types of 'Threats, Controllable, Inescapable' (which typically involve direct threats to safety or well-being) or 'Reward, Unattainable, ExternalBlock' (which involves blocked rewards). Therefore, it does not match the provided categories.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "Being talked over during a discussion can trigger feelings of anger because it represents a form of social obstruction. This scenario fits within the 'ExternalBlock' aspect of the '['Reward', 'Unattainable', 'ExternalBlock']' trigger type. This is because the individual may feel that being heard and respected in a conversation is a form of social reward that is being blocked by others talking over them.",
         "stimulus": "You're constantly being talked over during a discussion.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "Being talked over repeatedly can be perceived as a social threat, potentially leading to feelings of frustration, helplessness, or exclusion. The situation may feel inescapable if the person cannot change the behavior of others or leave the discussion, and it is not directly controllable by the individual.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves a recently cleaned floor being soiled by muddy footprints. This scenario involves an external block to the desired outcome of having a clean floor. The action that caused the dirt (someone walking with muddy shoes) is external to the person who washed the floor and is seen as an obstruction to their goal. Therefore, the anger here is triggered by a perceived hindrance or block to maintaining cleanliness, which aligns with the 'ExternalBlock' aspect of the 'Reward, Unattainable, ExternalBlock' trigger combination.",
         "stimulus": "Your freshly washed floor has muddy footprints from someone's shoes.",
+        "reasoning": "This situation involves an external event (someone else making the floor dirty) that blocks the reward of having a clean floor. The desired state (cleanliness) is unattainable due to an external block (someone's muddy shoes).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves the perception of receiving a gift that is actually a disguised criticism or negative message, which can be interpreted as a threat to one's self-esteem or social standing. It involves an element of perceived threat from the giver, which can provoke anger as it challenges one\u2019s dignity and reputation, making it a social threat.",
         "stimulus": "You receive a gift that suggests a passive-aggressive message.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "The stimulus involves receiving a gift with an underlying negative or hostile implication, which may be interpreted as a social threat. However, it does not clearly fit the categories of 'Threats, Controllable, Inescapable' (which implies a direct threat that is either controllable or inescapable) or 'Reward, Unattainable, ExternalBlock' (which involves a reward being blocked by external factors). The situation is more about ambiguous social communication rather than a direct threat or blocked reward.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The situation describes a consumer who is unable to return a faulty product, which aligns with the idea of a reward (the value or utility of the purchase) being unattainable due to an external block (the store policy). This makes the situation frustrating and a trigger for anger.",
         "stimulus": "Your new purchase is faulty, and the store won't accept a return.",
+        "reasoning": "The situation involves a desired outcome (returning the faulty item and getting a refund or replacement) that is blocked by an external factor (the store's refusal). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (successful return) is unattainable due to an external block (store policy).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The scenario involves someone leaving passive-aggressive notes, which can be perceived as a threat to one's well-being in terms of social harmony or personal peace due to their indirect hostile nature. It's not simply an unattainable reward or an external block, as it does not involve a goal or reward that cannot be reached. Instead, it fits more with a type of situation where there is an element of threat present, and the situation is relatively controllable and inescapable, as it occurs in a shared environment.",
         "stimulus": "Someone keeps leaving passive-aggressive notes in the communal area.",
+        "reasoning": "The stimulus describes a situation where an individual is exposed to repeated negative social interactions (passive-aggressive notes) in a shared space. This can be perceived as a social threat, and the individual may feel unable to control or escape the situation, especially if the source of the notes is anonymous or persistent.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation describes being stuck in traffic due to an avoidable roadblock, which implies an external obstruction that prevents someone from moving forward. This aligns with the concept of a 'block' or 'obstruction,' fitting the 'ExternalBlock' aspect. Since the roadblock is avoidable, it suggests that the situation could have been different if circumstances were controlled better, thus aligning with the 'Controllable' nature of the problem.",
         "stimulus": "You're stuck in traffic because of an avoidable roadblock.",
+        "reasoning": "The situation involves being unable to reach a desired goal (getting through traffic) due to an external obstacle (the roadblock), which makes the reward (arriving at your destination) unattainable because of an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The situation involves a scenario where an individual feels frustrated due to the actions of their friend who borrows money and does not repay. This can be seen as an external block to the expected social norm of returning borrowed money, which is a kind of reward expectation in relationships (trust, financial return). Since the friend does not pay back, this creates an unattainable expectation and can be perceived as an external block due to the friend's behavior.",
         "stimulus": "A friend repeatedly borrows money but never pays back.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a social interaction where the individual is being taken advantage of, potentially leading to feelings of frustration, betrayal, or anger. However, it does not directly involve a threat to safety or well-being ('Threats'), nor does it clearly involve an unattainable reward due to an external block ('Reward', 'Unattainable', 'ExternalBlock'). The scenario is more about interpersonal boundaries and trust, which does not fit neatly into the provided trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves an external annoyance or disturbance during a quiet study session, which can prevent concentration and thus act as a block to achieving the goal of studying effectively. This fits under the trigger type of \"['Reward', 'Unattainable', 'ExternalBlock']\" since the constant tapping creates an 'ExternalBlock' against attaining the reward of a quiet, productive study session.",
         "stimulus": "Someone constantly taps their pen during a quiet study session.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This stimulus may be annoying or distracting, but it does not clearly represent a threat (controllable or inescapable), nor does it involve an unattainable reward blocked by an external factor. It is more of a nuisance than a trigger for the specified emotional categories.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves an external interference (another party rescheduling) impacting a planned activity (the presentation). This falls under ['Reward', 'Unattainable', 'ExternalBlock'] because the rescheduling acts as an external block to the reward of successfully delivering the presentation as planned.",
         "stimulus": "Your carefully prepared presentation is rescheduled without notice.",
+        "reasoning": "This situation involves an external event (the rescheduling) that blocks the opportunity to present as planned, which could be perceived as an unattainable reward due to an external block. There is no direct threat or inescapable/controllable danger, but rather frustration or disappointment due to an external obstacle.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus is being accused of not doing a chore that wasn't your responsibility. This could involve an external block towards the reward of maintaining personal order and control over one's tasks, as someone else's expectation is blocking your perceived responsibility and autonomy. It doesn't involve a physical threat or uncontrollable scenario, and it aligns more with the frustration of being unjustly accused, which is an external block to your personal order, linking to the second trigger type.",
         "stimulus": "You're accused of not doing a chore that wasn't your responsibility.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This stimulus involves being wrongly accused, which can be perceived as a social or interpersonal threat. The situation may feel inescapable if the accusation is persistent or if there is no way to prove innocence, and it may feel uncontrollable if the person cannot change the accuser's mind.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation describes a social interaction where an embarrassing event is brought up in front of new acquaintances. This can be seen as a kind of threat to one's social standing or self-image, which could elicit anger. However, it does not directly fit the categories provided: it's not a threat in a physical sense, nor is it necessarily controllable or inescapable in the typical interpretation of those terms. It also doesn't fit the 'reward', 'unattainable', or 'external block' grouping. Therefore, it doesn't neatly fit into any of the specified trigger types.",
         "stimulus": "Someone brings up an embarrassing past event in front of new acquaintances.",
-        "trigger_type": "None"
+        "reasoning": "This situation involves a social threat (embarrassment, potential judgment) that is difficult to control or escape from in the moment, fitting the 'Threats', 'Controllable', 'Inescapable' trigger type.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus of receiving criticism for a task one wasn't trained for can trigger anger due to the feeling of it being unfair criticism or an external block to success. This fits the 'ExternalBlock' category, as the individual is being hindered by an expectation that was not reasonable due to the lack of training, making the goal of performing the task unattainable.",
         "stimulus": "You receive criticism for a task you weren't trained for.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "The stimulus involves receiving negative feedback (criticism) for something outside your control (lack of training). This can be perceived as a threat to self-esteem or competence, and the situation is inescapable because you couldn't have prepared for it. It fits the 'Threats', 'Controllable', 'Inescapable' trigger type.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This stimulus might evoke feelings of exclusion or betrayal. However, it doesn't specifically involve a direct threat or a clear external blockage to rewards. Instead, it can be seen as an emotional trigger related to social relationships but doesn't fit neatly into the predefined categories of 'Threats', 'Controllable', 'Inescapable' or 'Reward', 'Unattainable', 'ExternalBlock'. Thus, it is categorized as None.",
         "stimulus": "You find out a friend has been making plans without including you.",
+        "reasoning": "This stimulus involves social exclusion, which may cause feelings of rejection or sadness. However, it does not clearly fit into the categories of 'Threats' (controllable or inescapable) or 'Reward' (unattainable due to external block). The exclusion is not an explicit threat, nor is it a blocked reward in the sense of a tangible goal being externally blocked. Therefore, it does not match the provided trigger types.",
         "trigger_type": "None"
     },
     {
-        "reasoning": "This stimulus involves being required to work overtime without prior notice, which can be seen as having an external obstruction to one's personal schedule or plans and generally a blockade to anticipated personal time or tasks. Therefore, it aligns with the 'ExternalBlock' trigger type under the category ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "You're expected to work overtime without any prior notice.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation presents a threat to personal time and autonomy, and the lack of prior notice makes it feel inescapable and uncontrollable. It fits the 'Threats', 'Controllable', 'Inescapable' trigger type because the individual is being forced into a stressful situation with little control or ability to escape.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation describes someone repeatedly taking a parking spot that is reserved for another person. The anger here is triggered by an external interference in one's routine and entitlement to a reserved space. This is a controllable situation since the issue could potentially be resolved by communicating with whoever is taking the spot or escalating the matter to the relevant authorities. Hence, it fits the trigger type 'Controllable' as the problem can be addressed.",
         "stimulus": "Someone keeps taking your reserved parking spot.",
+        "reasoning": "This situation involves a repeated violation of your rights or expectations (your reserved spot being taken), which can be perceived as a threat to your resources or territory. It is potentially controllable (you could confront the person, report it, etc.), but if it keeps happening despite your efforts, it may also feel inescapable. However, the primary trigger type here is 'Threats, Controllable, Inescapable'.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves receiving a low grade, which could be perceived as an external block to achieving the reward of a better grade, making the reward seem unattainable. However, it doesn't involve threats or any explicit mention of controllability or inescapability.",
         "stimulus": "You receive an unjustly low grade with no constructive feedback.",
+        "reasoning": "The situation involves a desired outcome (a fair grade) being blocked by an external factor (the teacher's grading and lack of feedback), making the reward (a fair evaluation) unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The exclusion from a group chat could be seen as an external block to social engagement or interaction, which can be perceived as an unattainable reward of inclusion. The anger could stem from the inability to attain the reward of being part of the group or due to an external block where others are the perceived source of barrier to social involvement. Therefore, this aligns with 'Reward, Unattainable, ExternalBlock'.",
         "stimulus": "A group chat consistently makes plans that exclude you.",
+        "reasoning": "This situation involves a social reward (inclusion, belonging) that is unattainable due to an external block (the group's exclusionary behavior). The individual is prevented from accessing the social reward by factors outside their control.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves a situation where someone is taking your supplies without permission. This presents a controllable issue because theoretically, one can address it by confronting the person or changing access to the supplies. It can also be seen as a type of threat to personal property and boundaries, but there are ways to escape or handle the situation through direct communication. Therefore, it fits into the 'Controllable' aspect of the trigger type.",
         "stimulus": "Someone keeps borrowing your supplies without asking.",
+        "reasoning": "This situation involves a repeated action by another person that infringes on your resources, which can be perceived as a threat to your autonomy or property. The situation may feel inescapable if it continues despite your discomfort, and you may or may not feel you have control over it, but the core element is the threat to your boundaries.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus here is that your friend has revealed a major plot point of a movie you've been eagerly anticipating, which can be perceived as an external factor blocking your enjoyment and anticipation of experiencing the movie without prior knowledge of its plot twists. This aligns with the 'ExternalBlock' subcategory under the \"['Reward', 'Unattainable', 'ExternalBlock']\" trigger type because your personal desired reward (watching the movie unspoiled) has been blocked by an external factor (your friend).",
         "stimulus": "The movie you've been waiting for has a major plot point revealed by a friend.",
+        "reasoning": "This situation involves a desired reward (the enjoyment of the movie's plot twist) that is now unattainable due to an external factor (the friend revealing the plot). The individual cannot control the external block (the friend's action), making the reward unattainable.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves someone entering your personal space and making changes without consent, which could be perceived as a threat to personal boundaries and autonomy. This can be seen as a controllable situation because you can address the issue with the guest directly to prevent it from happening again. Additionally, there is an element of inescapability since the rearrangement has already occurred and disrupted the home environment without prior agreement. Therefore, it aligns with the trigger type ['Threats', 'Controllable', 'Inescapable'].",
         "stimulus": "A guest rearranges your home without asking.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+        "reasoning": "This situation may evoke feelings of threat or violation of personal boundaries, but it does not clearly fit the provided trigger types. It is not a direct threat in the sense of danger or harm, nor is it about an unattainable reward blocked by an external factor. It is more about social norms and personal space.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves discovering that a trusted friend has lied. This can trigger a sense of betrayal and block the expectation of honest communication, which affects the interpersonal reward system of trust and reliability. This situation is best categorized under the trigger type \"['Reward', 'Unattainable', 'ExternalBlock']\" because the expected reward of honesty and trustworthiness is obstructed by the lie.",
         "stimulus": "You find out a trusted friend lied to you.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This stimulus involves betrayal and a violation of trust, which can be perceived as a social threat. The emotional response is likely to be distress, anger, or hurt, stemming from the threat to the relationship and personal security. The situation is not directly about reward or unattainable goals, but rather about a threat to one's social bonds and sense of safety. The controllability and escapability depend on the context, but the core trigger is threat.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation involves someone else's behavior affecting the individual's workspace, which can be considered an external block to the individual's ability to maintain a tidy work environment. The individual's desire for a clean and organized workspace is being obstructed by someone else's actions, which makes the stimulus align with the 'ExternalBlock' aspect of the trigger type 'Reward', 'Unattainable', 'ExternalBlock'.",
         "stimulus": "Someone constantly uses your work desk and leaves it messy.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a repeated negative action by another person that affects your personal space and may cause distress or frustration. It can be perceived as a threat to your sense of order or control over your environment. The situation may feel inescapable if you cannot prevent the person from using your desk, and it may also feel uncontrollable if you have no authority to stop them.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation describes an external factor (someone else) that impedes the progress towards the goal of meal preparation by using the ingredients that were set aside. This fits the 'ExternalBlock' aspect of the trigger type \"['Reward', 'Unattainable', 'ExternalBlock']\". The preparation of a meal can be considered a 'Reward', and the action of the other person makes it 'Unattainable' at that moment, as the resources (ingredients) necessary for completing this goal have been appropriated.",
         "stimulus": "Your meal preparation gets interrupted by someone using the ingredients you laid out.",
+        "reasoning": "This situation involves a goal (preparing a meal) being blocked by an external factor (someone else using the ingredients). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (completing the meal) becomes unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The situation involves being made fun of for a mistake, which can be perceived as an external block to achieving social acceptance or maintaining a positive work environment. This aligns with the 'Reward' aspect being hindered by an 'ExternalBlock', where the external block is the ridicule from others preventing the person's intent to perform well and be respected.",
         "stimulus": "You're made fun of for a genuine mistake at work.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "Being made fun of for a mistake at work can be perceived as a social threat, potentially leading to feelings of embarrassment, shame, or anxiety. The situation involves a threat to social standing or self-esteem, and the individual may feel that they cannot escape the situation or control others' reactions, making it inescapable and uncontrollable.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves someone using and not properly organizing the art supplies. This triggers feelings of anger due to the outcome being uncontrollable and frustrating. However, it directly involves another's actions interfering with one's own order and usage of personal items, making this a form of external blockage to one's expectations of personal space and items being respected.",
         "stimulus": "Your art supplies are used and left in disarray.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This stimulus may evoke frustration or annoyance, but it does not clearly fit into the provided trigger types. It is not a direct threat, nor does it involve an unattainable reward due to an external block. The situation is more about personal boundaries or respect, which is not specified in the trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "This stimulus may evoke feelings of anger or frustration. However, the forgetting by another person doesn't fit neatly into the defined trigger types. It's not a direct 'Threat,' 'Controllable,' or 'Inescapable' situation, nor is it related to 'Reward,' 'Unattainable,' or 'ExternalBlock' as it isn't about preventing oneself from attaining a goal or reward. It's just an interpersonal situation that might provoke frustration but doesn't align with the specified categories.",
         "stimulus": "A person consistently forgets important details about your life.",
+        "reasoning": "This stimulus may evoke feelings of neglect or disappointment, but it does not clearly fit into the categories of threat (controllable or inescapable) or reward (unattainable due to external block). There is no explicit threat or blocked reward present.",
         "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves being denied recognition for one's contribution, which can be seen as a form of external blockage towards the personal reward or acknowledgment one seeks. The anger arises due to an unattainable personal benefit (recognition, in this case) because of an external factor (not being credited). Therefore, it fits the trigger type related to unattainable rewards and external blocks.",
         "stimulus": "You're not credited for a community project you contributed to.",
+        "reasoning": "The stimulus involves a situation where the individual does not receive recognition (a form of reward) for their contribution. The lack of credit is due to an external factor (the decision of others), making the reward unattainable because of an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves someone posting a picture online without consent, which can trigger feelings of anger. The trigger type \"['Threats', 'Controllable', 'Inescapable']\" fits because the action can feel like a threat to one's privacy, it may be seen as controllable if reporting or legal action can be taken, and it can be perceived as inescapable if the image spreads online without quick resolution. However, the dominant aspect here is the invasion of privacy and the psychological threat it poses.",
         "stimulus": "Someone posts a picture of you online without your consent.",
+        "reasoning": "This situation involves a violation of privacy and can be perceived as a threat to one's reputation or sense of safety. The individual may feel powerless to control the spread of the image, making the threat inescapable and uncontrollable.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation involves being unable to complete a task due to a lack of necessary resources, which suggests an obstruction or hindrance from achieving a goal. This aligns with the idea of a 'Reward' that is 'Unattainable' due to an 'ExternalBlock'.",
         "stimulus": "You're given a task without the necessary resources to complete it.",
+        "reasoning": "This situation involves being unable to achieve a goal (completing the task) due to an external factor (lack of resources), which blocks the attainment of a reward or desired outcome.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This stimulus involves someone arriving late regularly, which can disrupt others' plans and create inconvenience. The anger could arise from an action (habitual lateness) that is perceived to be within the person's control (they could choose to arrive on time), suggesting a 'Controllable' trigger. However, the situation is not about an inescapable threat or an external blockage towards a reward.",
         "stimulus": "Someone habitually arrives late, making everyone wait.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
-    },
-    {
-        "reasoning": "This stimulus reflects a situation where there is a block to accessing crucial information due to the exclusion from the email chain. This aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'] because the reward (important information) is unattainable due to an external block (exclusion from the email chain).",
-        "stimulus": "You find out you've been excluded from an email chain with important info.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "The stimulus of a visitor leaving trash around your home can elicit anger because it is seen as a disrespectful action that can be controlled by the visitor. This type of situation feels intrusive or threatening to one's personal space, making it fall under '['Threats', 'Controllable', 'Inescapable']', where the controllable aspect is crucial since the visitor could have chosen not to litter.",
-        "stimulus": "A visitor leaves trash around your home.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
-    },
-    {
-        "reasoning": "The stimulus describes a situation where there's a lack of information about a change in plans, which results in inconvenience. This can be categorized under the trigger type: ['Reward', 'Unattainable', 'ExternalBlock']. The reward is the smooth execution of plans, which is unattainable due to the external block of not being informed.",
-        "stimulus": "You're not informed about a change in plans, leading to inconvenience.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "The situation involves someone exploiting another's kindness, which could be perceived as a threat to one's personal boundaries and autonomy. This aligns with the trigger type 'Threats' as the individual may feel manipulated or taken advantage of, which can evoke anger due to feelings of betrayal or disrespect.",
-        "stimulus": "Someone takes advantage of your kindness repeatedly.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
-    },
-    {
-        "reasoning": "The situation involves an external factor (loud gum chewing) that causes distraction and potentially frustration or anger. This can be seen as an external block to the desire for a quiet environment, but it doesn't necessarily pertain to threats, controllable, or inescapable events, nor is it about an unattainable reward. Thus, it loosely fits the category of an external block.",
-        "stimulus": "A coworker loudly chews gum during a quiet meeting.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "This scenario involves an individual not being acknowledged for their contribution to a group project, which can trigger anger. The primary emotion stems from the expectation of recognition (a reward) that was not attained. Additionally, the lack of acknowledgment can be seen as an external block to receiving deserved credit. Thus, this scenario fits the 'Reward', 'Unattainable', 'ExternalBlock' trigger type.",
-        "stimulus": "You're not acknowledged in a group project presentation.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "The stimulus involves someone frequently borrowing and returning books damaged. This situation suggests a perceived lack of control where the individual can't prevent the borrower from damaging the books, but it is not considered a direct threat to one's safety, nor is it about an unattainable goal being blocked. Hence, it fits the 'Controllable' aspect since the issue might be addressed by asking the person to stop borrowing or take better care, but it seems inescapable each time the person borrows a book until addressed.",
-        "stimulus": "Someone frequently borrows your books and returns them damaged.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
-    },
-    {
-        "reasoning": "The stimulus involves someone's space being used without their permission, which can be seen as a threat to their personal boundaries and privacy. This situation can be described as 'Controllable' because it involves interpersonal dynamics in which the affected individual might attempt to address or change the behavior of others. 'Inescapable' because it directly affects the individual's living situation and may not be easily avoidable without confrontation or resolving the situation. Hence, it fits into the category of ['Threats', 'Controllable', 'Inescapable'].",
-        "stimulus": "Your space in a shared living area is used without your permission.",
-        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
-    },
-    {
-        "reasoning": "The situation involves people not cleaning up after using a public space, which can cause inconvenience or frustration. This does not directly involve a threat to personal safety or well-being, nor does it pertain to an external block to a reward or goal. Instead, it seems to involve a lack of consideration or responsibility, which doesn't clearly fit into the provided anger trigger categories of 'Threats, Controllable, Inescapable' or 'Reward, Unattainable, ExternalBlock.'. Therefore, it's classified as None.",
-        "stimulus": "A group fails to clean up after using a public area.",
+        "reasoning": "This situation may cause frustration or annoyance, but it does not clearly fit into the provided trigger types. It is not an explicit threat, nor is it about an unattainable reward due to an external block. The scenario is more about social inconvenience or disrespect.",
         "trigger_type": "None"
     },
     {
-        "reasoning": "This scenario involves frustration that could arise from an expectation of being recognized or acknowledged properly, which is being blocked when someone consistently spells your name wrong. Since the error persists despite corrections, it represents an external barrier to a desired outcome (being addressed correctly). The trigger type 'ExternalBlock' from the set \"['Reward', 'Unattainable', 'ExternalBlock']\" fits as it aligns with the sense of being blocked from the recognition or respect one deserves.",
+        "stimulus": "You find out you've been excluded from an email chain with important info.",
+        "reasoning": "Being excluded from an important email chain can be perceived as a threat to one's social standing or access to necessary resources. The exclusion is typically not under the individual's control and may feel inescapable if the group continues to leave the person out.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+    },
+    {
+        "stimulus": "A visitor leaves trash around your home.",
+        "reasoning": "This situation may evoke feelings of frustration or anger due to a perceived violation of personal space or disrespect. However, it does not clearly fit into the provided trigger types. It is not a direct threat (controllable or inescapable), nor is it about an unattainable reward blocked by an external factor.",
+        "trigger_type": "None"
+    },
+    {
+        "stimulus": "You're not informed about a change in plans, leading to inconvenience.",
+        "reasoning": "The stimulus describes a situation where an individual experiences inconvenience due to not being informed about a change. This does not clearly fit into the 'Threats' (controllable or inescapable) or 'Reward' (unattainable due to external block) categories. There is no explicit threat or unattainable reward due to an external block; rather, it is a situation of miscommunication or lack of information.",
+        "trigger_type": "None"
+    },
+    {
+        "stimulus": "Someone takes advantage of your kindness repeatedly.",
+        "reasoning": "This situation involves a threat to one's well-being or boundaries, and the repeated nature suggests it may feel inescapable or uncontrollable. However, it is not directly about an unattainable reward or an external block to a reward. The most fitting trigger type is 'Threats', and depending on the perception of control, it could be 'Controllable' or 'Inescapable'. Since the scenario emphasizes repetition and potential helplessness, 'Inescapable' is most appropriate.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+    },
+    {
+        "stimulus": "A coworker loudly chews gum during a quiet meeting.",
+        "reasoning": "This situation may be annoying or distracting, but it does not represent a threat (controllable or inescapable) nor does it involve an unattainable reward blocked by an external factor. It is more of a social irritation than a trigger of the specified types.",
+        "trigger_type": "None"
+    },
+    {
+        "stimulus": "You're not acknowledged in a group project presentation.",
+        "reasoning": "The stimulus involves a social situation where the individual is not recognized for their contribution. This can be interpreted as a blocked reward (recognition) due to external factors (the group not acknowledging the person), making the reward unattainable because of an external block.",
+        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+    },
+    {
+        "stimulus": "Someone frequently borrows your books and returns them damaged.",
+        "reasoning": "This situation involves another person causing harm or loss to your property (damaged books), which can be perceived as a threat to your belongings. The situation may feel inescapable if it happens repeatedly and you feel unable to stop it, or it may be seen as controllable if you can set boundaries. However, the closest match among the provided trigger types is 'Threats, Controllable, Inescapable'.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+    },
+    {
+        "stimulus": "Your space in a shared living area is used without your permission.",
+        "reasoning": "This situation involves a perceived violation of personal boundaries, which can be interpreted as a threat to one's autonomy or sense of control over their environment. The individual may feel that their space is not respected, leading to feelings of threat or loss of control. However, the scenario does not specify whether the threat is controllable or inescapable, nor does it clearly fit the 'Reward, Unattainable, ExternalBlock' category.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+    },
+    {
+        "stimulus": "A group fails to clean up after using a public area.",
+        "reasoning": "This stimulus describes a situation where a group neglects their responsibility, potentially causing frustration or annoyance to others. However, it does not directly involve a threat (controllable or inescapable) nor does it involve an unattainable reward due to an external block. It is more about social responsibility and inconsiderate behavior, which does not fit the specified trigger types.",
+        "trigger_type": "None"
+    },
+    {
         "stimulus": "Someone consistently spells your name wrong, despite corrections.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may be frustrating or annoying, but it does not clearly involve a threat or a blocked reward as defined by the provided trigger types. It is more about social annoyance or disrespect, rather than a threat or an unattainable reward due to an external block.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "This situation involves a perceived injustice or unfairness, as someone is benefiting from a service you pay for without your consent. This could be seen as a 'Threat' to personal resources and ownership. However, it is also 'Controllable', since action can be taken to address the wrong, such as changing passwords or reaching out to customer service.",
         "stimulus": "You find out someone has been using your subscription services without asking.",
+        "reasoning": "This situation involves a violation of personal boundaries and unauthorized use, which can be perceived as a threat to one's resources or sense of control. The individual may feel anger or distress due to the perceived threat and the fact that the situation may or may not be easily controlled or escaped from, depending on the context.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus of a teammate not contributing equally to a collaborative task can trigger feelings of anger because it creates an obstruction to achieving a goal. This is similar to an external block or obstacle preventing the achievement of a reward or desired outcome, which is completing the collaborative task successfully. Moreover, the situation could be perceived as being somewhat controllable as potential actions could be taken to address the imbalance in contribution.",
         "stimulus": "A teammate doesn't contribute equally to a collaborative task.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may evoke frustration or anger due to perceived unfairness, but it does not directly fit the 'Threats' (controllable or inescapable) or 'Reward' (unattainable due to external block) categories. The stimulus is more about social dynamics and fairness rather than threat or blocked reward.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves an external interruption in the form of unnecessary noise, which hinders the individual's concentration. This aligns with the 'ExternalBlock' aspect of the '['Reward', 'Unattainable', 'ExternalBlock']' trigger type, as the noise acts as a barrier to achieving the reward of concentrated work.",
         "stimulus": "You're interrupted during a moment of concentration by unnecessary noise.",
+        "reasoning": "The stimulus describes an external interruption that prevents you from focusing, which can be seen as an external block to achieving a goal (concentration). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (focus/concentration) is unattainable due to an external factor (noise).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "When someone brings up a topic that they know makes you uncomfortable, it can feel like a social threat and something you cannot easily escape from since the individual persists despite knowing your discomfort. This situation is akin to feeling threatened by their disregard for your feelings and the inescapability of their continued insistence.",
         "stimulus": "Someone continually brings up a topic they know you're uncomfortable with.",
+        "reasoning": "This situation involves a repeated action by another person that causes discomfort, which can be perceived as a social or psychological threat. The individual may feel unable to escape or control the situation, especially if the other person persists despite discomfort being expressed.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "In this scenario, the feeling of anger is likely triggered by something blocking the individual's goals (having their suggestions considered). The dismissal of their suggestions is an external factor, and it causes the intended reward of consideration and validation to become unattainable. Therefore, this aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "Your suggestions in a meeting are dismissed without consideration.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a social threat (dismissal, rejection) and may feel inescapable and uncontrollable to the individual, as they cannot force others to consider their suggestions. However, it does not directly involve a reward being blocked. The primary trigger is a threat to social standing or self-worth, with elements of uncontrollability and inescapability.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus describes a situation where someone uses a communal space and leaves it in a chaotic state. For individuals using the space after, this can provoke anger because their ability to use the space effectively is blocked by the mess. This falls under the 'ExternalBlock' aspect of the trigger type since the obstacle is created by an external agent (the person who left it messy) and is blocking others from using the space normally.",
         "stimulus": "Someone leaves a communal space in chaos after using it.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may trigger frustration or anger due to the perception of a threat to order or fairness, and the individual may feel compelled to restore order (controllable). However, it does not clearly fit the specific trigger types provided, as it is not an explicit threat nor a blocked reward scenario as defined.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The situation describes a scenario where an obstacle to achieving a goal (in this case, being treated fairly) is placed due to an external factor (someone else's oversight). There is an external block that is controllable, suggesting that it can be potentially fixed or rectified by the responsible party. This falls under the trigger type of \"['Reward', 'Unattainable', 'ExternalBlock']\" since the reward (fair treatment) becomes unattainable due to an external block.",
         "stimulus": "You're unfairly penalized due to someone else's oversight.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a negative outcome (penalization) that is not under the individual's control, as it is caused by another person's mistake. The individual cannot escape the consequence, making it an inescapable threat.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation involves someone not following through on commitments, which can be perceived as an external block when the expected outcome or reward (fulfillment of commitment) is not attained due to external factors (the person's failure to follow through). Thus, it fits the 'Reward', 'Unattainable', 'ExternalBlock' trigger type.",
         "stimulus": "A person doesn't follow through on their commitments.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This stimulus describes a situation where someone fails to meet expectations, which may cause disappointment or frustration. However, it does not clearly fit into the provided trigger types: it is not an explicit threat (controllable or inescapable), nor is it about an unattainable reward due to an external block. The emotional response is more likely related to trust or reliability, not the specific triggers listed.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves being asked to redo a task due to unclear instructions. This could be categorized as an external block to the reward or goal of completing the task correctly the first time. The external factor (unclear instructions) has made the goal unattainable without redoing the task.",
         "stimulus": "You're asked to redo a task because of unclear initial instructions.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves being required to repeat work due to factors outside your control (unclear instructions). It may evoke frustration or helplessness, as the cause is external and not easily changed by the individual. This aligns with the 'Threats, Controllable, Inescapable' trigger type, as the threat (redoing work) is present, but the individual has little control and cannot escape the situation.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves an external block preventing access to a desired reward, namely the reservation is not honored. This aligns with the 'Reward', 'Unattainable', 'ExternalBlock' trigger type because the failure to honor a reservation blocks the attainment of an anticipated positive experience (the reward), and this block is caused by something external to the individual's control.",
         "stimulus": "Your reservation at a place is not honored.",
+        "reasoning": "This situation involves an expectation of a reward (the reservation being honored) that is blocked by an external factor (the place not honoring it). The individual cannot attain the expected reward due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus involves someone encroaching on your personal space repeatedly, which can be perceived as an external obstruction to your desired state of maintaining a tidy and personal workspace. This could trigger feelings of anger related to the external blocking of your workspace being clutter-free, which is categorized under ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "Someone continually leaves their belongings on your workspace.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation can be perceived as a threat to one's personal space or boundaries, and the person may feel frustrated or stressed. The trigger type 'Threats, Controllable, Inescapable' fits because the situation is ongoing (inescapable), may feel threatening to one's autonomy or order, and may or may not be controllable depending on the context.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This stimulus involves being held accountable for something outside one's control, as the decisions were made during the individual's absence. This aligns with a sense of external blockage or an unattainable reward because the individual cannot change the past or control decisions made without their involvement.",
         "stimulus": "You're held accountable for decisions made during your absence.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves being blamed or held responsible for something outside of your control, which can be perceived as a threat to one's reputation or standing. The individual cannot escape the consequences nor control the situation, fitting the 'Threats', 'Controllable', 'Inescapable' trigger type.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation described involves a scenario where an individual's efforts are not recognized, despite contributing to a team or project. This can evoke feelings of anger due to an expectation of acknowledgment or reward for one\u2019s hard work that is unmet. In this case, the trigger type aligns with ['Reward', 'Unattainable', 'ExternalBlock'], as the reward (acknowledgment) is unattainable due to external circumstances (being overlooked).",
         "stimulus": "Your contributions are overlooked during an appreciation session.",
+        "reasoning": "The stimulus involves a situation where the individual expects recognition (a form of reward), but is blocked from receiving it due to external factors (being overlooked by others). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the desired reward (appreciation) is unattainable due to an external block (others not acknowledging the contributions).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This stimulus involves a situation where a person is not included or considered in decision-making processes that have an impact on them. This can create feelings of frustration or anger due to the perception of being blocked or excluded by external factors. It aligns with the 'ExternalBlock' aspect of the trigger type ['Reward', 'Unattainable', 'ExternalBlock'], as it represents an external barrier to being part of the decision-making process.",
         "stimulus": "You're not consulted about decisions that affect you.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a lack of control over important outcomes, which can be perceived as a threat to autonomy and agency. The individual cannot escape the consequences of the decisions, making the threat inescapable and uncontrollable.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This stimulus involves an external factor (someone else's actions) that is intentionally or unintentionally blocking or delaying desired outcomes (respect for time or a scheduled meeting). Thus, it fits the category of 'Reward', 'Unattainable', 'ExternalBlock', as someone else's actions are creating an obstacle for achieving the goal of having a meeting at the intended time.",
         "stimulus": "Someone doesn't respect your time, constantly rescheduling appointments.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation can be perceived as a threat to one's sense of control and respect, potentially leading to feelings of frustration or helplessness. The repeated rescheduling is largely outside the individual's control, making it feel inescapable.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "This situation involves feeling anger due to external obstruction or unfair treatment when your ideas are dismissed and later presented by someone else as their own. It is external because it involves another person's actions, and the original goal of having your ideas recognized is blocked. This aligns with the 'ExternalBlock' component under the 'Unattainable' trigger type, where the reward of having one's ideas acknowledged is obstructed by external factors.",
         "stimulus": "Your ideas are dismissed, only to be brought up later by someone else as their own.",
+        "reasoning": "This situation involves a sense of unfairness and frustration, as the individual is denied recognition or reward for their contribution due to external factors (someone else taking credit). The desired reward (recognition) is unattainable because of an external block (another person).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "This is a scenario where an individual's workspace is being disrupted by a colleague's behavior, creating a block to concentration and productivity. The situation is externally imposed and potentially controllable (by addressing the colleague directly) and avoidable, hence it aligns with the 'Controllable' aspect in the first trigger type. However, it more closely represents an external block to reward (productive working environment), fitting the second category more precisely.",
         "stimulus": "While working, a colleague loudly takes personal calls next to your desk.",
+        "reasoning": "This situation involves an external disturbance that interferes with your ability to work, potentially causing frustration or irritation. The source of the problem is external (the colleague), and the reward (a quiet workspace) is being blocked by someone else's actions. This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as your goal (working in peace) is unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The situation involves an external factor (the package delivery) that prevents the attainment of receiving the package, which is a desired outcome. This aligns with the trigger type associated with 'Reward', 'Unattainable', and 'ExternalBlock', as the delivery to the wrong address acts as an external block to achieving the reward of receiving the package.",
         "stimulus": "You discover that a package you've been waiting for was delivered to the wrong address.",
+        "reasoning": "The stimulus involves a desired reward (the package) that is unattainable due to an external factor (delivered to the wrong address). This fits the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus of constantly changing plans during a group outing can be frustrating and lead to anger because it disrupts expectations and goals. This aligns with the trigger type 'ExternalBlock' because the external actions of the person are blocking the group's ability to follow through with plans. It resembles how unpredictability and lack of control over scheduling can prevent individuals from achieving desired outcomes during social activities.",
         "stimulus": "During a group outing, one person constantly changes the plans.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation may cause frustration or annoyance, but it does not clearly fit into the categories of 'Threats' (controllable or inescapable) or 'Reward' (unattainable due to external block). There is no explicit threat or unattainable reward described.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves expecting a service (reward) and facing an external block to obtaining that service due to the ride-sharing trip being canceled without notice. This fits the trigger type ['Reward', 'Unattainable', 'ExternalBlock'] as the desired outcome is unattainable due to an external block.",
         "stimulus": "After a long day, you find your reserved ride-sharing trip was canceled without notice.",
+        "reasoning": "The situation involves a desired outcome (getting a ride) being blocked by an external factor (the ride was canceled without notice), making the reward unattainable due to an external block.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus describes a situation in which someone intended to have cookies, which can be seen as a reward. However, the cookies disappeared before the person could have any, making them unattainable due to an external block \u2014 someone else took them. Thus, this scenario fits the trigger type of ['Reward', 'Unattainable', 'ExternalBlock'].",
         "stimulus": "Your freshly baked cookies disappear from the communal kitchen before you get any.",
+        "reasoning": "The stimulus involves a desired reward (the cookies) that becomes unattainable due to an external factor (someone else taking them). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the individual is blocked from obtaining the reward by an external event.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The scenario involves someone making sarcastic comments while presenting, which can be perceived as a form of social threat. The presenter might feel undermined or criticized in a way that they might not be able to effectively address or control in the moment, leading to feelings of anger.",
         "stimulus": "While presenting, someone makes sarcastic comments under their breath.",
+        "reasoning": "This stimulus involves a social threat (sarcastic comments) that may feel inescapable and not directly controllable by the presenter, fitting the 'Threats, Controllable, Inescapable' category.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves an external event where kids have played in and trampled over your garden without your permission. This represents an external block or interference with your personal property. It does not involve a personal threat or a scenario where you must protect yourself from harm, nor does it relate to a reward that is unattainable due to an external block. The anger stems from an expectation or boundary being violated by an external source, which aligns more with an 'external block' aspect of anger triggers.",
         "stimulus": "You find your garden trampled on after kids played without permission.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "The situation involves an expected service (the plumber) that is not fulfilled, which can be seen as blocking progress or solving a problem. Since the plumber not showing up blocks the task you wanted to complete (plumbing work), it fits the pattern of an external factor preventing you from achieving a goal.",
-        "stimulus": "The plumber you hired doesn't show up and doesn't inform you in advance.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "The extra charge on a bill is a barrier preventing attainment of a goal (e.g., keeping within budget or paying the correct amount), as it imposes an unexpected obstacle. This is external as it comes from the service provider, causing frustration and a sense of an unmet expectation. It fits the 'ExternalBlock' category under the second trigger type.",
-        "stimulus": "You're charged extra on your monthly bill without a valid reason.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "The stimulus here is the act of someone repeatedly leaving the communal printer out of paper. This situation is frustrating because it causes inconvenience by creating an additional task for others. Though it might seem like a minor annoyance, it is a blockage to one's workflow since it prevents others from printing documents when needed without first refilling the paper.",
-        "stimulus": "Someone keeps leaving the communal printer out of paper after using it.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "The stimulus involves the inability to access something that is rightfully yours, in this case, a meal. This falls under the category of being unable to attain a reward due to an external blockage, which in this scenario, is a social norm violation by someone taking your meal. Thus, this is an 'Unattainable' condition due to an 'ExternalBlock'.",
-        "stimulus": "Your meal is taken from the communal fridge at work.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "The trigger type here is related to a situation where a person expects to receive something but is prevented from it due to an obstruction by external factors. The room booking was a reward or fulfillment that the person was expecting, but losing the room due to a hotel mishap is an external block that made the reward unattainable. ",
-        "stimulus": "While on vacation, a hotel mishap leads to you losing your booked room.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
-    },
-    {
-        "reasoning": "A passive-aggressive message about a minor oversight can be related to perceived \"Controllable\" factors because it often stems from an expectation that one could have or should have done something differently or more attentively. The interaction may also carry implicit 'Threats' or 'Inescapable' aspects if the sender has authority or influence over the receiver.",
-        "stimulus": "You receive a passive-aggressive message about a minor oversight.",
+        "reasoning": "The situation involves an external event (kids playing without permission) causing damage (garden trampled), which can be perceived as a threat to one's property or personal space. The event has already occurred, making it inescapable and not directly controllable at the moment.",
         "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The stimulus describes a scenario where the valued plants are withered because someone turned off the watering system. This situation aligns with the triggers 'Reward', 'Unattainable', and 'ExternalBlock'. The reward here is the maintenance of cherished plants, which becomes unattainable due to the external action of someone else (an external block) interfering with the watering system, thereby preventing the plants from being nurtured.",
+        "stimulus": "The plumber you hired doesn't show up and doesn't inform you in advance.",
+        "reasoning": "This situation involves a failure to receive a service you expected, which can be interpreted as a blocked goal (getting the plumbing fixed). The block is external (the plumber's actions), and the reward (having the plumbing fixed) is unattainable due to this external block.",
+        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+    },
+    {
+        "stimulus": "You're charged extra on your monthly bill without a valid reason.",
+        "reasoning": "This situation involves an external event (being overcharged) that is perceived as unfair and potentially threatening to one's financial security. The individual may feel threatened by the loss of money and the unfairness, and may or may not feel able to control the situation (e.g., by contacting customer service). However, the core trigger here is a threat to resources, fitting the 'Threats' category. The controllability and escapability depend on context, but the situation is generally perceived as a threat.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
+    },
+    {
+        "stimulus": "Someone keeps leaving the communal printer out of paper after using it.",
+        "reasoning": "This situation may be frustrating, but it does not clearly fit into the provided trigger types. It is not a direct threat, nor is it about an unattainable reward due to an external block. It is more of a minor annoyance or inconvenience.",
+        "trigger_type": "None"
+    },
+    {
+        "stimulus": "Your meal is taken from the communal fridge at work.",
+        "reasoning": "This situation involves a desired reward (your meal) being blocked by an external factor (someone else taking it), making it unattainable due to circumstances outside your control.",
+        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+    },
+    {
+        "stimulus": "While on vacation, a hotel mishap leads to you losing your booked room.",
+        "reasoning": "This situation involves an external event (the hotel mishap) that results in the loss of a desired outcome (the booked room). The loss is due to circumstances outside the individual's control, and the desired reward (the room) becomes unattainable because of an external block (the hotel's error).",
+        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+    },
+    {
+        "stimulus": "You receive a passive-aggressive message about a minor oversight.",
+        "reasoning": "A passive-aggressive message about a minor oversight can be perceived as a social threat, potentially triggering feelings of being judged or criticized. However, the scenario does not specify whether the threat is controllable or inescapable, nor does it clearly fit the 'Reward, Unattainable, ExternalBlock' category. The stimulus is more about social discomfort or threat, but without enough detail to assign it to the specific trigger types provided.",
+        "trigger_type": "None"
+    },
+    {
         "stimulus": "You find your cherished plants withered because someone turned off the watering system.",
+        "reasoning": "The situation involves a negative outcome (plants withered) caused by an external agent (someone turned off the watering system), which blocks the attainment of the desired state (healthy plants). This fits the 'Reward, Unattainable, ExternalBlock' trigger type, as the reward (healthy plants) is unattainable due to an external block (someone else's action).",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The situation involves someone taking your reserved seat, which can evoke anger due to a perceived unfairness or external interference in your plans. This aligns with the \"['Reward', 'Unattainable', 'ExternalBlock']\" trigger type because the expected reward (the use of your reserved seat) is being blocked by an external factor (someone else sitting in it).",
         "stimulus": "During a conference, your reserved seat is taken by someone else.",
+        "reasoning": "This situation involves a blocked goal (sitting in your reserved seat), which is a form of reward being unattainable due to an external factor (someone else taking the seat). It does not directly involve a threat to safety or well-being, nor is it about controllability or inescapability in the sense of threat. Thus, it fits the 'Reward, Unattainable, ExternalBlock' trigger type.",
         "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
     },
     {
-        "reasoning": "The stimulus of finding out about being excluded from a group activity could trigger feelings related to missing out on a reward or social interaction. The \"reward\" in this context is the social engagement and inclusion which is unattainable due to the external block of not being informed or invited. It fits the trigger type of \"['Reward', 'Unattainable', 'ExternalBlock']\" because the exclusion acts as an external block to a social reward.",
         "stimulus": "You find out a group activity was organized without your knowledge.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "The stimulus describes a situation where a person is excluded from a group activity, which may evoke feelings of rejection or being left out. However, it does not directly involve a threat to safety or well-being, nor does it clearly involve an unattainable reward due to an external block. The emotional response is more related to social exclusion or disappointment, which does not fit neatly into the provided trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The situation involves an external block, where the environment or others' actions (someone leaving dishes) prevent maintaining a clean kitchen space, which may be a goal. This aligns with the trigger type ['Reward', 'Unattainable', 'ExternalBlock'] because the clean kitchen (reward) is being blocked externally by someone not cleaning their dishes.",
         "stimulus": "Someone always leaves the kitchen sink full of dirty dishes.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation can be interpreted as a recurring annoyance or frustration, potentially triggering feelings of irritation or helplessness. However, it does not clearly fit the 'Threats' category (as it is not a direct threat), nor does it fit 'Reward, Unattainable, ExternalBlock' (as there is no reward being blocked). It could be argued that it is a controllable threat if the person feels responsible for cleaning, but the stimulus itself does not specify a threat or a reward context.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The stimulus involves a situation where a person has to clean up a mess left by guests, which suggests a block to achieving a goal of maintaining a clean space. This fits into the category of 'ExternalBlock', as the mess is left by external agents (the guests) and relates to the person's inability to maintain cleanliness without additional effort. Furthermore, if the person had expectations of help that were not met, it contributes to the feeling of an unattainable reward (help from guests to clean up), making it fit the 'Reward' and 'Unattainable' aspect of the trigger type.",
         "stimulus": "After cleaning the house, guests leave a mess without helping clean up.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a sense of unfairness and frustration, as the person who cleaned feels their effort is disregarded. However, it does not directly involve a threat to safety or well-being, nor does it involve an unattainable reward due to an external block. It is more about social expectations and disappointment, which do not fit the specified trigger types.",
+        "trigger_type": "None"
     },
     {
-        "reasoning": "The situation describes lending a tool and having it returned in worse condition. This forms an external block to maintaining the tool's condition, as the control over the outcome was in someone else's hands. Additionally, one might have been expecting a form of mutual respect or reward in terms of the tool's care which was unattainable due to the damage. Therefore, it aligns with the external block to the reward motivation.",
         "stimulus": "You lend someone your tool and it's returned in worse condition.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves a negative outcome (damage to your property) caused by another person's actions. It may evoke feelings of anger, frustration, or betrayal, which are threat-related emotions. The situation is potentially controllable (you could confront the person, set boundaries, or avoid lending in the future), but it is not inescapable. It does not involve an unattainable reward or an external block to a desired reward.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     },
     {
-        "reasoning": "The situation involves an external interference where someone has prematurely removed your clothes, which is blocking your goal of having your clothes dry. This aligns with the category of an 'External Block', where an outside factor disrupts an individual's plans or goals.",
         "stimulus": "In a communal laundry room, someone removes your clothes before they're dry.",
-        "trigger_type": "['Reward', 'Unattainable', 'ExternalBlock']"
+        "reasoning": "This situation involves another person interfering with your belongings, which can be perceived as a threat to your personal property or boundaries. The situation may feel inescapable because you cannot control others' actions in a shared space, and it is not directly about a reward being blocked.",
+        "trigger_type": "['Threats', 'Controllable', 'Inescapable']"
     }
 ]

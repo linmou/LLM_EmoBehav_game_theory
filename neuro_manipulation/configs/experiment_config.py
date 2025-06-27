@@ -20,6 +20,11 @@ def get_repe_eng_config(model_name):
     }
 
 def get_model_config(model_name):
+    """
+    Deprecated. 
+    Now we use the middel 1/3 layers by default to control.    
+    """
+    
     if 'mistral-7b' in model_name.lower() or 'llama-3' in model_name.lower():
         control_layer_id = list(range(-5, -18, -1))
     else:  # llama default

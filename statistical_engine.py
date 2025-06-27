@@ -26,7 +26,7 @@ def significant_sign(p_value: float) -> str:
         return '*'
     return ''
 
-def generate_text_description(results: Dict, category_a: str, category_b: str) -> str:
+def generate_text_description(results: Dict, category_a: Optional[str] = None, category_b: Optional[str] = None) -> str:
     """
     Generate a human-readable description of the statistical analysis results.
     
@@ -34,6 +34,8 @@ def generate_text_description(results: Dict, category_a: str, category_b: str) -
         results: Dictionary containing either:
                 - Single analysis results (emotion or intensity analysis)
                 - Combined results with both emotion_analysis and intensity_analysis
+        category_a: First category name (optional)
+        category_b: Second category name (optional)
                 
     Returns:
         A formatted string describing the results
@@ -65,14 +67,11 @@ def generate_text_description(results: Dict, category_a: str, category_b: str) -
                         else str(condition).capitalize())
         description.append(f"\n{condition_str}:")
         
-        # Handle both numerical and string category labels
-        coop_count = data['counts'].get(category_a, data['counts'].get('1', 0))
-        defect_count = data['counts'].get(category_b, data['counts'].get('2', 0))
-        coop_ratio = data.get(f'{category_a}_ratio', 0)
-        defect_ratio = data.get(f'{category_b}_ratio', 0)
-        
-        description.append(f"- {category_a} decisions: {coop_count} ({coop_ratio*100:.1f}%)")
-        description.append(f"- {category_b} decisions: {defect_count} ({defect_ratio*100:.1f}%)")
+        # For each category, add a line with counts and percentages
+        for i, (cat, ratio_key) in enumerate([(cat, f"{cat}_ratio") for cat in data['counts'].keys()]):
+            count = data['counts'].get(cat, 0)
+            ratio = data.get(ratio_key, 0)
+            description.append(f"- {cat} decisions: {count} ({ratio*100:.1f}%)")
     
     # Overall test results
     description.append("\n2. Overall Statistical Test:")
@@ -241,9 +240,17 @@ class BehaviorAnalyzer(BaseAnalyzer):
 
     def format_full_results(self, analysis_results: Dict) -> Dict:
         """Add text descriptions and structure to results."""
+        # Safe handling of categories for text description
+        if len(self.categories) >= 2:
+            category_a, category_b = self.categories[0], self.categories[1]
+        elif len(self.categories) == 1:
+            category_a, category_b = self.categories[0], None
+        else:
+            category_a, category_b = None, None
+            
         return {
             **analysis_results,
-            'text_description': generate_text_description(analysis_results, self.categories[0], self.categories[1])
+            'text_description': generate_text_description(analysis_results, category_a, category_b)
         }
 
     def _analyze_emotion_effects(self, df: pd.DataFrame) -> Dict:
@@ -291,8 +298,8 @@ class BehaviorAnalyzer(BaseAnalyzer):
         behavior_counts = {cat: 0 for cat in self.categories}
         for item in data:
             category = item.get('category', '').lower()
-            if category in behavior_counts:
-                behavior_counts[category] += 1
+            behavior_counts[category] = behavior_counts.get(category, 0) + 1
+            
         return behavior_counts
 
     def _analyze_conditions(self, condition_counts: Dict[str, Dict]) -> Dict:
@@ -370,11 +377,18 @@ class BehaviorVisualizer:
         """
         plt.style.use('seaborn-v0_8')
         fig = plt.figure(figsize=(15, 10))
-        gs = fig.add_gridspec(2, 2)
         
-        self._plot_behavior_rates(results, fig.add_subplot(gs[0, 0]))
-        self._plot_pvalue_heatmap(results, fig.add_subplot(gs[0, 1]))
-        self._plot_raw_counts(results, fig.add_subplot(gs[1, :]))
+        if len(self.categories) >= 2:
+            # Use original layout with 2x2 grid for multiple categories
+            gs = fig.add_gridspec(2, 2)
+            self._plot_behavior_rates(results, fig.add_subplot(gs[0, 0]))
+            self._plot_pvalue_heatmap(results, fig.add_subplot(gs[0, 1]))
+            self._plot_raw_counts(results, fig.add_subplot(gs[1, :]))
+        else:
+            # Simplified layout for single category
+            gs = fig.add_gridspec(2, 1)
+            self._plot_single_category_rates(results, fig.add_subplot(gs[0, 0]))
+            self._plot_pvalue_heatmap(results, fig.add_subplot(gs[1, 0]))
         
         if title:
             fig.suptitle(title, fontsize=16, y=1.02)
@@ -385,6 +399,10 @@ class BehaviorVisualizer:
 
     def _plot_behavior_rates(self, results: Dict, ax: plt.Axes) -> None:
         """Plot behavior rates with percentages for multiple categories"""
+        # Skip if there's only one category - this will be handled by _plot_single_category_rates
+        if len(self.categories) < 2:
+            return
+            
         conditions = list(results['individual_conditions'].keys())
         n_conditions = len(conditions)
         n_categories = len(self.categories)
@@ -453,9 +471,57 @@ class BehaviorVisualizer:
         else:
             ax.set_title('P-values Heatmap for Emotion Comparisons')
 
+    def _plot_single_category_rates(self, results: Dict, ax: plt.Axes) -> None:
+        """Plot behavior rates for a single category"""
+        conditions = list(results['individual_conditions'].keys())
+        n_conditions = len(conditions)
+        category = self.categories[0]  # We know there's only one
+        
+        rates = [results['individual_conditions'][cond][f'{category}_ratio'] 
+                for cond in conditions]
+        
+        x = np.arange(n_conditions)
+        bars = ax.bar(x, rates, 0.6, label=category, color=self.colors[0], alpha=0.6)
+        
+        # Add percentage labels
+        for j, rate in enumerate(rates):
+            ax.text(x[j], rate, f'{rate*100:.1f}%', 
+                   ha='center', va='bottom')
+        
+        ax.set_ylabel('Ratio')
+        ax.set_title(f'{category} Ratios by Condition')
+        ax.set_xticks(x)
+        ax.set_xticklabels(conditions)
+        ax.legend()
+        ax.set_ylim(0, 1.2)
+
     def _plot_raw_counts(self, results: Dict, ax: plt.Axes) -> None:
         """Plot behavior ratios"""
         conditions = list(results['individual_conditions'].keys())
+        
+        # Handle the case of only one category
+        if len(self.categories) == 1:
+            single_category = self.categories[0]
+            ratios = [results['individual_conditions'][cond][f'{single_category}_ratio'] 
+                      for cond in conditions]
+            
+            x = np.arange(len(conditions))
+            ax.bar(x, ratios, 0.6, label=single_category, color='green', alpha=0.6)
+            
+            # Add percentage labels
+            for i, ratio in enumerate(ratios):
+                ax.text(i, ratio, f'{ratio*100:.1f}%', 
+                       ha='center', va='bottom')
+                
+            ax.set_ylabel('Ratio')
+            ax.set_title('Behavior Ratios by Condition')
+            ax.set_xticks(x)
+            ax.set_xticklabels(conditions)
+            ax.legend()
+            ax.set_ylim(0, 1.2)
+            return
+        
+        # Original implementation for 2+ categories
         coop_ratios = []
         defect_ratios = []
         

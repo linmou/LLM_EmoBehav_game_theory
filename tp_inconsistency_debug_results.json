@@ -1,0 +1,1338 @@
+{
+  "tokenization_info": {
+    "Paris": {
+      "normal": {
+        "tokens": [
+          40313
+        ],
+        "decoded": "Paris"
+      },
+      "with_space": {
+        "tokens": [
+          6342
+        ],
+        "decoded": " Paris"
+      }
+    }
+  },
+  "tp_results": {
+    "1": {
+      "vllm_detailed_logprobs": {
+        "The capital of France is": {
+          "prompt": "The capital of France is",
+          "tp_size": 1,
+          "outputs": [
+            {
+              "generated_text": " the capital of the French",
+              "token_ids": [
+                262,
+                3139,
+                286,
+                262,
+                4141
+              ],
+              "logprobs_details": [
+                {
+                  "position": 0,
+                  "tokens_in_position": {
+                    "262": {
+                      "token_id": 262,
+                      "logprob": -2.475304365158081,
+                      "rank": 1,
+                      "decoded_token": " the"
+                    },
+                    "783": {
+                      "token_id": 783,
+                      "logprob": -3.037804365158081,
+                      "rank": 2,
+                      "decoded_token": " now"
+                    },
+                    "257": {
+                      "token_id": 257,
+                      "logprob": -3.100304365158081,
+                      "rank": 3,
+                      "decoded_token": " a"
+                    },
+                    "6342": {
+                      "token_id": 6342,
+                      "logprob": -3.412804365158081,
+                      "rank": 4,
+                      "decoded_token": " Paris"
+                    },
+                    "4881": {
+                      "token_id": 4881,
+                      "logprob": -3.412804365158081,
+                      "rank": 5,
+                      "decoded_token": " France"
+                    },
+                    "287": {
+                      "token_id": 287,
+                      "logprob": -3.600304365158081,
+                      "rank": 6,
+                      "decoded_token": " in"
+                    },
+                    "635": {
+                      "token_id": 635,
+                      "logprob": -3.662804365158081,
+                      "rank": 7,
+                      "decoded_token": " also"
+                    },
+                    "407": {
+                      "token_id": 407,
+                      "logprob": -3.725304365158081,
+                      "rank": 8,
+                      "decoded_token": " not"
+                    },
+                    "1363": {
+                      "token_id": 1363,
+                      "logprob": -3.787804365158081,
+                      "rank": 9,
+                      "decoded_token": " home"
+                    },
+                    "991": {
+                      "token_id": 991,
+                      "logprob": -4.16280460357666,
+                      "rank": 10,
+                      "decoded_token": " still"
+                    },
+                    "739": {
+                      "token_id": 739,
+                      "logprob": -4.22530460357666,
+                      "rank": 11,
+                      "decoded_token": " under"
+                    },
+                    "5140": {
+                      "token_id": 5140,
+                      "logprob": -4.28780460357666,
+                      "rank": 12,
+                      "decoded_token": " located"
+                    },
+                    "319": {
+                      "token_id": 319,
+                      "logprob": -4.28780460357666,
+                      "rank": 13,
+                      "decoded_token": " on"
+                    },
+                    "530": {
+                      "token_id": 530,
+                      "logprob": -4.47530460357666,
+                      "rank": 14,
+                      "decoded_token": " one"
+                    },
+                    "1900": {
+                      "token_id": 1900,
+                      "logprob": -4.66280460357666,
+                      "rank": 15,
+                      "decoded_token": " known"
+                    },
+                    "379": {
+                      "token_id": 379,
+                      "logprob": -4.72530460357666,
+                      "rank": 16,
+                      "decoded_token": " at"
+                    },
+                    "281": {
+                      "token_id": 281,
+                      "logprob": -4.85030460357666,
+                      "rank": 17,
+                      "decoded_token": " an"
+                    },
+                    "852": {
+                      "token_id": 852,
+                      "logprob": -4.85030460357666,
+                      "rank": 18,
+                      "decoded_token": " being"
+                    },
+                    "1541": {
+                      "token_id": 1541,
+                      "logprob": -4.97530460357666,
+                      "rank": 19,
+                      "decoded_token": " already"
+                    },
+                    "284": {
+                      "token_id": 284,
+                      "logprob": -5.35030460357666,
+                      "rank": 20,
+                      "decoded_token": " to"
+                    }
+                  }
+                },
+                {
+                  "position": 1,
+                  "tokens_in_position": {
+                    "3139": {
+                      "token_id": 3139,
+                      "logprob": -1.7526757717132568,
+                      "rank": 1,
+                      "decoded_token": " capital"
+                    },
+                    "1748": {
+                      "token_id": 1748,
+                      "logprob": -3.377675771713257,
+                      "rank": 2,
+                      "decoded_token": " city"
+                    },
+                    "4141": {
+                      "token_id": 4141,
+                      "logprob": -3.752675771713257,
+                      "rank": 3,
+                      "decoded_token": " French"
+                    },
+                    "4387": {
+                      "token_id": 4387,
+                      "logprob": -3.815175771713257,
+                      "rank": 4,
+                      "decoded_token": " largest"
+                    },
+                    "749": {
+                      "token_id": 749,
+                      "logprob": -3.815175771713257,
+                      "rank": 5,
+                      "decoded_token": " most"
+                    },
+                    "48145": {
+                      "token_id": 48145,
+                      "logprob": -3.877675771713257,
+                      "rank": 6,
+                      "decoded_token": " birthplace"
+                    },
+                    "1499": {
+                      "token_id": 1499,
+                      "logprob": -3.940175771713257,
+                      "rank": 7,
+                      "decoded_token": " country"
+                    },
+                    "1218": {
+                      "token_id": 1218,
+                      "logprob": -4.065176010131836,
+                      "rank": 8,
+                      "decoded_token": " second"
+                    },
+                    "691": {
+                      "token_id": 691,
+                      "logprob": -4.127676010131836,
+                      "rank": 9,
+                      "decoded_token": " only"
+                    },
+                    "2612": {
+                      "token_id": 2612,
+                      "logprob": -4.252676010131836,
+                      "rank": 10,
+                      "decoded_token": " heart"
+                    },
+                    "995": {
+                      "token_id": 995,
+                      "logprob": -4.252676010131836,
+                      "rank": 11,
+                      "decoded_token": " world"
+                    },
+                    "7372": {
+                      "token_id": 7372,
+                      "logprob": -4.377676010131836,
+                      "rank": 12,
+                      "decoded_token": " centre"
+                    },
+                    "2524": {
+                      "token_id": 2524,
+                      "logprob": -4.440176010131836,
+                      "rank": 13,
+                      "decoded_token": " site"
+                    },
+                    "1363": {
+                      "token_id": 1363,
+                      "logprob": -4.440176010131836,
+                      "rank": 14,
+                      "decoded_token": " home"
+                    },
+                    "717": {
+                      "token_id": 717,
+                      "logprob": -4.627676010131836,
+                      "rank": 15,
+                      "decoded_token": " first"
+                    },
+                    "3641": {
+                      "token_id": 3641,
+                      "logprob": -4.627676010131836,
+                      "rank": 16,
+                      "decoded_token": " center"
+                    },
+                    "4094": {
+                      "token_id": 4094,
+                      "logprob": -4.752676010131836,
+                      "rank": 17,
+                      "decoded_token": " biggest"
+                    },
+                    "1388": {
+                      "token_id": 1388,
+                      "logprob": -4.940176010131836,
+                      "rank": 18,
+                      "decoded_token": " main"
+                    },
+                    "366": {
+                      "token_id": 366,
+                      "logprob": -5.065176010131836,
+                      "rank": 19,
+                      "decoded_token": " \""
+                    },
+                    "10043": {
+                      "token_id": 10043,
+                      "logprob": -5.190176010131836,
+                      "rank": 20,
+                      "decoded_token": " headquarters"
+                    }
+                  }
+                },
+                {
+                  "position": 2,
+                  "tokens_in_position": {
+                    "286": {
+                      "token_id": 286,
+                      "logprob": -0.0760234147310257,
+                      "rank": 1,
+                      "decoded_token": " of"
+                    },
+                    "11": {
+                      "token_id": 11,
+                      "logprob": -3.9510233402252197,
+                      "rank": 2,
+                      "decoded_token": ","
+                    },
+                    "1748": {
+                      "token_id": 1748,
+                      "logprob": -4.263523578643799,
+                      "rank": 3,
+                      "decoded_token": " city"
+                    },
+                    "290": {
+                      "token_id": 290,
+                      "logprob": -5.076023578643799,
+                      "rank": 4,
+                      "decoded_token": " and"
+                    },
+                    "13": {
+                      "token_id": 13,
+                      "logprob": -5.169773578643799,
+                      "rank": 5,
+                      "decoded_token": "."
+                    },
+                    "6342": {
+                      "token_id": 6342,
+                      "logprob": -6.451023578643799,
+                      "rank": 6,
+                      "decoded_token": " Paris"
+                    },
+                    "287": {
+                      "token_id": 287,
+                      "logprob": -6.482273578643799,
+                      "rank": 7,
+                      "decoded_token": " in"
+                    },
+                    "329": {
+                      "token_id": 329,
+                      "logprob": -6.638523578643799,
+                      "rank": 8,
+                      "decoded_token": " for"
+                    },
+                    "12": {
+                      "token_id": 12,
+                      "logprob": -7.388523578643799,
+                      "rank": 9,
+                      "decoded_token": "-"
+                    },
+                    "284": {
+                      "token_id": 284,
+                      "logprob": -7.513523578643799,
+                      "rank": 10,
+                      "decoded_token": " to"
+                    },
+                    "326": {
+                      "token_id": 326,
+                      "logprob": -7.544773578643799,
+                      "rank": 11,
+                      "decoded_token": " that"
+                    },
+                    "553": {
+                      "token_id": 553,
+                      "logprob": -7.669773578643799,
+                      "rank": 12,
+                      "decoded_token": ",\""
+                    },
+                    "357": {
+                      "token_id": 357,
+                      "logprob": -7.763523578643799,
+                      "rank": 13,
+                      "decoded_token": " ("
+                    },
+                    "379": {
+                      "token_id": 379,
+                      "logprob": -7.826023578643799,
+                      "rank": 14,
+                      "decoded_token": " at"
+                    },
+                    "319": {
+                      "token_id": 319,
+                      "logprob": -7.857273578643799,
+                      "rank": 15,
+                      "decoded_token": " on"
+                    },
+                    "3240": {
+                      "token_id": 3240,
+                      "logprob": -7.888523578643799,
+                      "rank": 16,
+                      "decoded_token": " town"
+                    },
+                    "3139": {
+                      "token_id": 3139,
+                      "logprob": -7.951023578643799,
+                      "rank": 17,
+                      "decoded_token": " capital"
+                    },
+                    "351": {
+                      "token_id": 351,
+                      "logprob": -8.01352310180664,
+                      "rank": 18,
+                      "decoded_token": " with"
+                    },
+                    "16445": {
+                      "token_id": 16445,
+                      "logprob": -8.07602310180664,
+                      "rank": 19,
+                      "decoded_token": " Brussels"
+                    },
+                    "526": {
+                      "token_id": 526,
+                      "logprob": -8.23227310180664,
+                      "rank": 20,
+                      "decoded_token": ".\""
+                    }
+                  }
+                },
+                {
+                  "position": 3,
+                  "tokens_in_position": {
+                    "262": {
+                      "token_id": 262,
+                      "logprob": -1.2447712421417236,
+                      "rank": 1,
+                      "decoded_token": " the"
+                    },
+                    "4881": {
+                      "token_id": 4881,
+                      "logprob": -1.6197712421417236,
+                      "rank": 2,
+                      "decoded_token": " France"
+                    },
+                    "257": {
+                      "token_id": 257,
+                      "logprob": -2.8697712421417236,
+                      "rank": 3,
+                      "decoded_token": " a"
+                    },
+                    "2031": {
+                      "token_id": 2031,
+                      "logprob": -4.2447710037231445,
+                      "rank": 4,
+                      "decoded_token": " Europe"
+                    },
+                    "4141": {
+                      "token_id": 4141,
+                      "logprob": -4.3697710037231445,
+                      "rank": 5,
+                      "decoded_token": " French"
+                    },
+                    "15664": {
+                      "token_id": 15664,
+                      "logprob": -4.6197710037231445,
+                      "rank": 6,
+                      "decoded_token": " Belgium"
+                    },
+                    "281": {
+                      "token_id": 281,
+                      "logprob": -4.6197710037231445,
+                      "rank": 7,
+                      "decoded_token": " an"
+                    },
+                    "4486": {
+                      "token_id": 4486,
+                      "logprob": -4.7447710037231445,
+                      "rank": 8,
+                      "decoded_token": " Germany"
+                    },
+                    "663": {
+                      "token_id": 663,
+                      "logprob": -4.8697710037231445,
+                      "rank": 9,
+                      "decoded_token": " its"
+                    },
+                    "8602": {
+                      "token_id": 8602,
+                      "logprob": -4.9947710037231445,
+                      "rank": 10,
+                      "decoded_token": " Spain"
+                    },
+                    "428": {
+                      "token_id": 428,
+                      "logprob": -4.9947710037231445,
+                      "rank": 11,
+                      "decoded_token": " this"
+                    },
+                    "530": {
+                      "token_id": 530,
+                      "logprob": -4.9947710037231445,
+                      "rank": 12,
+                      "decoded_token": " one"
+                    },
+                    "6342": {
+                      "token_id": 6342,
+                      "logprob": -5.0572710037231445,
+                      "rank": 13,
+                      "decoded_token": " Paris"
+                    },
+                    "8031": {
+                      "token_id": 8031,
+                      "logprob": -5.4947710037231445,
+                      "rank": 14,
+                      "decoded_token": " Italy"
+                    },
+                    "734": {
+                      "token_id": 734,
+                      "logprob": -5.6197710037231445,
+                      "rank": 15,
+                      "decoded_token": " two"
+                    },
+                    "33859": {
+                      "token_id": 33859,
+                      "logprob": -5.6822710037231445,
+                      "rank": 16,
+                      "decoded_token": " Catalonia"
+                    },
+                    "3449": {
+                      "token_id": 3449,
+                      "logprob": -5.6822710037231445,
+                      "rank": 17,
+                      "decoded_token": " Islam"
+                    },
+                    "644": {
+                      "token_id": 644,
+                      "logprob": -5.6822710037231445,
+                      "rank": 18,
+                      "decoded_token": " what"
+                    },
+                    "366": {
+                      "token_id": 366,
+                      "logprob": -5.6822710037231445,
+                      "rank": 19,
+                      "decoded_token": " \""
+                    },
+                    "477": {
+                      "token_id": 477,
+                      "logprob": -5.8072710037231445,
+                      "rank": 20,
+                      "decoded_token": " all"
+                    }
+                  }
+                },
+                {
+                  "position": 4,
+                  "tokens_in_position": {
+                    "4141": {
+                      "token_id": 4141,
+                      "logprob": -1.9676116704940796,
+                      "rank": 1,
+                      "decoded_token": " French"
+                    },
+                    "2066": {
+                      "token_id": 2066,
+                      "logprob": -2.967611789703369,
+                      "rank": 2,
+                      "decoded_token": " Republic"
+                    },
+                    "3427": {
+                      "token_id": 3427,
+                      "logprob": -3.342611789703369,
+                      "rank": 3,
+                      "decoded_token": " European"
+                    },
+                    "1578": {
+                      "token_id": 1578,
+                      "logprob": -3.342611789703369,
+                      "rank": 4,
+                      "decoded_token": " United"
+                    },
+                    "995": {
+                      "token_id": 995,
+                      "logprob": -3.467611789703369,
+                      "rank": 5,
+                      "decoded_token": " world"
+                    },
+                    "1499": {
+                      "token_id": 1499,
+                      "logprob": -4.405111789703369,
+                      "rank": 6,
+                      "decoded_token": " country"
+                    },
+                    "21773": {
+                      "token_id": 21773,
+                      "logprob": -4.467611789703369,
+                      "rank": 7,
+                      "decoded_token": " Socialist"
+                    },
+                    "4576": {
+                      "token_id": 4576,
+                      "logprob": -4.467611789703369,
+                      "rank": 8,
+                      "decoded_token": " EU"
+                    },
+                    "2688": {
+                      "token_id": 2688,
+                      "logprob": -4.655111789703369,
+                      "rank": 9,
+                      "decoded_token": " West"
+                    },
+                    "1181": {
+                      "token_id": 1181,
+                      "logprob": -4.655111789703369,
+                      "rank": 10,
+                      "decoded_token": " state"
+                    },
+                    "12671": {
+                      "token_id": 12671,
+                      "logprob": -4.780111789703369,
+                      "rank": 11,
+                      "decoded_token": " Netherlands"
+                    },
+                    "17146": {
+                      "token_id": 17146,
+                      "logprob": -4.842611789703369,
+                      "rank": 12,
+                      "decoded_token": " republic"
+                    },
+                    "11063": {
+                      "token_id": 11063,
+                      "logprob": -5.092611789703369,
+                      "rank": 13,
+                      "decoded_token": " euro"
+                    },
+                    "3277": {
+                      "token_id": 3277,
+                      "logprob": -5.155111789703369,
+                      "rank": 14,
+                      "decoded_token": " nation"
+                    },
+                    "366": {
+                      "token_id": 366,
+                      "logprob": -5.217611789703369,
+                      "rank": 15,
+                      "decoded_token": " \""
+                    },
+                    "3594": {
+                      "token_id": 3594,
+                      "logprob": -5.217611789703369,
+                      "rank": 16,
+                      "decoded_token": " English"
+                    },
+                    "7897": {
+                      "token_id": 7897,
+                      "logprob": -5.342611789703369,
+                      "rank": 17,
+                      "decoded_token": " Spanish"
+                    },
+                    "2679": {
+                      "token_id": 2679,
+                      "logprob": -5.405111789703369,
+                      "rank": 18,
+                      "decoded_token": " German"
+                    },
+                    "7526": {
+                      "token_id": 7526,
+                      "logprob": -5.405111789703369,
+                      "rank": 19,
+                      "decoded_token": " Kingdom"
+                    },
+                    "7993": {
+                      "token_id": 7993,
+                      "logprob": -5.405111789703369,
+                      "rank": 20,
+                      "decoded_token": " Roman"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "comparison_results": {
+        "tp_size": 1,
+        "vllm_approach": [
+          {
+            "sequence": "Paris",
+            "log_prob": -3.412804365158081,
+            "prob": 0.03294866904616356,
+            "perplexity": 30.350238800048828,
+            "num_tokens": 1
+          }
+        ]
+      }
+    },
+    "2": {
+      "vllm_detailed_logprobs": {
+        "The capital of France is": {
+          "prompt": "The capital of France is",
+          "tp_size": 2,
+          "outputs": [
+            {
+              "generated_text": " the capital of the French",
+              "token_ids": [
+                262,
+                3139,
+                286,
+                262,
+                4141
+              ],
+              "logprobs_details": [
+                {
+                  "position": 0,
+                  "tokens_in_position": {
+                    "262": {
+                      "token_id": 262,
+                      "logprob": -2.449408531188965,
+                      "rank": 1,
+                      "decoded_token": " the"
+                    },
+                    "783": {
+                      "token_id": 783,
+                      "logprob": -3.011908531188965,
+                      "rank": 2,
+                      "decoded_token": " now"
+                    },
+                    "257": {
+                      "token_id": 257,
+                      "logprob": -3.074408531188965,
+                      "rank": 3,
+                      "decoded_token": " a"
+                    },
+                    "6342": {
+                      "token_id": 6342,
+                      "logprob": -3.449408531188965,
+                      "rank": 4,
+                      "decoded_token": " Paris"
+                    },
+                    "4881": {
+                      "token_id": 4881,
+                      "logprob": -3.449408531188965,
+                      "rank": 5,
+                      "decoded_token": " France"
+                    },
+                    "635": {
+                      "token_id": 635,
+                      "logprob": -3.636908531188965,
+                      "rank": 6,
+                      "decoded_token": " also"
+                    },
+                    "287": {
+                      "token_id": 287,
+                      "logprob": -3.636908531188965,
+                      "rank": 7,
+                      "decoded_token": " in"
+                    },
+                    "407": {
+                      "token_id": 407,
+                      "logprob": -3.761908531188965,
+                      "rank": 8,
+                      "decoded_token": " not"
+                    },
+                    "1363": {
+                      "token_id": 1363,
+                      "logprob": -3.761908531188965,
+                      "rank": 9,
+                      "decoded_token": " home"
+                    },
+                    "991": {
+                      "token_id": 991,
+                      "logprob": -4.199408531188965,
+                      "rank": 10,
+                      "decoded_token": " still"
+                    },
+                    "5140": {
+                      "token_id": 5140,
+                      "logprob": -4.261908531188965,
+                      "rank": 11,
+                      "decoded_token": " located"
+                    },
+                    "739": {
+                      "token_id": 739,
+                      "logprob": -4.261908531188965,
+                      "rank": 12,
+                      "decoded_token": " under"
+                    },
+                    "319": {
+                      "token_id": 319,
+                      "logprob": -4.324408531188965,
+                      "rank": 13,
+                      "decoded_token": " on"
+                    },
+                    "530": {
+                      "token_id": 530,
+                      "logprob": -4.511908531188965,
+                      "rank": 14,
+                      "decoded_token": " one"
+                    },
+                    "1900": {
+                      "token_id": 1900,
+                      "logprob": -4.636908531188965,
+                      "rank": 15,
+                      "decoded_token": " known"
+                    },
+                    "379": {
+                      "token_id": 379,
+                      "logprob": -4.761908531188965,
+                      "rank": 16,
+                      "decoded_token": " at"
+                    },
+                    "281": {
+                      "token_id": 281,
+                      "logprob": -4.824408531188965,
+                      "rank": 17,
+                      "decoded_token": " an"
+                    },
+                    "852": {
+                      "token_id": 852,
+                      "logprob": -4.886908531188965,
+                      "rank": 18,
+                      "decoded_token": " being"
+                    },
+                    "1541": {
+                      "token_id": 1541,
+                      "logprob": -5.011908531188965,
+                      "rank": 19,
+                      "decoded_token": " already"
+                    },
+                    "284": {
+                      "token_id": 284,
+                      "logprob": -5.386908531188965,
+                      "rank": 20,
+                      "decoded_token": " to"
+                    }
+                  }
+                },
+                {
+                  "position": 1,
+                  "tokens_in_position": {
+                    "3139": {
+                      "token_id": 3139,
+                      "logprob": -1.75614595413208,
+                      "rank": 1,
+                      "decoded_token": " capital"
+                    },
+                    "1748": {
+                      "token_id": 1748,
+                      "logprob": -3.38114595413208,
+                      "rank": 2,
+                      "decoded_token": " city"
+                    },
+                    "4141": {
+                      "token_id": 4141,
+                      "logprob": -3.75614595413208,
+                      "rank": 3,
+                      "decoded_token": " French"
+                    },
+                    "4387": {
+                      "token_id": 4387,
+                      "logprob": -3.81864595413208,
+                      "rank": 4,
+                      "decoded_token": " largest"
+                    },
+                    "749": {
+                      "token_id": 749,
+                      "logprob": -3.81864595413208,
+                      "rank": 5,
+                      "decoded_token": " most"
+                    },
+                    "48145": {
+                      "token_id": 48145,
+                      "logprob": -3.88114595413208,
+                      "rank": 6,
+                      "decoded_token": " birthplace"
+                    },
+                    "1499": {
+                      "token_id": 1499,
+                      "logprob": -3.94364595413208,
+                      "rank": 7,
+                      "decoded_token": " country"
+                    },
+                    "1218": {
+                      "token_id": 1218,
+                      "logprob": -4.06864595413208,
+                      "rank": 8,
+                      "decoded_token": " second"
+                    },
+                    "691": {
+                      "token_id": 691,
+                      "logprob": -4.13114595413208,
+                      "rank": 9,
+                      "decoded_token": " only"
+                    },
+                    "2612": {
+                      "token_id": 2612,
+                      "logprob": -4.25614595413208,
+                      "rank": 10,
+                      "decoded_token": " heart"
+                    },
+                    "995": {
+                      "token_id": 995,
+                      "logprob": -4.25614595413208,
+                      "rank": 11,
+                      "decoded_token": " world"
+                    },
+                    "7372": {
+                      "token_id": 7372,
+                      "logprob": -4.38114595413208,
+                      "rank": 12,
+                      "decoded_token": " centre"
+                    },
+                    "2524": {
+                      "token_id": 2524,
+                      "logprob": -4.44364595413208,
+                      "rank": 13,
+                      "decoded_token": " site"
+                    },
+                    "1363": {
+                      "token_id": 1363,
+                      "logprob": -4.44364595413208,
+                      "rank": 14,
+                      "decoded_token": " home"
+                    },
+                    "717": {
+                      "token_id": 717,
+                      "logprob": -4.63114595413208,
+                      "rank": 15,
+                      "decoded_token": " first"
+                    },
+                    "3641": {
+                      "token_id": 3641,
+                      "logprob": -4.63114595413208,
+                      "rank": 16,
+                      "decoded_token": " center"
+                    },
+                    "4094": {
+                      "token_id": 4094,
+                      "logprob": -4.75614595413208,
+                      "rank": 17,
+                      "decoded_token": " biggest"
+                    },
+                    "1388": {
+                      "token_id": 1388,
+                      "logprob": -4.94364595413208,
+                      "rank": 18,
+                      "decoded_token": " main"
+                    },
+                    "366": {
+                      "token_id": 366,
+                      "logprob": -5.06864595413208,
+                      "rank": 19,
+                      "decoded_token": " \""
+                    },
+                    "1966": {
+                      "token_id": 1966,
+                      "logprob": -5.19364595413208,
+                      "rank": 20,
+                      "decoded_token": " former"
+                    }
+                  }
+                },
+                {
+                  "position": 2,
+                  "tokens_in_position": {
+                    "286": {
+                      "token_id": 286,
+                      "logprob": -0.07489795982837677,
+                      "rank": 1,
+                      "decoded_token": " of"
+                    },
+                    "11": {
+                      "token_id": 11,
+                      "logprob": -3.9498980045318604,
+                      "rank": 2,
+                      "decoded_token": ","
+                    },
+                    "1748": {
+                      "token_id": 1748,
+                      "logprob": -4.293647766113281,
+                      "rank": 3,
+                      "decoded_token": " city"
+                    },
+                    "290": {
+                      "token_id": 290,
+                      "logprob": -5.074897766113281,
+                      "rank": 4,
+                      "decoded_token": " and"
+                    },
+                    "13": {
+                      "token_id": 13,
+                      "logprob": -5.199897766113281,
+                      "rank": 5,
+                      "decoded_token": "."
+                    },
+                    "6342": {
+                      "token_id": 6342,
+                      "logprob": -6.449897766113281,
+                      "rank": 6,
+                      "decoded_token": " Paris"
+                    },
+                    "287": {
+                      "token_id": 287,
+                      "logprob": -6.481147766113281,
+                      "rank": 7,
+                      "decoded_token": " in"
+                    },
+                    "329": {
+                      "token_id": 329,
+                      "logprob": -6.668647766113281,
+                      "rank": 8,
+                      "decoded_token": " for"
+                    },
+                    "12": {
+                      "token_id": 12,
+                      "logprob": -7.418647766113281,
+                      "rank": 9,
+                      "decoded_token": "-"
+                    },
+                    "326": {
+                      "token_id": 326,
+                      "logprob": -7.543647766113281,
+                      "rank": 10,
+                      "decoded_token": " that"
+                    },
+                    "284": {
+                      "token_id": 284,
+                      "logprob": -7.543647766113281,
+                      "rank": 11,
+                      "decoded_token": " to"
+                    },
+                    "553": {
+                      "token_id": 553,
+                      "logprob": -7.699897766113281,
+                      "rank": 12,
+                      "decoded_token": ",\""
+                    },
+                    "357": {
+                      "token_id": 357,
+                      "logprob": -7.793647766113281,
+                      "rank": 13,
+                      "decoded_token": " ("
+                    },
+                    "379": {
+                      "token_id": 379,
+                      "logprob": -7.856147766113281,
+                      "rank": 14,
+                      "decoded_token": " at"
+                    },
+                    "319": {
+                      "token_id": 319,
+                      "logprob": -7.887397766113281,
+                      "rank": 15,
+                      "decoded_token": " on"
+                    },
+                    "3240": {
+                      "token_id": 3240,
+                      "logprob": -7.887397766113281,
+                      "rank": 16,
+                      "decoded_token": " town"
+                    },
+                    "3139": {
+                      "token_id": 3139,
+                      "logprob": -7.981147766113281,
+                      "rank": 17,
+                      "decoded_token": " capital"
+                    },
+                    "351": {
+                      "token_id": 351,
+                      "logprob": -8.012397766113281,
+                      "rank": 18,
+                      "decoded_token": " with"
+                    },
+                    "16445": {
+                      "token_id": 16445,
+                      "logprob": -8.106147766113281,
+                      "rank": 19,
+                      "decoded_token": " Brussels"
+                    },
+                    "526": {
+                      "token_id": 526,
+                      "logprob": -8.262397766113281,
+                      "rank": 20,
+                      "decoded_token": ".\""
+                    }
+                  }
+                },
+                {
+                  "position": 3,
+                  "tokens_in_position": {
+                    "262": {
+                      "token_id": 262,
+                      "logprob": -1.245123028755188,
+                      "rank": 1,
+                      "decoded_token": " the"
+                    },
+                    "4881": {
+                      "token_id": 4881,
+                      "logprob": -1.620123028755188,
+                      "rank": 2,
+                      "decoded_token": " France"
+                    },
+                    "257": {
+                      "token_id": 257,
+                      "logprob": -2.8701229095458984,
+                      "rank": 3,
+                      "decoded_token": " a"
+                    },
+                    "2031": {
+                      "token_id": 2031,
+                      "logprob": -4.245122909545898,
+                      "rank": 4,
+                      "decoded_token": " Europe"
+                    },
+                    "4141": {
+                      "token_id": 4141,
+                      "logprob": -4.370122909545898,
+                      "rank": 5,
+                      "decoded_token": " French"
+                    },
+                    "15664": {
+                      "token_id": 15664,
+                      "logprob": -4.620122909545898,
+                      "rank": 6,
+                      "decoded_token": " Belgium"
+                    },
+                    "281": {
+                      "token_id": 281,
+                      "logprob": -4.620122909545898,
+                      "rank": 7,
+                      "decoded_token": " an"
+                    },
+                    "4486": {
+                      "token_id": 4486,
+                      "logprob": -4.745122909545898,
+                      "rank": 8,
+                      "decoded_token": " Germany"
+                    },
+                    "663": {
+                      "token_id": 663,
+                      "logprob": -4.870122909545898,
+                      "rank": 9,
+                      "decoded_token": " its"
+                    },
+                    "8602": {
+                      "token_id": 8602,
+                      "logprob": -4.995122909545898,
+                      "rank": 10,
+                      "decoded_token": " Spain"
+                    },
+                    "428": {
+                      "token_id": 428,
+                      "logprob": -4.995122909545898,
+                      "rank": 11,
+                      "decoded_token": " this"
+                    },
+                    "530": {
+                      "token_id": 530,
+                      "logprob": -4.995122909545898,
+                      "rank": 12,
+                      "decoded_token": " one"
+                    },
+                    "6342": {
+                      "token_id": 6342,
+                      "logprob": -5.057622909545898,
+                      "rank": 13,
+                      "decoded_token": " Paris"
+                    },
+                    "8031": {
+                      "token_id": 8031,
+                      "logprob": -5.495122909545898,
+                      "rank": 14,
+                      "decoded_token": " Italy"
+                    },
+                    "734": {
+                      "token_id": 734,
+                      "logprob": -5.620122909545898,
+                      "rank": 15,
+                      "decoded_token": " two"
+                    },
+                    "33859": {
+                      "token_id": 33859,
+                      "logprob": -5.682622909545898,
+                      "rank": 16,
+                      "decoded_token": " Catalonia"
+                    },
+                    "3449": {
+                      "token_id": 3449,
+                      "logprob": -5.682622909545898,
+                      "rank": 17,
+                      "decoded_token": " Islam"
+                    },
+                    "644": {
+                      "token_id": 644,
+                      "logprob": -5.682622909545898,
+                      "rank": 18,
+                      "decoded_token": " what"
+                    },
+                    "366": {
+                      "token_id": 366,
+                      "logprob": -5.682622909545898,
+                      "rank": 19,
+                      "decoded_token": " \""
+                    },
+                    "477": {
+                      "token_id": 477,
+                      "logprob": -5.807622909545898,
+                      "rank": 20,
+                      "decoded_token": " all"
+                    }
+                  }
+                },
+                {
+                  "position": 4,
+                  "tokens_in_position": {
+                    "4141": {
+                      "token_id": 4141,
+                      "logprob": -1.990535855293274,
+                      "rank": 1,
+                      "decoded_token": " French"
+                    },
+                    "2066": {
+                      "token_id": 2066,
+                      "logprob": -2.9280357360839844,
+                      "rank": 2,
+                      "decoded_token": " Republic"
+                    },
+                    "3427": {
+                      "token_id": 3427,
+                      "logprob": -3.3655357360839844,
+                      "rank": 3,
+                      "decoded_token": " European"
+                    },
+                    "1578": {
+                      "token_id": 1578,
+                      "logprob": -3.3655357360839844,
+                      "rank": 4,
+                      "decoded_token": " United"
+                    },
+                    "995": {
+                      "token_id": 995,
+                      "logprob": -3.4280357360839844,
+                      "rank": 5,
+                      "decoded_token": " world"
+                    },
+                    "1499": {
+                      "token_id": 1499,
+                      "logprob": -4.428035736083984,
+                      "rank": 6,
+                      "decoded_token": " country"
+                    },
+                    "21773": {
+                      "token_id": 21773,
+                      "logprob": -4.490535736083984,
+                      "rank": 7,
+                      "decoded_token": " Socialist"
+                    },
+                    "4576": {
+                      "token_id": 4576,
+                      "logprob": -4.490535736083984,
+                      "rank": 8,
+                      "decoded_token": " EU"
+                    },
+                    "2688": {
+                      "token_id": 2688,
+                      "logprob": -4.615535736083984,
+                      "rank": 9,
+                      "decoded_token": " West"
+                    },
+                    "1181": {
+                      "token_id": 1181,
+                      "logprob": -4.678035736083984,
+                      "rank": 10,
+                      "decoded_token": " state"
+                    },
+                    "12671": {
+                      "token_id": 12671,
+                      "logprob": -4.803035736083984,
+                      "rank": 11,
+                      "decoded_token": " Netherlands"
+                    },
+                    "17146": {
+                      "token_id": 17146,
+                      "logprob": -4.865535736083984,
+                      "rank": 12,
+                      "decoded_token": " republic"
+                    },
+                    "3277": {
+                      "token_id": 3277,
+                      "logprob": -5.115535736083984,
+                      "rank": 13,
+                      "decoded_token": " nation"
+                    },
+                    "11063": {
+                      "token_id": 11063,
+                      "logprob": -5.115535736083984,
+                      "rank": 14,
+                      "decoded_token": " euro"
+                    },
+                    "366": {
+                      "token_id": 366,
+                      "logprob": -5.240535736083984,
+                      "rank": 15,
+                      "decoded_token": " \""
+                    },
+                    "3594": {
+                      "token_id": 3594,
+                      "logprob": -5.240535736083984,
+                      "rank": 16,
+                      "decoded_token": " English"
+                    },
+                    "7897": {
+                      "token_id": 7897,
+                      "logprob": -5.303035736083984,
+                      "rank": 17,
+                      "decoded_token": " Spanish"
+                    },
+                    "2679": {
+                      "token_id": 2679,
+                      "logprob": -5.365535736083984,
+                      "rank": 18,
+                      "decoded_token": " German"
+                    },
+                    "7526": {
+                      "token_id": 7526,
+                      "logprob": -5.365535736083984,
+                      "rank": 19,
+                      "decoded_token": " Kingdom"
+                    },
+                    "7993": {
+                      "token_id": 7993,
+                      "logprob": -5.365535736083984,
+                      "rank": 20,
+                      "decoded_token": " Roman"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "comparison_results": {
+        "tp_size": 2,
+        "vllm_approach": [
+          {
+            "sequence": "Paris",
+            "log_prob": -3.449408531188965,
+            "prob": 0.03176441788673401,
+            "perplexity": 31.481765747070312,
+            "num_tokens": 1
+          }
+        ]
+      }
+    }
+  }
+}

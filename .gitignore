@@ -7,5 +7,13 @@ results/*
 neuro_manipulation/representation_storage
 .cache/*
 groupchat/agent_groups
-data_creation/scenario_creation/langgraph_creation/histories/*
+merge_data_samples.py
+*.json
+*.png
+*.mdc
+test_outputs/*
 data_creation/scenario_creation/langgraph_creation/scenarios/*
+data_creation/scenario_creation/langgraph_creation/histories/*
+logs/*
+result_analysis/emotion_analysis_results.json
+*.log

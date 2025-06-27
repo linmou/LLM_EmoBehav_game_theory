@@ -3,6 +3,8 @@ from typing import Any, ClassVar, Dict, List, Optional, Type, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from constants import GameNames, GameType
+
 from .payoff_matrices import PayoffMatrix
 
 
@@ -32,7 +34,7 @@ class BehaviorChoices(BaseModel, ABC):
 class GameScenario(BaseModel, ABC):
     """Abstract base class for game scenarios"""
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
     payoff_matrix: Union[Dict[str, Dict[str, Dict[str, float]]], PayoffMatrix] = Field(
         default=None
@@ -125,6 +127,11 @@ class Game:
     def folder_path(self) -> str:
         """Get the default folder path for scenario files"""
         return f"groupchat/scenarios/{self.name}"
+
+    @property
+    def game_type(self) -> GameType:
+        """Get the game type"""
+        return GameNames.from_string(self.name).game_type
 
     def create_scenario(self, data: dict) -> GameScenario:
         """Create a new scenario instance.

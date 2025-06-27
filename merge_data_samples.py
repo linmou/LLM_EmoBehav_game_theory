@@ -18,13 +18,13 @@ def merge_data_samples(data_folder, game_name_str):
 
     with open(output_file_format.format(game_name_str=game_name_str), "w") as f:
         json.dump(data_ls, f, indent=4)
-    print(f"Merged {game_name_str} data samples")
+    print(f"Merged {game_name_str} data samples, in total {len(data_ls)} samples")
 
     return data_ls
 
 
-game_name = GameNames.PRISONERS_DILEMMA
+game_name = GameNames.ULTIMATUM_GAME_PROPOSER
 game_name_str = game_name.value
 if not Path(output_file_format.format(game_name_str=game_name_str)).exists():
-    data_folder = "data_creation/scenario_creation/langgraph_creation/scenarios/Prisoners_Dilemma_20250423"
+    data_folder = "data_creation/scenario_creation/langgraph_creation/scenarios/Ultimatum_Game_Proposer_20250610"
     merge_data_samples(data_folder, game_name_str)
