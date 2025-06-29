@@ -2,6 +2,8 @@ from typing import Union
 
 from constants import GameNames
 from games.battle_of_sexes import BattleOfSexesDecision, BattleOfSexesScenario
+from games.chicken_game import ChickenDecision, ChickenScenario
+from games.endowment_effect import EndowmentEffectDecision, EndowmentEffectScenario
 from games.duopolistic_competition import (
     DuopolisticCompetitionDecision,
     DuopolisticCompetitionScenario,
@@ -58,6 +60,14 @@ GAME_CONFIGS = {
         "payoff_matrix": ALL_GAME_PAYOFF[GameNames.WAIT_GO],
         "data_path": data_path_format.format(GameNames.WAIT_GO.value),
     },
+    GameNames.CHICKEN_GAME: {
+        "game_name": GameNames.CHICKEN_GAME.value,
+        "game_description": "A game where two players must decide whether to swerve or continue straight when driving towards each other. If both continue, they crash. If one swerves, the other wins. If both swerve, both are safe but face minor inconvenience.",
+        "scenario_class": ChickenScenario,
+        "decision_class": ChickenDecision,
+        "payoff_matrix": ALL_GAME_PAYOFF[GameNames.CHICKEN_GAME],
+        "data_path": data_path_format.format(GameNames.CHICKEN_GAME.value),
+    },
     GameNames.DUOPOLISTIC_COMPETITION: {
         "game_name": GameNames.DUOPOLISTIC_COMPETITION.value,
         "scenario_class": DuopolisticCompetitionScenario,
@@ -71,6 +81,14 @@ GAME_CONFIGS = {
         "decision_class": EscalationGameDecision,
         "payoff_matrix": ALL_GAME_PAYOFF[GameNames.ESCALATION_GAME],
         "data_path": data_path_format.format(GameNames.ESCALATION_GAME.value),
+    },
+    GameNames.ENDOWMENT_EFFECT: {
+        "game_name": GameNames.ENDOWMENT_EFFECT.value,
+        "game_description": "Test the endowment effect - the tendency for people to value things more highly just because they own them. Participants are given an item and then offered an equivalent trade.",
+        "scenario_class": EndowmentEffectScenario,
+        "decision_class": EndowmentEffectDecision,
+        "payoff_matrix": dict(),  # No payoff matrix needed for endowment effect
+        "data_path": data_path_format.format(GameNames.ENDOWMENT_EFFECT.value),
     },
     GameNames.TRUST_GAME_TRUSTOR: {
         "game_name": GameNames.TRUST_GAME_TRUSTOR.value,

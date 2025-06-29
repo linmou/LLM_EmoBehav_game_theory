@@ -11,23 +11,23 @@ PYTHON_SCRIPT="${SCRIPT_DIR}/data_creation/create_scenario_langgraph.py"
 # Path to the persona jobs file (input data for personas)
 PERSONA_JOBS_FILE="${SCRIPT_DIR}/data_creation/persona_jobs_all.jsonl"
 # Name of the game scenario to generate
-GAME_NAME="Ultimatum_Game_Proposer"
+GAME_NAME="Endowment_Effect"
 # Number of personas to process (limit for batch run)
 NUM_PERSONAS=999999
 # Number of personas to process in each batch (parallel jobs)
-BATCH_SIZE=40
+BATCH_SIZE=15
 # Timeout (in seconds) for each individual scenario creation task
 TASK_TIMEOUT=300
 # Timeout (in seconds) for each batch of scenario creation tasks
 BATCH_TIMEOUT=1800
 # Maximum number of retries for a failed scenario creation task, 0 means no retries, 1 means so sample will try twice (1 start try + 1 retry)
-MAX_RETRIES=0
+MAX_RETRIES=1
 # Delay (in seconds) between retries for failed tasks
 RETRY_DELAY=5
 # Maximum number of refinement iterations for scenario creation
 MAX_ITERATIONS=8
 # LLM model name to use for scenario generation
-LLM_MODEL="gpt-4.1-mini"
+LLM_MODEL="gpt-4.1"
 # Temperature for LLM when proposing scenarios (higher = more creative)
 LLM_TEMPERATURE_PROPOSE=0.7
 # Temperature for LLM when verifying scenarios (lower = more deterministic)
@@ -35,20 +35,20 @@ LLM_TEMPERATURE_VERIFY=0.3
 # Temperature for LLM when validating payoffs (lowest = most deterministic)
 LLM_TEMPERATURE_PAYOFF=0.1
 # Whether to use Azure OpenAI (true/false)
-AZURE_MODE=false
+AZURE_MODE=true
 # Enable debug mode for more detailed logs (true/false)
-DEBUG_MODE=true
+DEBUG_MODE=false
 # Enable auto-debug mode (true/false)
-AUTO_DEBUG=true
+AUTO_DEBUG=false
 # Output directory for generated scenarios and histories
 OUTPUT_BASE_DIR="${SCRIPT_DIR}/data_creation/scenario_creation/langgraph_creation"
 # Resume from previous run if available (true/false)
-RESUME=false
+RESUME=true
 # Enable verbose output (true/false)
 VERBOSE=false
 # Which verification nodes to use in the graph.
 # Options: "narrative", "preference_order", "pay_off"
-VERIFICATION_NODES=("narrative")
+VERIFICATION_NODES=("narrative" "pay_off")
 
 validate_inputs() {
     if [[ ! -f "$PYTHON_SCRIPT" ]]; then

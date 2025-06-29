@@ -82,6 +82,8 @@ class GameNames(Enum):
         SymmetryType.SYMMETRIC,
     )
     STAG_HUNT = ("Stag_Hunt", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
+    CHICKEN_GAME = ("Chicken_Game", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
+    ENDOWMENT_EFFECT = ("Endowment_Effect", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
 
     # Sequential Games
     ESCALATION_GAME = ("Escalation_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)

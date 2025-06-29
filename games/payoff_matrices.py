@@ -207,10 +207,10 @@ stag_hunt = [
 # | 2,1 | 0,0 |
 # | 0,0 | 1,2 |
 battle_of_sexes = [
-    PayoffLeaf(actions=("opera", "opera"), payoffs=(2, 1)),
-    PayoffLeaf(actions=("opera", "football"), payoffs=(0, 0)),
-    PayoffLeaf(actions=("football", "opera"), payoffs=(0, 0)),
-    PayoffLeaf(actions=("football", "football"), payoffs=(1, 2)),
+    PayoffLeaf(actions=("your_preference", "your_preference"), payoffs=(2, 1)),
+    PayoffLeaf(actions=("your_preference", "others_preference"), payoffs=(0, 0)),
+    PayoffLeaf(actions=("others_preference", "your_preference"), payoffs=(0, 0)),
+    PayoffLeaf(actions=("others_preference", "others_preference"), payoffs=(1, 2)),
 ]
 
 # Duopolistic Competition
@@ -259,6 +259,15 @@ wait_go = [
     PayoffLeaf(actions=("choice_1", "choice_2"), payoffs=(0, 2)),
     PayoffLeaf(actions=("choice_2", "choice_1"), payoffs=(2, 0)),
     PayoffLeaf(actions=("choice_2", "choice_2"), payoffs=(-4, -4)),
+]
+
+# Chicken Game
+# escalate vs withdraw
+chicken_game = [
+    PayoffLeaf(actions=("escalate", "escalate"), payoffs=(-10, -10)),
+    PayoffLeaf(actions=("escalate", "withdraw"), payoffs=(1, -1)),
+    PayoffLeaf(actions=("withdraw", "escalate"), payoffs=(-1, 1)),
+    PayoffLeaf(actions=("withdraw", "withdraw"), payoffs=(0, 0)),
 ]
 
 # SEQUENTIAL GAMES
@@ -351,11 +360,10 @@ SIMULTANEOUS_GAMES = {
         player_num=2,
         payoff_leaves=wait_go,
     ),
-    # Assuming game_of_chicken and rock_paper_scissors have corresponding GameNames entries
-    # If not, they need to be added to constants.py or handled differently
-    # GameNames.GAME_OF_CHICKEN: PayoffMatrix.from_simultaneous_dict(
-    #     game_of_chicken, name="Game of Chicken"
-    # ),
+    GameNames.CHICKEN_GAME: PayoffMatrix(
+        player_num=2,
+        payoff_leaves=chicken_game,
+    ),
     # GameNames.ROCK_PAPER_SCISSORS: PayoffMatrix.from_simultaneous_dict(
     #     rock_paper_scissors, name="Rock-Paper-Scissors"
     # ),
