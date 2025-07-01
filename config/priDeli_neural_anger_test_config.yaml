@@ -1,0 +1,34 @@
+experiment:
+  name: "priDeli_neural_anger_test"
+  game:
+    name: "Prisoners_Dilemma"
+    
+  data:
+    generate: false  # Use existing data - no need to generate new scenarios
+    num_scenarios: 36
+    batch_size: 4
+  
+  llm:
+    llm_config: "LOCAL_SERVER_ANGER_CONFIG"  # Points to anger-activated server
+    generation_config:
+      model: "Qwen2.5-0.5B-Instruct"
+      temperature: 0.7
+      seed: 43
+
+  # Neutral system message - no prompt-level emotion manipulation
+  # All emotion control happens at neural level via server
+  system_message_template: "You are Alice, an average American."
+
+  repeat: 5  # Increased repeats for better statistical power
+
+  # Simplified for neural testing - server handles emotion activation
+  intensity:
+    - "neutral"
+
+  emotions:
+    - "neutral"  # Emotion controlled by server, not prompt
+
+  output:
+    base_dir: "results/neural_test"
+    save_plots: true
+    plot_format: "png"

@@ -20,8 +20,11 @@ python -m neuro_manipulation.experiment_series_runner --config config/qwen2.5_Se
 python examples/run_option_probability_experiment.py
 python examples/run_choice_selection_experiment.py
 
-# Start OpenAI-compatible server with neural hooks
-python init_openai_server.py --model_path [model_path] --emotion anger
+# Start OpenAI-compatible server with neural hooks (module way)
+python -m openai_server --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct --emotion anger
+
+# Start OpenAI-compatible server (backward compatibility)
+python init_openai_server.py --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct --emotion anger
 ```
 
 ### Testing Commands
@@ -31,8 +34,8 @@ python init_openai_server.py --model_path [model_path] --emotion anger
 
 # Individual component tests
 python test_vllm.py
-python test_openai_server.py
-python test_integrated_openai_server.py
+python -m openai_server.tests.test_openai_server
+python -m openai_server.tests.test_integrated_openai_server
 ```
 
 ### Scenario Generation
@@ -79,6 +82,12 @@ This is a research project investigating **LLM emotional reactions in game theor
 - LangGraph-based scenario generation with iterative refinement
 - AutoGen multi-agent scenario creation
 - Emotion-based stimulus categorization
+
+**OpenAI Server Module** (`/openai_server/`)
+- OpenAI-compatible FastAPI server with emotion control integration
+- Modular architecture with proper Python package structure
+- Comprehensive test suite and backward compatibility
+- Production-ready deployment capabilities
 
 ### Emotion System
 
@@ -132,3 +141,7 @@ The project includes comprehensive testing:
 - OpenAI server integration tests
 - Statistical analysis validation
 - Tensor parallel consistency checks
+
+## VRAM Management
+
+- You can use manage_server to manage VRAM occupied by the openai_servers

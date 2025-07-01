@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import List, Tuple, Type, Union
 
 import instructor
-from openai import OpenAI
+from openai import AzureOpenAI, OpenAI
 from pydantic import BaseModel
 
-from api_configs import OAI_CONFIG
+from api_configs import AZURE_OPENAI_CONFIG
 from constants import Emotions, GameNames
 from games.game import Game, GameDecision, GameScenario
 from games.payoff_matrix import prisoner_dilemma_very_large, stag_hunt
@@ -43,11 +43,15 @@ class ExtractedResult(BaseModel):
 class GameTheoryTest:
     def __init__(self, llm_config: dict, generation_config: dict):
         """Initialize the game theory test engine with OpenAI client."""
-        client = OpenAI(**llm_config)
+        # Use AzureOpenAI if config has azure_endpoint, otherwise OpenAI
+        if 'azure_endpoint' in llm_config:
+            client = AzureOpenAI(**llm_config)
+        else:
+            client = OpenAI(**llm_config)
         self.client = instructor.patch(client)
         self.generation_config = generation_config
 
-        self.gpt_client = OpenAI(**OAI_CONFIG)
+        self.gpt_client = AzureOpenAI(**AZURE_OPENAI_CONFIG)
 
     def load_scenarios(
         self, game: Game

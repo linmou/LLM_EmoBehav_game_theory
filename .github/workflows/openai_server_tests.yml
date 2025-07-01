@@ -1,0 +1,127 @@
+name: OpenAI Server Tests
+
+on:
+  push:
+    paths:
+      - 'openai_server/**'
+      - 'neuro_manipulation/**'
+      - 'constants.py'
+      - '.github/workflows/openai_server_tests.yml'
+  pull_request:
+    paths:
+      - 'openai_server/**'
+      - 'neuro_manipulation/**'
+      - 'constants.py'
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort flake8 mypy
+    
+    - name: Run black
+      run: black --check openai_server --line-length=100
+    
+    - name: Run isort
+      run: isort --check-only openai_server --profile black
+    
+    - name: Run flake8
+      run: flake8 openai_server --max-line-length=100 --exclude=__pycache__
+    
+    - name: Run mypy
+      run: mypy openai_server --ignore-missing-imports || true
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10']
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-asyncio pytest-timeout
+        pip install openai requests torch transformers
+        # Install project dependencies
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Run unit tests
+      run: |
+        cd openai_server/tests
+        python -m pytest test_unit_server.py -v --cov=openai_server --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./openai_server/tests/coverage.xml
+        flags: unittests
+        name: codecov-openai-server
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    # Only run on main branch or explicit test requests
+    if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'test-gpu')
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check GPU availability
+      run: |
+        python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+    
+    - name: Run integration tests (if GPU available)
+      run: |
+        if python -c "import torch; exit(0 if torch.cuda.is_available() else 1)"; then
+          echo "GPU available, running integration tests"
+          cd openai_server
+          make test-integration
+        else
+          echo "No GPU available, skipping integration tests"
+        fi
+
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Generate documentation
+      run: |
+        cd openai_server
+        python -m pydoc -w server
+    
+    - name: Upload documentation
+      uses: actions/upload-artifact@v3
+      with:
+        name: openai-server-docs
+        path: openai_server/*.html

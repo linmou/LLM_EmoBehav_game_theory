@@ -16,7 +16,7 @@ from data_creation.create_scenario import ScenarioGenerator
 from games.game import Game
 from games.game_configs import get_game_config
 from statistical_engine import analyze_emotion_and_intensity_effects
-from stimulis.emotions import emotion2stimulus
+from stimulis.emotions import emotion2stimulus, get_emotion_stimulus
 
 # Configure logging
 logging.basicConfig(
@@ -147,7 +147,7 @@ class PromptExperiment:
         # run api tests with emotion
         for emotion_str in self.config["experiment"]["emotions"]:
             emotion = Emotions.from_string(emotion_str)
-            stimulus = emotion2stimulus[emotion]
+            stimulus = get_emotion_stimulus(emotion)
             for intensity in self.config["experiment"]["intensity"]:
                 logger.info(
                     f"Testing scenarios with emotion: {emotion.value} and intensity: {intensity}"
@@ -198,6 +198,131 @@ class PromptExperiment:
 
         logger.info(f"Analysis results saved to {analysis_output}")
 
+    def run_sanity_check(self, max_scenarios: int = 5, max_repeat: int = 2):
+        """Run a quick sanity check with limited data for testing setup."""
+        logger.info(f"Starting sanity check: {self.experiment_id}")
+        logger.info(f"Limited to {max_scenarios} scenarios, {max_repeat} repeats per condition")
+
+        # Store original values
+        original_repeat = self.config["experiment"]["repeat"]
+        
+        # Temporarily reduce parameters for sanity check
+        self.config["experiment"]["repeat"] = min(max_repeat, original_repeat)
+        
+        try:
+            # Skip data creation for sanity check (use existing data)
+            logger.info("Skipping data creation for sanity check")
+            
+            # Run limited API tests
+            game = self._get_game_instance()
+            llm_config = self.config["experiment"]["llm"]
+            
+            # Get limited data for testing
+            if hasattr(game, 'data_path') and game.data_path:
+                # Load and limit existing data
+                import json
+                with open(game.data_path, 'r') as f:
+                    all_data = json.load(f)
+                
+                # Limit to max_scenarios
+                limited_data = all_data[:max_scenarios]
+                
+                # Save limited data temporarily
+                temp_data_path = self.output_dir / "sanity_check_data.json"
+                with open(temp_data_path, 'w') as f:
+                    json.dump(limited_data, f, indent=2)
+                
+                # Update game data path temporarily
+                game.data_path = str(temp_data_path)
+                logger.info(f"Using {len(limited_data)} scenarios for sanity check")
+
+            # Test server connectivity first
+            logger.info("Testing server connectivity...")
+            import requests
+            from urllib.parse import urljoin
+            
+            base_url = llm_config["llm_config"].get("base_url", "http://localhost:8000/v1")
+            try:
+                # Test if server is reachable
+                models_url = base_url + "/models" if not base_url.endswith("/") else base_url + "models"
+                response = requests.get(models_url, timeout=5)
+                if response.status_code != 200:
+                    raise ConnectionError(f"Server returned status {response.status_code}")
+                logger.info(f"✅ Successfully connected to server at {base_url}")
+            except requests.exceptions.RequestException as e:
+                error_msg = f"❌ Failed to connect to server at {base_url}\n"
+                error_msg += f"   Error: {str(e)}\n"
+                error_msg += "\n   Please ensure the server is running:\n"
+                if "8000" in base_url:
+                    error_msg += "   python -m openai_server --model <model_path> --port 8000\n"
+                elif "8001" in base_url:
+                    error_msg += "   python -m openai_server --model <model_path> --emotion anger --port 8001\n"
+                raise ConnectionError(error_msg)
+            
+            # Run simplified API tests (neutral baseline)
+            output_files = []
+            output_file = run_tests(
+                game=game,
+                llm_config=llm_config["llm_config"],
+                generation_config=llm_config["generation_config"],
+                output_dir=self.output_dir,
+                emotion="Neutral",
+                intensity="Neutral",
+                repeat=self.config["experiment"]["repeat"],
+            )
+            output_files.append(output_file)
+            
+            # Test just one emotion condition for validation
+            if self.config["experiment"]["emotions"] and self.config["experiment"]["emotions"][0].lower() != "neutral":
+                emotion_str = self.config["experiment"]["emotions"][0]  # First emotion only
+                emotion = Emotions.from_string(emotion_str)
+                stimulus = get_emotion_stimulus(emotion)
+                intensity = self.config["experiment"]["intensity"][0]  # First intensity only
+                
+                logger.info(f"Sanity check with emotion: {emotion.value} and intensity: {intensity}")
+                
+                system_message = self.config["experiment"]["system_message_template"].format(
+                    emotion=emotion.value, stimulus=stimulus, intensity=intensity
+                )
+                
+                output_file = run_tests(
+                    game=game,
+                    llm_config=llm_config["llm_config"],
+                    generation_config=llm_config["generation_config"],
+                    output_dir=self.output_dir,
+                    emotion=emotion.value,
+                    intensity=intensity,
+                    system_message=system_message,
+                    repeat=self.config["experiment"]["repeat"],
+                )
+                output_files.append(output_file)
+            
+            self.output_files = output_files
+            
+            # Quick analysis summary
+            output_samples = []
+            for output_file in output_files:
+                with open(output_file, "r") as f:
+                    output_samples.extend(json.load(f))
+            
+            logger.info(f"Sanity check completed: {len(output_samples)} total responses")
+            
+            # Basic summary statistics
+            df = pd.DataFrame(output_samples)
+            if 'response' in df.columns:
+                response_counts = df['response'].value_counts()
+                logger.info(f"Response distribution: {response_counts.to_dict()}")
+            
+            logger.info("Sanity check completed successfully - setup appears to be working!")
+            return output_files
+            
+        except Exception as e:
+            logger.error(f"Sanity check failed: {str(e)}")
+            raise
+        finally:
+            # Restore original repeat value
+            self.config["experiment"]["repeat"] = original_repeat
+
     def run_experiment(self):
         """Run all three steps of the experiment."""
         logger.info(f"Starting experiment: {self.experiment_id}")
@@ -214,6 +339,13 @@ class PromptExperiment:
 
 
 if __name__ == "__main__":
-    # engine = PromptExperiment("config/trusteeGame_experiment_config.yaml", )
-    engine = PromptExperiment("./config/priDeli_experiment_config.yaml")
+    import sys
+    
+    # Get config file from command line argument, or use default
+    if len(sys.argv) > 1:
+        config_file = sys.argv[1]
+    else:
+        config_file = "./config/priDeli_experiment_config.yaml"
+    
+    engine = PromptExperiment(config_file)
     engine.run_experiment()

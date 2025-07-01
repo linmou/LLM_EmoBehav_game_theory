@@ -1,4 +1,8 @@
-# OpenAI-Compatible Server for RepControlVLLMHook
+# OpenAI-Compatible Server for RepControlVLLMHook (LEGACY)
+
+> **⚠️ DEPRECATED**: This documentation is for the legacy `init_openai_server.py` structure. 
+> 
+> **New documentation**: Please see [`/docs/code_readme/openai_server/README.md`](openai_server/README.md) and [`/openai_server/README.md`](../../openai_server/README.md) for the current modular structure.
 
 This documentation describes how to set up and use the OpenAI-compatible server that integrates RepControlVLLMHook for emotion-controlled language model generation.
 

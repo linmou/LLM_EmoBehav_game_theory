@@ -1,0 +1,25 @@
+experiment:
+  data:
+    batch_size: 4
+    generate: false
+    num_scenarios: 36
+  emotions:
+  - neutral
+  game:
+    data_path: data_creation/scenario_creation/langgraph_creation/pd_300_anger.json
+    name: Prisoners_Dilemma
+  intensity:
+  - neutral
+  llm:
+    generation_config:
+      model: Qwen2.5-0.5B-Instruct
+      seed: 43
+      temperature: 0.7
+    llm_config: LOCAL_SERVER_ANGER_CONFIG
+  name: anger_300_scenarios
+  output:
+    base_dir: results/neural_test
+    plot_format: png
+    save_plots: true
+  repeat: 1
+  system_message_template: You are Alice, an average American.

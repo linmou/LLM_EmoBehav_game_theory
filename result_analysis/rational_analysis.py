@@ -9,9 +9,11 @@ import concurrent.futures
 import time
 from tqdm import tqdm
 
-from api_configs import OAI_CONFIG
-openai_api_key = OAI_CONFIG["api_key"]
-openai_base_url = OAI_CONFIG["base_url"]
+from api_configs import AZURE_OPENAI_CONFIG
+# Azure OpenAI configuration
+openai_api_key = AZURE_OPENAI_CONFIG["api_key"]
+openai_azure_endpoint = AZURE_OPENAI_CONFIG["azure_endpoint"]
+openai_api_version = AZURE_OPENAI_CONFIG["api_version"]
 target_file = "results/RepEng/Prisoners_Dilemma_New_Template_vllm_Llama-3.1-8B-Instruct_20250424_013532/exp_results.json"
 
 # Maximum number of concurrent requests
