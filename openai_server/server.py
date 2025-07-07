@@ -10,9 +10,11 @@ import argparse
 import asyncio
 import json
 import logging
+import re
 import sys
 import time
 import uuid
+from collections import deque
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -29,11 +31,15 @@ from transformers import AutoTokenizer
 sys.path.append(str(Path(__file__).parent))
 
 from constants import Emotions  # noqa: E402
-from neuro_manipulation.configs.experiment_config import get_repe_eng_config  # noqa: E402
+from neuro_manipulation.configs.experiment_config import (  # noqa: E402
+    get_repe_eng_config,
+)
 from neuro_manipulation.model_layer_detector import ModelLayerDetector  # noqa: E402
 from neuro_manipulation.model_utils import load_emotion_readers  # noqa: E402
 from neuro_manipulation.repe.pipelines import repe_pipeline_registry  # noqa: E402
-from neuro_manipulation.repe.rep_control_vllm_hook import RepControlVLLMHook  # noqa: E402
+from neuro_manipulation.repe.rep_control_vllm_hook import (  # noqa: E402
+    RepControlVLLMHook,
+)
 from neuro_manipulation.utils import load_model_tokenizer  # noqa: E402
 from vllm import LLM  # noqa: E402
 
@@ -55,13 +61,41 @@ server_state = {
     "model_name": None,
     "current_emotion": None,
     "server_start_time": None,
+    "batch_queue": None,
+    "batch_processor": None,
 }
+
+
+# Function/Tool calling models
+class FunctionDefinition(BaseModel):
+    name: str = Field(..., description="Function name")
+    description: Optional[str] = Field(default="", description="Function description")
+    parameters: Dict = Field(
+        default_factory=dict, description="JSON schema for function parameters"
+    )
+
+
+class ToolDefinition(BaseModel):
+    type: str = Field(default="function", description="Tool type (currently only 'function')")
+    function: FunctionDefinition = Field(..., description="Function definition")
+
+
+class ToolCall(BaseModel):
+    id: str = Field(..., description="Unique identifier for the tool call")
+    type: str = Field(default="function", description="Tool type")
+    function: Dict[str, str] = Field(..., description="Function name and arguments")
 
 
 # OpenAI API Models
 class ChatMessage(BaseModel):
     role: Optional[str] = Field(default="user", description="The role of the message author")
-    content: str = Field(..., description="The contents of the message")
+    content: Optional[str] = Field(default="", description="The contents of the message")
+    tool_calls: Optional[List[ToolCall]] = Field(
+        default=None, description="Tool calls made by assistant"
+    )
+    tool_call_id: Optional[str] = Field(
+        default=None, description="ID of tool call this message responds to"
+    )
 
     # Allow additional fields for LangGraph compatibility
     class Config:
@@ -82,6 +116,12 @@ class ChatCompletionRequest(BaseModel):
     )
     stop: Optional[List[str]] = Field(
         default=None, description="Up to 4 sequences where generation will stop"
+    )
+    tools: Optional[List[ToolDefinition]] = Field(
+        default=None, description="Available tools/functions the model can call"
+    )
+    tool_choice: Optional[str] = Field(
+        default="auto", description="Control tool usage: 'none', 'auto', or specific function name"
     )
 
 
@@ -151,7 +191,7 @@ def load_emotion_activation_vectors(model_path: str, emotion: str) -> Dict[int, 
     # Get layer information
     num_layers = ModelLayerDetector.num_layers(temp_model)
     hidden_layers = list(range(-1, -num_layers - 1, -1))
-    control_layers = hidden_layers[len(hidden_layers) // 3:2 * len(hidden_layers) // 3]
+    control_layers = hidden_layers[len(hidden_layers) // 3 : 2 * len(hidden_layers) // 3]
 
     # Load emotion readers
     emotion_readers = load_emotion_readers(config, temp_model, temp_tokenizer, hidden_layers)
@@ -184,7 +224,17 @@ def load_emotion_activation_vectors(model_path: str, emotion: str) -> Dict[int, 
     return activations, control_layers, emotion_readers
 
 
-def initialize_model(model_path: str, emotion: str, tensor_parallel_size: int = 1):
+def initialize_model(
+    model_path: str,
+    emotion: str,
+    tensor_parallel_size: int = 1,
+    gpu_memory_utilization: float = 0.90,
+    max_num_seqs: int = 64,
+    enable_chunked_prefill: bool = True,
+    batch_size: int = 8,
+    batch_timeout: float = 0.05,
+    disable_batching: bool = False,
+):
     """Initialize the vLLM model with RepControlVLLMHook."""
     logger.info(f"Initializing model: {model_path}")
     logger.info(f"Target emotion: {emotion}")
@@ -200,17 +250,35 @@ def initialize_model(model_path: str, emotion: str, tensor_parallel_size: int = 
         model_path, emotion
     )
 
-    # Initialize vLLM model
+    # Initialize vLLM model with configurable settings for optimal GPU utilization
     logger.info("Initializing vLLM...")
-    model = LLM(
-        model=model_path,
-        tokenizer=model_path,
-        enforce_eager=True,
-        trust_remote_code=True,
-        tensor_parallel_size=tensor_parallel_size,
-        gpu_memory_utilization=0.85,
-        max_num_seqs=16,
-    )
+    logger.info(f"GPU memory utilization: {gpu_memory_utilization}")
+    logger.info(f"Max sequences: {max_num_seqs}")
+    logger.info(f"Chunked prefill: {enable_chunked_prefill}")
+
+    # Prepare vLLM arguments with only supported parameters
+    vllm_args = {
+        "model": model_path,
+        "tokenizer": model_path,
+        "enforce_eager": True,
+        "trust_remote_code": True,
+        "tensor_parallel_size": tensor_parallel_size,
+        "gpu_memory_utilization": gpu_memory_utilization,
+        "max_num_seqs": max_num_seqs,
+        "max_num_batched_tokens": max_num_seqs * 512,
+    }
+
+    # Add optional parameters if supported
+    if enable_chunked_prefill:
+        vllm_args["enable_chunked_prefill"] = True
+
+    # Check if disable_log_requests is supported (might be disable_log_stats)
+    try:
+        vllm_args["disable_log_stats"] = True
+    except:
+        pass
+
+    model = LLM(**vllm_args)
 
     # Initialize RepControlVLLMHook
     logger.info("Initializing RepControlVLLMHook...")
@@ -232,13 +300,336 @@ def initialize_model(model_path: str, emotion: str, tensor_parallel_size: int = 
     server_state["current_emotion"] = emotion
     server_state["emotion_activations"] = activations
 
+    # Initialize batch processor for better throughput (if not disabled)
+    if not disable_batching:
+        server_state["batch_processor"] = BatchProcessor(
+            max_batch_size=batch_size, batch_timeout=batch_timeout
+        )
+        logger.info(
+            f"Batch processor enabled: max_batch_size={batch_size}, timeout={batch_timeout}s"
+        )
+    else:
+        server_state["batch_processor"] = None
+        logger.info("Batch processing disabled")
+
     logger.info("Model initialization complete")
 
 
-def apply_emotion_to_prompt(messages: List[ChatMessage], emotion: str) -> str:
-    """Convert OpenAI chat messages to a single prompt string."""
-    # Simple conversion - in practice this could be more sophisticated
+def format_tools_for_prompt(tools: Optional[List[ToolDefinition]]) -> str:
+    """Format tools as JSON schema for the model."""
+    if not tools:
+        return ""
+
+    tool_descriptions = []
+    for tool in tools:
+        func = tool.function
+        tool_desc = {
+            "name": func.name,
+            "description": func.description,
+            "parameters": func.parameters,
+        }
+        tool_descriptions.append(tool_desc)
+
+    tools_text = json.dumps(tool_descriptions, indent=2)
+    
+    # Enhanced prompt for better SWE-agent compatibility
+    return f"""You have access to the following tools/functions:
+
+{tools_text}
+
+To use a tool, you can use ANY of these formats:
+
+1. JSON format (preferred):
+{{"tool_calls": [{{"id": "call_1", "type": "function", "function": {{"name": "<function_name>", "arguments": "<json_string>"}}}}]}}
+
+2. For bash commands, you can use markdown code blocks:
+```bash
+your command here
+```
+
+3. Natural language with clear intent:
+- "Run bash command: ls -la"
+- "Execute: cd /path && python script.py"
+- "Read file: /path/to/file.py"
+
+Important for SWE-agent tasks:
+- Use 'bash' tool for running commands
+- Code blocks with ```bash or ``` are automatically treated as bash commands
+- Multiple commands can be run in sequence
+- Be explicit about which tool you're using"""
+
+
+def parse_tool_calls_from_response(response_text: str) -> List[ToolCall]:
+    """Parse tool calls from model response."""
+    tool_calls = []
+
+    try:
+        # Method 1: Try to parse the entire response as JSON
+        try:
+            data = json.loads(response_text)
+            if "tool_calls" in data:
+                for call_data in data["tool_calls"]:
+                    tool_call = ToolCall(
+                        id=call_data.get("id", f"call_{uuid.uuid4().hex[:8]}"),
+                        type=call_data.get("type", "function"),
+                        function={
+                            "name": call_data["function"]["name"],
+                            "arguments": call_data["function"]["arguments"],
+                        },
+                    )
+                    tool_calls.append(tool_call)
+                return tool_calls
+        except json.JSONDecodeError:
+            pass
+
+        # Method 2: Look for JSON objects containing tool_calls with more flexible pattern
+        # Use a pattern that can handle nested braces
+        brace_count = 0
+        start_idx = -1
+
+        for i, char in enumerate(response_text):
+            if char == "{":
+                if brace_count == 0:
+                    start_idx = i
+                brace_count += 1
+            elif char == "}":
+                brace_count -= 1
+                if brace_count == 0 and start_idx != -1:
+                    # Found a complete JSON object
+                    json_str = response_text[start_idx : i + 1]
+                    try:
+                        data = json.loads(json_str)
+                        if "tool_calls" in data:
+                            for call_data in data["tool_calls"]:
+                                # Ensure arguments is a JSON string
+                                arguments = call_data["function"]["arguments"]
+                                if isinstance(arguments, dict):
+                                    arguments = json.dumps(arguments)
+                                elif not isinstance(arguments, str):
+                                    arguments = json.dumps({"argument": str(arguments)})
+                                    
+                                tool_call = ToolCall(
+                                    id=call_data.get("id", f"call_{uuid.uuid4().hex[:8]}"),
+                                    type=call_data.get("type", "function"),
+                                    function={
+                                        "name": call_data["function"]["name"],
+                                        "arguments": arguments,
+                                    },
+                                )
+                                tool_calls.append(tool_call)
+                            return tool_calls
+                    except json.JSONDecodeError:
+                        continue
+                    start_idx = -1
+        
+        # Method 3: Enhanced detection for SWE-agent tools in markdown code blocks
+        # This is crucial for SWE-agent compatibility
+        
+        # Check for JSON code blocks with tool calls
+        json_code_block_pattern = r'```(?:json)?\s*\n(\{[^`]*"tool_calls"[^`]*\})\s*\n```'
+        json_matches = re.findall(json_code_block_pattern, response_text, re.DOTALL | re.MULTILINE)
+        
+        for json_content in json_matches:
+            try:
+                data = json.loads(json_content)
+                if "tool_calls" in data:
+                    for call_data in data["tool_calls"]:
+                        # Ensure arguments is a JSON string
+                        arguments = call_data["function"]["arguments"]
+                        if isinstance(arguments, dict):
+                            arguments = json.dumps(arguments)
+                        elif not isinstance(arguments, str):
+                            arguments = json.dumps({"argument": str(arguments)})
+                            
+                        tool_call = ToolCall(
+                            id=call_data.get("id", f"call_{uuid.uuid4().hex[:8]}"),
+                            type=call_data.get("type", "function"),
+                            function={
+                                "name": call_data["function"]["name"],
+                                "arguments": arguments,
+                            },
+                        )
+                        tool_calls.append(tool_call)
+                    return tool_calls  # Return early if we found JSON tool calls
+            except json.JSONDecodeError:
+                continue
+        
+        # Check for bash/shell code blocks  
+        bash_code_block_pattern = r'```(?:bash|sh|shell)?\n(.*?)\n```'
+        bash_matches = re.findall(bash_code_block_pattern, response_text, re.DOTALL | re.MULTILINE)
+        
+        for code_content in bash_matches:
+            # Treat code blocks as bash commands
+            if code_content.strip():
+                tool_call = ToolCall(
+                    id=f"call_{uuid.uuid4().hex[:8]}",
+                    type="function",
+                    function={
+                        "name": "bash",
+                        "arguments": json.dumps({"command": code_content.strip()})
+                    }
+                )
+                tool_calls.append(tool_call)
+        
+        # Method 4: Look for SWE-agent specific tool patterns
+        if not tool_calls:
+            # Common SWE-agent tools
+            swe_tools = {
+                'bash': r'(?:run|execute|bash)(?:\s+command)?:\s*(.+)',
+                'edit_file': r'edit_file\s*\(\s*"([^"]+)"\s*,\s*"([^"]+)"\s*,\s*"([^"]+)"\s*\)',
+                'read_file': r'read[_\s]file\s*\(\s*["\']?([^"\']+)["\']?\s*\)',
+                'write_file': r'write[_\s]file\s*\(\s*["\']?([^"\']+)["\']?\s*,\s*["\']?([^"\']+)["\']?\s*\)',
+            }
+            
+            for tool_name, pattern in swe_tools.items():
+                matches = re.findall(pattern, response_text, re.IGNORECASE | re.MULTILINE)
+                for match in matches:
+                    if tool_name == 'bash':
+                        arguments = json.dumps({"command": match.strip()})
+                    elif tool_name == 'edit_file' and isinstance(match, tuple) and len(match) == 3:
+                        arguments = json.dumps({
+                            "path": match[0].strip(),
+                            "old_str": match[1].strip(),
+                            "new_str": match[2].strip()
+                        })
+                    elif tool_name in ['read_file', 'write_file']:
+                        if isinstance(match, tuple):
+                            arguments = json.dumps({"path": match[0].strip()})
+                        else:
+                            arguments = json.dumps({"path": match.strip()})
+                    else:
+                        continue
+                    
+                    tool_call = ToolCall(
+                        id=f"call_{uuid.uuid4().hex[:8]}",
+                        type="function",
+                        function={"name": tool_name, "arguments": arguments}
+                    )
+                    tool_calls.append(tool_call)
+
+        # Method 5: Look for function calls in simpler format (fallback)
+        if not tool_calls:
+            func_pattern = r"(\w+)\s*\(\s*([^)]*)\s*\)"
+            func_matches = re.findall(func_pattern, response_text)
+
+            for func_name, args_str in func_matches:
+                try:
+                    # Try to parse arguments as JSON
+                    if args_str.strip():
+                        # If it looks like JSON, validate it
+                        if args_str.strip().startswith("{"):
+                            arguments = json.dumps(json.loads(args_str))
+                        else:
+                            # Simple string argument, wrap in JSON
+                            arguments = json.dumps({"argument": args_str})
+                    else:
+                        arguments = "{}"
+
+                    tool_call = ToolCall(
+                        id=f"call_{uuid.uuid4().hex[:8]}",
+                        type="function",
+                        function={"name": func_name, "arguments": arguments},
+                    )
+                    tool_calls.append(tool_call)
+                except:
+                    continue
+
+    except Exception as e:
+        logger.warning(f"Failed to parse tool calls: {e}")
+
+    return tool_calls
+
+
+def clean_content_from_tool_calls(response_text: str) -> str:
+    """Remove tool call JSON from content while preserving other text."""
+    content = response_text
+    
+    # Remove JSON code blocks containing tool calls (improved pattern)
+    json_code_block_pattern = r'```(?:json)?\s*\n\{[^`]*"tool_calls"[^`]*\}\s*\n```'
+    content = re.sub(json_code_block_pattern, '', content, flags=re.DOTALL | re.MULTILINE)
+    
+    # Remove markdown JSON blocks that don't have proper closing (improved)
+    json_block_unclosed_pattern = r'```json\s*\n\{[^`]*"tool_calls"[^`]*(?:\]\s*)?(?:\}\s*)?[^`]*'
+    content = re.sub(json_block_unclosed_pattern, '', content, flags=re.DOTALL | re.MULTILINE)
+    
+    # Remove inline JSON with tool calls (improved pattern using balanced braces)
+    def remove_tool_call_json(text):
+        # Handle malformed JSON at start of text
+        if text.strip().startswith('{"tool_calls"'):
+            # Find the end of the JSON object or take everything until newline
+            brace_count = 0
+            i = 0
+            for char in text:
+                if char == '{':
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        # Found complete JSON, remove it and keep rest
+                        return text[i+1:].lstrip('\n')
+                elif char == '\n' and brace_count > 0:
+                    # Incomplete JSON until newline, remove just that line
+                    return text[i+1:]
+                i += 1
+            # If no complete JSON found, remove the whole line
+            newline_pos = text.find('\n')
+            if newline_pos != -1:
+                return text[newline_pos+1:]
+            else:
+                return ""
+        
+        # Find JSON objects that contain "tool_calls"
+        brace_count = 0
+        start_pos = -1
+        i = 0
+        while i < len(text):
+            if text[i] == '{':
+                if brace_count == 0:
+                    start_pos = i
+                brace_count += 1
+            elif text[i] == '}':
+                brace_count -= 1
+                if brace_count == 0 and start_pos != -1:
+                    # Check if this JSON contains tool_calls
+                    json_str = text[start_pos:i+1]
+                    if '"tool_calls"' in json_str:
+                        # Remove this JSON object and any trailing text until newline
+                        end_pos = text.find('\n', i+1)
+                        if end_pos == -1:
+                            end_pos = len(text)
+                        text = text[:start_pos] + text[end_pos:]
+                        i = start_pos - 1  # Reset position
+                    start_pos = -1
+            i += 1
+        return text
+    
+    content = remove_tool_call_json(content)
+    
+    # Remove any remaining standalone tool_calls patterns
+    content = re.sub(r'(?:^|\n)\s*"tool_calls"\s*:\s*\[.*?\]', '', content, flags=re.DOTALL | re.MULTILINE)
+    
+    # Remove lines that only contain partial JSON starting with {"tool_calls"
+    content = re.sub(r'^.*\{"tool_calls".*$', '', content, flags=re.MULTILINE)
+    
+    # Clean up whitespace and empty lines
+    content = re.sub(r'\n\s*\n', '\n', content)  # Remove empty lines
+    content = re.sub(r'^\s*\n', '', content)     # Remove leading empty lines
+    content = content.strip()
+    
+    return content
+
+
+def apply_emotion_to_prompt(
+    messages: List[ChatMessage], emotion: str, tools: Optional[List[ToolDefinition]] = None
+) -> str:
+    """Convert OpenAI chat messages to a single prompt string with optional tools."""
     prompt_parts = []
+
+    # Add tools information first if available
+    if tools:
+        tools_prompt = format_tools_for_prompt(tools)
+        prompt_parts.append(tools_prompt)
+
     for message in messages:
         # Handle LangGraph format (messages without role)
         role = getattr(message, "role", "user")
@@ -249,7 +640,21 @@ def apply_emotion_to_prompt(messages: List[ChatMessage], emotion: str) -> str:
         elif role == "user":
             prompt_parts.append(f"User: {content}")
         elif role == "assistant":
-            prompt_parts.append(f"Assistant: {content}")
+            if hasattr(message, "tool_calls") and message.tool_calls:
+                # Format assistant message with tool calls
+                tool_calls_text = json.dumps(
+                    [
+                        {"id": call.id, "type": call.type, "function": call.function}
+                        for call in message.tool_calls
+                    ]
+                )
+                prompt_parts.append(f"Assistant: {content}\nTool calls: {tool_calls_text}")
+            else:
+                prompt_parts.append(f"Assistant: {content}")
+        elif role == "tool":
+            # Tool response message
+            tool_id = getattr(message, "tool_call_id", "unknown")
+            prompt_parts.append(f"Tool Result (ID: {tool_id}): {content}")
         else:
             # Default to user if role is unknown
             prompt_parts.append(f"User: {content}")
@@ -272,7 +677,7 @@ async def stream_chat_completion(
     chunk_size = 2  # Words per chunk
 
     for i in range(0, len(words), chunk_size):
-        chunk_words = words[i:i + chunk_size]
+        chunk_words = words[i : i + chunk_size]
         chunk_text = " ".join(chunk_words)
         if i + chunk_size < len(words):
             chunk_text += " "
@@ -306,6 +711,165 @@ async def stream_chat_completion(
     yield "data: [DONE]\n\n"
 
 
+class BatchProcessor:
+    """Batches multiple requests for efficient GPU utilization."""
+
+    def __init__(self, max_batch_size: int = 8, batch_timeout: float = 0.05):
+        self.max_batch_size = max_batch_size
+        self.batch_timeout = batch_timeout
+        self.queue = deque()
+        self.processing = False
+
+    async def process_request(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
+        """Add request to batch and wait for response."""
+        future = asyncio.Future()
+        request_item = {"request": request, "future": future, "timestamp": time.time()}
+
+        self.queue.append(request_item)
+
+        # Start batch processing if not already running
+        if not self.processing:
+            asyncio.create_task(self._process_batch())
+
+        return await future
+
+    async def _process_batch(self):
+        """Process accumulated requests in batches."""
+        if self.processing:
+            return
+
+        self.processing = True
+
+        try:
+            while self.queue:
+                # Collect batch
+                batch = []
+                start_time = time.time()
+
+                while (
+                    len(batch) < self.max_batch_size
+                    and self.queue
+                    and (time.time() - start_time) < self.batch_timeout
+                ):
+                    batch.append(self.queue.popleft())
+                    if not self.queue:
+                        await asyncio.sleep(0.001)  # Small delay to accumulate more requests
+
+                if batch:
+                    await self._process_batch_items(batch)
+
+        finally:
+            self.processing = False
+
+    async def _process_batch_items(self, batch):
+        """Process a batch of requests together."""
+        try:
+            # Extract prompts and requests
+            prompts = []
+            requests = []
+            futures = []
+
+            for item in batch:
+                request = item["request"]
+                future = item["future"]
+
+                prompt = apply_emotion_to_prompt(
+                    request.messages, server_state["current_emotion"], request.tools
+                )
+                prompts.append(prompt)
+                requests.append(request)
+                futures.append(future)
+
+            # Batch generation
+            if len(prompts) > 1:
+                logger.debug(f"Processing batch of {len(prompts)} requests")
+
+                # Use batch processing for multiple requests
+                outputs = server_state["rep_control_hook"](
+                    text_inputs=prompts,
+                    activations=server_state["emotion_activations"],
+                    max_new_tokens=max(req.max_tokens or 100 for req in requests),
+                    temperature=requests[0].temperature or 0.0,
+                    top_p=requests[0].top_p or 1.0,
+                    operator="linear_comb",
+                    normalize=False,
+                    token_pos=None,
+                )
+            else:
+                # Single request fallback
+                request = requests[0]
+                prompt = prompts[0]
+
+                outputs = server_state["rep_control_hook"](
+                    text_inputs=[prompt],
+                    activations=server_state["emotion_activations"],
+                    max_new_tokens=request.max_tokens or 100,
+                    temperature=request.temperature or 0.0,
+                    top_p=request.top_p or 1.0,
+                    operator="linear_comb",
+                    normalize=False,
+                    token_pos=None,
+                )
+
+            # Process responses
+            for i, (request, future) in enumerate(zip(requests, futures)):
+                try:
+                    generated_text = outputs[i].outputs[0].text.strip()
+                    prompt_tokens = len(server_state["tokenizer"].encode(prompts[i]))
+                    completion_tokens = len(server_state["tokenizer"].encode(generated_text))
+
+                    # Parse tool calls from generated text
+                    tool_calls = None
+                    content = generated_text
+                    finish_reason = "stop"
+
+                    if request.tools and request.tool_choice != "none":
+                        parsed_calls = parse_tool_calls_from_response(generated_text)
+                        if parsed_calls:
+                            tool_calls = parsed_calls
+                            finish_reason = "tool_calls"
+                            # Remove tool call JSON from content if it exists
+                            content = clean_content_from_tool_calls(generated_text)
+                            if not content.strip():
+                                content = None
+
+                    completion_id = f"chatcmpl-{uuid.uuid4().hex}"
+                    created_time = int(time.time())
+
+                    message = ChatMessage(role="assistant", content=content if content else None)
+                    if tool_calls:
+                        message.tool_calls = tool_calls
+
+                    response = ChatCompletionResponse(
+                        id=completion_id,
+                        created=created_time,
+                        model=request.model,
+                        choices=[
+                            ChatChoice(
+                                index=0,
+                                message=message,
+                                finish_reason=finish_reason,
+                            )
+                        ],
+                        usage=ChatUsage(
+                            prompt_tokens=prompt_tokens,
+                            completion_tokens=completion_tokens,
+                            total_tokens=prompt_tokens + completion_tokens,
+                        ),
+                    )
+
+                    future.set_result(response)
+
+                except Exception as e:
+                    future.set_exception(e)
+
+        except Exception as e:
+            # Set exception for all futures in batch
+            for item in batch:
+                if not item["future"].done():
+                    item["future"].set_exception(e)
+
+
 @app.get("/v1/models", response_model=ModelsResponse)
 async def list_models():
     """List available models."""
@@ -329,20 +893,26 @@ async def create_chat_completion(request: ChatCompletionRequest):
     if server_state["rep_control_hook"] is None:
         raise HTTPException(status_code=503, detail="Model not initialized")
 
+    # Check if batching is enabled and request supports it
+    use_batching = (
+        server_state.get("batch_processor") is not None
+        and not request.stream  # Streaming not supported with batching yet
+    )
+
+    if use_batching:
+        # Use batch processor for better throughput
+        return await server_state["batch_processor"].process_request(request)
+
+    # Fallback to individual processing
     try:
         # Convert messages to prompt (handle LangGraph format)
-        prompt = apply_emotion_to_prompt(request.messages, server_state["current_emotion"])
+        prompt = apply_emotion_to_prompt(
+            request.messages, server_state["current_emotion"], request.tools
+        )
 
-        # Prepare sampling parameters (not used directly with hook)
-        # sampling_params = SamplingParams(
-        #     max_tokens=request.max_tokens or 100,
-        #     temperature=request.temperature or 0.0,
-        #     top_p=request.top_p or 1.0,
-        #     stop=request.stop,
-        # )
+        # Generate with emotion control - optimized call
+        logger.debug(f"Generating with emotion: {server_state['current_emotion']}")
 
-        # Generate with emotion control
-        logger.info(f"Generating with emotion: {server_state['current_emotion']}")
         outputs = server_state["rep_control_hook"](
             text_inputs=[prompt],
             activations=server_state["emotion_activations"],
@@ -361,6 +931,52 @@ async def create_chat_completion(request: ChatCompletionRequest):
         prompt_tokens = len(server_state["tokenizer"].encode(prompt))
         completion_tokens = len(server_state["tokenizer"].encode(generated_text))
 
+        # Parse tool calls from generated text
+        tool_calls = None
+        content = generated_text
+        finish_reason = "stop"
+
+        if request.tools and request.tool_choice != "none":
+            parsed_calls = parse_tool_calls_from_response(generated_text)
+            if parsed_calls:
+                tool_calls = parsed_calls
+                finish_reason = "tool_calls"
+                # Remove tool call JSON from content if it exists
+                # Handle both standalone JSON and JSON in code blocks
+                content = generated_text
+                
+                # Remove JSON in code blocks
+                content = re.sub(r'```(?:json)?\s*\n\{[^`]*"tool_calls"[^`]*\}\s*\n```', '', content, flags=re.DOTALL)
+                
+                # Remove standalone JSON with proper nesting
+                # Find and remove complete JSON objects containing "tool_calls"
+                if '"tool_calls"' in content:
+                    # Try to find and remove the complete JSON structure
+                    start_positions = [m.start() for m in re.finditer(r'\{', content)]
+                    for start in reversed(start_positions):  # Process from end to avoid index issues
+                        brace_count = 0
+                        end = -1
+                        for i, char in enumerate(content[start:], start):
+                            if char == '{':
+                                brace_count += 1
+                            elif char == '}':
+                                brace_count -= 1
+                                if brace_count == 0:
+                                    end = i + 1
+                                    break
+                        
+                        if end > start:
+                            json_str = content[start:end]
+                            if '"tool_calls"' in json_str:
+                                try:
+                                    # Verify it's valid JSON before removing
+                                    json.loads(json_str)
+                                    content = content[:start] + content[end:]
+                                except:
+                                    pass
+                
+                content = content.strip()
+
         completion_id = f"chatcmpl-{uuid.uuid4().hex}"
         created_time = int(time.time())
 
@@ -378,6 +994,11 @@ async def create_chat_completion(request: ChatCompletionRequest):
                 media_type="text/plain",
             )
         else:
+            # Create response message
+            message = ChatMessage(role="assistant", content=content if content else None)
+            if tool_calls:
+                message.tool_calls = tool_calls
+
             # Create response
             response = ChatCompletionResponse(
                 id=completion_id,
@@ -386,8 +1007,8 @@ async def create_chat_completion(request: ChatCompletionRequest):
                 choices=[
                     ChatChoice(
                         index=0,
-                        message=ChatMessage(role="assistant", content=generated_text),
-                        finish_reason="stop",
+                        message=message,
+                        finish_reason=finish_reason,
                     )
                 ],
                 usage=ChatUsage(
@@ -426,6 +1047,22 @@ def main():
     parser.add_argument("--url", help="Base URL for the server (for display purposes)")
     parser.add_argument("--tensor_parallel_size", type=int, default=1, help="Tensor parallel size")
 
+    # Performance optimization arguments
+    parser.add_argument(
+        "--batch_size", type=int, default=8, help="Maximum batch size for request batching"
+    )
+    parser.add_argument(
+        "--batch_timeout", type=float, default=0.05, help="Batch timeout in seconds"
+    )
+    parser.add_argument(
+        "--gpu_memory_utilization", type=float, default=0.90, help="GPU memory utilization"
+    )
+    parser.add_argument("--max_num_seqs", type=int, default=64, help="Maximum number of sequences")
+    parser.add_argument("--disable_batching", action="store_true", help="Disable request batching")
+    parser.add_argument(
+        "--enable_chunked_prefill", action="store_true", default=True, help="Enable chunked prefill"
+    )
+
     args = parser.parse_args()
 
     # Validate emotion
@@ -438,9 +1075,19 @@ def main():
     server_state["server_start_time"] = time.time()
     server_state["model_name"] = args.model_name
 
-    # Initialize model
+    # Initialize model with optimized settings
     try:
-        initialize_model(args.model, args.emotion, args.tensor_parallel_size)
+        initialize_model(
+            model_path=args.model,
+            emotion=args.emotion,
+            tensor_parallel_size=args.tensor_parallel_size,
+            gpu_memory_utilization=args.gpu_memory_utilization,
+            max_num_seqs=args.max_num_seqs,
+            enable_chunked_prefill=args.enable_chunked_prefill,
+            batch_size=args.batch_size,
+            batch_timeout=args.batch_timeout,
+            disable_batching=args.disable_batching,
+        )
     except Exception as e:
         logger.error(f"Failed to initialize model: {e}", exc_info=True)
         sys.exit(1)

@@ -8,6 +8,8 @@ experiment:
     num_scenarios: 36
     batch_size: 4
   
+  max_test_scenarios: 300  # Randomly sample 300 scenarios for testing
+  
   llm:
     llm_config: "LOCAL_SERVER_ANGER_CONFIG"  # Points to anger-activated server
     generation_config:
@@ -19,14 +21,14 @@ experiment:
   # All emotion control happens at neural level via server
   system_message_template: "You are Alice, an average American."
 
-  repeat: 5  # Increased repeats for better statistical power
+  repeat: 2  # Reasonable repeats for 300 scenarios (600 total decisions)
 
   # Simplified for neural testing - server handles emotion activation
   intensity:
     - "neutral"
 
   emotions:
-    - "neutral"  # Emotion controlled by server, not prompt
+    - "anger"  # Emotion controlled by server, not prompt
 
   output:
     base_dir: "results/neural_test"

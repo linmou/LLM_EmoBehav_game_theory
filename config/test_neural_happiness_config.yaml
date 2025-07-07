@@ -1,5 +1,5 @@
 experiment:
-  name: "priDeli_neural_anger_test"
+  name: "test_neural_happiness"
   game:
     name: "Prisoners_Dilemma"
     
@@ -8,10 +8,10 @@ experiment:
     num_scenarios: 36
     batch_size: 4
   
-  max_test_scenarios: 300  # Randomly sample 300 scenarios for testing
+  max_test_scenarios: 5  # Test with just 5 scenarios
   
   llm:
-    llm_config: "LOCAL_SERVER_NEUTRAL_CONFIG"  # Will be switched to LOCAL_SERVER_ANGER_CONFIG for anger test
+    llm_config: "LOCAL_SERVER_NEUTRAL_CONFIG"  # Happiness server
     generation_config:
       model: "Qwen2.5-0.5B-Instruct"
       temperature: 0.7
@@ -21,7 +21,7 @@ experiment:
   # All emotion control happens at neural level via server
   system_message_template: "You are Alice, an average American."
 
-  repeat: 2  # Reasonable repeats for 300 scenarios (600 total decisions)
+  repeat: 2  # Just 2 repeats for testing
 
   # Simplified for neural testing - server handles emotion activation
   intensity:

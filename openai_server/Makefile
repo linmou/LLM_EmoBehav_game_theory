@@ -78,23 +78,85 @@ clean:
 	rm -rf $(TEST_DIR)/.pytest_cache
 	rm -rf logs/server/*.log
 
-# Start test server
+# Start test server with optimized settings
 server:
-	@echo "Starting test server..."
-	VLLM_GPU_MEMORY_UTILIZATION=0.8 $(PYTHON) -m $(MODULE) \
+	@echo "Starting optimized test server..."
+	VLLM_GPU_MEMORY_UTILIZATION=0.9 $(PYTHON) -m $(MODULE) \
 		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
 		--model_name test-model \
 		--emotion happiness \
-		--port 8000
+		--port 8000 \
+		--gpu_memory_utilization 0.9 \
+		--max_num_seqs 64 \
+		--batch_size 8 \
+		--batch_timeout 0.05
 
-# Start server with specific emotion
+# Start server with specific emotion (optimized)
 server-anger:
-	@echo "Starting server with anger emotion..."
-	VLLM_GPU_MEMORY_UTILIZATION=0.8 $(PYTHON) -m $(MODULE) \
+	@echo "Starting optimized server with anger emotion..."
+	VLLM_GPU_MEMORY_UTILIZATION=0.9 $(PYTHON) -m $(MODULE) \
 		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
 		--model_name test-model-anger \
 		--emotion anger \
-		--port 8000
+		--port 8000 \
+		--gpu_memory_utilization 0.9 \
+		--max_num_seqs 64 \
+		--batch_size 8 \
+		--batch_timeout 0.05
+
+# Start high-performance server with maximum optimization
+server-fast:
+	@echo "Starting high-performance server..."
+	VLLM_GPU_MEMORY_UTILIZATION=0.95 $(PYTHON) -m $(MODULE) \
+		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model_name test-model-fast \
+		--emotion happiness \
+		--port 8000 \
+		--gpu_memory_utilization 0.95 \
+		--max_num_seqs 128 \
+		--batch_size 16 \
+		--batch_timeout 0.02 \
+		--enable_chunked_prefill
+
+# Start server without batching (for comparison)
+server-no-batch:
+	@echo "Starting server without batching..."
+	VLLM_GPU_MEMORY_UTILIZATION=0.9 $(PYTHON) -m $(MODULE) \
+		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model_name test-model-nobatch \
+		--emotion happiness \
+		--port 8000 \
+		--gpu_memory_utilization 0.9 \
+		--max_num_seqs 64 \
+		--disable_batching
+
+# Start multi-GPU server (2 GPUs - balanced load)
+server-multigpu:
+	@echo "Starting multi-GPU balanced server..."
+	VLLM_GPU_MEMORY_UTILIZATION=0.8 $(PYTHON) -m $(MODULE) \
+		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model_name test-model-multigpu \
+		--emotion happiness \
+		--port 8000 \
+		--gpu_memory_utilization 0.8 \
+		--max_num_seqs 64 \
+		--batch_size 8 \
+		--batch_timeout 0.05 \
+		--tensor_parallel_size 2
+
+# Start multi-GPU high performance server
+server-multigpu-fast:
+	@echo "Starting multi-GPU high-performance server..."
+	VLLM_GPU_MEMORY_UTILIZATION=0.85 $(PYTHON) -m $(MODULE) \
+		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model_name test-model-multigpu-fast \
+		--emotion happiness \
+		--port 8000 \
+		--gpu_memory_utilization 0.85 \
+		--max_num_seqs 128 \
+		--batch_size 16 \
+		--batch_timeout 0.02 \
+		--tensor_parallel_size 2
 
 # Generate documentation
 docs:
@@ -134,8 +196,10 @@ help:
 	@echo "  type-check       - Run type checker"
 	@echo "  clean            - Clean generated files"
 	@echo "  install-dev      - Install development dependencies"
-	@echo "  server           - Start test server (happiness)"
-	@echo "  server-anger     - Start test server (anger)"
+	@echo "  server           - Start optimized test server (happiness)"
+	@echo "  server-anger     - Start optimized test server (anger)"
+	@echo "  server-fast      - Start high-performance server (max optimization)"
+	@echo "  server-no-batch  - Start server without batching (for comparison)"
 	@echo "  docs             - Generate documentation"
 	@echo "  watch            - Watch for changes and run tests"
 	@echo "  ci               - Run full CI pipeline"

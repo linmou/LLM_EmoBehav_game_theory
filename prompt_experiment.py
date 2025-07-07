@@ -130,45 +130,61 @@ class PromptExperiment:
 
         game = self._get_game_instance()
         llm_config = self.config["experiment"]["llm"]
+        
+        # Check if we need to limit scenarios
+        max_test_scenarios = self.config["experiment"].get("max_test_scenarios", None)
+        
+        if max_test_scenarios and game.data_path:
+            # Load all available scenarios
+            import random
+            with open(game.data_path, 'r') as f:
+                all_scenarios = json.load(f)
+            
+            # Random sample if we have more scenarios than needed
+            if len(all_scenarios) > max_test_scenarios:
+                # Set seed for reproducibility
+                random.seed(self.config["experiment"]["llm"]["generation_config"].get("seed", 43))
+                sampled_scenarios = random.sample(all_scenarios, max_test_scenarios)
+                
+                # Save sampled scenarios to temp file
+                temp_data_path = self.output_dir / "sampled_scenarios.json"
+                with open(temp_data_path, 'w') as f:
+                    json.dump(sampled_scenarios, f, indent=2)
+                
+                # Update game data path
+                game.data_path = str(temp_data_path)
+                logger.info(f"Randomly sampled {max_test_scenarios} scenarios from {len(all_scenarios)} available")
+            else:
+                logger.info(f"Using all {len(all_scenarios)} scenarios (less than max_test_scenarios={max_test_scenarios})")
 
-        # run api tests without emotion as baseline
+        # run api tests with configured emotion and intensity
         output_files = []
+        
+        # Get the emotion and intensity from config
+        emotion_str = self.config["experiment"]["emotions"][0]  # Use first emotion from config
+        intensity = self.config["experiment"]["intensity"][0]   # Use first intensity from config
+        emotion = Emotions.from_string(emotion_str)
+        
+        # Use system message template from config for the main test
+        stimulus = get_emotion_stimulus(emotion)
+        system_message = self.config["experiment"]["system_message_template"].format(
+            emotion=emotion.value, stimulus=stimulus, intensity=intensity
+        )
+        
         output_file = run_tests(
             game=game,
             llm_config=llm_config["llm_config"],
             generation_config=llm_config["generation_config"],
             output_dir=self.output_dir,
-            emotion="Neutral",
-            intensity="Neutral",
+            emotion=emotion.value,
+            intensity=intensity,
+            system_message=system_message,
             repeat=self.config["experiment"]["repeat"],
         )
         output_files.append(output_file)
 
-        # run api tests with emotion
-        for emotion_str in self.config["experiment"]["emotions"]:
-            emotion = Emotions.from_string(emotion_str)
-            stimulus = get_emotion_stimulus(emotion)
-            for intensity in self.config["experiment"]["intensity"]:
-                logger.info(
-                    f"Testing scenarios with emotion: {emotion.value} and intensity: {intensity}"
-                )
-
-                # Use system message template from config
-                system_message = self.config["experiment"][
-                    "system_message_template"
-                ].format(emotion=emotion.value, stimulus=stimulus, intensity=intensity)
-
-                output_file = run_tests(
-                    game=game,
-                    llm_config=llm_config["llm_config"],
-                    generation_config=llm_config["generation_config"],
-                    output_dir=self.output_dir,
-                    emotion=emotion.value,
-                    intensity=intensity,
-                    system_message=system_message,
-                    repeat=self.config["experiment"]["repeat"],
-                )
-                output_files.append(output_file)
+        # Note: Already ran the main test above with configured emotion/intensity
+        logger.info(f"Testing scenarios with emotion: {emotion.value} and intensity: {intensity}")
 
         self.output_files = output_files
 

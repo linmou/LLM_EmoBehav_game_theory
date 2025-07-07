@@ -148,9 +148,11 @@ class TestErrorHandling:
         with pytest.raises(ValueError):
             ChatCompletionRequest(messages=[])  # Missing model
 
-        # Test invalid message format
-        with pytest.raises(ValueError):
-            ChatMessage()  # Missing content
+        # Test that ChatMessage can be created without content (for function calling)
+        # This is now valid behavior since function calling was added
+        message = ChatMessage()  # Content is optional for function calling
+        assert message.content == ""  # Should have default value
+        assert message.role == "user"  # Should have default value
 
     def test_emotion_validation(self):
         """Test emotion parameter validation"""

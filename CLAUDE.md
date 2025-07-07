@@ -142,6 +142,6 @@ The project includes comprehensive testing:
 - Statistical analysis validation
 - Tensor parallel consistency checks
 
-## VRAM Management
+## OpenAI Server Management
 
-- You can use manage_server to manage VRAM occupied by the openai_servers
+- Please use openai_server/manage_servers.py to manage VRAM occupied by the openai_servers, don not use pkill

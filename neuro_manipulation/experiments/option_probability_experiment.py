@@ -164,10 +164,15 @@ class OptionProbabilityExperiment:
         conditions = self._generate_experimental_conditions()
         self.logger.info(f"Generated {len(conditions)} experimental conditions: {[c.name for c in conditions]}")
         
-        # Run experiment for each condition
+        # Create a single dataset and slice it
+        self.logger.info("Creating shared dataset for all conditions...")
+        shared_scenarios = self._create_shared_dataset()
+        self.logger.info(f"Created {len(shared_scenarios)} scenarios to be used across all conditions")
+        
+        # Run experiment for each condition using the same scenarios
         for condition in conditions:
             self.logger.info(f"Running condition: {condition.name}")
-            condition_results = self._run_single_condition(condition)
+            condition_results = self._run_single_condition_with_shared_data(condition, shared_scenarios)
             self.results.extend(condition_results)
             
         # Save results
@@ -209,6 +214,105 @@ class OptionProbabilityExperiment:
             )
         ]
         return conditions
+        
+    def _create_shared_dataset(self) -> List[Dict[str, Any]]:
+        """Create a shared dataset that will be used across all conditions."""
+        # Create a baseline dataset to extract scenarios
+        user_message = "You are participating in this scenario."
+        
+        from functools import partial
+        neutral_prompt_wrapper = partial(
+            self.prompt_wrapper.__call__,
+            user_messages=user_message
+        )
+        
+        # Create dataset with full description to get all scenario information
+        dataset = ContextManipulationDataset(
+            game_config=self.game_config,
+            prompt_wrapper=neutral_prompt_wrapper,
+            include_description=True,  # Get full scenario info
+            sample_num=self.sample_num
+        )
+        
+        # Extract all scenarios from the dataset
+        scenarios = []
+        for idx in range(len(dataset)):
+            item = dataset[idx]
+            scenarios.append({
+                'idx': idx,
+                'scenario': item['scenario'],
+                'description': item['description'],
+                'behavior_choices': item['behavior_choices'],
+                'options': item['options']
+            })
+        
+        return scenarios
+    
+    def _run_single_condition_with_shared_data(
+        self, 
+        condition: ExperimentCondition, 
+        shared_scenarios: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Run experiment for a single condition using shared scenario data."""
+        condition_results = []
+        
+        # Process scenarios in batches
+        for batch_start in range(0, len(shared_scenarios), self.batch_size):
+            batch_end = min(batch_start + self.batch_size, len(shared_scenarios))
+            batch_scenarios = shared_scenarios[batch_start:batch_end]
+            
+            # Prepare batch data with appropriate context manipulation
+            batch = self._prepare_batch_for_condition(batch_scenarios, condition)
+            
+            # Measure probabilities for all options in this batch
+            batch_results = self._measure_option_probabilities(batch, condition)
+            
+            # Add scenario index to results for matching across conditions
+            for i, result in enumerate(batch_results):
+                result['scenario_idx'] = batch_scenarios[i]['idx']
+            
+            condition_results.extend(batch_results)
+            
+        return condition_results
+    
+    def _prepare_batch_for_condition(
+        self, 
+        batch_scenarios: List[Dict[str, Any]], 
+        condition: ExperimentCondition
+    ) -> Dict[str, List]:
+        """Prepare batch data with appropriate prompt formatting based on condition."""
+        batch = {
+            'prompt': [],
+            'options': [],
+            'scenario': [],
+            'behavior_choices': []
+        }
+        
+        user_message = "You are participating in this scenario."
+        
+        for scenario_data in batch_scenarios:
+            # Create prompt based on condition
+            if condition.has_context:
+                # Include full description
+                prompt = self.prompt_wrapper(
+                    event=f"Scenario: {scenario_data['scenario']}\nDescription: {scenario_data['description']}\nBehavior Choices: {scenario_data['behavior_choices']}",
+                    options=scenario_data['options'],
+                    user_messages=user_message
+                )
+            else:
+                # Minimal prompt without description
+                prompt = self.prompt_wrapper(
+                    event=f"Scenario: {scenario_data['scenario']}\nBehavior Choices: {scenario_data['behavior_choices']}",
+                    options=scenario_data['options'],
+                    user_messages=user_message
+                )
+            
+            batch['prompt'].append(prompt)
+            batch['options'].append(scenario_data['options'])
+            batch['scenario'].append(scenario_data['scenario'])
+            batch['behavior_choices'].append(str(scenario_data['behavior_choices']))
+        
+        return batch
         
     def _get_control_activations(self, emotion: str, intensity: float) -> Dict[int, torch.Tensor]:
         """Get control activations for a given emotion and intensity."""

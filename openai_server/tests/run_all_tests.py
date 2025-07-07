@@ -23,12 +23,25 @@ def run_unit_tests(verbose=False):
     print("Running Unit Tests")
     print("=" * 60)
 
+    # Run core unit tests
     cmd = [sys.executable, "-m", "pytest", "test_unit_server.py"]
     if verbose:
         cmd.append("-v")
 
-    result = subprocess.run(cmd, cwd=Path(__file__).parent)
-    return result.returncode == 0
+    result1 = subprocess.run(cmd, cwd=Path(__file__).parent)
+
+    # Run function calling unit tests
+    print("\n" + "=" * 60)
+    print("Running Function Calling Unit Tests")
+    print("=" * 60)
+
+    cmd2 = [sys.executable, "-m", "pytest", "test_function_calling_quick.py"]
+    if verbose:
+        cmd2.append("-v")
+
+    result2 = subprocess.run(cmd2, cwd=Path(__file__).parent)
+
+    return result1.returncode == 0 and result2.returncode == 0
 
 
 def run_integration_tests(verbose=False, skip_gpu_check=False):
