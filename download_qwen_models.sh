@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# List of Qwen2.5 models to download
+# List of Qwen3 AWQ models to download
 MODELS=(
-  "Qwen/Qwen2.5-VL-3B-Instruct"
-  "Qwen/Qwen2.5-VL-7B-Instruct"
-  "Qwen/Qwen2.5-VL-32B-Instruct"
+  "Qwen/Qwen3-4B-AWQ"
+  "Qwen/Qwen3-8B-AWQ"
+  "Qwen/Qwen3-14B-AWQ"
+  "Qwen/Qwen3-32B-AWQ"
 )
 # Base directory for saving models
 BASE_DIR="$HOME/huggingface_models/Qwen"
