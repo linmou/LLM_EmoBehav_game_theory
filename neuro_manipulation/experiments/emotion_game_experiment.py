@@ -126,6 +126,7 @@ class EmotionGameExperiment:
         self.repe_eng_config = repe_eng_config
         self.exp_config = exp_config
         self.generation_config = exp_config["experiment"]["llm"]["generation_config"]
+        self.enable_thinking = self.generation_config.get("enable_thinking", False)
         self.game_config = game_config
 
         self.repeat = repeat
@@ -201,7 +202,7 @@ class EmotionGameExperiment:
         with open(self.output_dir + "/exp_config.yaml", "w") as f:
             yaml.dump(self.exp_config, f)
         
-        client_choice = self.exp_config['experiment'].get('oai_client', 'azure')
+        client_choice = self.exp_config['experiment'].get('oai_client', 'openai')
         if client_choice == 'openai':
             self.llm_client = OpenAI(**OAI_CONFIG)
         elif client_choice == 'azure':
@@ -218,6 +219,7 @@ class EmotionGameExperiment:
             partial(
                 self.reaction_prompt_wrapper.__call__,
                 user_messages=self.exp_config["experiment"]["system_message_template"],
+                enable_thinking=self.enable_thinking,
             ),
             sample_num=self.sample_num,
         )
