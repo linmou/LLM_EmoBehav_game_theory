@@ -291,7 +291,7 @@ def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assist
                 model = LLM(
                     model=model_name_or_path, 
                     tensor_parallel_size=get_optimal_tensor_parallel_size(model_name_or_path), 
-                    max_model_len=1000, 
+                    max_model_len=40000, 
                     trust_remote_code=True, 
                     enforce_eager=True,
                     quantization="awq"
@@ -301,7 +301,7 @@ def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assist
                 model = LLM(
                     model=model_name_or_path, 
                     tensor_parallel_size=get_optimal_tensor_parallel_size(model_name_or_path), 
-                    max_model_len=1000, 
+                    max_model_len=40000, 
                     trust_remote_code=True, 
                     enforce_eager=True
                 )

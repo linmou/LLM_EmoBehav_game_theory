@@ -426,7 +426,7 @@ class RepControlVLLMHook:
             # prompt_token_ids = tokens['input_ids']
 
             sampling_params = SamplingParams(
-                max_tokens=kwargs.get('max_new_tokens', 100), # Renamed from max_tokens
+                max_tokens=kwargs.get('max_new_tokens', 40000), # Increased default from 100 to 40000
                 temperature=kwargs.get('temperature', 0.0), # Default to 0 for reproducibility if baseline needed
                 repetition_penalty=kwargs.get('repetition_penalty', 1.0),
                 top_p=kwargs.get('top_p', 1.0),

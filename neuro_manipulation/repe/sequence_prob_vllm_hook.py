@@ -714,7 +714,7 @@ class CombinedVLLMHook:
         try:
             # Default sampling parameters
             sampling_params = SamplingParams(
-                max_tokens=sampling_kwargs.get('max_new_tokens', 10),
+                max_tokens=sampling_kwargs.get('max_new_tokens', 40000),
                 temperature=sampling_kwargs.get('temperature', 0.7),
                 top_p=sampling_kwargs.get('top_p', 1.0)
             )
