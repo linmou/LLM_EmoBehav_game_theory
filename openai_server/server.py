@@ -106,7 +106,7 @@ class ChatCompletionRequest(BaseModel):
     model: str = Field(..., description="ID of the model to use")
     messages: List[ChatMessage] = Field(..., description="The messages in the conversation")
     max_tokens: Optional[int] = Field(
-        default=100, description="Maximum number of tokens to generate"
+        default=40000, description="Maximum number of tokens to generate"
     )
     temperature: Optional[float] = Field(default=1.0, description="Sampling temperature")
     top_p: Optional[float] = Field(default=1.0, description="Nucleus sampling parameter")
@@ -788,7 +788,7 @@ class BatchProcessor:
                 outputs = server_state["rep_control_hook"](
                     text_inputs=prompts,
                     activations=server_state["emotion_activations"],
-                    max_new_tokens=max(req.max_tokens or 100 for req in requests),
+                    max_new_tokens=max(req.max_tokens or 40000 for req in requests),
                     temperature=requests[0].temperature or 0.0,
                     top_p=requests[0].top_p or 1.0,
                     operator="linear_comb",
@@ -803,7 +803,7 @@ class BatchProcessor:
                 outputs = server_state["rep_control_hook"](
                     text_inputs=[prompt],
                     activations=server_state["emotion_activations"],
-                    max_new_tokens=request.max_tokens or 100,
+                    max_new_tokens=request.max_tokens or 40000,
                     temperature=request.temperature or 0.0,
                     top_p=request.top_p or 1.0,
                     operator="linear_comb",
@@ -916,7 +916,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
         outputs = server_state["rep_control_hook"](
             text_inputs=[prompt],
             activations=server_state["emotion_activations"],
-            max_new_tokens=request.max_tokens or 100,
+            max_new_tokens=request.max_tokens or 40000,
             temperature=request.temperature or 0.0,
             top_p=request.top_p or 1.0,
             operator="linear_comb",
