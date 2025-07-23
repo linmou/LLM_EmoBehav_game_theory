@@ -1,0 +1,48 @@
+experiment:
+  name: "Qwen3_AWQ_Series_PD"
+  
+  # List of games to run experiments with
+  games:
+    - "Prisoners_Dilemma"
+  
+  # List of models to run experiments with
+  models: 
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-14B-AWQ"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-32B-AWQ"
+  
+  game:
+    name: "Prisoners_Dilemma"
+    previous_actions_length: 0
+    
+  data:
+    generate: false
+    num_scenarios: 36
+    batch_size: 4
+  
+  llm:
+    # Qwen3 specific parameters
+    generation_config:
+      temperature: 0.7
+      do_sample: true
+      top_p: 0.95
+      max_new_tokens: 2800
+      enable_thinking: false
+
+  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
+  
+  repeat: 1
+
+  emotions:
+    - "anger"
+
+  intensity:
+    - 1.5
+
+  batch_size: 500
+
+  run_sanity_check: false
+
+  output:
+    base_dir: "results/Qwen3_AWQ_Series_PD"
+    save_plote: true
+    plot_format: "png"

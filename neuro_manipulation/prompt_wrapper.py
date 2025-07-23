@@ -16,8 +16,8 @@ class PromptWrapper:
             return [user_messages]
         return user_messages
     
-    def __call__(self, event, options, user_messages):
-        return self.prompt_format.build(self.system_prompt(event, options), self.user_messages(user_messages))
+    def __call__(self, event, options, user_messages, enable_thinking=False):
+        return self.prompt_format.build(self.system_prompt(event, options), self.user_messages(user_messages), enable_thinking=enable_thinking)
         
 class ReactionPromptWrapper(PromptWrapper):
     system_prompt_format = "You are an average American. {event} What will you do?"
@@ -39,6 +39,6 @@ class GameReactPromptWrapper(PromptWrapper):
     def format_instruction(self):
         return f"response in json format, with the following structure: {self.response_format.example()}"
     
-    def __call__(self, event, options, user_messages):
-        return self.prompt_format.build(self.system_prompt(event, options), self.user_messages(user_messages))
+    def __call__(self, event, options, user_messages, enable_thinking=False):
+        return self.prompt_format.build(self.system_prompt(event, options), self.user_messages(user_messages), enable_thinking=enable_thinking)
         

@@ -224,7 +224,7 @@ class RWKVsFormat(ModelPromptFormat):
         '''
         
         assert len(user_messages), f' user_messages: {user_messages} should not empty'
-        assert len(user_messages) - len(assistant_answers) in [0,1], f' user_messages: {user_messages} and assistant_answers: {assistant_answers} should have the same length or assistant_answers should have one less element'
+        assert len(user_messages) - len(assistant_answers) in [0,1], f' user_messages: {user_messages} and assistant_answers: {user_answers} should have the same length or assistant_answers should have one less element'
         
         prompt = f"{RWKVsFormat.user_tag} {system_prompt if system_prompt else ''} {user_messages[0]}{RWKVsFormat.end_of_turn}"
         
@@ -239,12 +239,72 @@ class RWKVsFormat(ModelPromptFormat):
     def name_pattern(model_name):
         return 'rwkv' in model_name.lower()
 
+class Qwen3InstFormat(ModelPromptFormat):
+    __user_tag = '<|im_start|>user'
+    __assistant_tag = '<|im_start|>assistant'
+    __system_tag = '<|im_start|>system'
+    __end_of_turn = '<|im_end|>'
+    
+    @classproperty
+    def user_tag(cls):
+        return cls.__user_tag
+    
+    @classproperty
+    def assistant_tag(cls):   
+        return cls.__assistant_tag
+    
+    @classproperty
+    def system_tag(cls):
+        return cls.__system_tag
+    
+    @classproperty
+    def end_of_turn(cls):
+        return cls.__end_of_turn
+   
+    @staticmethod
+    def build(system_prompt, user_messages:list, assistant_answers:list=[], enable_thinking=False):
+        '''
+        <|im_start|>system
+        system_prompt<|im_end|>
+        <|im_start|>user
+        user_message<|im_end|>
+        <|im_start|>assistant
+        '''
+        
+        assert len(user_messages), f' user_messages: {user_messages} should not empty'
+        assert len(user_messages) - len(assistant_answers) in [0,1], f' user_messages: {user_messages} and assistant_answers: {assistant_answers} should have the same length or assistant_answers should have one less element'
+        
+        prompt = ""
+        
+        if system_prompt:
+            prompt += f"{Qwen3InstFormat.system_tag}\n{system_prompt}{Qwen3InstFormat.end_of_turn}\n"
+        
+        # Add thinking mode instruction if enabled (without modifying original list)
+        first_user_message = user_messages[0]
+        if enable_thinking:
+            first_user_message = f"/think\n{first_user_message}"
+        
+        prompt += f"{Qwen3InstFormat.user_tag}\n{first_user_message}{Qwen3InstFormat.end_of_turn}\n"
+        
+        for mid in range(len(assistant_answers)):
+            prompt += f"{Qwen3InstFormat.assistant_tag}\n{assistant_answers[mid]}{Qwen3InstFormat.end_of_turn}\n"
+            if mid < len(user_messages) - 1:
+                prompt += f"{Qwen3InstFormat.user_tag}\n{user_messages[mid+1]}{Qwen3InstFormat.end_of_turn}\n"
+        
+        prompt += f"{Qwen3InstFormat.assistant_tag}\n"
+        
+        return prompt
+
+    @staticmethod
+    def name_pattern(model_name):
+        return 'qwen3' in model_name.lower() or 'qwen-3' in model_name.lower() or 'Qwen3' in model_name
+
 class ManualPromptFormat:
     ''' 
     Manually defined prompt format.
     '''
     
-    format_ls = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat]
+    format_ls = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat, Qwen3InstFormat]
     
     @staticmethod
     def get(model_name) -> ModelPromptFormat:
@@ -266,21 +326,21 @@ class PromptFormat:
     
     In case the chat template is not available or fails, it falls back to the manual format definitions.
     '''
-    format_ls: list[ModelPromptFormat] = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat]
+    format_ls: list[ModelPromptFormat] = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat, Qwen3InstFormat]
 
     def __init__(self, tokenizer: AutoTokenizer):
         self.tokenizer = tokenizer
         self.model_name = tokenizer.name_or_path
     
-    def build(self, system_prompt, user_messages:list, assistant_messages:list=[] ) -> str:
+    def build(self, system_prompt, user_messages:list, assistant_messages:list=[], enable_thinking=False ) -> str:
         """
         Build a prompt string using the tokenizer's chat template
         
         Args:
-            model_name (str): Name of the model (used for fallback)
             system_prompt (str): System prompt to use
             user_messages (list): List of user messages
             assistant_messages (list): List of assistant messages (optional)
+            enable_thinking (bool): Whether to enable thinking mode for Qwen3
             
         Returns:
             str: The formatted prompt string
@@ -292,6 +352,7 @@ class PromptFormat:
             chat.append({"role": "system", "content": system_prompt})
             
         assert len(user_messages), f' user_messages: {user_messages} should not empty'
+        
         for user_message, assistant_message in zip(user_messages, assistant_messages):
             chat.append({"role": "user", "content": user_message})
             chat.append({"role": "assistant", "content": assistant_message})
@@ -300,8 +361,13 @@ class PromptFormat:
         if len(user_messages) > len(assistant_messages):
             chat.append({"role": "user", "content": user_messages[-1]})
 
+        # For Qwen3 models with thinking mode, use manual format directly
+        if enable_thinking and ('qwen3' in self.model_name.lower() or 'qwen-3' in self.model_name.lower() or 'Qwen3' in self.model_name):
+            format_cls = Qwen3InstFormat
+            return format_cls.build(system_prompt, user_messages, assistant_messages, enable_thinking=enable_thinking)
+        
         try:
-            prompt_str = self.tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
+            prompt_str = self.tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True, enable_thinking=enable_thinking)
             # Verify messages appear in correct order in the prompt string
             self._verify_message_order_in_prompt(prompt_str, chat)
             return prompt_str
@@ -327,6 +393,16 @@ class PromptFormat:
             
             # Fallback to ManualPromptFormat if all else fails
             print("Falling back to ManualPromptFormat")
+            # For Qwen3, try the manual format with thinking mode support
+            for format_cls in PromptFormat.format_ls:
+                if format_cls.name_pattern(self.model_name):
+                    if hasattr(format_cls, 'build') and 'enable_thinking' in format_cls.build.__code__.co_varnames:
+                        prompt_str = format_cls.build(system_prompt, user_messages, assistant_messages, enable_thinking=enable_thinking)
+                    else:
+                        prompt_str = format_cls.build(system_prompt, user_messages, assistant_messages)
+                    return prompt_str
+            
+            # Final fallback
             prompt_str = ManualPromptFormat.build(self.model_name, system_prompt, user_messages, assistant_messages)
             return prompt_str
 

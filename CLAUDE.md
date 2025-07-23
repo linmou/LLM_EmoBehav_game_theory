@@ -9,6 +9,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 conda activate llm_fresh
 ```
 
+**Memory**:
+- No need to `conda activate llm_fresh` every time, just ensure conda env is `llm_fresh`
+
 ## Common Development Commands
 
 ### Core Experiment Commands
@@ -36,6 +39,9 @@ python init_openai_server.py --model /data/home/jjl7137/huggingface_models/Qwen/
 python test_vllm.py
 python -m openai_server.tests.test_openai_server
 python -m openai_server.tests.test_integrated_openai_server
+
+# Thinking mode testing
+python tests/thinking_mode/test_thinking_complete.py
 ```
 
 ### Scenario Generation
@@ -123,9 +129,14 @@ Based on `tasks.md`, the project has completed:
 - ✅ Emotion-context defection probability study framework
 - ✅ OpenAI-compatible server with neural hooks
 
-Currently working on:
-- Analyzing results from option probability experiments
-- Validating experimental design effectiveness
+
+## Organized File Structure
+
+### Thinking Mode Components
+- **Testing**: `tests/thinking_mode/test_thinking_complete.py` - Comprehensive thinking mode validation
+- **Experiments**: `examples/thinking_mode/run_qwen3_thinking_mode_experiment.py` - Full experiment runner
+- **Analysis**: `result_analysis/thinking_mode/analyze_thinking_mode_ratio.py` - Result analysis tools
+- **Documentation**: `docs/experiments/thinking_mode/Qwen3_Thinking_Mode_Implementation_Report.md`
 
 ## Model Support
 

@@ -283,7 +283,28 @@ def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assist
     model = None
     if from_vllm:
         try:
-            model = LLM(model=model_name_or_path, tensor_parallel_size=get_optimal_tensor_parallel_size(model_name_or_path), max_model_len=40000, trust_remote_code=True, enforce_eager=True)
+            # Check if this is an AWQ model
+            is_awq_model = 'awq' in model_name_or_path.lower() or 'AWQ' in model_name_or_path
+            
+            if is_awq_model:
+                # AWQ models require specific quantization configuration
+                model = LLM(
+                    model=model_name_or_path, 
+                    tensor_parallel_size=get_optimal_tensor_parallel_size(model_name_or_path), 
+                    max_model_len=40000, 
+                    trust_remote_code=True, 
+                    enforce_eager=True,
+                    quantization="awq"
+                )
+            else:
+                # Standard vLLM configuration
+                model = LLM(
+                    model=model_name_or_path, 
+                    tensor_parallel_size=get_optimal_tensor_parallel_size(model_name_or_path), 
+                    max_model_len=40000, 
+                    trust_remote_code=True, 
+                    enforce_eager=True
+                )
         except Exception as e:
             pass
     if not model:
