@@ -1,8 +1,10 @@
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict, Any
 from transformers import Pipeline
 import torch
 import numpy as np
+from PIL import Image
 from .rep_readers import DIRECTION_FINDERS, RepReader
+from ..prompt_formats import ManualPromptFormat
 
 class RepReadingPipeline(Pipeline):
 
@@ -54,13 +56,132 @@ class RepReadingPipeline(Pipeline):
         
         return preprocess_params, forward_params, postprocess_params
  
+    def _is_multimodal_input(self, inputs: Any) -> bool:
+        """Check if inputs contain both images and text for multimodal processing."""
+        if isinstance(inputs, dict):
+            return 'images' in inputs or 'image' in inputs
+        if isinstance(inputs, list) and len(inputs) > 0:
+            return any(isinstance(item, (Image.Image, torch.Tensor)) or 
+                      (isinstance(item, dict) and ('images' in item or 'image' in item)) 
+                      for item in inputs)
+        return False
+
+    def _prepare_multimodal_inputs(self, inputs: Union[Dict, List], **tokenizer_kwargs) -> Dict[str, Any]:
+        """Prepare multimodal inputs using the correct Qwen2.5-VL processor format."""
+        
+        if isinstance(inputs, dict):
+            images = inputs.get('images', inputs.get('image'))
+            text = inputs.get('text', inputs.get('prompt', ''))
+            
+            if not isinstance(images, list) and images is not None:
+                images = [images]
+            
+            try:
+                # Create proper message format for Qwen2.5-VL
+                content = []
+                
+                # Add images first
+                if images:
+                    for image in images:
+                        content.append({
+                            "type": "image",
+                            "image": image
+                        })
+                
+                # Add text
+                content.append({
+                    "type": "text",
+                    "text": text
+                })
+                
+                messages = [
+                    {
+                        "role": "user",
+                        "content": content
+                    }
+                ]
+                
+                # Apply chat template (this handles token formatting correctly)
+                formatted_text = self.tokenizer.apply_chat_template(
+                    messages, 
+                    tokenize=False, 
+                    add_generation_prompt=True
+                )
+                
+                # Try with qwen_vl_utils first (preferred)
+                try:
+                    from qwen_vl_utils import process_vision_info
+                    
+                    # Extract vision information
+                    image_inputs, video_inputs = process_vision_info(messages)
+                    
+                    # Use unified processor
+                    model_inputs = self.image_processor(  # This should be the full AutoProcessor
+                        text=[formatted_text],
+                        images=image_inputs,
+                        videos=video_inputs,
+                        padding=True,
+                        return_tensors="pt",
+                        **tokenizer_kwargs
+                    )
+                    
+                except ImportError:
+                    # Fallback without qwen_vl_utils
+                    model_inputs = self.image_processor(  # This should be the full AutoProcessor
+                        text=[formatted_text],
+                        images=images,
+                        padding=True,
+                        return_tensors="pt",
+                        **tokenizer_kwargs
+                    )
+                
+                return model_inputs
+                
+            except Exception as e:
+                print(f"Unified processing failed: {e}")
+                # Fallback to separate processing for backward compatibility
+                model_inputs = {}
+                if images is not None and self.image_processor:
+                    try:
+                        if hasattr(self.image_processor, 'image_processor'):
+                            # Has separate image processor
+                            img_inputs = self.image_processor.image_processor(images, return_tensors="pt")
+                        else:
+                            # Direct processor call
+                            img_inputs = self.image_processor(images, return_tensors="pt")
+                        model_inputs.update(img_inputs)
+                    except Exception as e:
+                        print(f"Image processing failed: {e}")
+                
+                # Process text if available
+                if text and self.tokenizer:
+                    text_inputs = self.tokenizer(text, return_tensors="pt", **tokenizer_kwargs)
+                    model_inputs.update(text_inputs)
+                    
+                return model_inputs
+                
+        elif isinstance(inputs, list):
+            # Handle batch processing
+            if inputs:
+                # Process first item for now (TODO: proper batching)
+                return self._prepare_multimodal_inputs(inputs[0], **tokenizer_kwargs)
+        
+        return {}
+
     def preprocess(
             self, 
-            inputs: Union[str, List[str], List[List[str]]],
+            inputs: Union[str, List[str], List[List[str]], Dict, List[Dict]],
             **tokenizer_kwargs):
 
-        if self.image_processor:
+        # Check if this is multimodal input
+        if self._is_multimodal_input(inputs):
+            return self._prepare_multimodal_inputs(inputs, **tokenizer_kwargs)
+        
+        # Legacy image processor path (backward compatibility)
+        if self.image_processor and not isinstance(inputs, (str, list)):
             return self.image_processor(inputs, add_end_of_utterance_token=False, return_tensors="pt")
+            
+        # Standard text processing
         return self.tokenizer(inputs, return_tensors=self.framework, **tokenizer_kwargs)
 
     def postprocess(self, outputs):
@@ -76,9 +197,20 @@ class RepReadingPipeline(Pipeline):
         """
         # get model hidden states and optionally transform them with a RepReader
         with torch.no_grad():
+            # Ensure inputs are on the same device as model
+            if hasattr(self.model, 'device'):
+                device = self.model.device
+            else:
+                device = next(self.model.parameters()).device
+            
+            # Move inputs to model device
+            for key, value in model_inputs.items():
+                if isinstance(value, torch.Tensor):
+                    model_inputs[key] = value.to(device)
+            
             if hasattr(self.model, "encoder") and hasattr(self.model, "decoder"):
                 decoder_start_token = [self.tokenizer.pad_token] * model_inputs['input_ids'].size(0)
-                decoder_input = self.tokenizer(decoder_start_token, return_tensors="pt").input_ids
+                decoder_input = self.tokenizer(decoder_start_token, return_tensors="pt").input_ids.to(device)
                 model_inputs['decoder_input_ids'] = decoder_input
             outputs =  self.model(**model_inputs, output_hidden_states=True)
         hidden_states = self._get_hidden_states(outputs, rep_token, hidden_layers, which_hidden_states)

@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoModel, AutoModelForCausalLM
+from transformers import AutoModel, AutoModelForCausalLM, AutoProcessor
 from transformers.pipelines import PIPELINE_REGISTRY
 from transformers.pipelines import pipeline
 
@@ -21,6 +21,13 @@ def repe_pipeline_registry():
         pt_model=AutoModel,
     )
 
+    # Multimodal representation reading pipeline
+    PIPELINE_REGISTRY.register_pipeline(
+        "multimodal-rep-reading",
+        pipeline_class=RepReadingPipeline,
+        pt_model=(AutoModel, AutoModelForCausalLM),  # Support both for multimodal models
+    )
+
     PIPELINE_REGISTRY.register_pipeline(
         "rep-control",
         pipeline_class=RepControlPipeline,
@@ -35,6 +42,7 @@ def repe_pipeline_registry():
 vllm_task2pipeline = {
     "rep-control-vllm": RepControlVLLMHook,
     "rep-reading-vllm": RepReadingVLLM,
+    "multimodal-rep-reading-vllm": RepReadingVLLM,  # Use same vLLM implementation for multimodal
 }
 
 def get_pipeline(task, model, tokenizer, layers, block_name, control_method):

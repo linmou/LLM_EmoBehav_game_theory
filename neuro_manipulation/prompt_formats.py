@@ -27,12 +27,23 @@ class ModelPromptFormat(abc.ABC):
         pass
     
     @abc.abstractmethod
-    def build(system_prompt, user_messages:list, assistant_answers:list=[]):
+    def build(system_prompt, user_messages:list, assistant_answers:list=[], images:list=None):
         pass
     
     @abc.abstractmethod
     def name_pattern(self, model_name):
         pass
+    
+    @staticmethod
+    def validate_tokenizer(tokenizer):
+        """Validate that tokenizer supports required tokens for this format."""
+        # Default implementation - always valid
+        return True
+    
+    @staticmethod
+    def supports_multimodal():
+        """Whether this format supports multimodal inputs."""
+        return False
 
 class Llama2InstFormat(ModelPromptFormat):
     __system_begin = '<<SYS>>'
@@ -62,7 +73,7 @@ class Llama2InstFormat(ModelPromptFormat):
         return cls.__end_of_turn
 
     @staticmethod
-    def build(system_prompt, user_messages:list, assistant_answers:list=[]):
+    def build(system_prompt, user_messages:list, assistant_answers:list=[], images:list=None):
         '''
         <s>[INST] <<SYS>>
         {{ system_prompt }}
@@ -239,12 +250,121 @@ class RWKVsFormat(ModelPromptFormat):
     def name_pattern(model_name):
         return 'rwkv' in model_name.lower()
 
+
+class QwenVLInstFormat(ModelPromptFormat):
+    """
+    Prompt format for Qwen2.5-VL multimodal models.
+    Handles both text-only and image+text inputs.
+    """
+    __im_start = '<|im_start|>'
+    __im_end = '<|im_end|>'
+    __vision_start = '<|vision_start|>'
+    __vision_end = '<|vision_end|>'
+    __image_pad = '<|image_pad|>'
+    
+    @classproperty
+    def user_tag(cls):
+        return f"{cls.__im_start}user"
+    
+    @classproperty
+    def assistant_tag(cls):
+        return f"{cls.__im_start}assistant"
+    
+    @classproperty
+    def im_start(cls):
+        return cls.__im_start
+    
+    @classproperty
+    def im_end(cls):
+        return cls.__im_end
+    
+    @classproperty
+    def vision_start(cls):
+        return cls.__vision_start
+    
+    @classproperty
+    def vision_end(cls):
+        return cls.__vision_end
+    
+    @staticmethod
+    def supports_multimodal():
+        """Qwen-VL supports multimodal inputs."""
+        return True
+    
+    @staticmethod
+    def validate_tokenizer(tokenizer):
+        """Validate that tokenizer supports required Qwen-VL vision tokens."""
+        required_tokens = ['<|vision_start|>', '<|vision_end|>', '<|image_pad|>']
+        
+        # Check if tokens exist in tokenizer
+        special_tokens = tokenizer.special_tokens_map.get('additional_special_tokens', [])
+        added_tokens = getattr(tokenizer, 'added_tokens_decoder', {})
+        all_special_tokens = special_tokens + [token.content for token in added_tokens.values()]
+        
+        missing_tokens = [token for token in required_tokens if token not in all_special_tokens]
+        
+        if missing_tokens:
+            print(f"Warning: Missing vision tokens in tokenizer: {missing_tokens}")
+            return False
+        return True
+    
+    @staticmethod
+    def build(system_prompt, user_messages: list, assistant_answers: list = [], images: list = None):
+        """
+        Build Qwen-VL prompt with optional image integration.
+        
+        For multimodal: <|im_start|>user\n<|vision_start|>image content<|vision_end|>text<|im_end|>
+        For text-only: <|im_start|>user\ntext<|im_end|>
+        """
+        assert len(user_messages), f'user_messages: {user_messages} should not be empty'
+        assert len(user_messages) - len(assistant_answers) in [0,1], f'user_messages: {user_messages} and assistant_answers: {assistant_answers} should have compatible lengths'
+        
+        # Format user messages with optional vision tokens
+        formatted_user_messages = []
+        for i, msg in enumerate(user_messages):
+            if images and i < len(images):
+                # Add vision tokens with proper image placeholder for multimodal input
+                # Format: text + <|vision_start|><|image_pad|><|vision_end|>
+                formatted_msg = f"{msg}{QwenVLInstFormat.vision_start}{QwenVLInstFormat.__image_pad}{QwenVLInstFormat.vision_end}"
+            else:
+                # Text-only message
+                formatted_msg = msg
+            formatted_user_messages.append(formatted_msg)
+        
+        # Build conversation using Qwen chat format
+        if system_prompt:
+            prompt = f"{QwenVLInstFormat.im_start}system\n{system_prompt}{QwenVLInstFormat.im_end}\n"
+        else:
+            prompt = ""
+        
+        # Add first user message
+        prompt += f"{QwenVLInstFormat.user_tag}\n{formatted_user_messages[0]}{QwenVLInstFormat.im_end}\n"
+        
+        # Add conversation turns
+        for i in range(len(assistant_answers)):
+            prompt += f"{QwenVLInstFormat.assistant_tag}\n{assistant_answers[i]}{QwenVLInstFormat.im_end}\n"
+            if i + 1 < len(formatted_user_messages):
+                prompt += f"{QwenVLInstFormat.user_tag}\n{formatted_user_messages[i+1]}{QwenVLInstFormat.im_end}\n"
+        
+        # Add final assistant start for generation
+        if len(user_messages) > len(assistant_answers):
+            prompt += f"{QwenVLInstFormat.assistant_tag}\n"
+        
+        return prompt
+    
+    @staticmethod
+    def name_pattern(model_name):
+        """Match Qwen-VL model names."""
+        model_lower = model_name.lower()
+        return 'qwen' in model_lower and ('vl' in model_lower or 'vision' in model_lower)
+
+
 class ManualPromptFormat:
     ''' 
     Manually defined prompt format.
     '''
     
-    format_ls = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat]
+    format_ls = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat, QwenVLInstFormat]
     
     @staticmethod
     def get(model_name) -> ModelPromptFormat:
@@ -266,7 +386,7 @@ class PromptFormat:
     
     In case the chat template is not available or fails, it falls back to the manual format definitions.
     '''
-    format_ls: list[ModelPromptFormat] = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat]
+    format_ls: list[ModelPromptFormat] = [Llama2InstFormat, Llama3InstFormat, MistralInstFormat, RWKVsFormat, QwenVLInstFormat]
 
     def __init__(self, tokenizer: AutoTokenizer):
         self.tokenizer = tokenizer
