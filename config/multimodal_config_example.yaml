@@ -1,5 +1,5 @@
 experiment:
-  name: "Qwen2.5_MM_Series_Prisoners_Dilemma"
+  name: "Multimodal_Prisoners_Dilemma_Example"
   
   # List of games to run experiments with
   games:
@@ -7,30 +7,25 @@ experiment:
   
   # List of models to run experiments with
   models: 
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-7B-Instruct"
-    # Add more models as needed
+    - "Qwen/Qwen2.5-VL-3B-Instruct"
   
   game:
-    name: "Prisoners_Dilemma"  # Default game if needed
-    # Additional game parameters
+    name: "Prisoners_Dilemma"
     previous_actions_length: 0
     
   data:
-    generate: false # generate game data if true
+    generate: false
     num_scenarios: 36
     batch_size: 4
   
   llm:
-    model_name: 'meta-llama/Llama-3.1-8B-Instruct'  # Default model if needed
-    # Additional parameters to override or extend the base config
+    model_name: 'Qwen/Qwen2.5-VL-3B-Instruct'
     generation_config:
       temperature: 0.7
       do_sample: true
       top_p: 0.95
       max_new_tokens: 440
 
-  # Template for system message with placeholders
   system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
   
   repeat: 1
@@ -49,12 +44,22 @@ experiment:
   sanity_check: true
 
   output:
-    base_dir: "results/Qwen2.5_MM_Series_Prisoners_Dilemma"
+    base_dir: "results/Multimodal_Example"
     save_plots: true
     plot_format: "png"
 
-# New repe_config section for multimodal configuration
+# New repe_config section - this overrides the default repe configuration
 repe_config:
   # Essential for multimodal processing
   multimodal_intent: true
   data_dir: "data/image"  # Points directly to image emotion JSONs
+  
+  # Optional: Override other repe parameters
+  emotions: ["anger", "happiness", "sadness", "fear"]  # Subset of emotions
+  rep_token: -1
+  n_difference: 1
+  direction_method: "pca"
+  rebuild: false
+  
+  # Optional: Control layers (will use model default if not specified)
+  # control_layer_id: [-5, -6, -7, -8, -9]

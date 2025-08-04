@@ -21,7 +21,7 @@ class TestEnvironment:
     """Detect and manage test environment capabilities."""
     
     # Model requirements
-    QWEN_VL_MODEL_PATH = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+    QWEN_VL_MODEL_PATH = "Qwen/Qwen2.5-VL-3B-Instruct"
     MIN_GPU_MEMORY_GB = 8  # Minimum VRAM for 3B model
     MIN_RAM_GB = 16       # Minimum RAM for CPU inference
     

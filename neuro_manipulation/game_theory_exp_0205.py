@@ -15,7 +15,7 @@ def setup_experiment(config_path='config/escalGame_repEng_experiment_config.yaml
     exp_config = get_exp_config(config_path)
     game_name = GameNames.from_string(exp_config['experiment']['game']['name'])
     model_name = exp_config['experiment']['llm']['model_name'] #  "meta-llama/Meta-Llama-3.1-8B-Instruct"
-    repe_eng_config = get_repe_eng_config(model_name)
+    repe_eng_config = get_repe_eng_config(model_name, yaml_config=exp_config)
     game_config = get_game_config(game_name)
     if game_name.is_sequential():
         game_config['previous_actions_length'] = exp_config['experiment']['game']['previous_actions_length']

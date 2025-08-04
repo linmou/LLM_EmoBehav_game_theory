@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Important**: Always activate the conda environment before running Python commands:
 ```bash
-conda activate llm_fresh
+conda activate llm_behav
 ```
 
 ## Common Development Commands
