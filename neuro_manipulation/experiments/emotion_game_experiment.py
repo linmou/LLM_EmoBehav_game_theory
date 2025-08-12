@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader
 from transformers import pipeline
 from vllm import LLM
 
-from api_configs import AZURE_OPENAI_CONFIG
+from api_configs import AZURE_OPENAI_CONFIG, OAI_CONFIG
 from neuro_manipulation.datasets.game_scenario_dataset import (
     GameScenarioDataset,
     collate_game_scenarios,
@@ -38,7 +38,7 @@ from neuro_manipulation.model_utils import (
 from neuro_manipulation.prompt_wrapper import GameReactPromptWrapper
 from neuro_manipulation.repe.pipelines import get_pipeline
 from neuro_manipulation.utils import oai_response
-from api_configs import AZURE_OPENAI_CONFIG
+from api_configs import AZURE_OPENAI_CONFIG, OAI_CONFIG
 from statistical_engine import analyze_emotion_and_intensity_effects
 
 

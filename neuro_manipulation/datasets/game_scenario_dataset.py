@@ -30,8 +30,11 @@ class GameScenarioDataset(Dataset):
         for item in self.raw_data:
             if 'payoff_matrix' not in item:
                 item['payoff_matrix'] = self.game_config['payoff_matrix']
-                if 'previous_actions_length' in scenario_class.model_fields:
-                    item['previous_actions_length'] = self.game_config['previous_actions_length']
+                
+                # Universal field injection: inject ALL config fields that the schema expects
+                for field_name in scenario_class.model_fields:
+                    if field_name in self.game_config and field_name not in item:
+                        item[field_name] = self.game_config[field_name]
             try:
                 item = scenario_class(**item)
                 self.data.append(item)
