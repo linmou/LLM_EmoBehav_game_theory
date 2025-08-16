@@ -96,6 +96,9 @@ class ChoiceSelectionExperiment:
         self.game_config = game_config
         self.batch_size = batch_size
         self.sample_num = sample_num
+        
+        # Extract enable_thinking from config
+        self.enable_thinking = self.exp_config["experiment"]["llm"]["generation_config"].get("enable_thinking", False)
 
         # --- Memory Optimization: Load standard model for setup first, then vLLM model ---
 
@@ -115,7 +118,7 @@ class ChoiceSelectionExperiment:
             len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
         ]
         self.emotion_rep_readers = load_emotion_readers(
-            self.repe_eng_config, temp_model, temp_tokenizer, self.hidden_layers
+            self.repe_eng_config, temp_model, temp_tokenizer, self.hidden_layers, enable_thinking=self.enable_thinking
         )
         self.logger.info(
             f"Loaded {len(self.emotion_rep_readers)} emotion readers. Using control layers: {self.control_layers}"

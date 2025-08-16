@@ -142,7 +142,7 @@ class EmotionGameExperiment:
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
 
         self.emotion_rep_readers = load_emotion_readers(
-            self.repe_eng_config, self.model, self.tokenizer, self.hidden_layers
+            self.repe_eng_config, self.model, self.tokenizer, self.hidden_layers, enable_thinking=self.enable_thinking
         )
         del self.model  # to save memory
         self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(

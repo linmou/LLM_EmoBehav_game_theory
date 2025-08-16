@@ -13,7 +13,11 @@ class RepControlVLLM:
         self.control_method = control_method
         
         assert control_method == "reading_vec", f"{control_method} not supported yet"
-        assert block_name == "decoder_block" or "LlamaForCausalLM" in model.config.architectures, f"{model.config.architectures} {block_name} not supported yet"
+        assert (block_name == "decoder_block" or 
+                "LlamaForCausalLM" in model.config.architectures or
+                "Qwen2ForCausalLM" in model.config.architectures or
+                any("Qwen" in arch for arch in model.config.architectures)), \
+               f"{model.config.architectures} {block_name} not supported yet"
         
         self.raw_llm = self.model.llm_engine.model_executor.driver_worker.model_runner.model #FIXME: hardcoded for now  
         self.wrapped_model = WrappedReadingVecModel(self.model, self.tokenizer, self.raw_llm) # TODO: 

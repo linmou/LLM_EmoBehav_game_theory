@@ -314,8 +314,13 @@ class ManualPromptFormat:
         raise ValueError(f'Prompt format not found for model name: {model_name}. Supported formats: {ManualPromptFormat.format_ls}')
     
     @staticmethod
-    def build(model_name, system_prompt, user_messages:list, assistant_messages:list=[] ) -> str:
-        return ManualPromptFormat.get(model_name).build(system_prompt, user_messages, assistant_messages)
+    def build(model_name, system_prompt, user_messages:list, assistant_messages:list=[], enable_thinking=False) -> str:
+        format_cls = ManualPromptFormat.get(model_name)
+        # Check if the format class supports enable_thinking parameter
+        if hasattr(format_cls.build, '__code__') and 'enable_thinking' in format_cls.build.__code__.co_varnames:
+            return format_cls.build(system_prompt, user_messages, assistant_messages, enable_thinking=enable_thinking)
+        else:
+            return format_cls.build(system_prompt, user_messages, assistant_messages)
     
 class PromptFormat:
     '''
