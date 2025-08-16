@@ -11,7 +11,10 @@ This script provides an interactive command-line interface to:
 import os
 import re
 import subprocess
-from typing import List, Optional
+import signal
+import time
+from typing import List, Optional, Set, Dict
+from collections import defaultdict
 
 
 class ServerProcess:
@@ -24,6 +27,7 @@ class ServerProcess:
         self.emotion = self._extract_emotion()
         self.port = self._extract_port()
         self.model_name = self._extract_model_name()
+        self.children = set()  # Will be populated later
 
     def _extract_model(self) -> Optional[str]:
         """Extract model path from command line."""
@@ -50,8 +54,9 @@ class ServerProcess:
         return match.group(1) if match else "Default"
 
     def __str__(self):
+        children_str = f" (+{len(self.children)} children)" if self.children else ""
         return (
-            f"PID: {self.pid:>6} | Port: {self.port:>4} | "
+            f"PID: {self.pid:>6}{children_str} | Port: {self.port:>4} | "
             f"Model: {self.model:<20} | Emotion: {self.emotion:<8} | "
             f"Name: {self.model_name}"
         )
@@ -62,12 +67,58 @@ class ServerManager:
 
     def __init__(self):
         self.servers: List[ServerProcess] = []
+        self.all_related_pids: Set[int] = set()
+        self.process_tree: Dict[int, Set[int]] = defaultdict(set)
+
+    def find_process_tree(self, parent_pid: int) -> Set[int]:
+        """Recursively find all child processes of a given parent."""
+        children = set()
+        
+        try:
+            # Method 1: Use pgrep
+            result = subprocess.run(
+                ["pgrep", "-P", str(parent_pid)], 
+                capture_output=True, 
+                text=True
+            )
+            
+            if result.returncode == 0:
+                for line in result.stdout.strip().split("\n"):
+                    if line:
+                        try:
+                            child_pid = int(line)
+                            children.add(child_pid)
+                            # Recursively find children of children
+                            children.update(self.find_process_tree(child_pid))
+                        except ValueError:
+                            pass
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            # pgrep might not be available, try ps
+            try:
+                result = subprocess.run(
+                    ["ps", "--ppid", str(parent_pid), "-o", "pid="],
+                    capture_output=True,
+                    text=True
+                )
+                
+                for line in result.stdout.strip().split("\n"):
+                    if line:
+                        try:
+                            child_pid = int(line.strip())
+                            children.add(child_pid)
+                            children.update(self.find_process_tree(child_pid))
+                        except ValueError:
+                            pass
+            except:
+                pass
+                
+        return children
 
     def find_servers(self) -> List[ServerProcess]:
-        """Find all running OpenAI server processes."""
+        """Find all running OpenAI server processes and their children."""
         try:
             # Look for processes containing openai_server
-            result = subprocess.run(["ps", "aux"], capture_output=True, text=True, check=True)
+            result = subprocess.run(["ps", "auxww"], capture_output=True, text=True, check=True)
 
             servers = []
             for line in result.stdout.split("\n"):
@@ -77,6 +128,7 @@ class ServerManager:
                     and ("openai_server" in line or "init_openai_server" in line)
                     and "grep" not in line
                     and "--model" in line
+                    and "manage_servers" not in line  # Don't include this script
                 ):
 
                     parts = line.split()
@@ -92,7 +144,14 @@ class ServerManager:
 
                             if cmd_start >= 0:
                                 cmd = " ".join(parts[cmd_start:])
-                                servers.append(ServerProcess(pid, cmd))
+                                server = ServerProcess(pid, cmd)
+                                
+                                # Find all child processes
+                                server.children = self.find_process_tree(pid)
+                                self.all_related_pids.add(pid)
+                                self.all_related_pids.update(server.children)
+                                
+                                servers.append(server)
                         except (ValueError, IndexError):
                             continue
 
@@ -104,29 +163,63 @@ class ServerManager:
             return []
 
     def find_orphaned_processes(self) -> List[int]:
-        """Find orphaned multiprocessing processes from OpenAI servers."""
+        """Find orphaned multiprocessing and vLLM processes from OpenAI servers."""
         try:
-            result = subprocess.run(["ps", "aux"], capture_output=True, text=True, check=True)
+            result = subprocess.run(["ps", "auxww"], capture_output=True, text=True, check=True)
 
             orphaned_pids = []
+            gpu_holding_pids = set()
+            
+            # First get PIDs holding GPU memory
+            try:
+                gpu_result = subprocess.run(
+                    ["nvidia-smi", "--query-compute-apps=pid", "--format=csv,noheader,nounits"],
+                    capture_output=True,
+                    text=True
+                )
+                if gpu_result.returncode == 0:
+                    for line in gpu_result.stdout.strip().split("\n"):
+                        if line:
+                            try:
+                                gpu_holding_pids.add(int(line.strip()))
+                            except ValueError:
+                                pass
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                pass
+            
             for line in result.stdout.split("\n"):
-                # Look for multiprocessing processes that might be from OpenAI servers
-                if (
-                    "python" in line
-                    and (
-                        "multiprocessing.resource_tracker" in line
-                        or "multiprocessing.spawn" in line
-                    )
-                    and "grep" not in line
-                ):
-
-                    parts = line.split()
-                    if len(parts) >= 2:
-                        try:
-                            pid = int(parts[1])
-                            orphaned_pids.append(pid)
-                        except (ValueError, IndexError):
-                            continue
+                # Skip if already identified as server or child
+                parts = line.split(None, 10)
+                if len(parts) < 11:
+                    continue
+                    
+                try:
+                    pid = int(parts[1])
+                    cmd = parts[10]
+                    
+                    # Skip if already tracked
+                    if pid in self.all_related_pids:
+                        continue
+                    
+                    # Look for multiprocessing processes that might be from OpenAI servers
+                    if (
+                        "python" in line
+                        and (
+                            "multiprocessing.resource_tracker" in cmd
+                            or "multiprocessing.spawn" in cmd
+                            or "vllm.worker" in cmd
+                            or "vllm.engine" in cmd
+                            or "ray::" in cmd
+                        )
+                        and "grep" not in line
+                    ):
+                        orphaned_pids.append(pid)
+                    # Also include Python processes holding GPU memory that aren't tracked
+                    elif pid in gpu_holding_pids and "python" in cmd:
+                        orphaned_pids.append(pid)
+                        
+                except (ValueError, IndexError):
+                    continue
 
             return orphaned_pids
 
@@ -153,27 +246,68 @@ class ServerManager:
 
         print("=" * 100)
 
-    def kill_server(self, pid: int) -> bool:
-        """Kill a server by PID."""
+    def kill_server(self, pid: int, force: bool = False) -> bool:
+        """Kill a server by PID with improved handling."""
+        # Check if process exists first
         try:
-            subprocess.run(["kill", str(pid)], check=True)
+            os.kill(pid, 0)  # Signal 0 just checks if process exists
+        except ProcessLookupError:
+            # Process already dead
             return True
-        except subprocess.CalledProcessError:
+        except PermissionError:
+            print(f"✗ No permission to kill PID {pid}")
+            return False
+        
+        # Try SIGTERM first (unless force is specified)
+        if not force:
             try:
-                # Try force kill
-                subprocess.run(["kill", "-9", str(pid)], check=True)
-                return True
-            except subprocess.CalledProcessError:
+                os.kill(pid, signal.SIGTERM)
+                time.sleep(0.2)  # Give it a moment
+                
+                # Check if it died
+                try:
+                    os.kill(pid, 0)
+                except ProcessLookupError:
+                    return True
+            except (ProcessLookupError, PermissionError):
+                pass
+        
+        # Try SIGKILL
+        try:
+            os.kill(pid, signal.SIGKILL)
+            time.sleep(0.1)
+            
+            # Final check
+            try:
+                os.kill(pid, 0)
+                # Still alive - might be zombie
                 return False
+            except ProcessLookupError:
+                return True
+        except ProcessLookupError:
+            return True
+        except PermissionError:
+            return False
+        
+        return False
 
     def kill_servers(self, indices: List[int]) -> int:
-        """Kill servers by their display indices."""
+        """Kill servers and their children by display indices."""
         killed_count = 0
         for idx in indices:
             if 1 <= idx <= len(self.servers):
                 server = self.servers[idx - 1]
+                
+                # Kill children first
+                for child_pid in server.children:
+                    if self.kill_server(child_pid, force=True):
+                        killed_count += 1
+                
+                # Then kill parent
                 if self.kill_server(server.pid):
                     print(f"✓ Killed server PID {server.pid} ({server.model} - {server.emotion})")
+                    if server.children:
+                        print(f"  Also killed {len(server.children)} child processes")
                     killed_count += 1
                 else:
                     print(f"✗ Failed to kill server PID {server.pid}")
@@ -182,11 +316,19 @@ class ServerManager:
         return killed_count
 
     def kill_all_servers(self) -> int:
-        """Kill all found servers."""
+        """Kill all found servers and their children."""
         killed_count = 0
         for server in self.servers:
+            # Kill children first
+            for child_pid in server.children:
+                if self.kill_server(child_pid, force=True):
+                    killed_count += 1
+            
+            # Then kill parent
             if self.kill_server(server.pid):
                 print(f"✓ Killed server PID {server.pid} ({server.model} - {server.emotion})")
+                if server.children:
+                    print(f"  Also killed {len(server.children)} child processes")
                 killed_count += 1
             else:
                 print(f"✗ Failed to kill server PID {server.pid}")
@@ -270,7 +412,7 @@ def main():
                 if confirm in ["y", "yes"]:
                     killed = 0
                     for pid in orphaned:
-                        if manager.kill_server(pid):
+                        if manager.kill_server(pid, force=True):  # Use force for orphaned processes
                             print(f"✓ Killed orphaned process PID {pid}")
                             killed += 1
                         else:
@@ -294,7 +436,7 @@ def main():
                     killed_servers = manager.kill_all_servers() if servers else 0
                     killed_orphaned = 0
                     for pid in orphaned:
-                        if manager.kill_server(pid):
+                        if manager.kill_server(pid, force=True):  # Use force for orphaned processes
                             print(f"✓ Killed orphaned process PID {pid}")
                             killed_orphaned += 1
                         else:

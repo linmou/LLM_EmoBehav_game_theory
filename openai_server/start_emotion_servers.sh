@@ -3,16 +3,17 @@
 # Usage: ./start_emotion_servers.sh [start|stop|status|restart]
 
 # Configuration
-MODEL_PATH="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-MODEL_NAME="Qwen2.5-0.5B-Instruct"
-TENSOR_PARALLEL=2
-GPU_MEMORY_UTIL=0.7
+MODEL_PATH="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+MODEL_NAME="Qwen2.5-3B-Instruct"
+TENSOR_PARALLEL=4
+GPU_MEMORY_UTIL=0.8
 BATCH_SIZE=32
-MAX_NUM_SEQS=32
+MAX_NUM_SEQS=4
+REQUEST_TIMEOUT=600
 
-# Server configurations
-HAPPINESS_PORT=8000
-ANGER_PORT=8001
+# Server configurations  
+HAPPINESS_PORT=8001
+ANGER_PORT=8000
 
 # Colors for output
 RED='\033[0;31m'
@@ -78,6 +79,7 @@ start_server() {
         --gpu_memory_utilization $GPU_MEMORY_UTIL \
         --batch_size $BATCH_SIZE \
         --max_num_seqs $MAX_NUM_SEQS \
+        --request_timeout $REQUEST_TIMEOUT \
         > "$log_file" 2>&1 &
     
     local pid=$!

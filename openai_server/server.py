@@ -340,6 +340,7 @@ def initialize_model(
     server_state["control_layers"] = control_layers
     server_state["current_emotion"] = emotion
     server_state["emotion_activations"] = activations
+    server_state["request_timeout"] = request_timeout  # Store timeout for later use
 
     # Initialize batch processor for better throughput (if not disabled)
     if not disable_batching:
@@ -877,7 +878,7 @@ class BatchProcessor:
                     max_new_tokens=max(req.max_tokens or 40000 for req in requests),
                     temperature=requests[0].temperature or 0.0,
                     top_p=requests[0].top_p or 1.0,
-                    timeout=90,  # Slightly longer timeout for batch
+                    timeout=server_state["request_timeout"] * 1.5,  # Slightly longer timeout for batch
                     operator="linear_comb",
                     normalize=False,
                     token_pos=None,
@@ -893,7 +894,7 @@ class BatchProcessor:
                     max_new_tokens=request.max_tokens or 40000,
                     temperature=request.temperature or 0.0,
                     top_p=request.top_p or 1.0,
-                    timeout=60,  # Standard timeout
+                    timeout=server_state["request_timeout"],  # Use configured timeout
                     operator="linear_comb",
                     normalize=False,
                     token_pos=None,
@@ -992,7 +993,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
         CircuitBreakerConfig(
             failure_threshold=3,
             recovery_timeout=30.0,
-            timeout=120.0,
+            timeout=float(server_state["request_timeout"]),  # Use configured timeout
             health_score_threshold=0.4
         )
     )
@@ -1000,26 +1001,27 @@ async def create_chat_completion(request: ChatCompletionRequest):
     # Record request start time for health monitoring
     request_start_time = time.time()
     
-    # Process request with adaptive optimization
-    try:
-        adaptive_processor = get_adaptive_processor()
-        optimized_request, processing_info = adaptive_processor.process_request(request)
-        
-        # Log optimization details
-        if processing_info["optimization_applied"]:
-            logger.info(f"Request optimized: {processing_info['strategy_used']} "
-                       f"(health: {processing_info['health_score']:.2f})")
-        
-        # Use optimized request for processing
-        request = optimized_request
-        
-    except HTTPException:
-        # Re-raise HTTP exceptions (like service unavailable)
-        raise
-    except Exception as e:
-        logger.error(f"Request optimization failed: {e}")
-        # Continue with original request if optimization fails
-        processing_info = {"optimization_applied": False, "strategy_used": "fallback"}
+    # Process request with adaptive optimization - DISABLED due to ChatMessage type mismatch
+    # TODO: Fix ChatMessage type conversion between OpenAI client objects and Pydantic models
+    # try:
+    #     adaptive_processor = get_adaptive_processor()
+    #     optimized_request, processing_info = adaptive_processor.process_request(request)
+    #     
+    #     # Log optimization details
+    #     if processing_info["optimization_applied"]:
+    #         logger.info(f"Request optimized: {processing_info['strategy_used']} "
+    #                    f"(health: {processing_info['health_score']:.2f})")
+    #     
+    #     # Use optimized request for processing
+    #     request = optimized_request
+    #     
+    # except HTTPException:
+    #     # Re-raise HTTP exceptions (like service unavailable)
+    #     raise
+    # except Exception as e:
+    #     logger.error(f"Request optimization failed: {e}")
+    #     # Continue with original request if optimization fails
+    processing_info = {"optimization_applied": False, "strategy_used": "disabled"}
 
     # Check if batching is enabled and request supports it
     use_batching = (
@@ -1083,7 +1085,7 @@ async def _process_individual_request(request: ChatCompletionRequest, strategy_u
             max_new_tokens=request.max_tokens or 40000,
             temperature=request.temperature or 0.0,
             top_p=request.top_p or 1.0,
-            timeout=60,  # 60 second timeout
+            timeout=server_state["request_timeout"],  # Use configured timeout
             operator="linear_comb",
             normalize=False,
             token_pos=None,
