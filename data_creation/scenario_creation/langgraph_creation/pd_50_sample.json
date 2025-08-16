@@ -1,0 +1,1902 @@
+[
+  {
+    "scenario": "Laundry Room Scheduling Conflict",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "tenant"
+      },
+      {
+        "name": "Bob",
+        "profile": "tenant"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Reserve the laundry machine for only two hours in the evening",
+      "defect": "Reserve the laundry machine for the full four hours in the evening"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both tenants get adequate laundry time without delays",
+        "player 2 gets 3: both tenants get adequate laundry time without delays"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: laundry time is limited due to Bob\u2019s extended reservation, causing inconvenience",
+        "player 2 gets 5: Bob gets more laundry time and finishes all chores promptly"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: You get more laundry time and finish all chores promptly",
+        "player 2 gets 0: Bob\u2019s laundry time is limited due to your extended reservation, causing inconvenience"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both tenants reserve full time, causing scheduling conflicts and delays",
+        "player 2 gets 1: both tenants reserve full time, causing scheduling conflicts and delays"
+      ]
+    },
+    "description": "You and Bob are tenants sharing a single laundry machine in your apartment building. Each evening, you must decide how long to reserve the machine. Reserving for a shorter slot means both get reasonable access and finish laundry on time. Reserving for the full evening grants more time but risks causing conflicts if both do the same, leading to delays and frustration.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The Community Garden Design Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "community garden planner"
+      },
+      {
+        "name": "Bob",
+        "profile": "community garden planner"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Design your section with plants and features that harmonize with the other planner\u2019s style",
+      "defect": "Design your section with bold, contrasting elements that highlight your individual creativity"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: the entire garden is praised for its cohesive and inviting atmosphere",
+        "player 2 gets 3: the entire garden is praised for its cohesive and inviting atmosphere"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your section feels out of place and overshadowed by the contrasting design",
+        "player 2 gets 5: your section stands out and attracts individual accolades"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: your section stands out and attracts individual accolades",
+        "player 2 gets 0: your section feels out of place and overshadowed by the contrasting design"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: the garden looks disjointed, with clashing styles leaving visitors unimpressed",
+        "player 2 gets 1: the garden looks disjointed, with clashing styles leaving visitors unimpressed"
+      ]
+    },
+    "description": "You and Bob are tasked with designing adjacent sections of a new community garden. You each decide whether to create a design that blends smoothly with the other's style, fostering a welcoming and unified space, or to use bold, individualistic features that make your section stand out. If both blend their designs, the garden receives community praise for harmony. If one chooses bold contrast while the other blends, the bold section draws more attention but the blended section feels diminished. If both choose bold contrast, the garden appears fragmented and less appealing overall.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Trail Maintenance Timing: The Forest Pathway Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "outdoor adventure guide"
+      },
+      {
+        "name": "Bob",
+        "profile": "outdoor adventure guide"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Schedule trail maintenance this weekend",
+      "defect": "Postpone trail maintenance to a later date"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both trails are maintained promptly, ensuring safety and attracting hikers",
+        "player 2 gets 3: both trails are maintained promptly, ensuring safety and attracting hikers"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your trail is maintained but fewer hikers choose it due to Bob's open trail",
+        "player 2 gets 5: Bob\u2019s trail remains open and attracts more hikers"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: your trail remains open and attracts more hikers",
+        "player 2 gets 0: Bob\u2019s trail is closed for maintenance and loses hikers"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both trails are postponed, causing minor safety concerns but steady visitor numbers",
+        "player 2 gets 1: both trails are postponed, causing minor safety concerns but steady visitor numbers"
+      ]
+    },
+    "description": "You and Bob are outdoor adventure guides responsible for maintaining popular forest trails. Both must decide whether to schedule trail maintenance this weekend or delay it. If both maintain on time, the trails remain safe and popular. If one delays while the other maintains, the open trail gains more hikers, increasing guide bookings. If both delay, trails stay open but safety concerns grow slightly, keeping visitor numbers stable but unexciting.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Indoor Hockey Training Regimen: The Practice Intensity Decision",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "indoor hockey player"
+      },
+      {
+        "name": "Bob",
+        "profile": "indoor hockey player"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Stick to the agreed moderate training schedule",
+      "defect": "Increase training intensity beyond the agreed schedule"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both maintain fitness and avoid injury, improving team coordination",
+        "player 2 gets 3: both maintain fitness and avoid injury, improving team coordination"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: maintains moderate training but falls behind in fitness",
+        "player 2 gets 5: gains significant fitness advantage and improved performance"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: gains significant fitness advantage and improved performance",
+        "player 2 gets 0: maintains moderate training but falls behind in fitness"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both overtrain, causing fatigue and higher injury risk, reducing overall performance",
+        "player 2 gets 1: both overtrain, causing fatigue and higher injury risk, reducing overall performance"
+      ]
+    },
+    "description": "You and Bob are indoor hockey players deciding how intensely to train before an important season. Both agree on a moderate training schedule to balance fitness and injury risk. If both stick to the plan, you improve steadily and stay healthy. If one increases intensity while the other doesn't, the one training harder gains a fitness edge. But if both push beyond the plan, you both risk burnout and injury, harming your performance.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The Paper Mill Supply Choice",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "papermaker managing a local paper mill"
+      },
+      {
+        "name": "Bob",
+        "profile": "papermaker managing a nearby paper mill"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Source high-quality recycled pulp from a shared supplier at a premium cost",
+      "defect": "Source cheaper raw wood pulp independently to reduce immediate expenses"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both mills produce high-quality paper attracting steady orders",
+        "player 2 gets 3: both mills produce high-quality paper attracting steady orders"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: higher costs but loses market share due to lower prices from Bob",
+        "player 2 gets 5: lower costs and gains market share because of competitive pricing"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: lower costs and gains market share because of competitive pricing",
+        "player 2 gets 0: higher costs but loses market share due to lower prices from You"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both mills produce lower-grade paper, retaining some customers but at reduced profits",
+        "player 2 gets 1: both mills produce lower-grade paper, retaining some customers but at reduced profits"
+      ]
+    },
+    "description": "You and Bob each run a paper mill and must decide how to source your pulp. Buying high-quality recycled pulp from a shared supplier means higher costs but steady demand for quality paper. Alternatively, sourcing cheaper raw wood pulp reduces immediate expenses, allowing competitive pricing but risking product quality and customer loyalty. If both choose the recycled pulp, you maintain market stability. If one chooses cheaper pulp while the other does not, the lower-cost producer attracts more customers. If both choose cheaper pulp, the overall product quality drops, and both suffer lower profits.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Legal Manuscript Submission: The Journal Timing Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "legal writer"
+      },
+      {
+        "name": "Bob",
+        "profile": "legal writer"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Submit your manuscript on time with complete, polished formatting",
+      "defect": "Submit your manuscript late with incomplete formatting to gain extra time for research and improvements"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both manuscripts proceed smoothly through review, boosting your professional reputations",
+        "player 2 gets 3: both manuscripts proceed smoothly through review, boosting your professional reputations"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your timely submission faces delays because Bob's late, incomplete submission slows the review process",
+        "player 2 gets 5: Bob benefits from extra preparation time and potential for a stronger final manuscript"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: you benefit from additional time to improve your manuscript",
+        "player 2 gets 0: Bob\u2019s on-time submission is delayed due to your late, incomplete submission"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both manuscripts are delayed, and the journal's reputation suffers, reducing recognition for both",
+        "player 2 gets 1: both manuscripts are delayed, and the journal's reputation suffers, reducing recognition for both"
+      ]
+    },
+    "description": "You and Bob are legal writers submitting manuscripts to the same prestigious journal. You each must decide whether to submit your manuscript on time with all formatting complete or submit late with incomplete formatting to gain extra time for research and improvements. Timely, complete submissions help ensure a smooth review and enhance your reputations. Late, incomplete submissions risk delaying the review process. If both submit late, delays accumulate and the journal's reputation suffers, reducing benefits for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Community Garden Water Usage Conflict",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "urban renter participating in a shared community garden"
+      },
+      {
+        "name": "Bob",
+        "profile": "urban renter participating in the same shared community garden"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Limit daily water usage to an agreed moderate amount",
+      "defect": "Use as much water as desired without restriction"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: plants receive enough water to thrive steadily",
+        "player 2 gets 3: plants receive enough water to thrive steadily"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: plants suffer from water shortage due to overuse by player 2",
+        "player 2 gets 5: plants flourish with abundant water, gaining advantage"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: plants flourish with abundant water, gaining advantage",
+        "player 2 gets 0: plants suffer from water shortage due to overuse by player 1"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: water supply is depleted quickly causing plants to struggle",
+        "player 2 gets 1: water supply is depleted quickly causing plants to struggle"
+      ]
+    },
+    "description": "You and Bob each tend your plots in a shared urban community garden. The water supply is limited, and you must decide daily how much water to use. If both limit usage, your plants grow well. If one uses more water while the other limits, the heavy user\u2019s plants thrive while the other\u2019s suffer. If both overuse water, the supply runs low and all plants struggle.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Shellfish Harvest Timing: The Tidal Resource Management Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "coast dweller"
+      },
+      {
+        "name": "Bob",
+        "profile": "coast dweller"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Harvest shellfish during the designated sustainable season",
+      "defect": "Harvest shellfish early before the season begins"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both harvest sustainably, shellfish population remains healthy, steady income",
+        "player 2 gets 3: both harvest sustainably, shellfish population remains healthy, steady income"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: harvested only during the season but shellfish stock diminished by early harvesting, income lost",
+        "player 2 gets 5: harvested early and gained larger catch before depletion, higher income"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: harvested early and gained larger catch before depletion, higher income",
+        "player 2 gets 0: harvested only during the season but shellfish stock diminished by early harvesting, income lost"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both harvested early, shellfish stock severely depleted, only small catches possible, low income",
+        "player 2 gets 1: both harvested early, shellfish stock severely depleted, only small catches possible, low income"
+      ]
+    },
+    "description": "You and Bob, both coast dwellers relying on shellfish for livelihood, must decide when to harvest. If both wait for the sustainable season, the shellfish population thrives and both earn steady income. If one harvests early while the other waits, the early harvester gains a larger catch at the expense of the other's future income. If both harvest early, the shellfish population collapses, leaving only small catches and reduced income for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The Weekend Delivery Route Decision",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "delivery driver for a regional logistics company"
+      },
+      {
+        "name": "Bob",
+        "profile": "delivery driver for the same regional logistics company"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Stick to the assigned delivery schedule and rest during the weekend",
+      "defect": "Take on extra delivery stops during the weekend to increase earnings"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both stick to schedules, ensuring timely deliveries and avoiding fatigue",
+        "player 2 gets 3: both stick to schedules, ensuring timely deliveries and avoiding fatigue"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: you rest but Bob completes extra deliveries, earning more and gaining favor",
+        "player 2 gets 5: Bob gains extra income and recognition by completing additional stops"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: you earn extra income and recognition by taking extra deliveries",
+        "player 2 gets 0: Bob rests but you get ahead in earnings and reputation"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both take extra deliveries, increasing income but risking burnout and possible mistakes",
+        "player 2 gets 1: both take extra deliveries, increasing income but risking burnout and possible mistakes"
+      ]
+    },
+    "description": "You and Bob are delivery drivers for the same company. Over the weekend, you can either stick to your regular delivery schedule and rest, or take on extra stops to boost your earnings and standing. If both rest, deliveries remain on time and both stay refreshed. If one takes on extra work while the other rests, the one working extra gains more income and recognition. If both work extra, you increase earnings but risk fatigue, which could lead to errors or delays.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Salon Supply Strategy: The Exclusive Product Agreement",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "cosmetology advisor"
+      },
+      {
+        "name": "Bob",
+        "profile": "cosmetology advisor"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Agree to share exclusive product supplier information with Bob",
+      "defect": "Keep exclusive product supplier information confidential from Bob"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both advisors gain access to a reliable supplier and attract steady clientele due to product quality",
+        "player 2 gets 3: both advisors gain access to a reliable supplier and attract steady clientele due to product quality"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: shares supplier details but loses clients as Bob exclusively uses the best products to attract customers",
+        "player 2 gets 5: keeps supplier info private and gains more clients by using high-demand products exclusively"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: keeps supplier info private and gains more clients by using high-demand products exclusively",
+        "player 2 gets 0: shares supplier details but loses clients as You exclusively use the best products to attract customers"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both keep supplier info private, limiting product access and attracting fewer clients",
+        "player 2 gets 1: both keep supplier info private, limiting product access and attracting fewer clients"
+      ]
+    },
+    "description": "You and Bob are cosmetology advisors competing in the same market. You both have the opportunity to share information about an exclusive product supplier that can attract more clients. If both share the information, you both benefit from steady client growth. If one shares while the other withholds, the one who withholds gains a larger client base by having exclusive access. If both withhold, neither expands their clientele significantly.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Protocol Race: The Decentralized Network Upgrade Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "blockchain protocol developer"
+      },
+      {
+        "name": "Bob",
+        "profile": "blockchain protocol developer"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Coordinate and release network upgrade simultaneously",
+      "defect": "Release network upgrade unilaterally ahead of schedule"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: the network upgrade proceeds smoothly, earning trust from the community",
+        "player 2 gets 3: the network upgrade proceeds smoothly, earning trust from the community"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: delayed release causes loss of influence and uncertainty among users",
+        "player 2 gets 5: early release establishes leadership and attracts more developer support"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: early release establishes leadership and attracts more developer support",
+        "player 2 gets 0: delayed release causes loss of influence and uncertainty among users"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: competing releases create network instability and divide the community",
+        "player 2 gets 1: competing releases create network instability and divide the community"
+      ]
+    },
+    "description": "You and Bob are independent developers working on upgrades for a widely-used decentralized blockchain network. If both coordinate and release upgrades simultaneously, the network evolves smoothly and community trust in both your work increases. However, if one releases early without coordination, that developer gains leadership and more community support, while the other loses influence. If both rush to release upgrades unilaterally, the network experiences instability and fragmentation, harming both reputations.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Indigo Dyeing: The Secret Recipe Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "indigo dyer"
+      },
+      {
+        "name": "Bob",
+        "profile": "indigo dyer"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share your unique dyeing formula with Bob for this season",
+      "defect": "Keep your unique dyeing formula secret from Bob this season"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both produce high-quality, vibrant fabric attracting steady customers",
+        "player 2 gets 3: both produce high-quality, vibrant fabric attracting steady customers"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: sharing formula but Bob keeps his secret, Bob\u2019s fabric outshines yours capturing more clients",
+        "player 2 gets 5: keeps formula secret while accessing your recipe, gaining strong market advantage"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: keeps formula secret while accessing Bob\u2019s recipe, gaining strong market advantage",
+        "player 2 gets 0: sharing formula but you keep yours secret, your fabric outshines Bob\u2019s capturing more clients"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both keep formulas secret, moderate quality fabrics with average customer retention",
+        "player 2 gets 1: both keep formulas secret, moderate quality fabrics with average customer retention"
+      ]
+    },
+    "description": "You and Bob, both skilled indigo dyers, face a seasonal decision about your dyeing formulas. You can either reveal your secret recipe to each other, leading to equally vibrant fabrics that keep your loyal customers, or keep your formula hidden to try to outshine the other. If one shares while the other withholds, the secret-keeper\u2019s fabric outperforms, gaining more customers. If both withhold, your fabrics remain average, maintaining steady but limited sales.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Emergency Resource Allocation: The Ambulance Dispatch Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "EMS professional"
+      },
+      {
+        "name": "Bob",
+        "profile": "EMS professional"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Coordinate to share ambulance availability and prioritize nearby calls fairly",
+      "defect": "Independently assign ambulances to calls without sharing information, prioritizing own area"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: emergencies are handled efficiently with timely response across both areas",
+        "player 2 gets 3: emergencies are handled efficiently with timely response across both areas"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: experiences delayed response times as Bob prioritizes his own area",
+        "player 2 gets 5: achieves faster response times by focusing resources on own area"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: achieves faster response times by focusing resources on own area",
+        "player 2 gets 0: experiences delayed response times as You prioritize your own area"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both struggle with overlapping calls causing some delays but manage basic coverage",
+        "player 2 gets 1: both struggle with overlapping calls causing some delays but manage basic coverage"
+      ]
+    },
+    "description": "You and Bob, EMS professionals operating in neighboring districts, must decide how to allocate ambulances during a busy period. By sharing availability and prioritizing calls fairly, both can ensure timely responses for all emergencies. However, if one assigns ambulances independently to prioritize their own area, they gain faster response times locally at the expense of the other's district. If both act independently, overlapping demands cause delays, reducing efficiency for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Sprint Schedule Negotiation: The Release Timing Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "Scrum Master"
+      },
+      {
+        "name": "Bob",
+        "profile": "Scrum Master"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Agree to a shared sprint deadline to coordinate feature releases",
+      "defect": "Set an independent sprint deadline to release features earlier"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both teams release features simultaneously, ensuring smooth integration and customer satisfaction",
+        "player 2 gets 3: both teams release features simultaneously, ensuring smooth integration and customer satisfaction"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: releases features later but faces integration issues and customer confusion",
+        "player 2 gets 5: releases earlier, capturing market attention and gaining user advantage"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: releases earlier, capturing market attention and gaining user advantage",
+        "player 2 gets 0: releases features later but faces integration issues and customer confusion"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both release independently and early, causing integration conflicts and mixed customer responses",
+        "player 2 gets 1: both release independently and early, causing integration conflicts and mixed customer responses"
+      ]
+    },
+    "description": "As Scrum Masters for two interdependent development teams, you and Bob must decide on sprint deadlines. Coordinating deadlines helps ensure features work well together and customers experience a seamless product. If one team sets an earlier deadline while the other delays, the early release team gains market momentum but the delayed team faces challenges. If both set early independent deadlines, integration problems arise, confusing customers and reducing satisfaction.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The Signature Dish Secret: A Culinary Competition Between Chefs",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "chef"
+      },
+      {
+        "name": "Bob",
+        "profile": "chef"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share your unique recipe ingredient notes with Bob before the contest",
+      "defect": "Withhold your unique recipe ingredient notes from Bob before the contest"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both chefs use enhanced recipes, creating dishes that impress judges equally",
+        "player 2 gets 3: both chefs use enhanced recipes, creating dishes that impress judges equally"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your recipe notes are shared but Bob keeps his secret, giving Bob a competitive edge",
+        "player 2 gets 5: Bob keeps his recipe secret and benefits from your shared notes, winning favor with judges"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: you keep your recipe secret while Bob shares, gaining advantage with judges",
+        "player 2 gets 0: Bob shares his notes but you withhold yours, putting Bob at a disadvantage"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both chefs keep their recipes secret, resulting in average dishes with no special advantage",
+        "player 2 gets 1: both chefs keep their recipes secret, resulting in average dishes with no special advantage"
+      ]
+    },
+    "description": "You and Bob, both competitive chefs, are preparing for a prestigious culinary contest. You each possess unique secret ingredients that can enhance your signature dishes. Before the contest, you must decide whether to share your secret recipe notes with the other or keep them private. If both share, the contest features two equally impressive dishes. If one shares while the other withholds, the one who withholds gains a distinct advantage. If both withhold, the dishes remain average but neither gains an upper hand.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The Outdoor Dining Setup Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "Alfresco professional"
+      },
+      {
+        "name": "Bob",
+        "profile": "Alfresco professional"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Coordinate and share equipment setup times to avoid overlap",
+      "defect": "Schedule equipment setup independently at peak hours without coordination"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: efficient setup with minimal delays, attracting steady clients",
+        "player 2 gets 3: efficient setup with minimal delays, attracting steady clients"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: faces delays due to overcrowded setup times, losing client interest",
+        "player 2 gets 5: benefits from prime setup time, gaining more clients"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: benefits from prime setup time, gaining more clients",
+        "player 2 gets 0: faces delays due to overcrowded setup times, losing client interest"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both experience setup conflicts causing delays, resulting in fewer clients",
+        "player 2 gets 1: both experience setup conflicts causing delays, resulting in fewer clients"
+      ]
+    },
+    "description": "You and Bob, both alfresco professionals, must prepare outdoor dining areas for a busy weekend. By coordinating your equipment setup schedules, you can avoid crowding and ensure smooth preparation, attracting regular clients. If one schedules independently at peak times while the other coordinates, the independent scheduler gains more clients due to quicker setup, while the other suffers delays. If both schedule independently, setup conflicts reduce client turnout for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Simulated Universe Resource Allocation",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "Emulationist managing a virtual ecosystem"
+      },
+      {
+        "name": "Bob",
+        "profile": "Emulationist managing a virtual ecosystem"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share computational resources evenly with the other emulationist",
+      "defect": "Allocate majority of computational resources to own virtual ecosystem"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both ecosystems run smoothly with balanced resource usage, resulting in steady progress",
+        "player 2 gets 3: both ecosystems run smoothly with balanced resource usage, resulting in steady progress"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: own ecosystem struggles due to insufficient resources",
+        "player 2 gets 5: own ecosystem thrives with abundant resources and outperforms the other"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: own ecosystem thrives with abundant resources and outperforms the other",
+        "player 2 gets 0: own ecosystem struggles due to insufficient resources"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both ecosystems suffer from resource contention leading to limited progress",
+        "player 2 gets 1: both ecosystems suffer from resource contention leading to limited progress"
+      ]
+    },
+    "description": "You and Bob independently manage competing virtual ecosystems within a shared simulation platform. Each must decide how to allocate limited computational resources between your own environment and the other's. Sharing resources evenly allows both ecosystems to develop steadily. Allocating most resources to your own ecosystem can lead to rapid advancement but risks causing the other to falter. If both prioritize their own ecosystems, resource contention slows progress for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Regulatory Reporting Timing: The Banking Compliance Coordination",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "banking supervisor"
+      },
+      {
+        "name": "Bob",
+        "profile": "banking supervisor"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Submit compliance reports promptly by the deadline",
+      "defect": "Delay submitting compliance reports until after the deadline"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both maintain strong regulatory standing and avoid penalties",
+        "player 2 gets 3: both maintain strong regulatory standing and avoid penalties"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: submits on time but faces increased scrutiny as Bob delays",
+        "player 2 gets 5: gains operational flexibility and avoids immediate costs while Bob complies"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: gains operational flexibility and avoids immediate costs while Bob complies",
+        "player 2 gets 0: submits on time but faces increased scrutiny as You delay"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both delay submission, risking regulatory penalties but sharing the burden",
+        "player 2 gets 1: both delay submission, risking regulatory penalties but sharing the burden"
+      ]
+    },
+    "description": "You and Bob, banking supervisors at competing institutions, must decide when to submit regulatory compliance reports. Submitting on time keeps your banks in good standing with regulators. However, delaying submission provides short-term operational benefits but risks penalties if both supervisors delay. If one submits on time while the other delays, the late submitter gains flexibility while the timely submitter faces increased regulatory scrutiny.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Therapy Techniques Trial: The Treatment Approach Choice",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "senior psychologist"
+      },
+      {
+        "name": "Bob",
+        "profile": "senior psychologist"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Use the evidence-based standard therapy protocol",
+      "defect": "Apply a novel, untested therapy method"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both treatments are effective and maintain professional reputation",
+        "player 2 gets 3: both treatments are effective and maintain professional reputation"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: standard therapy appears less effective, reputation suffers",
+        "player 2 gets 5: novel therapy gains attention and enhances reputation"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: novel therapy gains attention and enhances reputation",
+        "player 2 gets 0: standard therapy appears less effective, reputation suffers"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both use novel methods; uncertain results cause mixed professional reviews",
+        "player 2 gets 1: both use novel methods; uncertain results cause mixed professional reviews"
+      ]
+    },
+    "description": "You and Bob, both senior psychologists, are preparing treatment plans for a high-profile study. You must decide whether to follow the widely accepted standard therapy or introduce a novel, experimental method. If both use the standard, outcomes are reliable and reputations steady. If one tries the novel method while the other sticks to standard, the innovator may gain recognition while the other\u2019s credibility declines. If both choose the novel approach, the mixed and uncertain results lead to cautious professional assessments for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Exclusive Lounge Service: The Amenity Upgrade Decision",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "airport lounge manager"
+      },
+      {
+        "name": "Bob",
+        "profile": "airport lounge manager"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Invest budget to enhance complimentary amenities in the lounge",
+      "defect": "Allocate budget to exclusive paid services instead of complimentary amenities"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both lounges attract steady numbers of frequent flyers satisfied with complimentary offerings",
+        "player 2 gets 3: both lounges attract steady numbers of frequent flyers satisfied with complimentary offerings"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: lounge loses frequent flyers who prefer the exclusive paid services at the competitor's lounge",
+        "player 2 gets 5: gains frequent flyers by offering exclusive paid services while competitor focuses on complimentary amenities"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: gains frequent flyers by offering exclusive paid services while competitor focuses on complimentary amenities",
+        "player 2 gets 0: lounge loses frequent flyers who prefer the exclusive paid services at the competitor's lounge"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both lounges attract a limited number of frequent flyers who opt for exclusive paid services, but overall attendance is lower",
+        "player 2 gets 1: both lounges attract a limited number of frequent flyers who opt for exclusive paid services, but overall attendance is lower"
+      ]
+    },
+    "description": "As airport lounge managers, you and Bob each have a fixed budget to allocate between complimentary amenities and exclusive paid services. Investing in complimentary amenities keeps a steady base of frequent flyers happy, while focusing on exclusive paid services can attract more premium customers but risks losing those who prefer free offerings. If both enhance complimentary amenities, both lounges maintain solid attendance. If one invests in exclusive paid services while the other does not, the one offering paid services captures more premium customers. If both focus on exclusive paid services, overall attendance drops as frequent flyers seek other options.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Local Bistro Pricing: The Seasonal Menu Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "owner of a neighborhood bistro"
+      },
+      {
+        "name": "Bob",
+        "profile": "owner of a competing neighborhood bistro"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Set menu prices at the usual seasonal rates",
+      "defect": "Offer a special discount on the seasonal menu"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both maintain regular pricing, attracting steady customers",
+        "player 2 gets 3: both maintain regular pricing, attracting steady customers"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: loses customers to Bob's discounted menu, resulting in low revenue",
+        "player 2 gets 5: gains more customers through discount, boosting revenue"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: gains more customers through discount, boosting revenue",
+        "player 2 gets 0: loses customers to your discounted menu, resulting in low revenue"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both discount, increasing foot traffic but lowering profit margins",
+        "player 2 gets 1: both discount, increasing foot traffic but lowering profit margins"
+      ]
+    },
+    "description": "You and Bob each own a neighborhood bistro preparing for the busy seasonal dining period. You must decide whether to keep your menu prices at the usual seasonal rates or offer a special discount on the seasonal menu. If both maintain regular pricing, both attract steady streams of customers and earn solid revenue. If one offers a discount while the other does not, the discounting bistro draws more customers and increases revenue while the other suffers a decline. If both discount, customer traffic rises but profit margins shrink due to lower prices.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The LEGO City Expansion Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "LEGO builder"
+      },
+      {
+        "name": "Bob",
+        "profile": "LEGO builder"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Build a shared community center connecting both city sections",
+      "defect": "Build separate, individual attractions without connection"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both city sections attract visitors equally, increasing overall satisfaction",
+        "player 2 gets 3: both city sections attract visitors equally, increasing overall satisfaction"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your connected community center is overshadowed by Bob's standalone attraction drawing all visitors",
+        "player 2 gets 5: Bob's standalone attraction draws most visitors, gaining higher recognition"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: your standalone attraction draws most visitors, gaining higher recognition",
+        "player 2 gets 0: Bob's connected community center is overshadowed by your attraction"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both standalone attractions split visitor attention, resulting in modest recognition",
+        "player 2 gets 1: both standalone attractions split visitor attention, resulting in modest recognition"
+      ]
+    },
+    "description": "You and Bob are LEGO builders working on expanding adjacent city layouts. You must decide whether to build a shared community center that links both city sections or design separate, individual attractions that stand alone. When both build the shared center, visitors enjoy the combined space equally. If one builds separately while the other chooses the shared center, the separate attraction draws more visitors, overshadowing the connected one. If both build separately, visitor attention divides evenly, granting moderate recognition to each.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Museum Exhibit Assembly: The Fragile Artifact Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "exhibit fabricator"
+      },
+      {
+        "name": "Bob",
+        "profile": "exhibit fabricator"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Carefully assemble the fragile components using recommended protective materials and double-check connections",
+      "defect": "Assemble the components quickly using basic materials without thorough inspection"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: the exhibit is sturdy and impresses the museum, leading to a strong reputation",
+        "player 2 gets 3: the exhibit is sturdy and impresses the museum, leading to a strong reputation"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: the careful assembly is overshadowed by the partner\u2019s rushed work, causing delays and complaints",
+        "player 2 gets 5: the quick assembly finishes first and gains a bonus for speed despite quality concerns"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: the quick assembly finishes first and gains a bonus for speed despite quality concerns",
+        "player 2 gets 0: the careful assembly is overshadowed by the partner\u2019s rushed work, causing delays and complaints"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both exhibits have minor issues, requiring minor fixes but still accepted",
+        "player 2 gets 1: both exhibits have minor issues, requiring minor fixes but still accepted"
+      ]
+    },
+    "description": "You and Bob are tasked with assembling identical fragile museum exhibits. You can either spend extra time carefully securing parts with recommended materials or rush through using basic supplies to finish faster. If both take the time, the exhibits are solid and well-received. If one rushes while the other is careful, the faster assembly wins praise and bonus despite some quality risks. If both rush, the exhibits have minor flaws but still pass inspection with some rework needed.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Laundry Load Management: The Detergent Allocation Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "laundress managing a busy laundry station"
+      },
+      {
+        "name": "Bob",
+        "profile": "laundress managing a busy laundry station"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Use a moderate amount of detergent per load to conserve supplies",
+      "defect": "Use an extra amount of detergent per load for brighter results"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: detergent supplies last well and laundry quality is acceptable",
+        "player 2 gets 3: detergent supplies last well and laundry quality is acceptable"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: detergent runs low quickly causing poor laundry results",
+        "player 2 gets 5: laundry looks exceptionally clean attracting more customers"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: laundry looks exceptionally clean attracting more customers",
+        "player 2 gets 0: detergent runs low quickly causing poor laundry results"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: detergent supplies deplete fast but laundry quality is better than minimal",
+        "player 2 gets 1: detergent supplies deplete fast but laundry quality is better than minimal"
+      ]
+    },
+    "description": "You and Bob both manage separate laundry stations that share a common detergent supply. Each day, you decide how much detergent to use per load. Using a moderate amount keeps detergent lasting longer and maintains good laundry quality for both. Using extra detergent makes clothes look cleaner, attracting more customers but drains the shared supply faster. If both use extra detergent, the supply diminishes quickly, leading to diminished overall laundry quality soon after.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Trade Secrets at the Startup Expo",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "founder of a tech startup"
+      },
+      {
+        "name": "Bob",
+        "profile": "founder of a competing tech startup"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share your prototype features with Bob before the expo",
+      "defect": "Keep your prototype features confidential until the expo"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both startups present aligned innovations, boosting investor confidence",
+        "player 2 gets 3: both startups present aligned innovations, boosting investor confidence"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your early reveal is overshadowed when Bob surprises investors with exclusive features",
+        "player 2 gets 5: Bob gains investor attention with exclusive, unexpected features"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: you gain investor attention with exclusive, unexpected features",
+        "player 2 gets 0: Bob's shared features appear less innovative"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both keep features confidential, maintaining some competitive edge but missing collaboration benefits",
+        "player 2 gets 1: both keep features confidential, maintaining some competitive edge but missing collaboration benefits"
+      ]
+    },
+    "description": "You and Bob, founders of competing tech startups, are preparing for a major expo where investors will evaluate your prototypes. You must decide whether to share your prototype features with each other beforehand, which can help align your presentations and increase overall investor confidence. However, if one shares while the other keeps features secret, the secret-holder can surprise investors with exclusive innovations, gaining a competitive advantage. If both keep their features confidential, you maintain individual competitive edges but lose potential collaborative credibility.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Genetic Marker Verification: The Lab Sample Reporting Decision",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "DNA analyst"
+      },
+      {
+        "name": "Bob",
+        "profile": "DNA analyst"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Report all DNA sample findings accurately and share results transparently",
+      "defect": "Withhold some DNA sample results to prioritize personal project outcomes"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both analysts produce reliable data, enhancing joint project credibility",
+        "player 2 gets 3: both analysts produce reliable data, enhancing joint project credibility"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: full disclosure while the other withholds data, reducing your project\u2019s impact",
+        "player 2 gets 5: gains advantage by selectively reporting, boosting personal project recognition"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: gains advantage by selectively reporting, boosting personal project recognition",
+        "player 2 gets 0: full disclosure while the other withholds data, reducing their project\u2019s impact"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both withhold data, lowering overall project credibility but minimizing personal loss",
+        "player 2 gets 1: both withhold data, lowering overall project credibility but minimizing personal loss"
+      ]
+    },
+    "description": "You and Bob, both DNA analysts working on a joint genetic study, must decide how to report your sample findings. If both share all results accurately, the study gains strong credibility. If one withholds some results while the other reports fully, the withholder gains more recognition while the other\u2019s work suffers. If both withhold data, the study\u2019s credibility weakens, but neither loses a personal advantage.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Concrete Competition: The Supply Timing Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "concrete supplier"
+      },
+      {
+        "name": "Bob",
+        "profile": "concrete supplier"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Deliver concrete on the agreed standard schedule",
+      "defect": "Deliver concrete earlier than agreed to secure more contracts"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both suppliers maintain stable contracts and steady profits",
+        "player 2 gets 3: both suppliers maintain stable contracts and steady profits"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: loses contracts as Bob secures more clients by early delivery",
+        "player 2 gets 5: gains additional contracts by delivering earlier than You"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: gains additional contracts by delivering earlier than Bob",
+        "player 2 gets 0: loses contracts as You secure more clients by early delivery"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both suppliers deliver early, leading to increased costs and lower profits",
+        "player 2 gets 1: both suppliers deliver early, leading to increased costs and lower profits"
+      ]
+    },
+    "description": "You and Bob are concrete suppliers competing for contracts in a busy construction market. Both agree to deliver concrete following a standard schedule to keep costs manageable and profits steady. If both stick to the schedule, profits remain stable. If one delivers earlier than agreed, that supplier gains more contracts while the other loses business. However, if both rush deliveries to get ahead, increased operational costs reduce profits for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Furnace Fuel Strategy: The Glassblowing Studio Energy Choice",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "glassblowing studio owner"
+      },
+      {
+        "name": "Bob",
+        "profile": "glassblowing studio owner"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Purchase premium sustainable fuel for furnaces",
+      "defect": "Purchase cheaper conventional fuel for furnaces"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: furnaces run efficiently with stable costs and strong customer trust",
+        "player 2 gets 3: furnaces run efficiently with stable costs and strong customer trust"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: higher fuel expenses reduce profits while losing market share",
+        "player 2 gets 5: lower fuel expenses increase profits and attract customers from player 1"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: lower fuel expenses increase profits and attract customers from player 2",
+        "player 2 gets 0: higher fuel expenses reduce profits while losing market share"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both save on fuel costs but face increased furnace maintenance and slight reputation loss",
+        "player 2 gets 1: both save on fuel costs but face increased furnace maintenance and slight reputation loss"
+      ]
+    },
+    "description": "You and Bob each operate a glassblowing studio and must decide on the type of furnace fuel to purchase for the upcoming season. Choosing premium sustainable fuel ensures efficient furnace operation and maintains customer trust but comes with higher costs. Opting for conventional cheaper fuel lowers expenses and can attract more customers if the other chooses premium fuel, but risks increased maintenance and a slight hit to reputation if both choose it.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Rare Game Restoration: The Fragile Artifact Dilemma",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "game preservationist"
+      },
+      {
+        "name": "Bob",
+        "profile": "game preservationist"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Use the delicate restoration technique that preserves original components",
+      "defect": "Use the aggressive restoration technique that replaces some original components"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: artifact remains authentic and stable, attracting visitors and praise",
+        "player 2 gets 3: artifact remains authentic and stable, attracting visitors and praise"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: artifact restored gently but loses visitor interest due to less visible improvements",
+        "player 2 gets 5: artifact restored aggressively, drawing more visitors and recognition"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: artifact restored aggressively, drawing more visitors and recognition",
+        "player 2 gets 0: artifact restored gently but loses visitor interest due to less visible improvements"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: artifact restored aggressively but authenticity questioned, moderate visitor numbers",
+        "player 2 gets 1: artifact restored aggressively but authenticity questioned, moderate visitor numbers"
+      ]
+    },
+    "description": "You and Bob are tasked with restoring a rare vintage game artifact. You can choose to apply a delicate restoration that maintains original parts but results in subtle changes, or an aggressive restoration that replaces components for a more striking appearance. If both choose the delicate method, the artifact\u2019s authenticity is preserved, pleasing experts and visitors alike. If one chooses aggressive restoration while the other uses the delicate technique, the aggressive approach draws more attention but risks authenticity criticism. If both choose the aggressive method, the artifact's authenticity is doubted, leading to only moderate visitor interest.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The Gemstone Sourcing Decision",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "jewelry artist"
+      },
+      {
+        "name": "Bob",
+        "profile": "jewelry artist"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Agree to source gemstones from a sustainable supplier with limited stock",
+      "defect": "Independently source gemstones from a cheaper, unrestricted supplier"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both artists maintain access to quality sustainable stones and preserve market reputation",
+        "player 2 gets 3: both artists maintain access to quality sustainable stones and preserve market reputation"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: artist struggles to find stones and reputation weakens due to limited supply",
+        "player 2 gets 5: artist gains more stones at lower cost and captures additional customers"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: artist gains more stones at lower cost and captures additional customers",
+        "player 2 gets 0: artist struggles to find stones and reputation weakens due to limited supply"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both artists access cheaper stones but market reputation declines slightly for both",
+        "player 2 gets 1: both artists access cheaper stones but market reputation declines slightly for both"
+      ]
+    },
+    "description": "You and Bob, both jewelry artists, must decide how to source gemstones for your upcoming collections. You can choose to source from a sustainable supplier with limited stock, ensuring quality and maintaining your market reputation. Alternatively, you can independently obtain cheaper stones from an unrestricted supplier, potentially gaining more inventory and customers but risking reputation harm. If both choose the sustainable supplier, you both benefit from steady reputation and quality. If one opts for the cheaper source while the other remains sustainable, the one sourcing cheaper stones gains market advantage while the other suffers supply shortages. If both choose the cheaper source, you both face diminished market reputation despite increased inventory.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Picnic Spot Selection: The Shady Grove Conundrum",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "picnicker choosing a spot in a popular park"
+      },
+      {
+        "name": "Bob",
+        "profile": "another picnicker choosing a spot in the same park"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Set up your picnic closer to the open meadow",
+      "defect": "Set up your picnic under the dense tree canopy"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both enjoy plenty of sunlight with enough space to relax",
+        "player 2 gets 3: both enjoy plenty of sunlight with enough space to relax"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your spot near the meadow feels overshadowed and less comfortable",
+        "player 2 gets 5: Bob enjoys cool shade and a quiet spot"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: you enjoy cool shade and a quiet spot",
+        "player 2 gets 0: Bob\u2019s meadow spot feels overshadowed and less comfortable"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: crowded tree canopy leads to cramped and less pleasant conditions",
+        "player 2 gets 1: crowded tree canopy leads to cramped and less pleasant conditions"
+      ]
+    },
+    "description": "You and Bob arrive at a busy park on a sunny day, each looking to set up a picnic. You can choose the sunny meadow, which offers space and warmth but risks being overshadowed if the other picnicker picks the shady grove. Alternatively, you can pick the tree canopy area, which provides cool shade but can become crowded and less enjoyable if both pick it. Your comfort depends on both of your choices.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The Church Bells Timing Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "sacristan at the local parish church"
+      },
+      {
+        "name": "Bob",
+        "profile": "sacristan at the neighboring parish church"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Ring the church bells simultaneously with Bob's church",
+      "defect": "Ring the church bells at a different time without notifying Bob"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: synchronized ringing creates a harmonious sound that pleases the community",
+        "player 2 gets 3: synchronized ringing creates a harmonious sound that pleases the community"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your bells are overshadowed and less appreciated due to Bob's uncoordinated timing",
+        "player 2 gets 5: Bob's bells stand out and gain more attention from the community"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: your bells stand out and gain more attention from the community",
+        "player 2 gets 0: Bob's bells are overshadowed and less appreciated due to your uncoordinated timing"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both ringing at different times causes confusion and annoyance, reducing the overall impact",
+        "player 2 gets 1: both ringing at different times causes confusion and annoyance, reducing the overall impact"
+      ]
+    },
+    "description": "You and Bob are sacristans responsible for ringing the bells at your neighboring parish churches. You each must decide when to ring the bells for the Sunday service. If you coordinate and ring simultaneously, the harmonious sound delights the community and strengthens tradition. If one rings at a different time without informing the other, that ringing stands out and draws more community attention, leaving the other overshadowed. If both ring separately without coordination, the community feels confused and annoyed, diminishing the significance of the bell ringing ritual.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The Community Garden Watering Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "community gardener"
+      },
+      {
+        "name": "Bob",
+        "profile": "community gardener"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Water your designated section responsibly and share water fairly",
+      "defect": "Use more water than allocated to keep your plants thriving"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both gardens flourish with adequate water and community harmony is maintained",
+        "player 2 gets 3: both gardens flourish with adequate water and community harmony is maintained"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your plants suffer from lack of water and you face frustration",
+        "player 2 gets 5: your garden thrives with extra water at the expense of the community"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: your garden thrives with extra water at the expense of the community",
+        "player 2 gets 0: their plants suffer from lack of water and they face frustration"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both overuse water causing shortages, gardens struggle but survive with tension",
+        "player 2 gets 1: both overuse water causing shortages, gardens struggle but survive with tension"
+      ]
+    },
+    "description": "You and Bob are gardeners sharing a community water source during a dry season. Each must decide whether to water your part of the garden responsibly or to use extra water to boost your own plants. If both water responsibly, the entire garden flourishes and neighbors stay cooperative. If one takes extra water while the other conserves, the one taking more enjoys a thriving garden while the other suffers. If both overuse water, shortages occur and all gardens suffer, straining community relations.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Community Garden Expansion: The Resource Allocation Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "reintegrating individual"
+      },
+      {
+        "name": "Bob",
+        "profile": "reintegrating individual"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Allocate your share of water and fertilizer to the shared garden plot",
+      "defect": "Use your share of water and fertilizer exclusively for your personal plants"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: the shared garden flourishes, providing a steady supply of vegetables to both",
+        "player 2 gets 3: the shared garden flourishes, providing a steady supply of vegetables to both"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: personal plants receive fewer resources and yield little, while shared garden suffers",
+        "player 2 gets 5: personal plants thrive with exclusive resources, gaining a large harvest"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: personal plants thrive with exclusive resources, gaining a large harvest",
+        "player 2 gets 0: personal plants receive fewer resources and yield little, while shared garden suffers"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both focus on personal plants but lack enough resources, so harvests are small",
+        "player 2 gets 1: both focus on personal plants but lack enough resources, so harvests are small"
+      ]
+    },
+    "description": "You and Bob work together to cultivate a community garden but must decide how to allocate limited water and fertilizer supplies. If both contribute to the shared garden, it thrives and benefits you both. If one focuses resources solely on personal plants while the other supports the shared plot, the one focusing personally gains a large harvest while the other\u2019s yield suffers. If both prioritize personal plants, resource scarcity limits growth for everyone.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Tablet Market Release Timing: The Launch Synchronization Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "tablet manufacturer"
+      },
+      {
+        "name": "Bob",
+        "profile": "tablet manufacturer"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "schedule the new tablet launch for the same quarter as Bob",
+      "defect": "launch the new tablet one quarter earlier than Bob"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both companies share market attention, achieving stable sales",
+        "player 2 gets 3: both companies share market attention, achieving stable sales"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: launching later results in lost market share and reduced sales",
+        "player 2 gets 5: early launch captures majority of eager customers and boosts sales"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: early launch captures majority of eager customers and boosts sales",
+        "player 2 gets 0: launching later results in lost market share and reduced sales"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both launch early causing market saturation and price competition, leading to lower profits",
+        "player 2 gets 1: both launch early causing market saturation and price competition, leading to lower profits"
+      ]
+    },
+    "description": "You and Bob each produce tablets and must decide when to release your next model. If both release their tablets in the same quarter, you split consumer interest and maintain steady profits. If one releases earlier, that company gains a significant sales advantage while the other loses market share. If both rush to release early, the market becomes overcrowded, driving down prices and profits for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Streamlining Production: The Process Standardization Decision",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "Lean practitioner"
+      },
+      {
+        "name": "Bob",
+        "profile": "Lean practitioner"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Implement a shared standardized process guideline",
+      "defect": "Continue using individual process methods"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both achieve smoother workflow and reduce waste",
+        "player 2 gets 3: both achieve smoother workflow and reduce waste"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: adopts the shared guideline but faces delays due to mismatched methods from the other",
+        "player 2 gets 5: retains flexibility and gains efficiency advantage over the other"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: retains flexibility and gains efficiency advantage over the other",
+        "player 2 gets 0: adopts the shared guideline but faces delays due to mismatched methods from the other"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both use different methods, causing moderate inefficiencies but steady output",
+        "player 2 gets 1: both use different methods, causing moderate inefficiencies but steady output"
+      ]
+    },
+    "description": "You and Bob, both Lean practitioners in separate production units, must decide whether to adopt a shared standardized process guideline or continue using your own established methods. If both adopt the shared guideline, workflows align and waste reduces, improving overall efficiency. If one adopts the guideline while the other sticks to their own methods, the one keeping their method gains a temporary efficiency edge while the other experiences workflow disruptions. If both continue with individual methods, the production runs steadily but with some inefficiencies.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Surgical Scheduling: The Overlapping OR Allocation Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "pediatric orthopedic surgeon"
+      },
+      {
+        "name": "Bob",
+        "profile": "pediatric orthopedic surgeon"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Schedule surgeries with non-overlapping operating room times, allowing smooth patient flow",
+      "defect": "Schedule surgeries with overlapping operating room times to maximize individual patient load"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both complete surgeries efficiently with steady patient recovery rates",
+        "player 2 gets 3: both complete surgeries efficiently with steady patient recovery rates"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: faces delays due to OR conflicts and increased patient complications",
+        "player 2 gets 5: handles more surgeries but risks higher workload and some complications"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: handles more surgeries but risks higher workload and some complications",
+        "player 2 gets 0: faces delays due to OR conflicts and increased patient complications"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both experience scheduling conflicts leading to longer patient wait times and moderate complications",
+        "player 2 gets 1: both experience scheduling conflicts leading to longer patient wait times and moderate complications"
+      ]
+    },
+    "description": "You and Bob, pediatric orthopedic surgeons in the same hospital, must plan your operating room schedules for the upcoming week. You can either coordinate your surgery times to avoid overlaps, ensuring smooth procedures and patient flow, or you can independently schedule overlapping surgeries to maximize your individual patient load. If both coordinate, surgeries proceed efficiently with good outcomes. If one overlaps while the other coordinates, the overlapping surgeon manages more cases but increases strain on shared resources, causing complications for the other. If both overlap, scheduling conflicts arise, leading to delays and moderate patient complications for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Hidden Grove Watering: The Shared Well Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "Neighboring farmer"
+      },
+      {
+        "name": "Bob",
+        "profile": "Neighboring farmer"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Agree to share well water equally each day",
+      "defect": "Use more than your share of well water secretly"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both maintain healthy crops with fair water use",
+        "player 2 gets 3: both maintain healthy crops with fair water use"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: crops suffer due to insufficient water from sharing",
+        "player 2 gets 5: crops flourish by exploiting extra water"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: crops flourish by exploiting extra water",
+        "player 2 gets 0: crops suffer due to insufficient water from sharing"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both overuse water, well level drops, crops barely survive",
+        "player 2 gets 1: both overuse water, well level drops, crops barely survive"
+      ]
+    },
+    "description": "In a small farming community, you and Bob share a single well to water your crops. Each day, you can choose to share the well water fairly or secretly take more than your share. If both share equally, your crops remain healthy and yield good harvests. If one secretly takes more while the other shares fairly, the one who takes more enjoys a bountiful crop while the other\u2019s crop suffers. If both secretly take more, the well\u2019s water level drops dangerously low, and both crops struggle to survive.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Supply Line Strategy: The Arms Cache Allocation",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "former combatant"
+      },
+      {
+        "name": "Bob",
+        "profile": "former combatant"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share your ammunition reserves equally with Bob",
+      "defect": "Hold your ammunition reserves exclusively for yourself"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both maintain steady supplies, enabling balanced readiness",
+        "player 2 gets 3: both maintain steady supplies, enabling balanced readiness"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: sharing leaves your reserves depleted, reducing your combat capability",
+        "player 2 gets 5: exclusive control over reserves boosts your readiness significantly"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: exclusive control over reserves boosts your readiness significantly",
+        "player 2 gets 0: sharing leaves your reserves depleted, reducing your combat capability"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both hold reserves individually, resulting in limited readiness for each",
+        "player 2 gets 1: both hold reserves individually, resulting in limited readiness for each"
+      ]
+    },
+    "description": "You and Bob, former combatants now managing separate arms caches, must decide how to allocate ammunition supplies. If both share reserves equally, each maintains a stable level of readiness. If one withholds reserves while the other shares, the one holding supplies gains a significant advantage in preparedness. If both withhold, each faces limited readiness, balancing risk but restricting capability.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Encrypted Data Relay: The Hacker's Bandwidth Allocation",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "computer hacker"
+      },
+      {
+        "name": "Bob",
+        "profile": "computer hacker"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Allocate equal bandwidth to shared relay channels",
+      "defect": "Reserve majority bandwidth for own exclusive use"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: steady data flow with balanced speed and reliability",
+        "player 2 gets 3: steady data flow with balanced speed and reliability"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: slow data transfer due to limited bandwidth",
+        "player 2 gets 5: fast data transfer from dominant bandwidth control"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: fast data transfer from dominant bandwidth control",
+        "player 2 gets 0: slow data transfer due to limited bandwidth"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: minimal data speed due to bandwidth congestion",
+        "player 2 gets 1: minimal data speed due to bandwidth congestion"
+      ]
+    },
+    "description": "You and Bob each control a segment of an encrypted relay network used to transfer sensitive data. Both must decide how to allocate their limited bandwidth: either share it equally on the common channels or reserve most of it for personal use. Equal sharing leads to smooth and reliable data transmission for both. If one reserves bandwidth selfishly while the other shares, the reserving hacker enjoys faster transfer while the other suffers slowdowns. If both reserve bandwidth aggressively, network congestion causes slow transfers for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Data Sharing Decision: The Hospital Software Update Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "health IT specialist"
+      },
+      {
+        "name": "Bob",
+        "profile": "health IT specialist"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share recent software patches and bug fixes promptly",
+      "defect": "Withhold software patches and focus on internal development"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both get timely updates, improving system stability and reducing downtime",
+        "player 2 gets 3: both get timely updates, improving system stability and reducing downtime"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: shares patches but suffers from unpatched vulnerabilities due to lack of reciprocal updates",
+        "player 2 gets 5: benefits from patches shared by player 1 while keeping their own updates secret, gaining a competitive edge"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: benefits from patches shared by player 2 while keeping their own updates secret, gaining a competitive edge",
+        "player 2 gets 0: shares patches but suffers from unpatched vulnerabilities due to lack of reciprocal updates"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both withhold patches, leading to slower improvement and occasional system issues",
+        "player 2 gets 1: both withhold patches, leading to slower improvement and occasional system issues"
+      ]
+    },
+    "description": "You and Bob, both health IT specialists working at different hospitals, face the decision about how to handle software updates for your patient management systems. By sharing recent patches and fixes, you can help each other improve system reliability. However, withholding patches to focus on your hospital\u2019s own development may provide a temporary competitive advantage. If both share promptly, system stability improves for both. If one shares while the other withholds, the one withholding gains more immediate benefit. If both withhold, improvements slow down and system problems persist.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Sacred Grounds Restoration: The Churchyard Maintenance Decision",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "Reverend"
+      },
+      {
+        "name": "Bob",
+        "profile": "Reverend"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Contribute resources and volunteer time to jointly restore the shared churchyard",
+      "defect": "Avoid contributing resources and time, focusing only on own church maintenance"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: the shared churchyard is beautifully restored, attracting more visitors and community goodwill",
+        "player 2 gets 3: the shared churchyard is beautifully restored, attracting more visitors and community goodwill"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: invested time and resources, but the churchyard remains neglected due to lack of joint effort",
+        "player 2 gets 5: conserves own resources while benefiting from the other's effort, improving own church's reputation"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: conserves own resources while benefiting from the other's effort, improving own church's reputation",
+        "player 2 gets 0: invested time and resources, but the churchyard remains neglected due to lack of joint effort"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: no effort invested, churchyard remains in poor condition but own church upkeep continues without extra cost",
+        "player 2 gets 1: no effort invested, churchyard remains in poor condition but own church upkeep continues without extra cost"
+      ]
+    },
+    "description": "You and Bob, both Reverends, share responsibility for maintaining a historic churchyard that benefits your congregations. You each must decide whether to invest time and resources in a joint restoration project or focus solely on your own church. If both contribute, the churchyard thrives, drawing community support. If one contributes while the other does not, the contributor bears the cost alone while the other gains reputation advantage. If neither contributes, the churchyard deteriorates, but no extra resources are spent.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "The Ancient Manuscript Authentication Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "Egyptologist"
+      },
+      {
+        "name": "Bob",
+        "profile": "Egyptologist"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share your research notes and findings openly with the other Egyptologist",
+      "defect": "Withhold your research notes and present only partial evidence to support your claim"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both receive thorough validation for the manuscript, enhancing reputation equally",
+        "player 2 gets 3: both receive thorough validation for the manuscript, enhancing reputation equally"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your full disclosure allows the other to claim sole credit, diminishing your recognition",
+        "player 2 gets 5: withholding information lets you claim primary authorship, greatly boosting your status"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: withholding information lets you claim primary authorship, greatly boosting your status",
+        "player 2 gets 0: your full disclosure allows the other to claim sole credit, diminishing your recognition"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both withhold information, leading to partial validation and limited reputation gains",
+        "player 2 gets 1: both withhold information, leading to partial validation and limited reputation gains"
+      ]
+    },
+    "description": "You and Bob, both Egyptologists, are analyzing a newly discovered ancient manuscript. You must decide whether to fully share your detailed research notes to jointly authenticate the text or keep your findings guarded and only reveal selective evidence. If both share openly, the manuscript gains strong validation benefiting both reputations equally. If one withholds while the other shares, the one who withholds can claim greater credit and recognition. If both withhold, the manuscript's authentication remains weak, and both gain only modest professional acknowledgment.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Language Learning Resource Allocation Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "ESL student"
+      },
+      {
+        "name": "Bob",
+        "profile": "ESL student"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share your study notes and vocabulary lists with Bob",
+      "defect": "Keep your study notes and vocabulary lists private"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both improve vocabulary and grammar steadily through shared resources",
+        "player 2 gets 3: both improve vocabulary and grammar steadily through shared resources"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: improves less because only shared own resources without receiving any",
+        "player 2 gets 5: benefits greatly by using both own and your shared resources"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: benefits greatly by using both own and Bob\u2019s shared resources",
+        "player 2 gets 0: improves less because only shared own resources without receiving any"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both study independently leading to moderate improvement",
+        "player 2 gets 1: both study independently leading to moderate improvement"
+      ]
+    },
+    "description": "You and Bob are ESL students preparing for an important exam. You each have your own set of study notes and vocabulary lists. You can either share your materials with each other or keep them private. Sharing helps both expand vocabulary and grammar skills steadily, but if one shares while the other withholds, the one who withholds gains a bigger advantage by using all resources without reciprocating. If neither shares, both improve at a modest pace studying alone.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Code Release Timing: The Feature Launch Coordination",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "coder"
+      },
+      {
+        "name": "Bob",
+        "profile": "coder"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Coordinate to release the new feature simultaneously",
+      "defect": "Release the new feature earlier without coordination"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both features launch together, attracting steady user interest and shared acclaim",
+        "player 2 gets 3: both features launch together, attracting steady user interest and shared acclaim"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: coordinated launch delayed, loses user attention to Bob's early release",
+        "player 2 gets 5: early release captures larger user base and recognition"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: early release captures larger user base and recognition",
+        "player 2 gets 0: coordinated launch delayed, loses user attention to You's early release"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both release early independently, causing user confusion and reduced impact",
+        "player 2 gets 1: both release early independently, causing user confusion and reduced impact"
+      ]
+    },
+    "description": "You and Bob, coders on the same project, must decide how to release a new feature. Releasing simultaneously ensures a steady user response and shared success. If one releases earlier without coordinating, they gain more user attention while the other loses out. If both release independently early, users get confused and neither gains strong traction.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Harvest Timing: The Shared Water Well Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "agricultural worker"
+      },
+      {
+        "name": "Bob",
+        "profile": "agricultural worker"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Irrigate crops at moderate times to share water usage",
+      "defect": "Irrigate crops intensively during peak hours to maximize own yield"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: crops receive sufficient water and both maintain good harvests",
+        "player 2 gets 3: crops receive sufficient water and both maintain good harvests"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: water is depleted during peak hours, resulting in poor crop growth",
+        "player 2 gets 5: irrigates heavily first, securing a large harvest"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: irrigates heavily first, securing a large harvest",
+        "player 2 gets 0: water is depleted during peak hours, resulting in poor crop growth"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: water supply is overused and crops suffer, resulting in a reduced harvest",
+        "player 2 gets 1: water supply is overused and crops suffer, resulting in a reduced harvest"
+      ]
+    },
+    "description": "You and Bob both rely on a single water well to irrigate your crops. If both irrigate during moderate times, water is sufficient for a healthy harvest. If one irrigates intensively during peak hours while the other waits, the intensive irrigator gets a large yield while the other\u2019s crops suffer. If both irrigate intensively at peak times, the well is overused, and both experience poor harvests.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Market Maneuver: The Insider Tip Timing Challenge",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "aspiring stock trader"
+      },
+      {
+        "name": "Bob",
+        "profile": "aspiring stock trader"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share a valuable insider tip with Bob before market opens",
+      "defect": "Keep the insider tip secret and act on it alone"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both traders make steady gains by acting on the tip together, minimizing market suspicion",
+        "player 2 gets 3: both traders make steady gains by acting on the tip together, minimizing market suspicion"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: shared tip loses value as Bob trades first and pushes the price, leaving player 1 with losses",
+        "player 2 gets 5: Bob profits greatly by trading first on the exclusive tip"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: player 1 profits greatly by trading first on the exclusive tip",
+        "player 2 gets 0: shared tip loses value as player 1 trades first, leaving Bob with losses"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both traders keep their tips secret, resulting in smaller individual gains due to cautious trading",
+        "player 2 gets 1: both traders keep their tips secret, resulting in smaller individual gains due to cautious trading"
+      ]
+    },
+    "description": "You and Bob, both aspiring stock traders, have access to an insider tip that could influence stock prices. You must decide whether to share the tip with each other before the market opens or to trade independently. Sharing the tip leads to moderate gains for both, but if one acts alone while the other shares, the lone trader capitalizes heavily while the sharer suffers losses. If neither shares, cautious trading yields modest profits for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Neural Canvas: The Cyborg Artists' Exhibition Dilemma",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "cyborg artist"
+      },
+      {
+        "name": "Bob",
+        "profile": "cyborg artist"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Share your unique neural painting algorithm with the other artist",
+      "defect": "Keep your neural painting algorithm secret to maintain a competitive edge"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both create innovative artworks combining shared algorithms, attracting moderate acclaim",
+        "player 2 gets 3: both create innovative artworks combining shared algorithms, attracting moderate acclaim"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: your artwork lacks novelty alone while Bob\u2019s secret algorithm yields highly praised pieces",
+        "player 2 gets 5: Bob's unique algorithm stands out, gaining significant attention and sales"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: your secret algorithm leads to standout artwork, surpassing Bob\u2019s shared style",
+        "player 2 gets 0: Bob\u2019s shared algorithm results in less impressive art compared to your secret technique"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: both create separate artworks with secret algorithms, resulting in limited recognition for each",
+        "player 2 gets 1: both create separate artworks with secret algorithms, resulting in limited recognition for each"
+      ]
+    },
+    "description": "You and Bob, cyborg artists preparing for a major exhibition, each possess a unique neural painting algorithm. You must decide whether to share your algorithm, enabling combined innovation, or keep it secret to maintain a unique style. Mutual sharing leads to moderately successful collaborative art, but if one keeps their algorithm secret while the other shares, the secret holder gains greater acclaim. If both keep secrets, the exhibition features separate, less remarkable works from each.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Reputation Repair: The Defamation Experts' Strategic Disclosure",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "defamation expert"
+      },
+      {
+        "name": "Bob",
+        "profile": "defamation expert"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "jointly withhold sensitive client information from the public",
+      "defect": "independently disclose sensitive client information to gain leverage"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both maintain strong professional reputations and secure steady client trust",
+        "player 2 gets 3: both maintain strong professional reputations and secure steady client trust"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: reputation weakened due to unilateral disclosure, losing clients",
+        "player 2 gets 5: gains competitive advantage and attracts more clients"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: gains competitive advantage and attracts more clients",
+        "player 2 gets 0: reputation weakened due to unilateral disclosure, losing clients"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: reputations tarnished from mutual disclosure, resulting in reduced client trust",
+        "player 2 gets 1: reputations tarnished from mutual disclosure, resulting in reduced client trust"
+      ]
+    },
+    "description": "You and Bob, both defamation experts, must decide whether to keep sensitive client information confidential or disclose it independently. If both keep information private, your reputations remain intact and clients stay loyal. If one discloses while the other stays silent, the discloser gains clients at the other's expense. If both disclose, reputations suffer and both lose significant client trust.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  },
+  {
+    "scenario": "Quantum Algorithm Publication: The Priority Release Decision",
+    "participants": [
+      {
+        "name": "You",
+        "profile": "quantum computing researcher"
+      },
+      {
+        "name": "Bob",
+        "profile": "quantum computing researcher"
+      }
+    ],
+    "behavior_choices": {
+      "cooperate": "Agree to delay publishing your new quantum algorithm to allow joint review",
+      "defect": "Publish your quantum algorithm immediately without consulting the other"
+    },
+    "payoff_matrix_description": {
+      "player 1: cooperate , player 2: cooperate": [
+        "player 1 gets 3: both papers undergo thorough peer review, strengthening reputation and long-term impact",
+        "player 2 gets 3: both papers undergo thorough peer review, strengthening reputation and long-term impact"
+      ],
+      "player 1: cooperate , player 2: defect": [
+        "player 1 gets 0: delayed publication leads to being scooped, reducing recognition",
+        "player 2 gets 5: gains priority and recognition by immediate publication"
+      ],
+      "player 1: defect , player 2: cooperate": [
+        "player 1 gets 5: gains priority and recognition by immediate publication",
+        "player 2 gets 0: delayed publication leads to being scooped, reducing recognition"
+      ],
+      "player 1: defect , player 2: defect": [
+        "player 1 gets 1: simultaneous publication creates confusion, splitting credit and reducing impact",
+        "player 2 gets 1: simultaneous publication creates confusion, splitting credit and reducing impact"
+      ]
+    },
+    "description": "You and Bob have each developed a new quantum algorithm poised to advance the field. You must decide whether to hold back your publication to allow a joint peer review process or publish immediately to claim priority. If both delay, the collaboration improves the quality and reputation of your work. If one publishes immediately while the other waits, the immediate publisher secures recognition while the other loses out. If both publish simultaneously without coordination, the community's attention is divided, diminishing the impact for both.",
+    "payoff_description": "Game Payoffs:\nWhen You chooses 'cooperate' and Bob chooses 'cooperate', You gets 3 and Bob gets 3.\nWhen You chooses 'cooperate' and Bob chooses 'defect', You gets 0 and Bob gets 5.\nWhen You chooses 'defect' and Bob chooses 'cooperate', You gets 5 and Bob gets 0.\nWhen You chooses 'defect' and Bob chooses 'defect', You gets 1 and Bob gets 1.",
+    "game_name": "Prisoners_Dilemma"
+  }
+]

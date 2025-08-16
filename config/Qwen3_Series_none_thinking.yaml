@@ -15,9 +15,9 @@ experiment:
     - "Prisoners_Dilemma"
     - "Escalation_Game"
     - "Trust_Game_Trustor"
-      #- "Trust_Game_Trustee"
+    - "Trust_Game_Trustee"
     - "Ultimatum_Game_Proposer"
-      #- "Ultimatum_Game_Responder"
+    - "Ultimatum_Game_Responder"
 
   games_config:
     Escalation_Game:
