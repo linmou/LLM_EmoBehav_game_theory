@@ -318,6 +318,87 @@ class TestMultimodalRepReading:
         mock_tokenizer.assert_called_with(text_input, return_tensors="pt")
 
 
+    def test_image_features_tokens_mismatch_error(self, mock_multimodal_model, mock_tokenizer, mock_image_processor, sample_image):
+        """Test handling of image features/tokens mismatch error."""
+        # Override the mock model to raise the specific error we're seeing
+        def mock_forward_with_error(**kwargs):
+            raise ValueError("Image features and image tokens do not match: tokens: 8, features 3128")
+        
+        mock_multimodal_model.forward = Mock(side_effect=mock_forward_with_error)
+        
+        pipeline = RepReadingPipeline(
+            model=mock_multimodal_model,
+            tokenizer=mock_tokenizer,
+            image_processor=mock_image_processor
+        )
+        
+        multimodal_input = {
+            'images': [sample_image],
+            'text': 'when you see this image, your emotion is anger'
+        }
+        
+        # This should raise the specific error we're testing for
+        with pytest.raises(ValueError, match="Image features and image tokens do not match"):
+            result = pipeline.preprocess(multimodal_input)
+            pipeline._forward(
+                model_inputs=result,
+                rep_token=-1,
+                hidden_layers=[0, 1, 2],
+                rep_reader=None
+            )
+
+    def test_image_token_consistency_validation(self, mock_multimodal_model, mock_tokenizer, mock_image_processor, sample_image):
+        """Test validation of image token consistency."""
+        pipeline = RepReadingPipeline(
+            model=mock_multimodal_model,
+            tokenizer=mock_tokenizer,
+            image_processor=mock_image_processor
+        )
+        
+        # Mock processor to simulate inconsistent image tokens/features
+        mock_image_processor.return_value = {
+            'pixel_values': torch.randn(1, 3, 224, 224),
+            'image_sizes': [(224, 224)],
+            'num_image_tokens': [8]  # Simulate 8 image tokens
+        }
+        
+        # Mock tokenizer to return text with image placeholders
+        mock_tokenizer.return_value = {
+            'input_ids': torch.tensor([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]),
+            'attention_mask': torch.tensor([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
+        }
+        
+        # Mock vision model to return inconsistent number of features
+        def mock_forward_inconsistent(**kwargs):
+            # Simulate vision model returning more features than expected tokens
+            if 'pixel_values' in kwargs:
+                # Vision features: 3128 features but only 8 image tokens expected
+                vision_features = torch.randn(1, 3128, 768)  # Too many features
+                mock_output = Mock()
+                mock_output.hidden_states = [vision_features] * 12
+                mock_output.last_hidden_state = vision_features
+                return mock_output
+            return mock_multimodal_model.forward(**kwargs)
+        
+        mock_multimodal_model.forward = Mock(side_effect=mock_forward_inconsistent)
+        
+        multimodal_input = {
+            'images': [sample_image],
+            'text': 'when you see this image, your emotion is anger'
+        }
+        
+        # This test documents the expected behavior when there's a mismatch
+        # The actual fix should be in the image processing or tokenization step
+        with pytest.raises(ValueError, match="Image features and image tokens do not match"):
+            result = pipeline.preprocess(multimodal_input)
+            pipeline._forward(
+                model_inputs=result,
+                rep_token=-1,
+                hidden_layers=[0, 1, 2],
+                rep_reader=None
+            )
+
+
 class TestMultimodalConfiguration:
     """Test suite for multimodal configuration handling."""
     

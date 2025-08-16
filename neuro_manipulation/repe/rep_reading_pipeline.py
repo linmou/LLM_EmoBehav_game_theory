@@ -24,10 +24,33 @@ class RepReadingPipeline(Pipeline):
         hidden_states_layers = {}
         for layer in hidden_layers:
             hidden_states = outputs['hidden_states'][layer]
-            hidden_states =  hidden_states[:, rep_token, :].detach()
-            if hidden_states.dtype == torch.bfloat16:
-                hidden_states = hidden_states.float()
-            hidden_states_layers[layer] = hidden_states.detach()
+            
+            # CRITICAL FIX: Handle multimodal sequence indexing safely
+            seq_len = hidden_states.shape[1]
+            
+            # Convert rep_token to safe index
+            if isinstance(rep_token, int):
+                if rep_token < 0:
+                    # Negative indexing: -1 means last token, -2 means second-to-last, etc.
+                    safe_token_idx = seq_len + rep_token
+                else:
+                    # Positive indexing
+                    safe_token_idx = rep_token
+                
+                # Bounds check to prevent "index X is out of bounds" errors
+                if safe_token_idx < 0 or safe_token_idx >= seq_len:
+                    print(f"WARNING: rep_token={rep_token} (safe_idx={safe_token_idx}) out of bounds for seq_len={seq_len}")
+                    print(f"Using last available token (index {seq_len-1}) instead")
+                    safe_token_idx = seq_len - 1  # Use last available token
+                    
+                hidden_states_extracted = hidden_states[:, safe_token_idx, :].detach()
+            else:
+                # Handle list/other types (fallback to original behavior)
+                hidden_states_extracted = hidden_states[:, rep_token, :].detach()
+            
+            if hidden_states_extracted.dtype == torch.bfloat16:
+                hidden_states_extracted = hidden_states_extracted.float()
+            hidden_states_layers[layer] = hidden_states_extracted.detach()
 
         return hidden_states_layers
 
@@ -76,47 +99,73 @@ class RepReadingPipeline(Pipeline):
             if not isinstance(images, list) and images is not None:
                 images = [images]
             
+            # EXTREME VRAM OPTIMIZATION: Pre-compress images to tiny sizes
+            if images:
+                compressed_images = []
+                for img in images:
+                    if hasattr(img, 'resize'):
+                        # Force resize to very small dimensions to prevent large allocations
+                        compressed_img = img.resize((224, 224), Image.Resampling.LANCZOS)
+                        compressed_images.append(compressed_img)
+                    else:
+                        compressed_images.append(img)
+                images = compressed_images
+            
+            # Create proper message format for Qwen2.5-VL
+            content = []
+            
+            # Add images first
+            if images:
+                for image in images:
+                    content.append({
+                        "type": "image",
+                        "image": image
+                    })
+            
+            # Add text
+            content.append({
+                "type": "text",
+                "text": text
+            })
+            
+            messages = [
+                {
+                    "role": "user",
+                    "content": content
+                }
+            ]
+            
+            # CRITICAL FIX: Detect pre-formatted text to avoid double chat template application
+            # This prevents token/feature mismatch by avoiding duplicate processing
             try:
-                # Create proper message format for Qwen2.5-VL
-                content = []
-                
-                # Add images first
-                if images:
-                    for image in images:
-                        content.append({
-                            "type": "image",
-                            "image": image
-                        })
-                
-                # Add text
-                content.append({
-                    "type": "text",
-                    "text": text
-                })
-                
-                messages = [
-                    {
-                        "role": "user",
-                        "content": content
-                    }
-                ]
-                
-                # Apply chat template (this handles token formatting correctly)
-                formatted_text = self.tokenizer.apply_chat_template(
-                    messages, 
-                    tokenize=False, 
-                    add_generation_prompt=True
-                )
-                
-                # Try with qwen_vl_utils first (preferred)
+                # Method 1: Try with qwen_vl_utils (official and most reliable)
                 try:
                     from qwen_vl_utils import process_vision_info
                     
-                    # Extract vision information
-                    image_inputs, video_inputs = process_vision_info(messages)
+                    # Check if text is already formatted (contains Qwen-VL tokens)
+                    is_pre_formatted = (
+                        '<|im_start|>' in text and 
+                        '<|vision_start|>' in text and 
+                        '<|image_pad|>' in text
+                    )
                     
-                    # Use unified processor
-                    model_inputs = self.image_processor(  # This should be the full AutoProcessor
+                    if is_pre_formatted:
+                        # Text already formatted by PromptFormat.build() - use directly
+                        formatted_text = text
+                        # Extract vision information from messages for consistency
+                        image_inputs, video_inputs = process_vision_info(messages)
+                    else:
+                        # Raw text - apply chat template (this handles token formatting correctly)
+                        formatted_text = self.image_processor.apply_chat_template(
+                            messages, 
+                            tokenize=False, 
+                            add_generation_prompt=True
+                        )
+                        # Extract vision information
+                        image_inputs, video_inputs = process_vision_info(messages)
+                    
+                    # Use unified processor - this prevents token/feature mismatch
+                    model_inputs = self.image_processor(
                         text=[formatted_text],
                         images=image_inputs,
                         videos=video_inputs,
@@ -125,45 +174,61 @@ class RepReadingPipeline(Pipeline):
                         **tokenizer_kwargs
                     )
                     
+                    return model_inputs
+                    
                 except ImportError:
-                    # Fallback without qwen_vl_utils
-                    model_inputs = self.image_processor(  # This should be the full AutoProcessor
+                    # Method 2: Fallback without qwen_vl_utils but still unified
+                    print("qwen_vl_utils not available, using unified processor fallback")
+                    
+                    # Check if text is already formatted (contains Qwen-VL tokens)
+                    is_pre_formatted = (
+                        '<|im_start|>' in text and 
+                        '<|vision_start|>' in text and 
+                        '<|image_pad|>' in text
+                    )
+                    
+                    if is_pre_formatted:
+                        # Text already formatted by PromptFormat.build() - use directly
+                        formatted_text = text
+                    else:
+                        # Raw text - apply chat template using the processor's tokenizer
+                        formatted_text = self.image_processor.apply_chat_template(
+                            messages, 
+                            tokenize=False, 
+                            add_generation_prompt=True
+                        )
+                    
+                    # Use unified processor - this is the key to preventing token/feature mismatch
+                    model_inputs = self.image_processor(
                         text=[formatted_text],
-                        images=images,
+                        images=images if images else None,
                         padding=True,
                         return_tensors="pt",
                         **tokenizer_kwargs
                     )
-                
-                return model_inputs
-                
-            except Exception as e:
-                print(f"Unified processing failed: {e}")
-                # Fallback to separate processing for backward compatibility
-                model_inputs = {}
-                if images is not None and self.image_processor:
-                    try:
-                        if hasattr(self.image_processor, 'image_processor'):
-                            # Has separate image processor
-                            img_inputs = self.image_processor.image_processor(images, return_tensors="pt")
-                        else:
-                            # Direct processor call
-                            img_inputs = self.image_processor(images, return_tensors="pt")
-                        model_inputs.update(img_inputs)
-                    except Exception as e:
-                        print(f"Image processing failed: {e}")
-                
-                # Process text if available
-                if text and self.tokenizer:
-                    text_inputs = self.tokenizer(text, return_tensors="pt", **tokenizer_kwargs)
-                    model_inputs.update(text_inputs)
                     
-                return model_inputs
+                    return model_inputs
+                    
+            except Exception as e:
+                print(f"ERROR: Unified processing failed with: {e}")
+                print("This indicates a configuration issue with the AutoProcessor.")
+                print("Ensure you're using: AutoProcessor.from_pretrained(model_path, trust_remote_code=True)")
+                
+                # DO NOT fall back to separate processing as it causes token/feature mismatch
+                # Instead, raise the error to help debug the processor setup
+                raise ValueError(
+                    f"Multimodal processing failed. This usually indicates:\n"
+                    f"1. image_processor is not a proper AutoProcessor instance\n"
+                    f"2. Model does not support multimodal processing\n"
+                    f"3. Missing required dependencies (qwen_vl_utils recommended)\n"
+                    f"Original error: {e}"
+                )
                 
         elif isinstance(inputs, list):
             # Handle batch processing
             if inputs:
-                # Process first item for now (TODO: proper batching)
+                # For now, process the first item (TODO: implement proper batching)
+                # This maintains consistency while avoiding the token mismatch
                 return self._prepare_multimodal_inputs(inputs[0], **tokenizer_kwargs)
         
         return {}
@@ -212,8 +277,14 @@ class RepReadingPipeline(Pipeline):
                 decoder_start_token = [self.tokenizer.pad_token] * model_inputs['input_ids'].size(0)
                 decoder_input = self.tokenizer(decoder_start_token, return_tensors="pt").input_ids.to(device)
                 model_inputs['decoder_input_ids'] = decoder_input
-            outputs =  self.model(**model_inputs, output_hidden_states=True)
-        hidden_states = self._get_hidden_states(outputs, rep_token, hidden_layers, which_hidden_states)
+            
+            outputs = self.model(**model_inputs, output_hidden_states=True)
+            
+            # MEMORY OPTIMIZATION: Extract hidden states immediately and clear outputs
+            hidden_states = self._get_hidden_states(outputs, rep_token, hidden_layers, which_hidden_states)
+            
+            # SAFE MEMORY CLEANUP: Only clear outputs object, avoid torch.cuda.empty_cache()
+            del outputs  # Clear large outputs object
         
         if rep_reader is None:
             return hidden_states
@@ -223,12 +294,25 @@ class RepReadingPipeline(Pipeline):
 
     def _batched_string_to_hiddens(self, train_inputs, rep_token, hidden_layers, batch_size, which_hidden_states, **tokenizer_args):
         # Wrapper method to get a dictionary hidden states from a list of strings
+        # VRAM OPTIMIZATION: Use smaller batch sizes for multimodal inputs
+        original_batch_size = batch_size
+        if isinstance(train_inputs, list) and len(train_inputs) > 0:
+            # Check if this is multimodal input
+            if isinstance(train_inputs[0], dict) and 'images' in str(train_inputs[0]):
+                # Reduce batch size for multimodal to prevent OOM
+                batch_size = 1  # Process one multimodal item at a time for stability
+        
         hidden_states_outputs = self(train_inputs, rep_token=rep_token,
             hidden_layers=hidden_layers, batch_size=batch_size, rep_reader=None, which_hidden_states=which_hidden_states, **tokenizer_args)
         hidden_states = {layer: [] for layer in hidden_layers}
+        
+        # MEMORY OPTIMIZATION: Process and clear batches immediately
         for hidden_states_batch in hidden_states_outputs:
             for layer in hidden_states_batch:
                 hidden_states[layer].extend(hidden_states_batch[layer])
+            # SAFE CLEANUP: Just delete the batch object, avoid cache clearing
+            del hidden_states_batch
+                
         return {k: np.vstack(v) for k, v in hidden_states.items()}
     
     def _validate_params(self, n_difference, direction_method):
@@ -273,9 +357,100 @@ class RepReadingPipeline(Pipeline):
             
             # get differences between pairs
             relative_hidden_states = {k: np.copy(v) for k, v in hidden_states.items()}
+            
+            # Track how many samples we actually have for each layer after processing
+            final_sample_count = None
+            
             for layer in hidden_layers:
                 for _ in range(n_difference):
-                    relative_hidden_states[layer] = relative_hidden_states[layer][::2] - relative_hidden_states[layer][1::2]
+                    # BUGFIX: Handle odd number of samples by ensuring even/odd arrays have same length
+                    even_indices = relative_hidden_states[layer][::2]
+                    odd_indices = relative_hidden_states[layer][1::2]
+                    
+                    # Ensure both arrays have the same length by truncating the longer one
+                    min_length = min(len(even_indices), len(odd_indices))
+                    even_indices = even_indices[:min_length]
+                    odd_indices = odd_indices[:min_length]
+                    
+                    relative_hidden_states[layer] = even_indices - odd_indices
+                    
+                    # Track the final sample count after truncation
+                    if final_sample_count is None:
+                        final_sample_count = min_length
+            
+            # CRITICAL FIX: Also truncate the original hidden_states to match relative_hidden_states
+            # This ensures consistency between hidden_states used for sign calculation and processed data
+            if final_sample_count is not None and final_sample_count * 2 < len(hidden_states[hidden_layers[0]]):
+                for layer in hidden_layers:
+                    hidden_states[layer] = hidden_states[layer][:final_sample_count * 2]
+                
+                # Also truncate train_labels if provided to match
+                if train_labels is not None:
+                    # Debug: Check the structure of train_labels
+                    if isinstance(train_labels, list):
+                        original_label_count = len(np.concatenate(train_labels)) if len(train_labels) > 0 and isinstance(train_labels[0], (list, np.ndarray)) else len(train_labels)
+                    else:
+                        original_label_count = len(train_labels)
+                    
+                    target_count = final_sample_count * 2
+                    if original_label_count > target_count:
+                        
+                        if isinstance(train_labels, list) and len(train_labels) > 0 and isinstance(train_labels[0], (list, np.ndarray)):
+                            # Handle nested list structure - need to ensure total concatenated count matches target_count
+                            # Since each group originally had pairs, and we're processing with n_difference=1,
+                            # we need to maintain the same structure but with truncated data
+                            
+                            # SIMPLE FIX: Just take target_count samples and reconstruct as pairs
+                            # The proportional approach was overcomplicated and buggy
+                            
+                            # Flatten all labels, truncate to target_count, then reconstruct as pairs
+                            flat_labels = np.concatenate(train_labels)
+                            truncated_flat = flat_labels[:target_count]
+                            
+                            # Reconstruct as pairs (groups of size 2) to maintain original structure
+                            train_labels = []
+                            for i in range(0, len(truncated_flat), 2):
+                                if i + 1 < len(truncated_flat):
+                                    # Complete pair
+                                    train_labels.append([truncated_flat[i], truncated_flat[i+1]])
+                                else:
+                                    # Odd final element - create single-element group
+                                    train_labels.append([truncated_flat[i]])
+                            
+                            final_count = sum(len(x) for x in train_labels)
+                            # This should now always equal target_count
+                            if final_count != target_count:
+                                # CRITICAL FALLBACK: Ensure exact target_count
+                                # The key insight: PCARepReader expects len(np.concatenate(train_labels)) == target_count
+                                non_empty_groups = [group for group in train_labels if len(group) > 0]
+                                if non_empty_groups:
+                                    flat_labels = np.concatenate(non_empty_groups)
+                                    
+                                    # Simply truncate to exact target_count and reconstruct groups of size 2
+                                    truncated_flat = flat_labels[:target_count]
+                                    
+                                    # Reconstruct as pairs (groups of size 2) to maintain original structure
+                                    train_labels = []
+                                    for i in range(0, len(truncated_flat), 2):
+                                        if i + 1 < len(truncated_flat):
+                                            # Complete pair
+                                            train_labels.append([truncated_flat[i], truncated_flat[i+1]])
+                                        else:
+                                            # Odd final element - create single-element group
+                                            train_labels.append([truncated_flat[i]])
+                                    
+                                    # Verify the fix
+                                    final_flat = [item for sublist in train_labels for item in sublist]
+                                    
+                                    if len(final_flat) != target_count:
+                                        # Last resort: use first target_count elements directly as flat array
+                                        train_labels = [[x] for x in flat_labels[:target_count]]
+                                else:
+                                    # No valid labels - create empty structure
+                                    train_labels = []
+                        else:
+                            # Handle flat array
+                            train_labels = train_labels[:target_count]
 
 		# get the directions
         direction_finder.directions = direction_finder.get_rep_directions(

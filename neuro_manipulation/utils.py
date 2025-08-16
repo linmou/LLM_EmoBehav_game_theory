@@ -505,12 +505,13 @@ def detect_multimodal_model(model_name_or_path):
     return False
 
 
-def auto_load_processor(model_name_or_path):
+def auto_load_processor(model_name_or_path, vram_optimized=True):
     """
-    Automatically load AutoProcessor for multimodal models.
+    Automatically load AutoProcessor for multimodal models with VRAM optimization.
 
     Args:
         model_name_or_path: Model name or path
+        vram_optimized: Whether to apply VRAM-saving optimizations
 
     Returns:
         AutoProcessor or None if not available/not multimodal
@@ -521,6 +522,33 @@ def auto_load_processor(model_name_or_path):
         processor = AutoProcessor.from_pretrained(
             model_name_or_path, trust_remote_code=True
         )
+        
+        # Apply VRAM optimizations
+        if vram_optimized and hasattr(processor, 'image_processor'):
+            # EXTREME VRAM REDUCTION: Reduce to tiny images to prevent 9GB allocation
+            # Original: 12,845,056 pixels (~3582x3582)
+            # Ultra-tiny: 65,536 pixels (~256x256) - minimal for processing
+            original_max = getattr(processor.image_processor, 'max_pixels', 12845056)
+            optimized_max = 65536  # Extremely small to prevent large allocations
+            
+            if hasattr(processor.image_processor, 'max_pixels'):
+                processor.image_processor.max_pixels = optimized_max
+            
+            # Force very small image dimensions
+            if hasattr(processor.image_processor, 'size'):
+                if isinstance(processor.image_processor.size, dict):
+                    # Force maximum dimensions to be very small
+                    processor.image_processor.size = {
+                        'shortest_edge': 224,  # Very small
+                        'longest_edge': 256    # Very small maximum
+                    }
+            
+            # Add image pre-compression if possible
+            if hasattr(processor.image_processor, 'do_resize'):
+                processor.image_processor.do_resize = True
+            if hasattr(processor.image_processor, 'do_rescale'):
+                processor.image_processor.do_rescale = True
+        
         print(f"✓ Auto-loaded AutoProcessor for {model_name_or_path}")
         return processor
     except Exception as e:
@@ -535,6 +563,7 @@ def load_model_tokenizer(
     expand_vocab=False,
     from_vllm=False,
     auto_load_multimodal=True,
+    enable_multi_gpu=True,
 ):
     """
     Enhanced model loading with automatic multimodal detection and processor loading.
@@ -569,12 +598,19 @@ def load_model_tokenizer(
             pass
 
     if not model:
+        # MULTI-GPU OPTIMIZATION: Distribute model across available GPUs
+        device_map_config = "auto"
+        if enable_multi_gpu and torch.cuda.device_count() > 1:
+            # Use balanced device mapping to distribute layers across GPUs
+            device_map_config = "auto"  # Let transformers handle automatic distribution
+        
         model = AutoModel.from_pretrained(
             model_name_or_path,
-            torch_dtype=torch.float16,
-            device_map="auto",
+            torch_dtype=torch.bfloat16,  # Use bfloat16 for better memory efficiency
+            device_map=device_map_config,
             token=True,
             trust_remote_code=True,
+            max_memory={i: "12GiB" for i in range(torch.cuda.device_count())} if torch.cuda.device_count() > 1 else None,
         ).eval()
 
     # Load tokenizer

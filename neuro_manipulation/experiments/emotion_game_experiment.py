@@ -133,7 +133,7 @@ class EmotionGameExperiment:
 
         self.batch_size = batch_size
 
-        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(
+        self.model, self.tokenizer, self.prompt_format, processor = setup_model_and_tokenizer(
             repe_eng_config, from_vllm=False
         )  # first load from hf for load_emotion_readers since load_emotion_readers does not support vllm yet TODO: update load_emotion_readers to support vllm
         num_hidden_layers = ModelLayerDetector.num_layers(self.model)
@@ -141,10 +141,10 @@ class EmotionGameExperiment:
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
 
         self.emotion_rep_readers = load_emotion_readers(
-            self.repe_eng_config, self.model, self.tokenizer, self.hidden_layers
+            self.repe_eng_config, self.model, self.tokenizer, self.hidden_layers, processor
         )
         del self.model  # to save memory
-        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(
+        self.model, self.tokenizer, self.prompt_format, _ = setup_model_and_tokenizer(
             repe_eng_config, from_vllm=True
         )  # load from vllm for the rest of the experiment
 
@@ -201,11 +201,14 @@ class EmotionGameExperiment:
         with open(self.output_dir + "/exp_config.yaml", "w") as f:
             yaml.dump(self.exp_config, f)
         
-        client_choice = self.exp_config['experiment'].get('oai_client', 'azure')
+        client_choice = self.exp_config['experiment'].get('oai_client', 'openai')  # Changed default from 'azure' to 'openai'
         if client_choice == 'azure':
             self.llm_client = AzureOpenAI(**AZURE_OPENAI_CONFIG)
+        elif client_choice == 'openai':
+            from api_configs import OAI_CONFIG
+            self.llm_client = OpenAI(**OAI_CONFIG)
         else:
-            raise ValueError(f"Invalid LLM client: {client_choice}")
+            raise ValueError(f"Invalid LLM client: {client_choice}. Supported: 'azure', 'openai'")
 
     def build_dataloader(self):
         self.logger.info(
