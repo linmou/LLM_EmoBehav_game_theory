@@ -1,0 +1,48 @@
+experiment:
+  name: "Emotion_Memory_Passkey_Experiment"
+  
+  # Model configuration
+  model_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  
+  # Emotions to test
+  emotions:
+    - "anger"
+    - "happiness"
+    - "sadness"
+    - "disgust"
+    - "fear"
+    - "surprise"
+  
+  # Emotion intensity levels
+  intensities:
+    - 0.5
+    - 1.0
+    - 1.5
+  
+  # Benchmark configuration
+  benchmark:
+    name: "infinitebench"
+    data_path: "/data/home/jjl7137/memory_benchmarks/InfiniteBench/data/passkey.jsonl"
+    task_type: "passkey"
+    evaluation_method: "get_score_one_passkey"
+    sample_limit: 100  # Set to null for all samples
+    metadata:
+      description: "Passkey retrieval from long context"
+      context_length: "100k+"
+      benchmark_version: "1.0"
+  
+  # Generation parameters
+  generation_config:
+    temperature: 0.1
+    max_new_tokens: 50
+    do_sample: false
+    top_p: 0.9
+  
+  # Experimental parameters
+  batch_size: 4
+  
+  # Output configuration
+  output:
+    base_dir: "results/emotion_memory_experiments"
+    save_plots: true
+    plot_format: "png"
