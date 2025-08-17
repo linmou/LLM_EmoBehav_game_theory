@@ -110,7 +110,7 @@ def get_optimal_tensor_parallel_size(model_path):
     except Exception as e:
         return 1
 
-def primary_emotions_concept_dataset(data_dir, model_name=None, tokenizer=None, system_prompt=None, seed=0):
+def primary_emotions_concept_dataset(data_dir, model_name=None, tokenizer=None, system_prompt=None, seed=0, enable_thinking=False):
     """
     Create dataset of emotion scenarios using proper model-specific prompt formatting.
     
@@ -120,6 +120,7 @@ def primary_emotions_concept_dataset(data_dir, model_name=None, tokenizer=None, 
         tokenizer: Optional tokenizer for more accurate prompt formatting
         system_prompt: Optional system prompt, if None no system prompt will be used
         seed: Random seed for shuffling
+        enable_thinking: Whether to enable thinking mode for compatible models (default: False)
     
     Returns:
         Dictionary of formatted emotion datasets
@@ -177,25 +178,35 @@ def primary_emotions_concept_dataset(data_dir, model_name=None, tokenizer=None, 
         for scenario in data_:
             user_message = f"Consider the emotion of the following scenario:\nScenario: {scenario}\nAnswer:"
             if tokenizer is not None:
-                formatted_prompt = prompt_format.build(system_prompt, [user_message], [])
+                formatted_prompt = prompt_format.build(system_prompt, [user_message], [], enable_thinking=enable_thinking)
                 emotion_test_data.append(formatted_prompt)
             else:
-                if system_prompt:
-                    formatted_prompt = f"{user_tag} {system_prompt}\n\n{user_message} {assistant_tag} "
+                if model_name is not None:
+                    # Use ManualPromptFormat with enable_thinking support
+                    formatted_prompt = ManualPromptFormat.build(model_name, system_prompt, [user_message], [], enable_thinking=enable_thinking)
                 else:
-                    formatted_prompt = f"{user_tag} {user_message} {assistant_tag} "
+                    # Fallback to simple format when no model name
+                    if system_prompt:
+                        formatted_prompt = f"{user_tag} {system_prompt}\n\n{user_message} {assistant_tag} "
+                    else:
+                        formatted_prompt = f"{user_tag} {user_message} {assistant_tag} "
                 emotion_test_data.append(formatted_prompt)
         
         for scenario in data:
             user_message = f"Consider the emotion of the following scenario:\nScenario: {scenario}\nAnswer:"
             if tokenizer is not None:
-                formatted_prompt = prompt_format.build(system_prompt, [user_message], [])
+                formatted_prompt = prompt_format.build(system_prompt, [user_message], [], enable_thinking=enable_thinking)
                 emotion_train_data.append(formatted_prompt)
             else:
-                if system_prompt:
-                    formatted_prompt = f"{user_tag} {system_prompt}\n\n{user_message} {assistant_tag} "
+                if model_name is not None:
+                    # Use ManualPromptFormat with enable_thinking support
+                    formatted_prompt = ManualPromptFormat.build(model_name, system_prompt, [user_message], [], enable_thinking=enable_thinking)
                 else:
-                    formatted_prompt = f"{user_tag} {user_message} {assistant_tag} "
+                    # Fallback to simple format when no model name
+                    if system_prompt:
+                        formatted_prompt = f"{user_tag} {system_prompt}\n\n{user_message} {assistant_tag} "
+                    else:
+                        formatted_prompt = f"{user_tag} {user_message} {assistant_tag} "
                 emotion_train_data.append(formatted_prompt)
         
         formatted_data[emotion] = {
@@ -283,11 +294,48 @@ def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assist
     model = None
     if from_vllm:
         try:
-            model = LLM(model=model_name_or_path, tensor_parallel_size=get_optimal_tensor_parallel_size(model_name_or_path), max_model_len=1000, trust_remote_code=True, enforce_eager=True)
+            # Check if this is an AWQ model
+            is_awq_model = 'awq' in model_name_or_path.lower() or 'AWQ' in model_name_or_path
+            
+            if is_awq_model:
+                # AWQ models require specific quantization configuration
+                model = LLM(
+                    model=model_name_or_path, 
+                    tensor_parallel_size=get_optimal_tensor_parallel_size(model_name_or_path), 
+                    max_model_len=40000, 
+                    trust_remote_code=True, 
+                    enforce_eager=True,
+                    quantization="awq"
+                )
+            else:
+                # Standard vLLM configuration
+                model = LLM(
+                    model=model_name_or_path, 
+                    tensor_parallel_size=get_optimal_tensor_parallel_size(model_name_or_path), 
+                    max_model_len=40000, 
+                    trust_remote_code=True, 
+                    enforce_eager=True
+                )
         except Exception as e:
             pass
     if not model:
-        model = AutoModel.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
+        # Check if this should be a causal LM model based on its config
+        from transformers import AutoConfig, AutoModelForCausalLM
+        try:
+            config = AutoConfig.from_pretrained(model_name_or_path, token=True, trust_remote_code=True)
+            # Check if the model has architectures that suggest it's a causal LM
+            if hasattr(config, 'architectures') and config.architectures:
+                # If any architecture name contains "ForCausalLM", use AutoModelForCausalLM
+                if any("ForCausalLM" in arch for arch in config.architectures):
+                    model = AutoModelForCausalLM.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
+                else:
+                    model = AutoModel.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
+            else:
+                # Fallback to AutoModel if we can't determine
+                model = AutoModel.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
+        except:
+            # If config loading fails, fallback to AutoModel
+            model = AutoModel.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
 
     use_fast_tokenizer = False #"LlamaForCausalLM" not in model.config.architectures
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)

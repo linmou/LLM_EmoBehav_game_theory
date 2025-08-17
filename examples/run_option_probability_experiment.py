@@ -71,15 +71,13 @@ def prepare_configs(config: dict) -> tuple:
     
     # 2. Experiment Config  
     exp_config = {'experiment': config['experiment'].copy()}
-    
+    exp_config['experiment']['target_emotion'] = 'anger' # TODO: remove it
+     
     # 3. Game Config - use the built-in game configs or load custom
     game_name = config['game_config']['game_name']
     game_config = get_game_config(game_name)
-    
-     
-    # Override with any custom settings from config
-    if 'data_path' in config['game_config']:
-        game_config['data_path'] = config['game_config']['data_path']
+    game_config.update(config['game_config']) 
+
     
     return repe_eng_config, exp_config, game_config
 

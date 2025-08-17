@@ -5,10 +5,11 @@ from pathlib import Path
 from typing import List, Tuple, Type, Union
 
 import instructor
-from openai import OpenAI
+from openai import AzureOpenAI, OpenAI
 from pydantic import BaseModel
+from tqdm import tqdm
 
-from api_configs import OAI_CONFIG
+from api_configs import AZURE_OPENAI_CONFIG, OAI_CONFIG
 from constants import Emotions, GameNames
 from games.game import Game, GameDecision, GameScenario
 from games.payoff_matrix import prisoner_dilemma_very_large, stag_hunt
@@ -43,11 +44,13 @@ class ExtractedResult(BaseModel):
 class GameTheoryTest:
     def __init__(self, llm_config: dict, generation_config: dict):
         """Initialize the game theory test engine with OpenAI client."""
+        # Use AzureOpenAI if config has azure_endpoint, otherwise OpenAI
         client = OpenAI(**llm_config)
         self.client = instructor.patch(client)
         self.generation_config = generation_config
-
-        self.gpt_client = OpenAI(**OAI_CONFIG)
+        
+        # Use the same client for fallback processing instead of external API
+        self.gpt_client = OpenAI(**llm_config)
 
     def load_scenarios(
         self, game: Game
@@ -141,11 +144,14 @@ class GameTheoryTest:
         prompt += f"Extract the decision from the following generated text: {generated_text}. Please strictly follow the raw decision format."
         prompt += f"Response in the following format. {{'decision': <decision>}}. Do not return any other text."
 
+        # Use the same model as the main generation config
+        model_name = self.generation_config.get("model", "Qwen2.5-0.5B-Instruct")
+
         for _ in range(max_retries):
             try:
                 res = oai_response(
                     prompt,
-                    model="gpt-4o-mini",
+                    model=model_name,
                     client=self.gpt_client,
                     response_format={"type": "json_object"},
                 )
@@ -158,7 +164,7 @@ class GameTheoryTest:
                 prompt = f"In previous run, there is an error: {e}. Please try again.\n\n{prompt}"
                 res = oai_response(
                     prompt,
-                    model="gpt-4o-mini",
+                    model=model_name,
                     client=self.gpt_client,
                     response_format={"type": "json_object"},
                 )
@@ -206,30 +212,34 @@ def run_tests(
     all_results = []
 
     # Load scenarios
-    print(f"\nTesting {game.name} scenarios:")
     scenarios = engine.load_scenarios(game)
+    total_requests = len(scenarios) * repeat
+    print(f"\nTesting {game.name} scenarios:")
+    print(f"📊 Scenarios: {len(scenarios)}, Repeats: {repeat}, Total requests: {total_requests}")
 
-    # Run scenarios repeat times
-    for repeat_num in range(repeat):
-        print(f"\nRunning iteration {repeat_num + 1}/{repeat}")
-        # Process scenarios in parallel
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_scenario = {
-                executor.submit(
-                    process_scenario,
-                    engine,
-                    scenario,
-                    decision_class,
-                    emotion,
-                    system_message,
-                ): (scenario, decision_class, repeat_num)
-                for scenario, decision_class in scenarios
-            }
+    # Run scenarios repeat times with progress bar
+    with tqdm(total=total_requests, desc=f"Processing {emotion} emotion", unit="requests") as pbar:
+        for repeat_num in range(repeat):
+            print(f"\n🔄 Running iteration {repeat_num + 1}/{repeat}")
+            # Process scenarios in parallel
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                future_to_scenario = {
+                    executor.submit(
+                        process_scenario,
+                        engine,
+                        scenario,
+                        decision_class,
+                        emotion,
+                        system_message,
+                    ): (scenario, decision_class, repeat_num)
+                    for scenario, decision_class in scenarios
+                }
 
-            for future in as_completed(future_to_scenario):
-                result = future.result()
-                if result is not None:
-                    all_results.append((result, repeat_num))
+                for future in as_completed(future_to_scenario):
+                    result = future.result()
+                    if result is not None:
+                        all_results.append((result, repeat_num))
+                    pbar.update(1)
 
     # Save results to JSON file
     if not Path(output_dir).exists():

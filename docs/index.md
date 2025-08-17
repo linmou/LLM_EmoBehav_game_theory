@@ -1,64 +1,54 @@
-# Welcome to MkDocs
+# LLM Emotional Behavior in Game Theory
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+This project investigates LLM emotional reactions in game theory scenarios through neural manipulation and representation engineering.
 
-## Commands
+## Quick Start
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+* `mkdocs serve` - Start the live-reloading docs server
+* `mkdocs build` - Build the documentation site
+* See [CLAUDE.md](../CLAUDE.md) for development setup and common commands
 
 # Project Documentation
 
 This directory contains documentation for the different modules within the LLM_EmoBehav_game_theory project.
 
-## Modules
+## Core Framework
 
-*   **Core Constants:**
-    *   [Constants Module](../README_constants.md): Comprehensive documentation for emotion and game theory classification enums with dual categorization system (simultaneous/sequential and symmetric/asymmetric).
+### Experiments
+*   **[Qwen3 Thinking Mode](./experiments/qwen3_thinking_mode.md)** - Complete guide to implementing and configuring thinking mode for Qwen3 models
+*   **[Experiment Series](./reference/experiment_series_README.md)** - Documentation for running experiment series
+*   **[Token Management](./reference/token_management.md)** - Token configuration, analysis, and optimization strategies
 
-*   **Scenario Creation:**
-    *   [LangGraph Implementation](./code_readme/data_creation/scenario_creation/langgraph_creation/README.md): Details on the graph-based process for generating game theory scenarios.
-    *   [🔄 Enhanced Scenario Generation with Restart Capabilities](./code_readme/scenario_generation_restart.md): Production-ready scenario generation with automatic restart, timeout handling, and comprehensive error recovery.
-*   **Games:**
-    *   See the `docs/games/` directory for specific game configurations and details.
+### Neural Manipulation
+*   **[Representation Engineering (RepE)](./code_readme/neuro_manipulation/repe/README.md)** - Extracting emotion activation directions
+*   **[Sequence Probability Fix](./code_readme/neuro_manipulation/repe/README_sequence_prob_fix.md)** - vLLM v1 compatible sequence probability calculation
+*   **[vLLM Hook Implementation](./reference/vllm_hook_implementation.md)** - RepControlVLLMHook for representation control
 
-*   **Representation Reading (RepE)**: 
-    *   [Extracting Emotion Activation Directions](./code_readme/neuro_manipulation/repe/README.md)
-    *   [Sequence Probability Fix](./code_readme/neuro_manipulation/repe/README_sequence_prob_fix.md) - vLLM v1 compatible sequence probability calculation
+### Models and Prompts
+*   **[Prompt Format](./reference/prompt_format.md)** - Multi-model prompt formatting system
+*   **[Prompt Wrapper](./reference/prompt_wrapper.md)** - High-level prompt management
+*   **[Model Layer Detector](./reference/model_layer_detector.md)** - Automatic layer detection for different models
+*   **[vLLM Compatibility](./reference/vllm_compatibility.md)** - vLLM integration with representation engineering
 
-*   **Emotion Analysis**:
-    *   [Emotion Analysis](./reference/emotion_analysis.md) - Documentation for emotion analysis
+## Game Theory Components
 
-*   **Model Layer Detector**:
-    *   [Model Layer Detector](./reference/model_layer_detector.md) - Documentation for model layer detector
+### Scenario Generation
+*   **[LangGraph Implementation](./code_readme/data_creation/scenario_creation/langgraph_creation/README.md)** - Graph-based scenario generation
+*   **[Enhanced Scenario Generation](./code_readme/scenario_generation_restart.md)** - Production-ready generation with error recovery
 
-*   **Prompt Format**:
-    *   [Prompt Format](./reference/prompt_format.md) - Documentation for prompt format
+### Game Framework
+*   **[Constants Module](../README_constants.md)** - Emotion and game theory classification system
+*   **[Payoff Matrices](./reference/payoff_matrices.md)** - Mathematical foundations of game payoffs
+*   **[Game Tree](./reference/game_tree.md)** - Game structure documentation
 
-*   **Prompt Wrapper**:
-    *   [Prompt Wrapper](./reference/prompt_wrapper.md) - Documentation for prompt wrapper
+## Analysis and Results
 
-*   **Experiment Series**:
-    *   [Experiment Series](./reference/experiment_series_README.md) - Documentation for experiment series
+### Behavioral Analysis
+*   **[Emotion Analysis](./reference/emotion_analysis.md)** - Emotion detection and classification
+*   **[Option Pattern Analysis](./code_readme/result_analysis/option_pattern_analysis_link.md)** - Linguistic patterns in decisions
+*   **[Statistical Engine](./reference/statistical_engine.md)** - Statistical analysis framework
 
-*   **Behavior Analysis**:
-    *   [Behavior Analyzer Script](../../README.md): Script to analyze predicate distribution in behavior choices using Azure GPT-4o.
-
-*   **vLLM Integration**:
-    *   [vLLM Compatibility](./reference/vllm_compatibility.md) - Documentation for vLLM compatibility with representation engineering
-    *   [vLLM Hook Implementation](./reference/vllm_hook_implementation.md) - Explains the `RepControlVLLMHook` for representation control using vLLM hooks.
-
-*   **Result Analysis**:
-    *   [Option Pattern Analysis](./code_readme/result_analysis/option_pattern_analysis_link.md) - Analysis of linguistic patterns in game theory decision scenarios
-
-*   ... (Add links to other documentation as needed)
+### Experiment Management
+*   **[Experiment Time Tracking](./reference/ExperimentTimeTracking.md)** - Performance monitoring
+*   **[Experiment Report Naming](./reference/experiment_report_naming.md)** - Result organization conventions
 

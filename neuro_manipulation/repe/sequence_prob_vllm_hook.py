@@ -599,90 +599,83 @@ class CombinedVLLMHook:
             self.hook_registered = True
             logger.info(f"Successfully registered {success_count} hook(s).")
 
-    def get_log_prob(self, 
-                     text_inputs: List[str], 
+    def get_log_prob(self,
+                     text_inputs: List[str],
                      target_sequences: List[str],
                      **kwargs) -> List[Dict[str, float]]:
         """
-        Calculates log probabilities for target sequences given input prompts.
+        Calculates log probabilities for target sequences given input prompts
+        using prompt_logprobs.
         """
         if not self.enable_sequence_prob:
             raise RuntimeError("Sequence probability functionality is not enabled.")
-        
-        if not self.hook_registered:
-            raise RuntimeError("Hook not registered. Cannot capture sequence probabilities.")
 
+        if len(text_inputs) != 1:
+            raise NotImplementedError("get_log_prob currently only supports a single text_input.")
+        
+        prompt = text_inputs[0]
         results = []
-        
-        try:
-            # Tokenize target sequences
-            tokenized_targets = []
-            for seq in target_sequences:
-                tokens = self.tokenizer.encode(seq, add_special_tokens=False)
-                # Also try with a leading space (common in GPT tokenizers)
-                tokens_with_space = self.tokenizer.encode(' ' + seq, add_special_tokens=False)
-                
-                tokenized_targets.append({
-                    'sequence': seq,
-                    'tokens': tokens,
-                    'token_ids': torch.tensor(tokens),
-                    'tokens_with_space': tokens_with_space,
-                    'token_ids_with_space': torch.tensor(tokens_with_space)
-                })
 
-            # Prepare sampling parameters for generation
-            max_target_tokens = max(len(target['tokens']) for target in tokenized_targets)
-            logger.info(f"Generating {max_target_tokens} tokens to cover target sequences: {[t['sequence'] for t in tokenized_targets]}")
-            
+        try:
             sampling_params = SamplingParams(
-                max_tokens=max_target_tokens,
+                max_tokens=1,
+                logprobs=1, 
+                prompt_logprobs=1,
                 temperature=0.0,
-                top_p=1.0,
-                logprobs=20
             )
 
-            # Run generation to get logprobs
-            logger.info("Running generation to get logprobs...")
-            outputs = self.model.generate(text_inputs, sampling_params)
-            logger.info("Generation completed successfully")
+            full_texts = [prompt + seq for seq in target_sequences]
             
-            # Calculate probabilities for each target sequence
-            for target_info in tokenized_targets:
-                sequence = target_info['sequence']
+            prompt_token_ids = self.tokenizer.encode(prompt, add_special_tokens=False)
+            len_prompt_tokens = len(prompt_token_ids)
+            
+            outputs = self.model.generate(full_texts, sampling_params, use_tqdm=False)
+            
+            for i, output in enumerate(outputs):
+                sequence = target_sequences[i]
+                prompt_logprobs_list = output.prompt_logprobs
                 
-                # Try both tokenization variants
-                token_ids_options = [
-                    target_info['token_ids'],
-                    target_info['token_ids_with_space']
-                ]
+                if prompt_logprobs_list is None:
+                    logger.warning(f"Could not get prompt_logprobs for sequence '{sequence}'.")
+                    continue
+                
+                output_prompt_tokens = output.prompt_token_ids
+                
+                # Align tokenizations
+                if output_prompt_tokens[:len_prompt_tokens] != prompt_token_ids:
+                    logger.error(f"Tokenizer mismatch for prompt in sequence '{sequence}'. Skipping.")
+                    continue
 
-                log_prob = None
-                for token_ids in token_ids_options:
-                    if len(token_ids) == 0:
-                        continue
-                    
-                    log_prob = self._calculate_sequence_prob_from_logprobs(
-                        outputs, token_ids, sequence
-                    )
-                    
-                    if log_prob is not None:
+                target_logprobs_list = prompt_logprobs_list[len_prompt_tokens:]
+                target_token_ids = output_prompt_tokens[len_prompt_tokens:]
+
+                if not target_logprobs_list:
+                    logger.warning(f"No logprobs for target sequence '{sequence}'.")
+                    continue
+
+                total_log_prob = 0.0
+                valid = True
+                for j, token_id in enumerate(target_token_ids):
+                    logprob_dict = target_logprobs_list[j]
+                    if logprob_dict is None or token_id not in logprob_dict:
+                        logger.warning(f"Logprob not found for token {token_id} at position {j} in '{sequence}'.")
+                        valid = False
                         break
-                
-                if log_prob is not None:
-                    prob = torch.exp(log_prob).item()
-                    perplexity = torch.exp(-log_prob).item()
-                    
-                    results.append({
-                        'sequence': sequence,
-                        'log_prob': log_prob.item(),
-                        'prob': prob,
-                        'perplexity': perplexity,
-                        'num_tokens': len(token_ids)
-                    })
-                    logger.info(f"Sequence '{sequence}': log_prob={log_prob.item():.4f}, prob={prob:.6f}, perplexity={perplexity:.4f}")
-                else:
-                    logger.warning(f"Could not calculate probability for sequence '{sequence}'.")
+                    total_log_prob += logprob_dict[token_id].logprob
 
+                if not valid:
+                    continue
+
+                prob = torch.exp(torch.tensor(total_log_prob)).item()
+                perplexity = torch.exp(torch.tensor(-total_log_prob)).item()
+
+                results.append({
+                    'sequence': sequence,
+                    'log_prob': total_log_prob,
+                    'prob': prob,
+                    'perplexity': perplexity,
+                    'num_tokens': len(target_token_ids)
+                })
         except Exception as e:
             logger.error(f"Error in get_log_prob: {e}", exc_info=True)
             
@@ -692,49 +685,10 @@ class CombinedVLLMHook:
                                              outputs: List,
                                              target_token_ids: torch.Tensor,
                                              sequence: str) -> Optional[torch.Tensor]:
-        """Calculate log probability for a target sequence from vLLM logprobs output."""
-        try:
-            if not outputs or len(outputs) == 0:
-                return None
-            
-            output = outputs[0]
-            if not hasattr(output, 'outputs') or len(output.outputs) == 0:
-                return None
-            
-            completion_output = output.outputs[0]
-            if not hasattr(completion_output, 'logprobs') or not completion_output.logprobs:
-                return None
-            
-            logprobs_list = completion_output.logprobs
-            
-            if len(target_token_ids) > len(logprobs_list):
-                logger.debug(f"Target sequence '{sequence}' is longer than generated sequence.")
-                return None
-
-            total_log_prob = 0.0
-            for i, target_token_id in enumerate(target_token_ids):
-                token_id_int = target_token_id.item()
-                
-                if i >= len(logprobs_list):
-                    logger.debug(f"Target sequence '{sequence}' position {i} is beyond generated length.")
-                    return None
-                
-                logprobs_at_position = logprobs_list[i]
-                
-                if token_id_int in logprobs_at_position:
-                    token_log_prob = logprobs_at_position[token_id_int].logprob
-                    total_log_prob += token_log_prob
-                    logger.debug(f"Found target token {token_id_int} at position {i} with logprob {token_log_prob}")
-                else:
-                    logger.debug(f"Target token {token_id_int} not found at position {i} for sequence '{sequence}'.")
-                    return None
-            
-            return torch.tensor(total_log_prob)
-            
-        except Exception as e:
-            logger.error(f"Error calculating target sequence probability from logprobs: {e}", exc_info=True)
-            return None
-
+        """[DEPRECATED]"""
+        logger.warning("`_calculate_sequence_prob_from_logprobs` is deprecated.")
+        return None
+    
     def generate_with_control(self, prompts, activations=None, 
                              record_layer_logits=False, operator='linear_comb', 
                              normalize=False, token_pos=None, masks:Dict[int, torch.Tensor]=None, **sampling_kwargs):
@@ -760,7 +714,7 @@ class CombinedVLLMHook:
         try:
             # Default sampling parameters
             sampling_params = SamplingParams(
-                max_tokens=sampling_kwargs.get('max_new_tokens', 10),
+                max_tokens=sampling_kwargs.get('max_new_tokens', 40000),
                 temperature=sampling_kwargs.get('temperature', 0.7),
                 top_p=sampling_kwargs.get('top_p', 1.0)
             )

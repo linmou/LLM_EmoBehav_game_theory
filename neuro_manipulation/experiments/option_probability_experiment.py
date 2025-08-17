@@ -85,33 +85,43 @@ class OptionProbabilityExperiment:
         self.batch_size = batch_size
         self.sample_num = sample_num
         
-        # Setup model and tokenizer for vLLM
-        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(
+        # Get emotion configurations for activation
+        self.target_emotion = self.exp_config["experiment"].get("target_emotion", "anger")
+        self.activation_intensity = self.exp_config["experiment"].get("activation_intensity", 1.5)
+        self.enable_thinking = self.exp_config["experiment"]["llm"]["generation_config"].get("enable_thinking", False)
+        
+        # Step 1: Load a temporary non-vLLM model to get layer info and load RepReaders
+        self.logger.info("Loading temporary model for RepReader initialization...")
+        temp_model, temp_tokenizer, self.prompt_format = setup_model_and_tokenizer(repe_eng_config, from_vllm=False)
+        
+        # Get layer information from the temporary model
+        num_layers = ModelLayerDetector.num_layers(temp_model)
+        self.hidden_layers = list(range(-1, -num_layers - 1, -1))
+        self.control_layers = self.hidden_layers[len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3]
+
+        # Load RepReaders using the temporary model
+        self.logger.info("Loading RepReaders for emotion activations...")
+        self.emotion_rep_readers = load_emotion_readers(
+            self.repe_eng_config, temp_model, temp_tokenizer, self.hidden_layers, enable_thinking=self.enable_thinking
+        )
+        self.logger.info(f"Loaded {len(self.emotion_rep_readers)} emotion readers. Using control layers: {self.control_layers}")
+
+        # Step 2: Clean up the temporary model to free up memory
+        self.logger.info("Releasing temporary model from memory...")
+        del temp_model
+        del temp_tokenizer
+        torch.cuda.empty_cache()
+
+        # Step 3: Setup the main vLLM model for the experiment
+        self.logger.info("Initializing vLLM for the main experiment...")
+        self.model, self.tokenizer, _ = setup_model_and_tokenizer(
             repe_eng_config, from_vllm=True
         )
         self.is_vllm = isinstance(self.model, LLM)
         
         if not self.is_vllm:
-            raise ValueError("OptionProbabilityExperiment requires vLLM model for sequence probability measurement")
+            raise ValueError("OptionProbabilityExperiment requires a vLLM model for sequence probability measurement")
         
-        # Get emotion configurations for activation
-        self.target_emotion = self.exp_config["experiment"].get("target_emotion", "angry")
-        self.activation_intensity = self.exp_config["experiment"].get("activation_intensity", 1.5)
-        
-        # Load RepReaders for activation
-        self.logger.info("Loading RepReaders for emotion activations...")
-        # Use a non-vLLM model instance for layer detection and reader loading
-        temp_model, temp_tokenizer, _ = setup_model_and_tokenizer(repe_eng_config, from_vllm=False)
-        num_layers = ModelLayerDetector.num_layers(temp_model)
-        self.hidden_layers = list(range(-1, -num_layers - 1, -1))
-        self.control_layers = self.hidden_layers[len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3]
-        
-        self.emotion_rep_readers = load_emotion_readers(
-            self.repe_eng_config, temp_model, temp_tokenizer, self.hidden_layers
-        )
-        del temp_model, temp_tokenizer
-        self.logger.info(f"Loaded {len(self.emotion_rep_readers)} emotion readers. Using control layers: {self.control_layers}")
-
         # Initialize CombinedVLLMHook with both sequence probability and rep control enabled
         self.sequence_prob_hook = CombinedVLLMHook(
             model=self.model,
@@ -155,10 +165,15 @@ class OptionProbabilityExperiment:
         conditions = self._generate_experimental_conditions()
         self.logger.info(f"Generated {len(conditions)} experimental conditions: {[c.name for c in conditions]}")
         
-        # Run experiment for each condition
+        # Create a single dataset and slice it
+        self.logger.info("Creating shared dataset for all conditions...")
+        shared_scenarios = self._create_shared_dataset()
+        self.logger.info(f"Created {len(shared_scenarios)} scenarios to be used across all conditions")
+        
+        # Run experiment for each condition using the same scenarios
         for condition in conditions:
             self.logger.info(f"Running condition: {condition.name}")
-            condition_results = self._run_single_condition(condition)
+            condition_results = self._run_single_condition_with_shared_data(condition, shared_scenarios)
             self.results.extend(condition_results)
             
         # Save results
@@ -200,6 +215,105 @@ class OptionProbabilityExperiment:
             )
         ]
         return conditions
+        
+    def _create_shared_dataset(self) -> List[Dict[str, Any]]:
+        """Create a shared dataset that will be used across all conditions."""
+        # Create a baseline dataset to extract scenarios
+        user_message = "You are participating in this scenario."
+        
+        from functools import partial
+        neutral_prompt_wrapper = partial(
+            self.prompt_wrapper.__call__,
+            user_messages=user_message
+        )
+        
+        # Create dataset with full description to get all scenario information
+        dataset = ContextManipulationDataset(
+            game_config=self.game_config,
+            prompt_wrapper=neutral_prompt_wrapper,
+            include_description=True,  # Get full scenario info
+            sample_num=self.sample_num
+        )
+        
+        # Extract all scenarios from the dataset
+        scenarios = []
+        for idx in range(len(dataset)):
+            item = dataset[idx]
+            scenarios.append({
+                'idx': idx,
+                'scenario': item['scenario'],
+                'description': item['description'],
+                'behavior_choices': item['behavior_choices'],
+                'options': item['options']
+            })
+        
+        return scenarios
+    
+    def _run_single_condition_with_shared_data(
+        self, 
+        condition: ExperimentCondition, 
+        shared_scenarios: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Run experiment for a single condition using shared scenario data."""
+        condition_results = []
+        
+        # Process scenarios in batches
+        for batch_start in range(0, len(shared_scenarios), self.batch_size):
+            batch_end = min(batch_start + self.batch_size, len(shared_scenarios))
+            batch_scenarios = shared_scenarios[batch_start:batch_end]
+            
+            # Prepare batch data with appropriate context manipulation
+            batch = self._prepare_batch_for_condition(batch_scenarios, condition)
+            
+            # Measure probabilities for all options in this batch
+            batch_results = self._measure_option_probabilities(batch, condition)
+            
+            # Add scenario index to results for matching across conditions
+            for i, result in enumerate(batch_results):
+                result['scenario_idx'] = batch_scenarios[i]['idx']
+            
+            condition_results.extend(batch_results)
+            
+        return condition_results
+    
+    def _prepare_batch_for_condition(
+        self, 
+        batch_scenarios: List[Dict[str, Any]], 
+        condition: ExperimentCondition
+    ) -> Dict[str, List]:
+        """Prepare batch data with appropriate prompt formatting based on condition."""
+        batch = {
+            'prompt': [],
+            'options': [],
+            'scenario': [],
+            'behavior_choices': []
+        }
+        
+        user_message = "You are participating in this scenario."
+        
+        for scenario_data in batch_scenarios:
+            # Create prompt based on condition
+            if condition.has_context:
+                # Include full description
+                prompt = self.prompt_wrapper(
+                    event=f"Scenario: {scenario_data['scenario']}\nDescription: {scenario_data['description']}\nBehavior Choices: {scenario_data['behavior_choices']}",
+                    options=scenario_data['options'],
+                    user_messages=user_message
+                )
+            else:
+                # Minimal prompt without description
+                prompt = self.prompt_wrapper(
+                    event=f"Scenario: {scenario_data['scenario']}\nBehavior Choices: {scenario_data['behavior_choices']}",
+                    options=scenario_data['options'],
+                    user_messages=user_message
+                )
+            
+            batch['prompt'].append(prompt)
+            batch['options'].append(scenario_data['options'])
+            batch['scenario'].append(scenario_data['scenario'])
+            batch['behavior_choices'].append(str(scenario_data['behavior_choices']))
+        
+        return batch
         
     def _get_control_activations(self, emotion: str, intensity: float) -> Dict[int, torch.Tensor]:
         """Get control activations for a given emotion and intensity."""

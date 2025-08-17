@@ -53,7 +53,7 @@ class FixedAngerActivationDemo:
         logger.info(f"Model has {num_hidden_layers} layers")
         logger.info(f"Using control layers: {self.control_layers}")
         
-        # Load emotion readers
+        # Load emotion readers (enable_thinking defaults to False for demo)
         self.emotion_rep_readers = load_emotion_readers(
             self.repe_eng_config, model, tokenizer, self.hidden_layers
         )

@@ -1,0 +1,43 @@
+repe_config:
+  model_name_or_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  tensor_parallel_size: 4
+  # The block to hook into. 'decoder_block' is common for Llama-like models.
+  block_name: "decoder_block"
+  # Control method should be 'reading_vec' for this type of experiment
+  control_method: "reading_vec"
+
+experiment:
+  name: "choice_selection_context_activation_test"
+  description: "A 2x2 factorial experiment to test the effects of semantic context and emotional activation on model's discrete choices."
+  
+  # The emotion vector to use for the 'activation' condition
+  target_emotion: "anger"
+  # The strength of the activation vector
+  activation_intensity: 1.5
+
+  # vLLM generation parameters
+  max_new_tokens: 500
+  temperature: 0.0 # Set to 0 for deterministic output
+
+  # Dataset parameters
+  # Set a specific number of samples to use for a quicker test run.
+  # Comment out or set to null to use the entire dataset.
+  sample_num: 4000
+  batch_size: 500
+
+  # Output directory configuration
+  output:
+    base_dir: "results/Choice_Selection"
+
+game_config:
+  # Name of the game scenario to use.
+  # See games/game_configs.py for available games (e.g., PRISONERS_DILEMMA, STAG_HUNT).
+  game_name: "prisoners_dilemma"
+  data_path: "data_creation/scenario_creation/langgraph_creation/Prisoners_Dilemma_all_data_samples_first_1000.json"
+  # Optional: override the default data path for the game scenarios
+  # data_path: "data/your_custom_scenarios.json"
+
+logging:
+  level: "INFO"
+  log_to_file: true
+  log_file_prefix: "choice_selection_experiment"

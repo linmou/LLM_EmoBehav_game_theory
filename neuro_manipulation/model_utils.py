@@ -22,7 +22,7 @@ def setup_model_and_tokenizer(config, from_vllm=False):
 
     return model, tokenizer, prompt_format
 
-def load_emotion_readers(config, model, tokenizer, hidden_layers):
+def load_emotion_readers(config, model, tokenizer, hidden_layers, enable_thinking=False):
     args = {
         'emotions': Emotions.get_emotions(),
         'data_dir': config['data_dir'],
@@ -49,6 +49,7 @@ def load_emotion_readers(config, model, tokenizer, hidden_layers):
         config['data_dir'],
         model_name=config['model_name_or_path'],
         tokenizer=tokenizer,
+        enable_thinking=enable_thinking,
     )
     
     rep_reading_pipeline = pipeline("rep-reading", model=model, tokenizer=tokenizer)
