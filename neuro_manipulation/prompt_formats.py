@@ -740,7 +740,11 @@ class PromptFormat:
 
             # Final fallback
             prompt_str = ManualPromptFormat.build(
-                self.model_name, system_prompt, user_messages, assistant_messages
+                self.model_name,
+                system_prompt,
+                user_messages,
+                assistant_messages,
+                enable_thinking=enable_thinking,
             )
             return prompt_str
 
