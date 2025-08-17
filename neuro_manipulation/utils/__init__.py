@@ -13,6 +13,11 @@ spec.loader.exec_module(utils_module)
 
 # Import all the functions and classes
 AnswerProbabilities = utils_module.AnswerProbabilities
+get_emotion_images = utils_module.get_emotion_images
+detect_multimodal_model = utils_module.detect_multimodal_model
+auto_load_processor = utils_module.auto_load_processor
+detect_emotion_data_type = utils_module.detect_emotion_data_type
+validate_multimodal_experiment_feasibility = utils_module.validate_multimodal_experiment_feasibility
 is_huggingface_model_name = utils_module.is_huggingface_model_name
 get_model_config = utils_module.get_model_config
 get_optimal_tensor_parallel_size = utils_module.get_optimal_tensor_parallel_size
@@ -27,6 +32,11 @@ oai_response = utils_module.oai_response
 
 __all__ = [
     'AnswerProbabilities',
+    'get_emotion_images',
+    'detect_multimodal_model',
+    'auto_load_processor',
+    'detect_emotion_data_type',
+    'validate_multimodal_experiment_feasibility',
     'is_huggingface_model_name',
     'get_model_config', 
     'get_optimal_tensor_parallel_size',

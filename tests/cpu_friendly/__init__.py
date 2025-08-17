@@ -1,0 +1,1 @@
+# CPU-friendly tests package

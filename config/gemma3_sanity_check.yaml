@@ -1,0 +1,54 @@
+experiment:
+  name: "Gemma3_Sanity_Check"
+  
+  # Single game for simple testing
+  games:
+    - "Prisoners_Dilemma"
+  
+  # Smallest multimodal Gemma 3 model for testing (4B is minimum for multimodal)
+  models: 
+    - "/data/home/jjl7137/huggingface_models/google/gemma-3-4b-it"
+  
+  game:
+    name: "Prisoners_Dilemma"
+    previous_actions_length: 0
+    
+  data:
+    generate: false
+    num_scenarios: 4  # Very small for quick testing
+    batch_size: 2
+  
+  llm:
+    model_name: 'google/gemma-3-4b-it'
+    generation_config:
+      temperature: 0.7
+      do_sample: true
+      top_p: 0.95
+      max_new_tokens: 200  # Reduced for faster testing
+
+  batch_size: 10  # Small batch for testing
+
+  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
+  
+  repeat: 1
+
+  # Test with just one emotion first
+  emotions:
+    - "happiness"
+
+  intensity:
+    - 1.5
+
+  run_sanity_check: true
+
+  output:
+    base_dir: "results/Gemma3_Sanity_Check"
+    save_plots: false  # Skip plotting for quick test
+    plot_format: "png"
+
+# Minimal multimodal config for testing
+repe_config:
+  multimodal_intent: true
+  data_dir: "data/image"
+  emotions: ["happiness"]
+  rebuild: false
