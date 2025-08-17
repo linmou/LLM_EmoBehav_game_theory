@@ -477,6 +477,9 @@ def detect_multimodal_model(model_name_or_path):
         "Qwen2.5-VL",
         "GPT-4V",
         "InstructBLIP",
+        "gemma-3-4b",
+        "gemma-3-12b", 
+        "gemma-3-27b",
     ]
 
     model_name_upper = str(model_name_or_path).upper()

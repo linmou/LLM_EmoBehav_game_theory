@@ -138,7 +138,41 @@ class RepReadingPipeline(Pipeline):
             # CRITICAL FIX: Detect pre-formatted text to avoid double chat template application
             # This prevents token/feature mismatch by avoiding duplicate processing
             try:
-                # Method 1: Try with qwen_vl_utils (official and most reliable)
+                # Check if this is a Gemma 3 model - handle differently
+                model_name = getattr(self.tokenizer, 'name_or_path', '')
+                if 'gemma-3' in model_name.lower():
+                    # Gemma 3 specific processing
+                    formatted_text = self.image_processor.apply_chat_template(
+                        messages, 
+                        tokenize=False, 
+                        add_generation_prompt=True
+                    )
+                    
+                    # Extract images directly from messages
+                    extracted_images = []
+                    for message in messages:
+                        content = message.get("content", [])
+                        if isinstance(content, list):
+                            for item in content:
+                                if isinstance(item, dict) and item.get("type") == "image":
+                                    extracted_images.append(item.get("image"))
+                    
+                    # Use the processor directly with proper format
+                    # Filter out tokenizer_kwargs that might conflict with image processor
+                    safe_kwargs = {k: v for k, v in tokenizer_kwargs.items() 
+                                 if k not in ['size', 'do_resize', 'do_normalize', 'image_mean', 'image_std']}
+                    
+                    model_inputs = self.image_processor(
+                        text=[formatted_text],
+                        images=extracted_images if extracted_images else None,
+                        padding=True,
+                        return_tensors="pt",
+                        **safe_kwargs
+                    )
+                    
+                    return model_inputs
+                
+                # Method 1: Try with qwen_vl_utils (official and most reliable for Qwen models)
                 try:
                     from qwen_vl_utils import process_vision_info
                     

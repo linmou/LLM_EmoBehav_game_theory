@@ -407,13 +407,7 @@ class ManualPromptFormat:
     Manually defined prompt format.
     """
 
-    format_ls = [
-        Llama2InstFormat,
-        Llama3InstFormat,
-        MistralInstFormat,
-        RWKVsFormat,
-        QwenVLInstFormat,
-    ]
+    # format_ls will be defined after all classes
 
     @staticmethod
     def get(model_name) -> ModelPromptFormat:
@@ -576,3 +570,68 @@ class PromptFormat:
                 prompt_copy = prompt_copy[start_idx + len(content) :]
 
         # If we've processed all messages and reached here, the order is preserved
+
+
+class Gemma3InstFormat(ModelPromptFormat):
+    """
+    Prompt format for Gemma 3 multimodal models (4B, 12B, 27B).
+    Uses HuggingFace AutoProcessor and chat templates for proper multimodal handling.
+    """
+
+    @staticmethod
+    def supports_multimodal():
+        """Gemma 3 (4B+) supports multimodal inputs."""
+        return True
+
+    @staticmethod
+    def name_pattern(model_name):
+        """Match Gemma 3 multimodal model names."""
+        model_lower = model_name.lower()
+        return "gemma-3" in model_lower and any(size in model_lower for size in ["4b", "12b", "27b"])
+
+    @staticmethod
+    def validate_tokenizer(tokenizer):
+        """Gemma 3 uses standard HF tokenizers."""
+        return True
+
+    @staticmethod
+    def build(
+        system_prompt,
+        user_messages: list,
+        assistant_messages: list = [],
+        images: list = None,
+    ):
+        """
+        Build basic chat format for Gemma 3. This creates a simple text format.
+        The actual multimodal processing will be handled by AutoProcessor in the pipeline.
+        """
+        prompt = ""
+        
+        # Add system prompt if provided
+        if system_prompt:
+            prompt += f"<start_of_turn>system\n{system_prompt}<end_of_turn>\n"
+        
+        # Add user/assistant message pairs
+        for i, user_msg in enumerate(user_messages):
+            # Add user message (images will be handled by processor)
+            prompt += f"<start_of_turn>user\n{user_msg}<end_of_turn>\n"
+            
+            # Add assistant response if available
+            if i < len(assistant_messages):
+                prompt += f"<start_of_turn>model\n{assistant_messages[i]}<end_of_turn>\n"
+        
+        # Add final model turn for generation
+        prompt += "<start_of_turn>model\n"
+        
+        return prompt
+
+
+# Define format list after all classes are defined
+ManualPromptFormat.format_ls = [
+    Llama2InstFormat,
+    Llama3InstFormat,
+    MistralInstFormat,
+    RWKVsFormat,
+    QwenVLInstFormat,
+    Gemma3InstFormat,
+]

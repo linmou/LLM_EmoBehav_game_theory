@@ -1,14 +1,15 @@
 #!/bin/bash
 
-# List of Qwen3 AWQ models to download
+# List of Gemma 3 instruct-tuned models to download
 MODELS=(
-  "Qwen/Qwen3-4B-AWQ"
-  "Qwen/Qwen3-8B-AWQ"
-  "Qwen/Qwen3-14B-AWQ"
-  "Qwen/Qwen3-32B-AWQ"
+  "google/gemma-3-270m-it"
+  "google/gemma-3-1b-it"
+  "google/gemma-3-4b-it"
+  "google/gemma-3-12b-it"
+  "google/gemma-3-27b-it"
 )
 # Base directory for saving models
-BASE_DIR="$HOME/huggingface_models/Qwen"
+BASE_DIR="$HOME/huggingface_models/google"
 
 for MODEL in "${MODELS[@]}"; do
   MODEL_NAME=$(basename "$MODEL")
