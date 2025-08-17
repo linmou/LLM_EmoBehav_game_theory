@@ -27,11 +27,11 @@ response = client.chat.completions.create(
 
 def oai_response(
     prompt,
-    client,
+    client: AzureOpenAI,
     model="gpt-4o",
     response_format=None,
 ):
-    response = client.beta.chat.completions.parse(
+    response = client.chat.completions.create(
         model=model,
         messages=[
             # {'role': 'system', 'content': 'You are an avereage American.'},
@@ -47,7 +47,17 @@ response = oai_response(
     "I am going to Paris, what should I see? return in json format",
     client,
     model=deployment,
-    response_format={"type": "json_object"},
+    response_format={
+        "type": "json_schema",
+        "json_schema": {
+            "name": "answer",
+            "schema": {
+                "type": "object",
+                "properties": {"answer": {"type": "string"}},
+                "required": ["answer"],
+            },
+        },
+    },
 )
 
 print(response)

@@ -41,14 +41,22 @@ experiment:
     - "sadness"
     - "disgust"
     - "fear"
-    - "surprise"
+      #  - "surprise"
 
   intensity:
     - 1.5
 
-  sanity_check: true
+  run_sanity_check: false
 
   output:
     base_dir: "results/Qwen2.5_MM_Series_Prisoners_Dilemma"
     save_plots: true
-    plot_format: "png" 
+    plot_format: "png"
+
+# New repe_config section for multimodal configuration
+repe_config:
+  # Essential for multimodal processing
+  multimodal_intent: true
+  data_dir: "data/image"  # Points to directory with emotion JSON files
+  emotions: ["happiness", "sadness", "anger", "fear", "disgust"]
+  rebuild: false
