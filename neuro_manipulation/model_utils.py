@@ -14,9 +14,36 @@ from neuro_manipulation.utils import (
 )
 
 
-def setup_model_and_tokenizer(config, from_vllm=False):
+def setup_model_and_tokenizer(config, from_vllm=False, loading_config=None):
+    """
+    Setup model and tokenizer with merged configuration.
+    
+    Args:
+        config: Dict with model configuration (can contain model_name_or_path)
+        from_vllm: Whether to load using vLLM
+        loading_config: Optional LoadingConfig object with loading parameters
+    
+    Returns:
+        tuple: (model, tokenizer, prompt_format, processor)
+    """
+    # Merge loading_config with config for model path
+    if loading_config:
+        # If loading_config has model_path, use it; otherwise use config
+        if hasattr(loading_config, 'model_path') and loading_config.model_path:
+            model_path = loading_config.model_path
+        else:
+            model_path = config.get("model_name_or_path", config.get("model_path"))
+            # Update loading_config with model path for consistency
+            if hasattr(loading_config, 'model_path'):
+                loading_config.model_path = model_path
+    else:
+        model_path = config.get("model_name_or_path", config.get("model_path"))
+    
     model, tokenizer, processor = load_model_tokenizer(
-        config["model_name_or_path"], expand_vocab=False, from_vllm=from_vllm
+        model_path, 
+        expand_vocab=False, 
+        from_vllm=from_vllm,
+        loading_config=loading_config
     )
 
     prompt_format = PromptFormat(tokenizer)

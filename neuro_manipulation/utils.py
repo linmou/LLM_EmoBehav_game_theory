@@ -574,6 +574,7 @@ def load_model_tokenizer(
     from_vllm=False,
     auto_load_multimodal=True,
     enable_multi_gpu=True,
+    loading_config=None,
 ):
     """
     Enhanced model loading with automatic multimodal detection and processor loading.
@@ -585,6 +586,7 @@ def load_model_tokenizer(
         expand_vocab: Whether to expand vocabulary with tags
         from_vllm: Whether to use vLLM for loading
         auto_load_multimodal: Whether to auto-detect and load multimodal processor
+        loading_config: Optional LoadingConfig object or dict with vLLM loading parameters
 
     Returns:
         tuple: (model, tokenizer, processor_or_none)
@@ -594,34 +596,57 @@ def load_model_tokenizer(
     model = None
     if from_vllm:
         try:
-            # Check if this is an AWQ model
+            # Extract parameters from loading_config if provided
+            if loading_config:
+                # Handle both dict and LoadingConfig object
+                if hasattr(loading_config, '__dict__'):
+                    config = loading_config.__dict__
+                else:
+                    config = loading_config
+            else:
+                config = {}
+            
+            # Use loading_config values with defaults
+            gpu_memory_utilization = config.get("gpu_memory_utilization", 0.90)
+            tensor_parallel_size = config.get("tensor_parallel_size")
+            max_model_len = config.get("max_model_len", 32768)
+            enforce_eager = config.get("enforce_eager", True)
+            quantization = config.get("quantization")
+            trust_remote_code = config.get("trust_remote_code", True)
+            dtype = config.get("dtype", "float16")
+            seed = config.get("seed", 42)
+            disable_custom_all_reduce = config.get("disable_custom_all_reduce", False)
+            
+            # Auto-detect tensor parallel size if not specified
+            if tensor_parallel_size is None:
+                tensor_parallel_size = get_optimal_tensor_parallel_size(model_name_or_path)
+            
+            # Check if this is an AWQ model (override quantization if detected)
             is_awq_model = (
                 "awq" in model_name_or_path.lower() or "AWQ" in model_name_or_path
             )
+            if is_awq_model and not quantization:
+                quantization = "awq"
 
-            if is_awq_model:
-                # AWQ models require specific quantization configuration
-                model = LLM(
-                    model=model_name_or_path,
-                    tensor_parallel_size=get_optimal_tensor_parallel_size(
-                        model_name_or_path
-                    ),
-                    max_model_len=32768,
-                    trust_remote_code=True,
-                    enforce_eager=True,
-                    quantization="awq",
-                )
-            else:
-                # Standard vLLM configuration
-                model = LLM(
-                    model=model_name_or_path,
-                    tensor_parallel_size=get_optimal_tensor_parallel_size(
-                        model_name_or_path
-                    ),
-                    max_model_len=32768,
-                    trust_remote_code=True,
-                    enforce_eager=True,
-                )
+            # Build vLLM kwargs
+            vllm_kwargs = {
+                "model": model_name_or_path,
+                "tensor_parallel_size": tensor_parallel_size,
+                "max_model_len": max_model_len,
+                "trust_remote_code": trust_remote_code,
+                "enforce_eager": enforce_eager,
+                "gpu_memory_utilization": gpu_memory_utilization,
+                "dtype": dtype,
+                "seed": seed,
+                "disable_custom_all_reduce": disable_custom_all_reduce,
+            }
+            
+            # Add quantization if specified
+            if quantization:
+                vllm_kwargs["quantization"] = quantization
+            
+            model = LLM(**vllm_kwargs)
+            
         except Exception as e:
             print(f"vLLM loading failed: {e}")
             pass

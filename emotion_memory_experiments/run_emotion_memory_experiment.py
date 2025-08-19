@@ -24,6 +24,7 @@ from emotion_memory_experiments.data_models import (
     BenchmarkConfig,
     BenchmarkItem,
     ExperimentConfig,
+    LoadingConfig,
 )
 from emotion_memory_experiments.experiment import EmotionMemoryExperiment
 
@@ -58,9 +59,33 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
         sample_limit=benchmark_data.get("sample_limit"),
     )
 
+    # Get model path
+    model_path = config_dict["model"]["model_path"]
+    
+    # Create loading config if specified
+    loading_config = None
+    if "loading_config" in config_dict:
+        loading_cfg_dict = config_dict["loading_config"]
+        loading_config = LoadingConfig(
+            model_path=loading_cfg_dict.get("model_path", model_path),  # Use from loading_config or fallback to model section
+            gpu_memory_utilization=loading_cfg_dict.get("gpu_memory_utilization", 0.90),
+            tensor_parallel_size=loading_cfg_dict.get("tensor_parallel_size"),
+            max_model_len=loading_cfg_dict.get("max_model_len", 32768),
+            enforce_eager=loading_cfg_dict.get("enforce_eager", True),
+            quantization=loading_cfg_dict.get("quantization"),
+            trust_remote_code=loading_cfg_dict.get("trust_remote_code", True),
+            dtype=loading_cfg_dict.get("dtype", "float16"),
+            seed=loading_cfg_dict.get("seed", 42),
+            disable_custom_all_reduce=loading_cfg_dict.get("disable_custom_all_reduce", False),
+            # Truncation settings
+            enable_auto_truncation=loading_cfg_dict.get("enable_auto_truncation", True),
+            truncation_strategy=loading_cfg_dict.get("truncation_strategy", "right"),
+            preserve_ratio=loading_cfg_dict.get("preserve_ratio", 0.95),
+        )
+
     # Create main experiment config
     exp_config = ExperimentConfig(
-        model_path=config_dict["model"]["model_path"],
+        model_path=model_path,
         emotions=config_dict["emotions"]["target_emotions"],
         benchmark=benchmark_config,
         output_dir=config_dict["output"]["results_dir"],
@@ -68,6 +93,7 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
         intensities=config_dict["emotions"].get("intensities", [1.0]),
         batch_size=config_dict["execution"].get("batch_size", 4),
         generation_config=config_dict.get("generation", {}),
+        loading_config=loading_config,  # Add loading config
         repe_eng_config=config_dict.get("repe_eng_config", {}),
         max_evaluation_workers=config_dict["execution"].get(
             "max_evaluation_workers", 4

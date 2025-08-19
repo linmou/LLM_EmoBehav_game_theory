@@ -3,25 +3,49 @@ Dataset classes for different memory benchmark suites.
 Each dataset handles loading data and creating prompts for specific benchmarks.
 """
 
-from typing import List
+import logging
+from typing import List, Optional
 
 from torch.utils.data import Dataset
 
 try:
     from ..data_models import BenchmarkItem
+    from .truncation_utils import truncate_item_context
 except ImportError:
     from emotion_memory_experiments.data_models import BenchmarkItem
+    from emotion_memory_experiments.adapters.truncation_utils import truncate_item_context
+
+logger = logging.getLogger(__name__)
 
 
 class InfiniteBenchDataset(Dataset):
     """
     Ultra-simple PyTorch Dataset for InfiniteBench following GameScenarioDataset pattern.
     Uses prompt wrapper for proper model-specific formatting.
+    Supports automatic context truncation.
     """
 
-    def __init__(self, items: List[BenchmarkItem], prompt_wrapper=None):
+    def __init__(
+        self, 
+        items: List[BenchmarkItem], 
+        prompt_wrapper=None,
+        max_context_length: Optional[int] = None,
+        tokenizer=None,
+        truncation_strategy: str = "right"
+    ):
         self.items = items
         self.prompt_wrapper = prompt_wrapper
+        self.max_context_length = max_context_length
+        self.tokenizer = tokenizer
+        self.truncation_strategy = truncation_strategy
+        
+        # Apply truncation if configured
+        if max_context_length and tokenizer:
+            logger.info(f"Applying context truncation with max_length={max_context_length}, strategy='{truncation_strategy}'")
+            for i, item in enumerate(self.items):
+                self.items[i] = truncate_item_context(
+                    item, max_context_length, tokenizer, truncation_strategy
+                )
 
     def __len__(self):
         return len(self.items)
@@ -49,11 +73,30 @@ class LoCoMoDataset(Dataset):
     """
     Ultra-simple PyTorch Dataset for LoCoMo following GameScenarioDataset pattern.
     Uses prompt wrapper for proper model-specific formatting.
+    Supports automatic context truncation.
     """
 
-    def __init__(self, items: List[BenchmarkItem], prompt_wrapper=None):
+    def __init__(
+        self, 
+        items: List[BenchmarkItem], 
+        prompt_wrapper=None,
+        max_context_length: Optional[int] = None,
+        tokenizer=None,
+        truncation_strategy: str = "right"
+    ):
         self.items = items
         self.prompt_wrapper = prompt_wrapper
+        self.max_context_length = max_context_length
+        self.tokenizer = tokenizer
+        self.truncation_strategy = truncation_strategy
+        
+        # Apply truncation if configured
+        if max_context_length and tokenizer:
+            logger.info(f"Applying context truncation with max_length={max_context_length}, strategy='{truncation_strategy}'")
+            for i, item in enumerate(self.items):
+                self.items[i] = truncate_item_context(
+                    item, max_context_length, tokenizer, truncation_strategy
+                )
 
     def __len__(self):
         return len(self.items)
@@ -81,11 +124,30 @@ class LongBenchDataset(Dataset):
     """
     Ultra-simple PyTorch Dataset for LongBench following GameScenarioDataset pattern.
     Uses prompt wrapper for proper model-specific formatting.
+    Supports automatic context truncation.
     """
 
-    def __init__(self, items: List[BenchmarkItem], prompt_wrapper=None):
+    def __init__(
+        self, 
+        items: List[BenchmarkItem], 
+        prompt_wrapper=None,
+        max_context_length: Optional[int] = None,
+        tokenizer=None,
+        truncation_strategy: str = "right"
+    ):
         self.items = items
         self.prompt_wrapper = prompt_wrapper
+        self.max_context_length = max_context_length
+        self.tokenizer = tokenizer
+        self.truncation_strategy = truncation_strategy
+        
+        # Apply truncation if configured
+        if max_context_length and tokenizer:
+            logger.info(f"Applying context truncation with max_length={max_context_length}, strategy='{truncation_strategy}'")
+            for i, item in enumerate(self.items):
+                self.items[i] = truncate_item_context(
+                    item, max_context_length, tokenizer, truncation_strategy
+                )
 
     def __len__(self):
         return len(self.items)

@@ -21,8 +21,22 @@ class BenchmarkAdapter(ABC):
         self._dataset: Optional[Dataset] = None
 
     @abstractmethod
-    def create_dataset(self, prompt_wrapper=None) -> Dataset:
-        """Create simple PyTorch Dataset for this benchmark with optional prompt wrapper"""
+    def create_dataset(
+        self, 
+        prompt_wrapper=None,
+        max_context_length: Optional[int] = None,
+        tokenizer=None,
+        truncation_strategy: str = "right"
+    ) -> Dataset:
+        """
+        Create simple PyTorch Dataset for this benchmark with optional prompt wrapper and truncation.
+        
+        Args:
+            prompt_wrapper: Optional prompt wrapper for formatting
+            max_context_length: Maximum context length in tokens
+            tokenizer: Tokenizer for counting tokens
+            truncation_strategy: Strategy for truncation ("right", "left", "middle")
+        """
         pass
 
     @abstractmethod
@@ -32,21 +46,44 @@ class BenchmarkAdapter(ABC):
         """Evaluate a response against ground truth using benchmark-specific method"""
         pass
 
-    def get_dataset(self, prompt_wrapper=None) -> Dataset:
-        """Get dataset with caching and optional prompt wrapper"""
-        # Note: We don't cache when prompt_wrapper is provided to allow different wrappers
-        if prompt_wrapper is not None:
-            return self.create_dataset(prompt_wrapper=prompt_wrapper)
+    def get_dataset(
+        self, 
+        prompt_wrapper=None,
+        max_context_length: Optional[int] = None,
+        tokenizer=None,
+        truncation_strategy: str = "right"
+    ) -> Dataset:
+        """Get dataset with caching and optional prompt wrapper and truncation"""
+        # Note: We don't cache when prompt_wrapper or truncation is provided
+        if prompt_wrapper is not None or max_context_length is not None:
+            return self.create_dataset(
+                prompt_wrapper=prompt_wrapper,
+                max_context_length=max_context_length,
+                tokenizer=tokenizer,
+                truncation_strategy=truncation_strategy
+            )
 
         if self._dataset is None:
             self._dataset = self.create_dataset()
         return self._dataset
 
     def get_dataloader(
-        self, batch_size: int, shuffle: bool = False, prompt_wrapper=None, **kwargs
+        self, 
+        batch_size: int, 
+        shuffle: bool = False, 
+        prompt_wrapper=None,
+        max_context_length: Optional[int] = None,
+        tokenizer=None,
+        truncation_strategy: str = "right",
+        **kwargs
     ) -> DataLoader:
-        """Create DataLoader for efficient batching with optional prompt wrapper"""
-        dataset = self.get_dataset(prompt_wrapper=prompt_wrapper)
+        """Create DataLoader for efficient batching with optional prompt wrapper and truncation"""
+        dataset = self.get_dataset(
+            prompt_wrapper=prompt_wrapper,
+            max_context_length=max_context_length,
+            tokenizer=tokenizer,
+            truncation_strategy=truncation_strategy
+        )
         return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, **kwargs)
 
     def evaluate_batch(

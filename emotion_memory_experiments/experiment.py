@@ -30,6 +30,7 @@ from neuro_manipulation.repe.pipelines import get_pipeline
 from .benchmark_adapters import get_adapter
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 from .memory_prompt_wrapper import get_memory_prompt_wrapper
+from .adapters.truncation_utils import calculate_max_context_length
 
 
 class EmotionMemoryExperiment:
@@ -41,6 +42,7 @@ class EmotionMemoryExperiment:
     def __init__(self, config: ExperimentConfig):
         self.config = config
         self.generation_config = config.generation_config or DEFAULT_GENERATION_CONFIG
+        self.loading_config = config.loading_config  # May be None for defaults
 
         # Pipeline settings (always enabled with DataLoader)
         self.max_evaluation_workers = config.max_evaluation_workers
@@ -87,9 +89,13 @@ class EmotionMemoryExperiment:
             config.model_path, yaml_config=config.repe_eng_config
         )
 
+        # Ensure loading_config has the model path if it exists
+        if self.loading_config and not self.loading_config.model_path:
+            self.loading_config.model_path = config.model_path
+
         # First load from HF for emotion readers
         self.model, self.tokenizer, self.prompt_format, processor = (
-            setup_model_and_tokenizer(repe_config, from_vllm=False)
+            setup_model_and_tokenizer(repe_config, from_vllm=False, loading_config=self.loading_config)
         )
         num_hidden_layers = ModelLayerDetector.num_layers(self.model)
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
@@ -105,9 +111,9 @@ class EmotionMemoryExperiment:
         )
         del self.model  # Save memory
 
-        # Load vLLM model for inference
+        # Load vLLM model for inference with loading config
         self.model, self.tokenizer, self.prompt_format, _ = setup_model_and_tokenizer(
-            repe_config, from_vllm=True
+            repe_config, from_vllm=True, loading_config=self.loading_config
         )
         self.logger.info(f"Model loaded: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)
@@ -171,6 +177,21 @@ class EmotionMemoryExperiment:
 
         # Batch size for DataLoader
         self.batch_size = config.batch_size
+        
+        # Calculate max context length for truncation
+        self.max_context_length = None
+        self.truncation_strategy = "right"
+        if self.loading_config and self.loading_config.enable_auto_truncation:
+            self.max_context_length = calculate_max_context_length(
+                self.loading_config.max_model_len,
+                self.loading_config.preserve_ratio,
+                prompt_overhead=200  # Reserve for prompt template
+            )
+            self.truncation_strategy = self.loading_config.truncation_strategy
+            self.logger.info(
+                f"Context truncation enabled: max_length={self.max_context_length}, "
+                f"strategy='{self.truncation_strategy}'"
+            )
 
     def build_dataloader(self) -> DataLoader:
         """Build DataLoader using adapter (PROPER ARCHITECTURE)"""
@@ -178,13 +199,23 @@ class EmotionMemoryExperiment:
         self.logger.info(
             f"Creating benchmark dataset via adapter with sample_num={self.sample_num if self.sample_num is not None else 'all'}"
         )
+        
+        # Pass truncation parameters if enabled
+        dataloader_kwargs = {
+            "batch_size": self.batch_size,
+            "shuffle": False,
+            "prompt_wrapper": self.memory_prompt_wrapper_partial,
+            "collate_fn": self._collate_memory_benchmarks,
+        }
+        
+        if self.max_context_length:
+            dataloader_kwargs.update({
+                "max_context_length": self.max_context_length,
+                "tokenizer": self.tokenizer,
+                "truncation_strategy": self.truncation_strategy
+            })
 
-        data_loader = self.benchmark_adapter.get_dataloader(
-            batch_size=self.batch_size,
-            shuffle=False,
-            prompt_wrapper=self.memory_prompt_wrapper_partial,  # ✅ Adapter handles prompt wrapper integration
-            collate_fn=self._collate_memory_benchmarks,  # Custom collate for the adapter dataset format
-        )
+        data_loader = self.benchmark_adapter.get_dataloader(**dataloader_kwargs)
 
         return data_loader
 
@@ -268,14 +299,30 @@ class EmotionMemoryExperiment:
             for i, batch in enumerate(data_loader):
                 # Process batch prompts
                 start_time = time.time()
+                # Pass all generation parameters from config
+                generation_params = {
+                    "temperature": self.generation_config.get("temperature", 0.1),
+                    "max_new_tokens": self.generation_config.get("max_new_tokens", 100),
+                    "do_sample": self.generation_config.get("do_sample", False),
+                    "top_p": self.generation_config.get("top_p", 0.9),
+                    "repetition_penalty": self.generation_config.get("repetition_penalty", 1.0),
+                }
+                
+                # Add optional parameters if they exist and are not default
+                if self.generation_config.get("top_k", -1) != -1:
+                    generation_params["top_k"] = self.generation_config["top_k"]
+                if self.generation_config.get("min_p", 0.0) != 0.0:
+                    generation_params["min_p"] = self.generation_config["min_p"]
+                if self.generation_config.get("presence_penalty", 0.0) != 0.0:
+                    generation_params["presence_penalty"] = self.generation_config["presence_penalty"]
+                if self.generation_config.get("frequency_penalty", 0.0) != 0.0:
+                    generation_params["frequency_penalty"] = self.generation_config["frequency_penalty"]
+                
                 control_outputs = self.rep_control_pipeline(
                     batch["prompt"],  # Use formatted prompts from dataset
                     activations=activations,
                     batch_size=self.batch_size,
-                    temperature=self.generation_config["temperature"],
-                    max_new_tokens=self.generation_config["max_new_tokens"],
-                    do_sample=self.generation_config["do_sample"],
-                    top_p=self.generation_config["top_p"],
+                    **generation_params
                 )
                 end_time = time.time()
                 pipeline_queue.put((i, batch, control_outputs))

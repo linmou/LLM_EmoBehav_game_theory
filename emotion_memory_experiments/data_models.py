@@ -3,7 +3,7 @@ Data models for emotion memory experiments.
 Defines standard formats for results, configurations, and data structures.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -35,6 +35,27 @@ class BenchmarkConfig:
 
 
 @dataclass
+class LoadingConfig:
+    """Configuration for vLLM model loading"""
+
+    model_path: Optional[str] = None  # Model name or path to load
+    gpu_memory_utilization: float = 0.90
+    tensor_parallel_size: Optional[int] = None  # Auto-detect if None
+    max_model_len: int = 32768
+    enforce_eager: bool = True
+    quantization: Optional[str] = None  # 'awq' for AWQ models
+    trust_remote_code: bool = True
+    dtype: str = "float16"  # Model dtype: 'float16', 'bfloat16', 'float32'
+    seed: int = 42
+    disable_custom_all_reduce: bool = False
+    
+    # Context truncation settings
+    enable_auto_truncation: bool = True  # Enable automatic context truncation
+    truncation_strategy: str = "right"  # "right", "left", or "middle"
+    preserve_ratio: float = 0.95  # Ratio of max_model_len to use for context
+
+
+@dataclass
 class ExperimentConfig:
     """Configuration for the emotion memory experiment"""
 
@@ -45,6 +66,7 @@ class ExperimentConfig:
     output_dir: str
     batch_size: int = 4  # Number of items to process per batch for memory efficiency
     generation_config: Optional[Dict[str, Any]] = None
+    loading_config: Optional[LoadingConfig] = None  # vLLM loading configuration
 
     repe_eng_config: Optional[Dict[str, Any]] = None
 
@@ -70,4 +92,10 @@ DEFAULT_GENERATION_CONFIG = {
     "max_new_tokens": 100,
     "do_sample": False,
     "top_p": 0.9,
+    "repetition_penalty": 1.0,
+    "top_k": -1,  # -1 means no top_k filtering
+    "min_p": 0.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "enable_thinking": False,  # Qwen thinking mode support
 }

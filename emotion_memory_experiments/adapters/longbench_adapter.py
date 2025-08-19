@@ -4,7 +4,7 @@ Enhanced adapter for LongBench long-context benchmark suite with comprehensive e
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 # Import evaluation utilities
 from .evaluation_utils import get_score_one
@@ -90,8 +90,14 @@ class LongBenchAdapter(BenchmarkAdapter):
         # Tasks that need preprocessing (strip newlines, take first line)
         self.preprocessing_tasks = {"trec", "triviaqa", "samsum", "lsht"}
 
-    def create_dataset(self, prompt_wrapper=None) -> LongBenchDataset:
-        """Create simple LongBench dataset"""
+    def create_dataset(
+        self, 
+        prompt_wrapper=None,
+        max_context_length: Optional[int] = None,
+        tokenizer=None,
+        truncation_strategy: str = "right"
+    ) -> LongBenchDataset:
+        """Create simple LongBench dataset with optional truncation"""
         data_path = Path(self.config.data_path)
         if not data_path.exists():
             raise FileNotFoundError(f"Benchmark data not found: {data_path}")
@@ -113,7 +119,13 @@ class LongBenchAdapter(BenchmarkAdapter):
         if self.config.sample_limit:
             items = items[: self.config.sample_limit]
 
-        return LongBenchDataset(items, prompt_wrapper=prompt_wrapper)
+        return LongBenchDataset(
+            items, 
+            prompt_wrapper=prompt_wrapper,
+            max_context_length=max_context_length,
+            tokenizer=tokenizer,
+            truncation_strategy=truncation_strategy
+        )
 
     def _parse_longbench_item(
         self, item_data: Dict[str, Any], index: int
