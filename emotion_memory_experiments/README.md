@@ -1,6 +1,8 @@
-# Emotion Memory Experiment Framework
+# Emotion Memory Experiments
 
-A comprehensive framework for testing the effects of emotional states on long-context memory tasks using neural representation control.
+Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
+
+**🎯 Key Achievement: Uses ORIGINAL paper evaluation metrics for scientifically valid results!**
 
 ## Overview
 
@@ -8,11 +10,12 @@ This framework enables researchers to study how induced emotional states affect 
 
 ### Key Features
 
-- **Emotion-Aware Evaluation**: Apply different emotional states (anger, happiness, sadness, etc.) during memory task inference
-- **Multi-Benchmark Support**: Works with InfiniteBench, LoCoMo, and other memory benchmarks
-- **Native Evaluation**: Uses each benchmark's original evaluation methods for accurate scoring
-- **Comprehensive Testing**: Full test suite with mock data and integration tests
-- **Simple Configuration**: YAML-based configuration following existing project patterns
+- **🔬 Original Paper Metrics**: InfiniteBench, LongBench, LoCoMo evaluation methods exactly match original papers
+- **🚀 Ultra-Simple Architecture**: PyTorch datasets with only `__len__` and `__getitem__` methods
+- **🎭 GameScenarioDataset Pattern**: Integrates seamlessly with existing emotion manipulation framework
+- **📊 Real Data Testing**: Validates on actual benchmark datasets (590 InfiniteBench items, etc.)
+- **⚡ Pipeline Ready**: DataLoader compatible with batching and custom collation
+- **🧪 Comprehensive Testing**: Full test suite validates evaluation metrics against original papers
 
 ## Architecture
 
@@ -35,40 +38,59 @@ emotion_memory_experiments/
 
 ## Quick Start
 
-### 1. Basic Usage
+### 1. Download Datasets
 
-```python
-from emotion_memory_experiments.experiment import EmotionMemoryExperiment
-from emotion_memory_experiments.data_models import ExperimentConfig, BenchmarkConfig
+```bash
+# Download all datasets
+./scripts/download_memory_datasets.sh
 
-# Configure benchmark
-benchmark_config = BenchmarkConfig(
-    name="infinitebench",
-    data_path=Path("passkey_data.jsonl"),
-    task_type="passkey",
-    evaluation_method="get_score_one_passkey"
-)
+# Download specific datasets
+./scripts/download_memory_datasets.sh --infinitebench
+./scripts/download_memory_datasets.sh --longbench
+./scripts/download_memory_datasets.sh --locomo
 
-# Configure experiment
-exp_config = ExperimentConfig(
-    model_path="/path/to/qwen/model",
-    emotions=["anger", "happiness", "sadness"],
-    intensities=[0.5, 1.0, 1.5],
-    benchmark=benchmark_config,
-    output_dir="results/emotion_memory",
-    batch_size=4
-)
-
-# Run experiment
-experiment = EmotionMemoryExperiment(exp_config)
-results_df = experiment.run_experiment()
+# Verify existing downloads
+./scripts/download_memory_datasets.sh --verify
 ```
 
-### 2. Quick Sanity Check
+### 2. Run Tests
+
+```bash
+# Run all tests (recommended)
+python emotion_memory_experiments/tests/run_all_tests.py
+
+# Run specific test suites
+python emotion_memory_experiments/tests/test_real_data_comprehensive.py
+python emotion_memory_experiments/tests/test_original_evaluation_metrics.py
+```
+
+### 3. Basic Usage
 
 ```python
-# Run a quick test with limited samples
-results_df = experiment.run_sanity_check(sample_limit=5)
+from emotion_memory_experiments.benchmark_adapters import get_adapter, BenchmarkConfig
+from emotion_memory_experiments.memory_prompt_wrapper import get_memory_prompt_wrapper
+from neuro_manipulation.prompt_formats import PromptFormat
+
+# Create adapter
+config = BenchmarkConfig(
+    name="infinitebench",
+    data_path="test_data/real_benchmarks/infinitebench_passkey.jsonl",
+    task_type="passkey"
+)
+adapter = get_adapter(config)
+
+# Create dataset with prompt wrapper
+prompt_format = PromptFormat.get_format("qwen")
+prompt_wrapper = get_memory_prompt_wrapper("passkey", prompt_format)
+dataset = adapter.create_dataset(prompt_wrapper=prompt_wrapper)
+
+# Use with DataLoader
+from torch.utils.data import DataLoader
+dataloader = adapter.get_dataloader(
+    batch_size=4,
+    prompt_wrapper=prompt_wrapper,
+    collate_fn=collate_memory_benchmarks
+)
 ```
 
 ## Supported Benchmarks

@@ -1,0 +1,43 @@
+# Test configuration with downloaded data
+experiment_name: "test_downloaded_data"
+description: "Test configuration using downloaded benchmark data"
+version: "1.0.0"
+
+model:
+  model_path: "../huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"  
+
+# Emotion manipulation settings
+emotions:
+  target_emotions: ["anger", "happiness"]
+  include_neutral: true
+  intensities: [1.5]
+
+# Benchmark configuration using downloaded data
+benchmarks:
+  # InfiniteBench Passkey Retrieval (downloaded)
+  infinitebench_passkey:
+    name: "infinitebench"
+    task_type: "passkey"
+    data_path: "data/memory_benchmarks/infinitebench_passkey.jsonl"
+    evaluation_method: "get_score_one_passkey"
+    sample_limit: 5
+
+# Generation parameters
+generation:
+  temperature: 0.1
+  max_new_tokens: 50
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+
+# Execution settings
+execution:
+  batch_size: 100
+  max_evaluation_workers: 2
+
+# Output configuration
+output:
+  results_dir: "results/test_downloaded"
+  save_intermediate: true
+  formats: ["csv"]
+  log_level: "INFO"

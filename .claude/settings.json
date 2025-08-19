@@ -62,18 +62,5 @@
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "graphiti"
-  ],
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo \"ding\" | nc -N localhost 8080"
-          }
-        ]
-      }
-    ]
-  }
+  ]
 }
