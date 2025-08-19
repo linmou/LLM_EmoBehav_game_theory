@@ -18,6 +18,7 @@ import yaml
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from neuro_manipulation.repe import repe_pipeline_registry 
 from emotion_memory_experiments.benchmark_adapters import get_adapter
 from emotion_memory_experiments.data_models import (
     BenchmarkConfig,
@@ -201,12 +202,13 @@ def run_experiment(
 
             return True
 
+        repe_pipeline_registry()
         # Create and run experiment
         experiment = EmotionMemoryExperiment(exp_config)
         logger.info(f"Starting emotion memory experiment")
 
         # Run the experiment
-        results_df = experiment.run_full_experiment()
+        results_df = experiment.run_experiment()
 
         if results_df is not None and len(results_df) > 0:
             print(f"\n✅ Experiment completed successfully!")

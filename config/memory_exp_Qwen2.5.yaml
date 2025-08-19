@@ -16,11 +16,11 @@ emotions:
 benchmarks:
   # InfiniteBench Passkey Retrieval (downloaded)
   infinitebench_passkey:
-    name: "infinitebench"
-    task_type: "passkey"
-    data_path: "data/memory_benchmarks/infinitebench_passkey.jsonl"
+    name: "longbench"
+    task_type: "narrativeqa"
+    data_path: "data/memory_benchmarks/longbench_narrativeqa.jsonl"
     evaluation_method: "get_score_one_passkey"
-    sample_limit: 5
+    sample_limit: 500
 
 # Generation parameters
 generation:
@@ -32,7 +32,7 @@ generation:
 
 # Execution settings
 execution:
-  batch_size: 100
+  batch_size: 4
   max_evaluation_workers: 2
 
 # Output configuration
