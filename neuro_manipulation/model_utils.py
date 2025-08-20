@@ -26,6 +26,8 @@ def setup_model_and_tokenizer(config, from_vllm=False):
     Returns:
         tuple: (model, tokenizer, prompt_format, processor)
     """
+    if not isinstance(config, dict):
+        config = config.__dict__
 
     if not isinstance(config, dict):
         config = config.__dict__
