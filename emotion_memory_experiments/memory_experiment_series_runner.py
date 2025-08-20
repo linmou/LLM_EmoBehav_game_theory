@@ -31,8 +31,11 @@ from neuro_manipulation.repe.pipelines import repe_pipeline_registry
 _spec = importlib.util.spec_from_file_location(
     "data_models", os.path.join(os.path.dirname(__file__), "data_models.py")
 )
-_data_models = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_data_models)
+if _spec is not None and _spec.loader is not None:
+    _data_models = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_data_models)
+else:
+    raise ImportError("Cannot load data_models module")
 
 BenchmarkConfig = _data_models.BenchmarkConfig
 ExperimentConfig = _data_models.ExperimentConfig
@@ -61,7 +64,7 @@ class MemoryExperimentReport:
         )
         self.report_file.parent.mkdir(parents=True, exist_ok=True)
         self.lock = threading.Lock()
-        self.experiments = {}
+        self.experiments: Dict[str, Dict[str, Any]] = {}
         self.series_start_time = datetime.now()
         self._save_report()
 
@@ -226,7 +229,7 @@ class MemoryExperimentSeriesRunner:
     def __init__(
         self,
         config_path: str,
-        series_name: str = None,
+        series_name: Optional[str] = None,
         resume: bool = False,
         dry_run: bool = False,
     ):
@@ -375,15 +378,18 @@ class MemoryExperimentSeriesRunner:
 
             # Stream output in real-time
             while True:
-                output = process.stdout.readline()
-                if output == "" and process.poll() is not None:
+                if process.stdout is not None:
+                    output = process.stdout.readline()
+                    if output == "" and process.poll() is not None:
+                        break
+                    if output:
+                        self.logger.info(output.strip())
+                else:
                     break
-                if output:
-                    self.logger.info(output.strip())
 
             # Get return code and stderr
             return_code = process.poll()
-            stderr = process.stderr.read()
+            stderr = process.stderr.read() if process.stderr else ""
 
             if return_code != 0:
                 self.logger.error(
@@ -850,7 +856,7 @@ class MemoryExperimentSeriesRunner:
 
             # Find the benchmark config
             # exp["benchmark_name"] is now in format "benchmark_tasktype"
-            benchmark_config = None
+            benchmark_config: Optional[Dict[str, Any]] = None
             for bench in benchmarks:
                 bench_identifier = f"{bench['name']}_{bench['task_type']}"
                 if bench_identifier == exp["benchmark_name"]:

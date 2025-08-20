@@ -31,12 +31,38 @@ class MemoryPromptWrapper(PromptWrapper):
             return [user_messages]
         return user_messages
 
+    def augment_context(self, context, augmentation_config=None):
+        """
+        Apply custom prefix/suffix to context.
+        
+        Args:
+            context: Original context text
+            augmentation_config: Dict with 'prefix' and/or 'suffix' keys
+                
+        Returns:
+            Augmented context string
+        """
+        if not context or not augmentation_config:
+            return context
+            
+        prefix = augmentation_config.get('prefix', '')
+        suffix = augmentation_config.get('suffix', '')
+        
+        result = context
+        if prefix:
+            result = f"{prefix}\n\n{result}"
+        if suffix:
+            result = f"{result}\n\n{suffix}"
+            
+        return result
+
     def __call__(
         self,
         context=None,
         question=None,
         user_messages="Please provide your answer.",
         enable_thinking=False,
+        augmentation_config=None,
     ):
         """
         Build the complete prompt for memory benchmark tasks.
@@ -46,12 +72,16 @@ class MemoryPromptWrapper(PromptWrapper):
             question: The question to answer
             user_messages: Additional user instructions
             enable_thinking: Whether to enable thinking mode
+            augmentation_config: Configuration for context augmentation
 
         Returns:
             Formatted prompt string using the model's prompt format
         """
+        # Apply context augmentation if configured
+        augmented_context = self.augment_context(context, augmentation_config)
+
         return self.prompt_format.build(
-            self.system_prompt(context, question),
+            self.system_prompt(augmented_context, question),
             self.user_messages(user_messages),
             enable_thinking=enable_thinking,
         )
