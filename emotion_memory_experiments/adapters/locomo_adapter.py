@@ -3,7 +3,6 @@ Adapter for LoCoMo conversational memory benchmark.
 """
 
 import json
-from pathlib import Path
 from typing import Any, Dict, List
 
 try:
@@ -21,7 +20,7 @@ class LoCoMoAdapter(BenchmarkAdapter):
 
     def create_dataset(self, prompt_wrapper=None) -> LoCoMoDataset:
         """Load LoCoMo data as PyTorch Dataset"""
-        data_path = Path(self.config.data_path)
+        data_path = self.config.get_data_path()
         if not data_path.exists():
             raise FileNotFoundError(f"Benchmark data not found: {data_path}")
 

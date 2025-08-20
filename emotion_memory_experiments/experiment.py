@@ -112,7 +112,7 @@ class EmotionMemoryExperiment:
 
         # Load vLLM model for inference with loading config
         self.model, self.tokenizer, self.prompt_format, _ = setup_model_and_tokenizer(
-            self.repe_config, from_vllm=True, loading_config=self.loading_config
+            self.loading_config, from_vllm=True
         )
         self.logger.info(f"Model loaded: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)

@@ -3,7 +3,6 @@ Enhanced adapter for LongBench long-context benchmark suite with comprehensive e
 """
 
 import json
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # Import evaluation utilities
@@ -98,7 +97,7 @@ class LongBenchAdapter(BenchmarkAdapter):
         truncation_strategy: str = "right"
     ) -> LongBenchDataset:
         """Create simple LongBench dataset with optional truncation"""
-        data_path = Path(self.config.data_path)
+        data_path = self.config.get_data_path()
         if not data_path.exists():
             raise FileNotFoundError(f"Benchmark data not found: {data_path}")
 
