@@ -503,7 +503,7 @@ class EmotionMemoryExperiment:
             "intensities": self.config.intensities,
             "benchmark": {
                 "name": self.config.benchmark.name,
-                "data_path": str(self.config.benchmark.data_path),
+                "data_path": str(self.config.benchmark.get_data_path()),
                 "task_type": self.config.benchmark.task_type,
                 "evaluation_method": self.config.benchmark.evaluation_method,
                 "sample_limit": self.config.benchmark.sample_limit,
