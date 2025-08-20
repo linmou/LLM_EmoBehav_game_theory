@@ -27,25 +27,27 @@ class ResultRecord:
 
 @dataclass
 class BenchmarkConfig:
-    """Configuration for a memory benchmark"""
-
     name: str
     task_type: str  # e.g., 'passkey', 'kv_retrieval', 'longbook_qa_eng'
     data_path: Optional[Path] = None  # Auto-generated if None
     evaluation_method: Optional[str] = None  # Can be removed
     sample_limit: Optional[int] = None
-    augmentation_config: Optional[Dict[str, str]] = None  # Custom prefix/suffix for context
+    augmentation_config: Optional[Dict[str, str]] = (
+        None  # Custom prefix/suffix for context and answer marking
+    )
 
-    def discover_datasets_by_pattern(self, base_data_dir: str = "data/memory_benchmarks") -> List[str]:
+    def discover_datasets_by_pattern(
+        self, base_data_dir: str = "data/memory_benchmarks"
+    ) -> List[str]:
         """
         Discover task types matching the regex pattern in task_type.
-        
+
         Args:
             base_data_dir: Base directory for memory benchmark data
-            
+
         Returns:
             List of task types matching the regex pattern
-            
+
         Examples:
             - task_type='.*' -> ['narrativeqa', 'qasper'] (all tasks)
             - task_type='.*qa.*' -> ['narrativeqa'] (contains 'qa')
@@ -53,44 +55,44 @@ class BenchmarkConfig:
         """
         base_path = Path(base_data_dir)
         glob_pattern = str(base_path / f"{self.name}_*.jsonl")
-        
+
         # Find all files for this benchmark
         all_files = glob.glob(glob_pattern)
-        
+
         # Extract task types and filter by regex pattern
         task_types = []
         try:
             regex_pattern = re.compile(self.task_type)
-            
+
             for file_path in all_files:
                 filename = Path(file_path).stem  # Remove .jsonl extension
                 prefix = f"{self.name}_"
                 if filename.startswith(prefix):
-                    task_type = filename[len(prefix):]
+                    task_type = filename[len(prefix) :]
                     if regex_pattern.match(task_type):
                         task_types.append(task_type)
         except re.error as e:
             raise ValueError(f"Invalid regex pattern '{self.task_type}': {str(e)}")
-        
+
         return sorted(task_types)
 
     def get_data_path(self, base_data_dir: str = "data/memory_benchmarks") -> Path:
         """
         Get the data path for this benchmark. Auto-generates if not set.
-        
+
         Args:
             base_data_dir: Base directory for memory benchmark data
-            
+
         Returns:
             Path to the benchmark data file
-            
+
         Examples:
             - name='longbench', task_type='narrativeqa' -> data/memory_benchmarks/longbench_narrativeqa.jsonl
             - name='infinitebench', task_type='passkey' -> data/memory_benchmarks/infinitebench_passkey.jsonl
         """
         if self.data_path is not None:
             return self.data_path
-        
+
         # Auto-generate path based on naming convention
         filename = f"{self.name}_{self.task_type}.jsonl"
         return Path(base_data_dir) / filename
@@ -110,7 +112,7 @@ class LoadingConfig:
     dtype: str = "float16"  # Model dtype: 'float16', 'bfloat16', 'float32'
     seed: int = 42
     disable_custom_all_reduce: bool = False
-    
+
     # Context truncation settings
     enable_auto_truncation: bool = True  # Enable automatic context truncation
     truncation_strategy: str = "right"  # "right" or "left" (via tokenizer)

@@ -3,6 +3,8 @@ Memory benchmark prompt wrapper following GameScenarioDataset pattern.
 Integrates with neuro_manipulation.prompt_wrapper.PromptWrapper for proper model-specific formatting.
 """
 
+from typing import Any, Dict, Optional, Union
+
 from neuro_manipulation.prompt_formats import PromptFormat
 from neuro_manipulation.prompt_wrapper import PromptWrapper
 
@@ -31,39 +33,47 @@ class MemoryPromptWrapper(PromptWrapper):
             return [user_messages]
         return user_messages
 
-    def augment_context(self, context, augmentation_config=None):
+    def augment_context(
+        self,
+        context: Optional[str],
+        augmentation_config: Optional[Dict[str, Any]] = None,
+        answer: Optional[str] = None,
+    ) -> Optional[str]:
         """
-        Apply custom prefix/suffix to context.
-        
+        Apply custom prefix/suffix to context or mark answers in context.
+
         Args:
             context: Original context text
-            augmentation_config: Dict with 'prefix' and/or 'suffix' keys
-                
+            augmentation_config: Dict with 'prefix', 'suffix', and optional 'mark_answer' keys
+            answer: Answer to find and mark in context (always provided from datasets)
+
         Returns:
             Augmented context string
         """
         if not context or not augmentation_config:
             return context
-            
-        prefix = augmentation_config.get('prefix', '')
-        suffix = augmentation_config.get('suffix', '')
-        
+
+        prefix = augmentation_config.get("prefix", "")
+        suffix = augmentation_config.get("suffix", "")
+
         result = context
-        if prefix:
-            result = f"{prefix}\n\n{result}"
-        if suffix:
-            result = f"{result}\n\n{suffix}"
-            
+
+        assert answer is not None
+        assert answer in context
+
+        result = context.replace(answer, f"{prefix}{answer}{suffix}")
+
         return result
 
     def __call__(
         self,
-        context=None,
-        question=None,
-        user_messages="Please provide your answer.",
-        enable_thinking=False,
-        augmentation_config=None,
-    ):
+        context: Optional[str] = None,
+        question: Optional[str] = None,
+        user_messages: Union[str, list] = "Please provide your answer.",
+        enable_thinking: bool = False,
+        augmentation_config: Optional[Dict[str, Any]] = None,
+        answer: Optional[str] = None,
+    ) -> str:
         """
         Build the complete prompt for memory benchmark tasks.
 
@@ -73,12 +83,13 @@ class MemoryPromptWrapper(PromptWrapper):
             user_messages: Additional user instructions
             enable_thinking: Whether to enable thinking mode
             augmentation_config: Configuration for context augmentation
+            answer: Answer to find and mark in context (for answer marking)
 
         Returns:
             Formatted prompt string using the model's prompt format
         """
         # Apply context augmentation if configured
-        augmented_context = self.augment_context(context, augmentation_config)
+        augmented_context = self.augment_context(context, augmentation_config, answer)
 
         return self.prompt_format.build(
             self.system_prompt(augmented_context, question),

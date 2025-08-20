@@ -19,6 +19,9 @@ benchmarks:
     task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
     evaluation_method: "exact_match"
     sample_limit: 100
+    augmentation_config:
+      prefix: " I am super happy "
+      suffix: " and I am super happy"
     
   # Discover only QA-related tasks in infinitebench 
   # - name: "infinitebench"
