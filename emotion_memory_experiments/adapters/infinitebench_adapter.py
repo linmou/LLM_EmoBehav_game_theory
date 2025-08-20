@@ -3,7 +3,6 @@ Enhanced adapter for InfiniteBench tasks with comprehensive evaluation methods.
 """
 
 import json
-from pathlib import Path
 from typing import Any, Dict, List
 
 # Import evaluation utilities
@@ -71,7 +70,7 @@ class InfiniteBenchAdapter(BenchmarkAdapter):
 
     def create_dataset(self, prompt_wrapper=None) -> InfiniteBenchDataset:
         """Create simple InfiniteBench dataset"""
-        data_path = Path(self.config.data_path)
+        data_path = self.config.get_data_path()
         if not data_path.exists():
             raise FileNotFoundError(f"Benchmark data not found: {data_path}")
 
