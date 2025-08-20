@@ -4,16 +4,14 @@ import multiprocessing
 import os
 from typing import Literal
 
-from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from openai import AsyncAzureOpenAI, AsyncOpenAI
 from pydantic import BaseModel
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
-load_dotenv()
-client = AsyncOpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_BASE_URL")
-)
+from api_configs import AZURE_OPENAI_CONFIG
+
+client = AsyncAzureOpenAI(**AZURE_OPENAI_CONFIG)
 
 
 class AnnotatedStimulus(BaseModel):
@@ -24,7 +22,7 @@ class AnnotatedStimulus(BaseModel):
 
 async def annotate_sample(sample, stimulus_types):
     response = await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4.1",
         messages=[
             {
                 "role": "system",
@@ -39,7 +37,6 @@ async def annotate_sample(sample, stimulus_types):
             "type": "json_schema",
             "json_schema": {
                 "name": "AnnotatedStimulus",
-                "type": "object",
                 "strict": True,
                 "schema": {
                     "type": "object",
@@ -99,7 +96,7 @@ if __name__ == "__main__":
 
     # pprint(AnnotatedStimulus.model_json_schema())
 
-    emotion = "disgust"
+    emotion = "anger"
     with open(f"data_creation/stimulus_data/{emotion}.json", "r") as f:
         data = json.load(f)
 

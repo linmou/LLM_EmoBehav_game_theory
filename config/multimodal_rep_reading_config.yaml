@@ -1,0 +1,98 @@
+experiment:
+  name: "Multimodal_Emotion_Extraction"
+  
+  # Multimodal model configuration
+  models: 
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-7B-Instruct"
+  
+  # RepE pipeline configuration
+  pipeline:
+    task: "multimodal-rep-reading"
+    rep_token: -1  # Extract from emotion word token (last token)
+    hidden_layers: [-1, -2, -3]  # Extract from last 3 layers
+    direction_method: "pca"  # or "cluster_mean"
+    n_components: 1
+    batch_size: 4
+    
+  # Emotion extraction configuration
+  emotions:
+    - "anger"
+    - "happiness" 
+    - "sadness"
+    - "disgust"
+    - "fear"
+    - "surprise"
+    
+  # Template for emotion inquiry
+  emotion_template: "when you see this image, your emotion is"
+  
+  # Data configuration
+  data:
+    # Image dataset parameters
+    image_dir: "data/emotion_images/"  # Directory containing emotion-inducing images
+    image_formats: ["jpg", "jpeg", "png", "webp"]
+    max_images_per_emotion: 50
+    
+    # Multimodal input structure
+    input_format: 
+      # Each input combines image + text prompt
+      images: "{{image_path}}"
+      text: "{{emotion_template}} {{emotion}}"
+    
+    # Training data generation
+    generate_pairs: true  # Generate positive/negative pairs for each emotion
+    n_difference: 1  # Number of difference iterations for PCA
+    
+  # Model loading configuration  
+  model_config:
+    device_map: "auto"
+    torch_dtype: "bfloat16"
+    trust_remote_code: true
+    
+  # vLLM configuration (if using vLLM)
+  vllm_config:
+    task: "multimodal-rep-reading-vllm"
+    tensor_parallel_size: 1
+    max_model_len: 2048
+    gpu_memory_utilization: 0.8
+    
+  # Output configuration
+  output:
+    base_dir: "results/multimodal_emotion_extraction"
+    save_directions: true
+    save_hidden_states: false  # Can be large for images
+    direction_format: "pt"  # Save as PyTorch tensors
+    
+  # Validation and testing
+  validation:
+    test_extraction_quality: true
+    cross_emotion_validation: true
+    consistency_check: true
+    
+# Example usage patterns:
+usage_examples:
+  # Basic emotion vector extraction
+  basic_extraction:
+    input:
+      images: ["path/to/angry_face.jpg"]
+      text: "when you see this image, your emotion is anger"
+    expected_output: "emotion_vector_anger.pt"
+    
+  # Batch processing multiple emotions
+  batch_processing:
+    input:
+      - images: ["path/to/happy_scene.jpg"]
+        text: "when you see this image, your emotion is happiness"
+      - images: ["path/to/sad_scene.jpg"] 
+        text: "when you see this image, your emotion is sadness"
+    expected_output: ["emotion_vector_happiness.pt", "emotion_vector_sadness.pt"]
+    
+  # Cross-validation setup
+  cross_validation:
+    positive_examples:
+      - images: ["angry1.jpg", "angry2.jpg"]
+        text: "when you see this image, your emotion is anger"
+    negative_examples:
+      - images: ["happy1.jpg", "happy2.jpg"]
+        text: "when you see this image, your emotion is anger"

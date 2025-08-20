@@ -1,11 +1,4 @@
 import json
-import torch
-from torch.utils.data import DataLoader
-from transformers import pipeline
-import pandas as pd
-from functools import partial
-from openai import AzureOpenAI, OpenAI
-from pydantic import BaseModel
 import logging
 import re
 import time
@@ -38,7 +31,6 @@ from neuro_manipulation.model_utils import (
 from neuro_manipulation.prompt_wrapper import GameReactPromptWrapper
 from neuro_manipulation.repe.pipelines import get_pipeline
 from neuro_manipulation.utils import oai_response
-from api_configs import AZURE_OPENAI_CONFIG, OAI_CONFIG
 from statistical_engine import analyze_emotion_and_intensity_effects
 
 
@@ -134,18 +126,23 @@ class EmotionGameExperiment:
 
         self.batch_size = batch_size
 
-        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(
-            repe_eng_config, from_vllm=False
+        self.model, self.tokenizer, self.prompt_format, processor = (
+            setup_model_and_tokenizer(repe_eng_config, from_vllm=False)
         )  # first load from hf for load_emotion_readers since load_emotion_readers does not support vllm yet TODO: update load_emotion_readers to support vllm
         num_hidden_layers = ModelLayerDetector.num_layers(self.model)
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
 
         self.emotion_rep_readers = load_emotion_readers(
-            self.repe_eng_config, self.model, self.tokenizer, self.hidden_layers, enable_thinking=self.enable_thinking
+            self.repe_eng_config,
+            self.model,
+            self.tokenizer,
+            self.hidden_layers,
+            processor,
+            self.enable_thinking,
         )
         del self.model  # to save memory
-        self.model, self.tokenizer, self.prompt_format = setup_model_and_tokenizer(
+        self.model, self.tokenizer, self.prompt_format, _ = setup_model_and_tokenizer(
             repe_eng_config, from_vllm=True
         )  # load from vllm for the rest of the experiment
 
@@ -201,14 +198,18 @@ class EmotionGameExperiment:
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         with open(self.output_dir + "/exp_config.yaml", "w") as f:
             yaml.dump(self.exp_config, f)
-        
-        client_choice = self.exp_config['experiment'].get('oai_client', 'openai')
-        if client_choice == 'openai':
-            self.llm_client = OpenAI(**OAI_CONFIG)
-        elif client_choice == 'azure':
+
+        client_choice = self.exp_config["experiment"].get("oai_client", "openai")
+        if client_choice == "azure":
             self.llm_client = AzureOpenAI(**AZURE_OPENAI_CONFIG)
+        elif client_choice == "openai":
+            from api_configs import OAI_CONFIG
+
+            self.llm_client = OpenAI(**OAI_CONFIG)
         else:
-            raise ValueError(f"Invalid LLM client: {client_choice}")
+            raise ValueError(
+                f"Invalid LLM client: {client_choice}. Supported: 'azure', 'openai'"
+            )
 
     def build_dataloader(self):
         self.logger.info(
