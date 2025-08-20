@@ -84,7 +84,7 @@ class EmotionMemoryExperiment:
         self.enable_thinking = self.generation_config.get("enable_thinking", False)
 
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
-        repe_config = get_repe_eng_config(
+        self.repe_config = get_repe_eng_config(
             config.model_path, yaml_config=config.repe_eng_config
         )
 
@@ -101,7 +101,7 @@ class EmotionMemoryExperiment:
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
 
         self.emotion_rep_readers = load_emotion_readers(
-            repe_config,
+            self.repe_config,
             self.model,
             self.tokenizer,
             self.hidden_layers,
@@ -112,7 +112,7 @@ class EmotionMemoryExperiment:
 
         # Load vLLM model for inference with loading config
         self.model, self.tokenizer, self.prompt_format, _ = setup_model_and_tokenizer(
-            repe_config, from_vllm=True, loading_config=self.loading_config
+            self.repe_config, from_vllm=True, loading_config=self.loading_config
         )
         self.logger.info(f"Model loaded: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)
@@ -125,8 +125,8 @@ class EmotionMemoryExperiment:
             layers=self.hidden_layers[
                 len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
             ],
-            block_name=repe_config["block_name"],
-            control_method=repe_config["control_method"],
+            block_name=self.repe_config["block_name"],
+            control_method=self.repe_config["control_method"],
         )
 
         # Load benchmark adapter
@@ -167,12 +167,6 @@ class EmotionMemoryExperiment:
 
         # Sample limit for testing
         self.sample_num: Optional[int] = config.benchmark.sample_limit
-
-        # Set sample limit on adapter if specified
-        if self.sample_num is not None:
-            # Note: This would require adapter modification to support sample_num
-            self.logger.info(f"Sample limit set to {self.sample_num}")
-            # TODO: Implement sample_num support in adapters if needed
 
         # Batch size for DataLoader
         self.batch_size = config.batch_size
@@ -450,6 +444,9 @@ class EmotionMemoryExperiment:
         """Save experiment results and compute summary statistics"""
         self.logger.info("Saving experiment results")
 
+        # Save full experiment configuration
+        self._save_experiment_config()
+
         # Convert to DataFrame
         results_data = []
         for result in results:
@@ -494,6 +491,68 @@ class EmotionMemoryExperiment:
         self.logger.info(f"\n{summary}")
 
         return df
+
+    def _save_experiment_config(self):
+        """Save the complete experiment configuration to the results folder"""
+        config_filename = self.output_dir / "experiment_config.json"
+
+        # Convert the experiment config to a serializable dictionary
+        config_dict = {
+            "model_path": self.config.model_path,
+            "emotions": self.config.emotions,
+            "intensities": self.config.intensities,
+            "benchmark": {
+                "name": self.config.benchmark.name,
+                "data_path": str(self.config.benchmark.data_path),
+                "task_type": self.config.benchmark.task_type,
+                "evaluation_method": self.config.benchmark.evaluation_method,
+                "sample_limit": self.config.benchmark.sample_limit,
+            },
+            "output_dir": self.config.output_dir,
+            "batch_size": self.config.batch_size,
+            "generation_config": self.generation_config,
+            "loading_config": self._serialize_loading_config(),
+            "repe_eng_config": self.repe_config,
+            "max_evaluation_workers": self.config.max_evaluation_workers,
+            "pipeline_queue_size": self.config.pipeline_queue_size,
+            # Runtime information
+            "runtime_info": {
+                "timestamp": datetime.now().isoformat(),
+                "sample_num": self.sample_num,
+                "enable_thinking": self.enable_thinking,
+                "max_context_length": self.max_context_length,
+                "truncation_strategy": self.truncation_strategy,
+                "hidden_layers": self.hidden_layers,
+                "is_vllm": self.is_vllm,
+            },
+        }
+
+        # Save configuration
+        with open(config_filename, "w") as f:
+            json.dump(config_dict, f, indent=2, default=str)
+
+        self.logger.info(f"Experiment configuration saved to {config_filename}")
+
+    def _serialize_loading_config(self) -> dict:
+        """Convert LoadingConfig to a serializable dictionary"""
+        if self.loading_config is None:
+            return None
+
+        return {
+            "model_path": self.loading_config.model_path,
+            "gpu_memory_utilization": self.loading_config.gpu_memory_utilization,
+            "tensor_parallel_size": self.loading_config.tensor_parallel_size,
+            "max_model_len": self.loading_config.max_model_len,
+            "enforce_eager": self.loading_config.enforce_eager,
+            "quantization": self.loading_config.quantization,
+            "trust_remote_code": self.loading_config.trust_remote_code,
+            "dtype": self.loading_config.dtype,
+            "seed": self.loading_config.seed,
+            "disable_custom_all_reduce": self.loading_config.disable_custom_all_reduce,
+            "enable_auto_truncation": self.loading_config.enable_auto_truncation,
+            "truncation_strategy": self.loading_config.truncation_strategy,
+            "preserve_ratio": self.loading_config.preserve_ratio,
+        }
 
     def run_sanity_check(self, sample_limit: int = 5) -> pd.DataFrame:
         """Run a quick sanity check with limited samples"""
