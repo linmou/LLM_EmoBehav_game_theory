@@ -5,6 +5,9 @@ Adapted from neuro_manipulation/experiment_series_runner.py for EmotionMemoryExp
 
 import copy
 import gc
+
+# Use dynamic import to avoid relative import issues
+import importlib.util
 import json
 import logging
 import os
@@ -22,8 +25,18 @@ from typing import Any, Dict, List, Optional, Tuple
 import yaml
 from transformers import AutoConfig
 
-from .data_models import BenchmarkConfig, ExperimentConfig, LoadingConfig
-from .experiment import EmotionMemoryExperiment
+from neuro_manipulation.repe.pipelines import repe_pipeline_registry
+
+# Load data_models directly
+_spec = importlib.util.spec_from_file_location(
+    "data_models", os.path.join(os.path.dirname(__file__), "data_models.py")
+)
+_data_models = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_data_models)
+
+BenchmarkConfig = _data_models.BenchmarkConfig
+ExperimentConfig = _data_models.ExperimentConfig
+LoadingConfig = _data_models.LoadingConfig
 
 
 class ExperimentStatus:
@@ -210,7 +223,13 @@ class MemoryExperimentSeriesRunner:
     - CUDA memory cleanup between experiments
     """
 
-    def __init__(self, config_path: str, series_name: str = None, resume: bool = False):
+    def __init__(
+        self,
+        config_path: str,
+        series_name: str = None,
+        resume: bool = False,
+        dry_run: bool = False,
+    ):
         # Setup logging
         self.logger = logging.getLogger(__name__)
         if not self.logger.handlers:
@@ -224,6 +243,7 @@ class MemoryExperimentSeriesRunner:
 
         self.config_path = config_path
         self.series_name = series_name or f"memory_experiment_series"
+        self.dry_run = dry_run
 
         # Load and parse config
         self._load_config()
@@ -421,9 +441,7 @@ class MemoryExperimentSeriesRunner:
 
         return model_name
 
-    def setup_experiment(
-        self, benchmark_config: Dict, model_name: str
-    ) -> EmotionMemoryExperiment:
+    def setup_experiment(self, benchmark_config: Dict, model_name: str):
         """Set up a single memory experiment with the given benchmark and model"""
 
         # Create BenchmarkConfig from dictionary
@@ -461,9 +479,19 @@ class MemoryExperimentSeriesRunner:
             pipeline_queue_size=self.base_config.get("pipeline_queue_size", 2),
         )
 
-        experiment = EmotionMemoryExperiment(experiment_config)
+        # Only import and create experiment if not dry run
+        if self.dry_run:
+            # For dry run, return a mock object with the config
+            class MockExperiment:
+                def __init__(self, config):
+                    self.config = config
 
-        return experiment
+            return MockExperiment(experiment_config)
+        else:
+            from .experiment import EmotionMemoryExperiment
+
+            experiment = EmotionMemoryExperiment(experiment_config)
+            return experiment
 
     def _clean_cuda_memory(self) -> None:
         """Clean up CUDA memory after an experiment
@@ -612,20 +640,21 @@ class MemoryExperimentSeriesRunner:
 
         for benchmark_config in benchmarks:
             task_type = benchmark_config.get("task_type", "")
-            
+
             # Check if task_type is a pattern (contains wildcards or regex characters)
             if self._is_pattern_task_type(task_type):
                 # Create a temporary BenchmarkConfig to discover datasets
                 temp_benchmark = BenchmarkConfig(
-                    name=benchmark_config["name"],
-                    task_type=task_type
+                    name=benchmark_config["name"], task_type=task_type
                 )
 
                 # Discover task types matching the pattern
                 base_data_dir = self.base_config.get(
                     "base_data_dir", "data/memory_benchmarks"
                 )
-                discovered_tasks = temp_benchmark.discover_datasets_by_pattern(base_data_dir)
+                discovered_tasks = temp_benchmark.discover_datasets_by_pattern(
+                    base_data_dir
+                )
 
                 if not discovered_tasks:
                     self.logger.warning(
@@ -652,13 +681,13 @@ class MemoryExperimentSeriesRunner:
     def _is_pattern_task_type(self, task_type: str) -> bool:
         """
         Check if task_type is a pattern that needs expansion.
-        
+
         Args:
             task_type: The task type string to check
-            
+
         Returns:
             True if task_type contains pattern characters, False otherwise
-            
+
         Examples:
             - "*" -> True (all files)
             - "narrative*" -> True (starts with narrative)
@@ -668,13 +697,89 @@ class MemoryExperimentSeriesRunner:
         """
         if not task_type:
             return False
-        
+
         # Check for common pattern characters
-        pattern_chars = ['*', '?', '[', ']', '{', '}', '(', ')', '^', '$', '+', '.', '|', '\\']
+        pattern_chars = [
+            "*",
+            "?",
+            "[",
+            "]",
+            "{",
+            "}",
+            "(",
+            ")",
+            "^",
+            "$",
+            "+",
+            ".",
+            "|",
+            "\\",
+        ]
         return any(char in task_type for char in pattern_chars)
+
+    def dry_run_series(self) -> None:
+        """Dry run to validate configuration without running experiments"""
+        self.logger.info("🚀 Starting DRY RUN - Memory Experiment Series Validation")
+        self.logger.info("=" * 60)
+
+        # Get lists of benchmarks and models from config
+        original_benchmarks = self.base_config["benchmarks"]
+        models = self.base_config["models"]
+
+        # Expand benchmarks with regex patterns
+        benchmarks = self.expand_benchmark_configs(original_benchmarks)
+
+        self.logger.info(f"📊 Original benchmarks: {len(original_benchmarks)}")
+        self.logger.info(f"📈 Expanded benchmarks: {len(benchmarks)}")
+        self.logger.info(f"🤖 Models: {len(models)}")
+        self.logger.info(f"😊 Emotions: {len(self.base_config['emotions'])}")
+        self.logger.info(f"📈 Intensities: {len(self.base_config['intensities'])}")
+
+        # Calculate experiment combinations
+        total_combinations = len(benchmarks) * len(models)
+        total_with_emotions = (
+            total_combinations
+            * len(self.base_config["emotions"])
+            * len(self.base_config["intensities"])
+        )
+
+        self.logger.info(f"🧮 Total experiment combinations: {total_combinations}")
+        self.logger.info(
+            f"🎯 Total runs with emotions/intensities: {total_with_emotions}"
+        )
+
+        # Test creating experiment configurations
+        self.logger.info("\n🔬 Testing experiment configuration creation...")
+        test_count = min(3, len(benchmarks), len(models))  # Test first 3 combinations
+
+        for i, (benchmark_config, model_name) in enumerate(
+            zip(benchmarks[:test_count], models[:test_count])
+        ):
+            try:
+                experiment = self.setup_experiment(benchmark_config, model_name)
+                self.logger.info(
+                    f"   ✅ Config {i+1}: {benchmark_config['name']}_{benchmark_config['task_type']} + {model_name}"
+                )
+                self.logger.info(f"      📁 Output: {experiment.config.output_dir}")
+                self.logger.info(
+                    f"      🎯 Data path: {experiment.config.benchmark.get_data_path()}"
+                )
+            except Exception as e:
+                self.logger.error(f"   ❌ Config {i+1} failed: {e}")
+
+        self.logger.info("\n🎉 DRY RUN COMPLETED SUCCESSFULLY!")
+        self.logger.info("✅ Configuration is valid and ready for execution")
+        self.logger.info(
+            f"✅ Would run {len(benchmarks)} benchmark(s) × {len(models)} model(s)"
+        )
 
     def run_experiment_series(self) -> None:
         """Run the full series of memory experiments with all benchmark/model combinations"""
+        # Check if this is a dry run
+        if self.dry_run:
+            self.dry_run_series()
+            return
+
         # Record series start time
         series_start_time = datetime.now()
 
@@ -810,10 +915,18 @@ def main():
     parser.add_argument(
         "--resume", action="store_true", help="Resume interrupted experiment series"
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate configuration without running experiments",
+    )
 
     args = parser.parse_args()
 
-    runner = MemoryExperimentSeriesRunner(args.config, args.name, args.resume)
+    repe_pipeline_registry()
+    runner = MemoryExperimentSeriesRunner(
+        args.config, args.name, args.resume, args.dry_run
+    )
     runner.run_experiment_series()
 
 

@@ -8,23 +8,23 @@ version: "1.0.0"
 # Models to test (supports both HuggingFace paths and local paths)
 models:
   - "Qwen/Qwen2.5-0.5B-Instruct"
-  - "Qwen/Qwen2.5-1.5B-Instruct"
-  - "Qwen/Qwen2.5-3B-Instruct"
+  # - "Qwen/Qwen2.5-1.5B-Instruct"
+  # - "Qwen/Qwen2.5-3B-Instruct"
 
 # Benchmarks to test (data_path auto-generated if not specified)
 # Use regex patterns in task_type to automatically discover matching datasets
 benchmarks:
   # Discover all datasets for longbench (regex: match any string)
   - name: "longbench"
-    task_type: ".*"  # Matches all: narrativeqa, qasper, etc.
+    task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
     evaluation_method: "exact_match"
     sample_limit: 100
     
   # Discover only QA-related tasks in infinitebench 
-  - name: "infinitebench"
-    task_type: ".*qa.*"  # Matches: longbook_qa_eng, etc.
-    evaluation_method: "exact_match"
-    sample_limit: 50
+  # - name: "infinitebench"
+  #   task_type: ".*qa.*"  # Matches: longbook_qa_eng, etc.
+  #   evaluation_method: "exact_match"
+  #   sample_limit: 50
 
   # More regex examples (commented out):
   # - name: "longbench"
@@ -61,14 +61,8 @@ loading_config:
 
 # RepE configuration
 repe_eng_config:
-  model_name_or_path: null  # Will use model from loading_config
-  layers: null  # Auto-detect based on model
-  n_difference: 1
   direction_method: "pca"
-  rep_token: -1  # Last token
-  hidden_layers: null  # Auto-detect
-  n_training_size: 300
-  train_dir: null  # Will use default training data
+
 
 # Generation parameters
 generation_config:
@@ -84,7 +78,7 @@ generation_config:
   enable_thinking: false
 
 # Execution settings
-batch_size: 4
+batch_size: 10
 max_evaluation_workers: 2
 pipeline_queue_size: 2
 
@@ -92,4 +86,4 @@ pipeline_queue_size: 2
 output_dir: "results/memory_emotion_series"
 
 # Optional: run only sanity checks instead of full experiments
-run_sanity_check: false
+run_sanity_check: true
