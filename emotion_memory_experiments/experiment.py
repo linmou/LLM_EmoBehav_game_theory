@@ -27,10 +27,10 @@ from neuro_manipulation.model_utils import (
 )
 from neuro_manipulation.repe.pipelines import get_pipeline
 
+from .adapters.truncation_utils import calculate_max_context_length
 from .benchmark_adapters import get_adapter
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 from .memory_prompt_wrapper import get_memory_prompt_wrapper
-from .adapters.truncation_utils import calculate_max_context_length
 
 
 class EmotionMemoryExperiment:
@@ -81,7 +81,6 @@ class EmotionMemoryExperiment:
         )
         self.logger.info(f"Log file created at: {log_file}")
 
-        # Extract enable_thinking from generation config (ISSUE 2 FIX)
         self.enable_thinking = self.generation_config.get("enable_thinking", False)
 
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
@@ -95,7 +94,7 @@ class EmotionMemoryExperiment:
 
         # First load from HF for emotion readers
         self.model, self.tokenizer, self.prompt_format, processor = (
-            setup_model_and_tokenizer(repe_config, from_vllm=False, loading_config=self.loading_config)
+            setup_model_and_tokenizer(self.loading_config, from_vllm=False)
         )
         num_hidden_layers = ModelLayerDetector.num_layers(self.model)
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
@@ -177,7 +176,7 @@ class EmotionMemoryExperiment:
 
         # Batch size for DataLoader
         self.batch_size = config.batch_size
-        
+
         # Calculate max context length for truncation
         self.max_context_length = None
         self.truncation_strategy = "right"
@@ -185,7 +184,7 @@ class EmotionMemoryExperiment:
             self.max_context_length = calculate_max_context_length(
                 self.loading_config.max_model_len,
                 self.loading_config.preserve_ratio,
-                prompt_overhead=200  # Reserve for prompt template
+                prompt_overhead=200,  # Reserve for prompt template
             )
             self.truncation_strategy = self.loading_config.truncation_strategy
             self.logger.info(
@@ -199,7 +198,7 @@ class EmotionMemoryExperiment:
         self.logger.info(
             f"Creating benchmark dataset via adapter with sample_num={self.sample_num if self.sample_num is not None else 'all'}"
         )
-        
+
         # Pass truncation parameters if enabled
         dataloader_kwargs = {
             "batch_size": self.batch_size,
@@ -207,13 +206,15 @@ class EmotionMemoryExperiment:
             "prompt_wrapper": self.memory_prompt_wrapper_partial,
             "collate_fn": self._collate_memory_benchmarks,
         }
-        
+
         if self.max_context_length:
-            dataloader_kwargs.update({
-                "max_context_length": self.max_context_length,
-                "tokenizer": self.tokenizer,
-                "truncation_strategy": self.truncation_strategy
-            })
+            dataloader_kwargs.update(
+                {
+                    "max_context_length": self.max_context_length,
+                    "tokenizer": self.tokenizer,
+                    "truncation_strategy": self.truncation_strategy,
+                }
+            )
 
         data_loader = self.benchmark_adapter.get_dataloader(**dataloader_kwargs)
 
@@ -305,24 +306,30 @@ class EmotionMemoryExperiment:
                     "max_new_tokens": self.generation_config.get("max_new_tokens", 100),
                     "do_sample": self.generation_config.get("do_sample", False),
                     "top_p": self.generation_config.get("top_p", 0.9),
-                    "repetition_penalty": self.generation_config.get("repetition_penalty", 1.0),
+                    "repetition_penalty": self.generation_config.get(
+                        "repetition_penalty", 1.0
+                    ),
                 }
-                
+
                 # Add optional parameters if they exist and are not default
                 if self.generation_config.get("top_k", -1) != -1:
                     generation_params["top_k"] = self.generation_config["top_k"]
                 if self.generation_config.get("min_p", 0.0) != 0.0:
                     generation_params["min_p"] = self.generation_config["min_p"]
                 if self.generation_config.get("presence_penalty", 0.0) != 0.0:
-                    generation_params["presence_penalty"] = self.generation_config["presence_penalty"]
+                    generation_params["presence_penalty"] = self.generation_config[
+                        "presence_penalty"
+                    ]
                 if self.generation_config.get("frequency_penalty", 0.0) != 0.0:
-                    generation_params["frequency_penalty"] = self.generation_config["frequency_penalty"]
-                
+                    generation_params["frequency_penalty"] = self.generation_config[
+                        "frequency_penalty"
+                    ]
+
                 control_outputs = self.rep_control_pipeline(
                     batch["prompt"],  # Use formatted prompts from dataset
                     activations=activations,
                     batch_size=self.batch_size,
-                    **generation_params
+                    **generation_params,
                 )
                 end_time = time.time()
                 pipeline_queue.put((i, batch, control_outputs))
