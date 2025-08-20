@@ -51,7 +51,7 @@ class LoadingConfig:
     
     # Context truncation settings
     enable_auto_truncation: bool = True  # Enable automatic context truncation
-    truncation_strategy: str = "right"  # "right", "left", or "middle"
+    truncation_strategy: str = "right"  # "right" or "left" (via tokenizer)
     preserve_ratio: float = 0.95  # Ratio of max_model_len to use for context
 
 

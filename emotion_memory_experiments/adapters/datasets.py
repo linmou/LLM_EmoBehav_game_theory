@@ -10,10 +10,10 @@ from torch.utils.data import Dataset
 
 try:
     from ..data_models import BenchmarkItem
-    from .truncation_utils import truncate_item_context
+    from .truncation_utils import truncate_contexts_batch
 except ImportError:
     from emotion_memory_experiments.data_models import BenchmarkItem
-    from emotion_memory_experiments.adapters.truncation_utils import truncate_item_context
+    from emotion_memory_experiments.adapters.truncation_utils import truncate_contexts_batch
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class InfiniteBenchDataset(Dataset):
     """
     Ultra-simple PyTorch Dataset for InfiniteBench following GameScenarioDataset pattern.
     Uses prompt wrapper for proper model-specific formatting.
-    Supports automatic context truncation.
+    Supports automatic batch context truncation.
     """
 
     def __init__(
@@ -39,13 +39,51 @@ class InfiniteBenchDataset(Dataset):
         self.tokenizer = tokenizer
         self.truncation_strategy = truncation_strategy
         
-        # Apply truncation if configured
+        # Apply batch truncation if configured
         if max_context_length and tokenizer:
-            logger.info(f"Applying context truncation with max_length={max_context_length}, strategy='{truncation_strategy}'")
-            for i, item in enumerate(self.items):
-                self.items[i] = truncate_item_context(
-                    item, max_context_length, tokenizer, truncation_strategy
-                )
+            logger.info(f"Applying batch context truncation with max_length={max_context_length}, strategy='{truncation_strategy}'")
+            self._apply_batch_truncation()
+    
+    def _apply_batch_truncation(self):
+        """Apply batch truncation to all items for improved performance."""
+        # Extract all contexts for batch processing
+        contexts = [item.context for item in self.items if item.context]
+        
+        if not contexts:
+            return
+        
+        # Batch truncate all contexts
+        truncated_contexts = truncate_contexts_batch(
+            contexts, self.max_context_length, self.tokenizer, self.truncation_strategy
+        )
+        
+        # Update items with truncated contexts and add metadata
+        context_idx = 0
+        for item in self.items:
+            if item.context:
+                original_length = len(self.tokenizer.encode(item.context, add_special_tokens=False))
+                truncated_context = truncated_contexts[context_idx]
+                truncated_length = len(self.tokenizer.encode(truncated_context, add_special_tokens=False))
+                
+                # Update context
+                item.context = truncated_context
+                
+                # Add truncation metadata if truncated
+                if original_length > self.max_context_length:
+                    if item.metadata is None:
+                        item.metadata = {}
+                    item.metadata['truncation_info'] = {
+                        'original_length': original_length,
+                        'truncated_length': truncated_length,
+                        'strategy': self.truncation_strategy,
+                        'was_truncated': True
+                    }
+                    logger.info(
+                        f"Sample {item.id}: context truncated from {original_length} to "
+                        f"{truncated_length} tokens using '{self.truncation_strategy}' strategy"
+                    )
+                
+                context_idx += 1
 
     def __len__(self):
         return len(self.items)
@@ -73,7 +111,7 @@ class LoCoMoDataset(Dataset):
     """
     Ultra-simple PyTorch Dataset for LoCoMo following GameScenarioDataset pattern.
     Uses prompt wrapper for proper model-specific formatting.
-    Supports automatic context truncation.
+    Supports automatic batch context truncation.
     """
 
     def __init__(
@@ -90,13 +128,51 @@ class LoCoMoDataset(Dataset):
         self.tokenizer = tokenizer
         self.truncation_strategy = truncation_strategy
         
-        # Apply truncation if configured
+        # Apply batch truncation if configured
         if max_context_length and tokenizer:
-            logger.info(f"Applying context truncation with max_length={max_context_length}, strategy='{truncation_strategy}'")
-            for i, item in enumerate(self.items):
-                self.items[i] = truncate_item_context(
-                    item, max_context_length, tokenizer, truncation_strategy
-                )
+            logger.info(f"Applying batch context truncation with max_length={max_context_length}, strategy='{truncation_strategy}'")
+            self._apply_batch_truncation()
+    
+    def _apply_batch_truncation(self):
+        """Apply batch truncation to all items for improved performance."""
+        # Extract all contexts for batch processing
+        contexts = [item.context for item in self.items if item.context]
+        
+        if not contexts:
+            return
+        
+        # Batch truncate all contexts
+        truncated_contexts = truncate_contexts_batch(
+            contexts, self.max_context_length, self.tokenizer, self.truncation_strategy
+        )
+        
+        # Update items with truncated contexts and add metadata
+        context_idx = 0
+        for item in self.items:
+            if item.context:
+                original_length = len(self.tokenizer.encode(item.context, add_special_tokens=False))
+                truncated_context = truncated_contexts[context_idx]
+                truncated_length = len(self.tokenizer.encode(truncated_context, add_special_tokens=False))
+                
+                # Update context
+                item.context = truncated_context
+                
+                # Add truncation metadata if truncated
+                if original_length > self.max_context_length:
+                    if item.metadata is None:
+                        item.metadata = {}
+                    item.metadata['truncation_info'] = {
+                        'original_length': original_length,
+                        'truncated_length': truncated_length,
+                        'strategy': self.truncation_strategy,
+                        'was_truncated': True
+                    }
+                    logger.info(
+                        f"Sample {item.id}: context truncated from {original_length} to "
+                        f"{truncated_length} tokens using '{self.truncation_strategy}' strategy"
+                    )
+                
+                context_idx += 1
 
     def __len__(self):
         return len(self.items)
@@ -124,7 +200,7 @@ class LongBenchDataset(Dataset):
     """
     Ultra-simple PyTorch Dataset for LongBench following GameScenarioDataset pattern.
     Uses prompt wrapper for proper model-specific formatting.
-    Supports automatic context truncation.
+    Supports automatic batch context truncation.
     """
 
     def __init__(
@@ -141,13 +217,51 @@ class LongBenchDataset(Dataset):
         self.tokenizer = tokenizer
         self.truncation_strategy = truncation_strategy
         
-        # Apply truncation if configured
+        # Apply batch truncation if configured
         if max_context_length and tokenizer:
-            logger.info(f"Applying context truncation with max_length={max_context_length}, strategy='{truncation_strategy}'")
-            for i, item in enumerate(self.items):
-                self.items[i] = truncate_item_context(
-                    item, max_context_length, tokenizer, truncation_strategy
-                )
+            logger.info(f"Applying batch context truncation with max_length={max_context_length}, strategy='{truncation_strategy}'")
+            self._apply_batch_truncation()
+    
+    def _apply_batch_truncation(self):
+        """Apply batch truncation to all items for improved performance."""
+        # Extract all contexts for batch processing
+        contexts = [item.context for item in self.items if item.context]
+        
+        if not contexts:
+            return
+        
+        # Batch truncate all contexts
+        truncated_contexts = truncate_contexts_batch(
+            contexts, self.max_context_length, self.tokenizer, self.truncation_strategy
+        )
+        
+        # Update items with truncated contexts and add metadata
+        context_idx = 0
+        for item in self.items:
+            if item.context:
+                original_length = len(self.tokenizer.encode(item.context, add_special_tokens=False))
+                truncated_context = truncated_contexts[context_idx]
+                truncated_length = len(self.tokenizer.encode(truncated_context, add_special_tokens=False))
+                
+                # Update context
+                item.context = truncated_context
+                
+                # Add truncation metadata if truncated
+                if original_length > self.max_context_length:
+                    if item.metadata is None:
+                        item.metadata = {}
+                    item.metadata['truncation_info'] = {
+                        'original_length': original_length,
+                        'truncated_length': truncated_length,
+                        'strategy': self.truncation_strategy,
+                        'was_truncated': True
+                    }
+                    logger.info(
+                        f"Sample {item.id}: context truncated from {original_length} to "
+                        f"{truncated_length} tokens using '{self.truncation_strategy}' strategy"
+                    )
+                
+                context_idx += 1
 
     def __len__(self):
         return len(self.items)

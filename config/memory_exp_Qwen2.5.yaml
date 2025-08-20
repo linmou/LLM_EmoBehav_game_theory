@@ -21,7 +21,7 @@ loading_config:
   
   # Context truncation settings
   enable_auto_truncation: true  # Automatically truncate long contexts
-  truncation_strategy: "right"  # Strategy: "right", "left", or "middle"
+  truncation_strategy: "right"  # Strategy: "right" or "left"
   preserve_ratio: 0.95  # Use 95% of max_model_len for context
 
 # Emotion manipulation settings

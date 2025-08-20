@@ -1,9 +1,9 @@
 """
-Utilities for truncating long contexts to fit within model's maximum length.
+Simplified utilities for truncating long contexts using Transformers tokenizer built-in capabilities.
 """
 
 import logging
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -39,13 +39,13 @@ def truncate_context(
     return_token_counts: bool = False
 ) -> Tuple[str, Optional[Tuple[int, int]]]:
     """
-    Truncate context to fit within maximum token length.
+    Truncate context using Transformers tokenizer built-in truncation.
     
     Args:
         context: Text to truncate
         max_length: Maximum token length
-        tokenizer: Tokenizer to count tokens
-        strategy: Truncation strategy ("right", "left", or "middle")
+        tokenizer: Tokenizer to use for truncation
+        strategy: Truncation strategy ("right" or "left")
         return_token_counts: Whether to return original and truncated token counts
     
     Returns:
@@ -54,53 +54,104 @@ def truncate_context(
     if not context:
         return context, (0, 0) if return_token_counts else None
     
-    # Tokenize to get exact token count
-    tokens = tokenizer.encode(context, add_special_tokens=False)
-    original_length = len(tokens)
+    # Get original length if needed
+    original_length = None
+    if return_token_counts:
+        original_tokens = tokenizer.encode(context, add_special_tokens=False)
+        original_length = len(original_tokens)
+        
+        # No truncation needed
+        if original_length <= max_length:
+            return context, (original_length, original_length)
     
-    # No truncation needed
-    if original_length <= max_length:
-        return context, (original_length, original_length) if return_token_counts else None
+    # Set truncation side
+    if strategy not in ["right", "left"]:
+        raise ValueError(f"Strategy must be 'right' or 'left', got: {strategy}")
     
-    # Apply truncation based on strategy
-    if strategy == "right":
-        # Keep beginning, truncate end
-        truncated_tokens = tokens[:max_length]
-        truncated_context = tokenizer.decode(truncated_tokens, skip_special_tokens=True)
-        
-    elif strategy == "left":
-        # Keep end, truncate beginning
-        truncated_tokens = tokens[-max_length:]
-        truncated_context = tokenizer.decode(truncated_tokens, skip_special_tokens=True)
-        
-    elif strategy == "middle":
-        # Keep beginning and end, remove middle
-        keep_start = max_length // 2
-        keep_end = max_length - keep_start
-        
-        start_tokens = tokens[:keep_start]
-        end_tokens = tokens[-keep_end:]
-        
-        # Add ellipsis marker in the middle
-        truncated_tokens = start_tokens + end_tokens
-        start_text = tokenizer.decode(start_tokens, skip_special_tokens=True)
-        end_text = tokenizer.decode(end_tokens, skip_special_tokens=True)
-        truncated_context = f"{start_text}\n[...content truncated...]\n{end_text}"
-        
-    else:
-        raise ValueError(f"Unknown truncation strategy: {strategy}")
+    tokenizer.truncation_side = strategy
     
-    truncated_length = len(tokenizer.encode(truncated_context, add_special_tokens=False))
-    
-    # Log truncation event
-    logger.info(
-        f"Context truncated: original length={original_length} tokens, "
-        f"truncated to {truncated_length} tokens using '{strategy}' strategy"
+    # Use tokenizer's built-in truncation
+    result = tokenizer(
+        context,
+        truncation=True,
+        max_length=max_length,
+        add_special_tokens=False,
+        return_tensors=None
     )
     
+    # Decode back to text
+    truncated_context = tokenizer.decode(result["input_ids"], skip_special_tokens=True)
+    
+    # Calculate lengths for logging
     if return_token_counts:
-        return truncated_context, (original_length, truncated_length)
+        truncated_length = len(result["input_ids"])
+        
+        # Log truncation event if it occurred
+        if original_length and original_length > max_length:
+            logger.info(
+                f"Context truncated: original length={original_length} tokens, "
+                f"truncated to {truncated_length} tokens using '{strategy}' strategy"
+            )
+        
+        return truncated_context, (original_length or truncated_length, truncated_length)
+    
     return truncated_context, None
+
+
+def truncate_contexts_batch(
+    contexts: List[str],
+    max_length: int,
+    tokenizer,
+    strategy: str = "right"
+) -> List[str]:
+    """
+    Batch truncate multiple contexts for improved performance.
+    
+    Args:
+        contexts: List of texts to truncate
+        max_length: Maximum token length
+        tokenizer: Tokenizer to use for truncation
+        strategy: Truncation strategy ("right" or "left")
+    
+    Returns:
+        List of truncated contexts
+    """
+    if not contexts:
+        return []
+    
+    # Set truncation side
+    if strategy not in ["right", "left"]:
+        raise ValueError(f"Strategy must be 'right' or 'left', got: {strategy}")
+    
+    tokenizer.truncation_side = strategy
+    
+    # Batch process all contexts
+    results = tokenizer(
+        contexts,
+        truncation=True,
+        max_length=max_length,
+        add_special_tokens=False,
+        padding=False,
+        return_tensors=None
+    )
+    
+    # Decode all contexts
+    truncated_contexts = [
+        tokenizer.decode(ids, skip_special_tokens=True) 
+        for ids in results["input_ids"]
+    ]
+    
+    # Log batch truncation summary
+    original_lengths = [len(tokenizer.encode(ctx, add_special_tokens=False)) for ctx in contexts]
+    truncated_count = sum(1 for orig_len in original_lengths if orig_len > max_length)
+    
+    if truncated_count > 0:
+        logger.info(
+            f"Batch truncation: {truncated_count}/{len(contexts)} contexts truncated "
+            f"to max {max_length} tokens using '{strategy}' strategy"
+        )
+    
+    return truncated_contexts
 
 
 def truncate_item_context(
@@ -110,13 +161,13 @@ def truncate_item_context(
     strategy: str = "right"
 ):
     """
-    Truncate context in a BenchmarkItem.
+    Truncate context in a BenchmarkItem using tokenizer built-in truncation.
     
     Args:
         item: BenchmarkItem with context to truncate
         max_context_length: Maximum context length in tokens
-        tokenizer: Tokenizer for counting tokens
-        strategy: Truncation strategy
+        tokenizer: Tokenizer for truncation
+        strategy: Truncation strategy ("right" or "left")
     
     Returns:
         Modified item with truncated context
