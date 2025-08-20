@@ -336,9 +336,12 @@ def load_model_tokenizer(model_name_or_path='gpt2', user_tag =  "[INST]", assist
         except:
             # If config loading fails, fallback to AutoModel
             model = AutoModel.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
-
-    use_fast_tokenizer = False #"LlamaForCausalLM" not in model.config.architectures
-    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
+    try:
+        use_fast_tokenizer = True
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
+    except ValueError as error:
+        use_fast_tokenizer = False #"LlamaForCausalLM" not in model.config.architectures
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = 0 
     # tokenizer.bos_token_id = 1 if tokenizer.bos_token_id is None else tokenizer.bos_token_id
