@@ -199,7 +199,7 @@ class LongBenchAdapter(BenchmarkAdapter):
                 ground_truth_tokens = normalized_ground_truth.split()
                 f1, precision, recall = f1_score(prediction_tokens, ground_truth_tokens)
                 if f1 > max_f1:
-                    max_f1, max_precision, max_recall = f1, precision, recall
+                    max_f1, max_precision, max_recall = float(f1), float(precision), float(recall)
             
             return {
                 "f1_score": max_f1,
@@ -244,7 +244,7 @@ class LongBenchAdapter(BenchmarkAdapter):
         Enhanced LongBench-E style evaluation by context length categories.
         Implements exact logic from official LongBench eval.py
         """
-        scores = {"0-4k": [], "4-8k": [], "8k+": []}
+        scores: Dict[str, List[float]] = {"0-4k": [], "4-8k": [], "8k+": []}
         
         for response, gt, task, length in zip(responses, ground_truths, task_names, lengths):
             # Apply preprocessing if needed

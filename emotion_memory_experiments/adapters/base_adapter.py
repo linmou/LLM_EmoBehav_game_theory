@@ -107,7 +107,7 @@ class BenchmarkAdapter(ABC):
         LongBench-E style evaluation by context length categories.
         Returns scores segmented by length: {"0-4k": score, "4-8k": score, "8k+": score}
         """
-        scores = {"0-4k": [], "4-8k": [], "8k+": []}
+        scores: Dict[str, List[float]] = {"0-4k": [], "4-8k": [], "8k+": []}
         
         for response, gt, task, length in zip(responses, ground_truths, task_names, lengths):
             score = self.evaluate_response(response, gt, task)

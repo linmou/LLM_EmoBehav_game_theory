@@ -18,7 +18,7 @@ except ImportError:
 class LoCoMoAdapter(BenchmarkAdapter):
     """Adapter for LoCoMo conversational memory benchmark"""
 
-    def create_dataset(self, prompt_wrapper=None) -> LoCoMoDataset:
+    def create_dataset(self, prompt_wrapper=None, max_context_length=None, tokenizer=None, truncation_strategy="right") -> LoCoMoDataset:
         """Load LoCoMo data as PyTorch Dataset"""
         data_path = self.config.get_data_path()
         if not data_path.exists():

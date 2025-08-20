@@ -81,7 +81,7 @@ class EmotionMemoryExperiment:
         )
         self.logger.info(f"Log file created at: {log_file}")
 
-        self.enable_thinking = self.generation_config.get("enable_thinking", False)
+        self.enable_thinking = bool(self.generation_config.get("enable_thinking", False))
 
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
         self.repe_config = get_repe_eng_config(
@@ -147,6 +147,7 @@ class EmotionMemoryExperiment:
             memory_prompt_wrapper.__call__,
             user_messages="Please provide your answer.",
             enable_thinking=self.enable_thinking,
+            augmentation_config=config.benchmark.augmentation_config,
         )
 
         self.logger.info(

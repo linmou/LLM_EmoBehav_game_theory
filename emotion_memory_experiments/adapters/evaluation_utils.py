@@ -77,7 +77,7 @@ def qa_f1_score(pred: str, ground_truths: Union[str, List[str]]) -> float:
         ground_truth_tokens = normalized_ground_truth.split()
         scores = f1_score(prediction_tokens, ground_truth_tokens)
         this_f1, _, _ = scores
-        f1 = max(f1, this_f1)
+        f1 = max(f1, float(this_f1))
     return f1
 
 
@@ -96,7 +96,7 @@ def qa_f1_score_zh(pred: str, ground_truths: Union[str, List[str]]) -> float:
         label_tokens = list(norm_label)
         scores = f1_score(pred_tokens, label_tokens)
         this_f1, _, _ = scores
-        f1 = max(f1, this_f1)
+        f1 = max(f1, float(this_f1))
     return f1
 
 
@@ -210,18 +210,18 @@ def get_score_one_math_find(pred: str, label: Union[int, float, List], model_nam
         first_num = re.search(r"\d+\.\d+|\d+", pred)
         if first_num is None:
             return False
-        first_num = first_num.group(0).strip()
+        first_num_str = first_num.group(0).strip()
         try:
-            return int(first_num) == label
+            return int(first_num_str) == label
         except ValueError:
             return False
     elif isinstance(label, float):
         first_float = re.search(r"\d+\.\d+|\d+", pred)
         if first_float is None:
             return False
-        first_float = first_float.group(0).strip()
+        first_float_str = first_float.group(0).strip()
         try:
-            return float(first_float) == label
+            return float(first_float_str) == label
         except ValueError:
             return False
     else:

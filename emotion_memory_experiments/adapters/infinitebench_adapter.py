@@ -68,7 +68,7 @@ class InfiniteBenchAdapter(BenchmarkAdapter):
             "math_find": ["numeric_match"],
         }
 
-    def create_dataset(self, prompt_wrapper=None) -> InfiniteBenchDataset:
+    def create_dataset(self, prompt_wrapper=None, max_context_length=None, tokenizer=None, truncation_strategy="right") -> InfiniteBenchDataset:
         """Create simple InfiniteBench dataset"""
         data_path = self.config.get_data_path()
         if not data_path.exists():
@@ -169,7 +169,7 @@ class InfiniteBenchAdapter(BenchmarkAdapter):
                     ground_truth_tokens = normalized_ground_truth.split()
                     f1, precision, recall = f1_score(prediction_tokens, ground_truth_tokens)
                     if f1 > max_f1:
-                        max_f1, max_precision, max_recall = f1, precision, recall
+                        max_f1, max_precision, max_recall = float(f1), float(precision), float(recall)
                 
                 return {
                     "f1_score": max_f1,
