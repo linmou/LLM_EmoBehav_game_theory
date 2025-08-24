@@ -20,7 +20,8 @@ class TestImportCoverage(unittest.TestCase):
     
     def test_memory_experiment_series_runner_import(self):
         """Test that memory_experiment_series_runner can be imported"""
-        # This is the Red phase - this test should FAIL before we fix the import
+        # Note: Full test coverage for memory_experiment_series_runner is now in 
+        # test_memory_experiment_series_runner.py - this is just basic import test
         try:
             import emotion_memory_experiments.memory_experiment_series_runner
             self.assertTrue(True, "Import should succeed after fix")
