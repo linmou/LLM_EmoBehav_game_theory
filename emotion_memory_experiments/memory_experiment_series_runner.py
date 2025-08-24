@@ -459,8 +459,8 @@ class MemoryExperimentSeriesRunner:
                 if "data_path" in benchmark_config
                 else None
             ),
-            evaluation_method=benchmark_config.get("evaluation_method"),
             sample_limit=benchmark_config.get("sample_limit"),
+            augmentation_config=benchmark_config.get("augmentation_config"),
         )
 
         # Create LoadingConfig if specified

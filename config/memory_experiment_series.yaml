@@ -17,12 +17,23 @@ benchmarks:
   # Discover all datasets for longbench (regex: match any string)
   - name: "longbench"
     task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
-    evaluation_method: "exact_match"
     sample_limit: 100
     augmentation_config:
       prefix: " I am super happy "
       suffix: " and I am super happy"
-    
+    # Context truncation settings (now in benchmark config)
+    enable_auto_truncation: true
+    truncation_strategy: "right"
+    preserve_ratio: 0.95
+      
+  - name: "infinitebench"
+    task_type: "passkey"  # Matches all: narrativeqa, qasper, etc.
+    sample_limit: 100
+    augmentation_config: null
+    # Context truncation settings (now in benchmark config)
+    enable_auto_truncation: true
+    truncation_strategy: "right"
+    preserve_ratio: 0.95 
   # Discover only QA-related tasks in infinitebench 
   #- name: "infinitebench"
   #  task_type: ".*qa.*"  # Matches: longbook_qa_eng, etc.
@@ -45,8 +56,9 @@ benchmarks:
 emotions: ["anger", "happiness"]
 intensities: [1.5]
 
-# vLLM loading configuration
+# vLLM loading configuration (all fields required after refactoring)
 loading_config:
+  model_path: null  # Will be set by runner for each model
   gpu_memory_utilization: 0.90
   tensor_parallel_size: null  # Auto-detect
   max_model_len: 32768
@@ -56,11 +68,12 @@ loading_config:
   dtype: "float16"
   seed: 42
   disable_custom_all_reduce: false
-  
-  # Context truncation settings
-  enable_auto_truncation: true
-  truncation_strategy: "right"
-  preserve_ratio: 0.95
+  # Additional vLLM parameters for extensibility:
+  additional_vllm_kwargs:
+    rope-theta: 1000000
+    rope-scaling:
+      type: "linear"
+      factor: 4.0
 
 # RepE configuration
 repe_eng_config:
