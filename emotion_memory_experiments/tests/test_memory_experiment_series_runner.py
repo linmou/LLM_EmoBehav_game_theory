@@ -32,7 +32,6 @@ data_models = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(data_models)
 
 BenchmarkConfig = data_models.BenchmarkConfig
-create_benchmark_config = data_models.create_benchmark_config
 
 # Load memory_experiment_series_runner directly
 runner_path = Path(__file__).parent.parent / "memory_experiment_series_runner.py"
@@ -177,21 +176,26 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
         for arg in expected_missing_args:
             self.assertIn(arg, error_message)
 
-    def test_create_benchmark_config_factory_function(self):
-        """Test the factory function for creating BenchmarkConfig with defaults"""
-        config = create_benchmark_config(
-            name="factory_test",
+    def test_benchmark_config_direct_instantiation(self):
+        """Test direct BenchmarkConfig instantiation with all required fields"""
+        config = BenchmarkConfig(
+            name="direct_test",
             task_type="test_task",
-            data_path=Path("test.jsonl")
+            data_path=Path("test.jsonl"),
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8
         )
         
-        # Check that defaults are applied
-        self.assertEqual(config.name, "factory_test")
+        # Check that values are set correctly
+        self.assertEqual(config.name, "direct_test")
         self.assertEqual(config.task_type, "test_task")
-        self.assertIsNone(config.sample_limit)  # Default None
-        self.assertIsNone(config.augmentation_config)  # Default None
-        self.assertFalse(config.enable_auto_truncation)  # Default False
-        self.assertEqual(config.truncation_strategy, "right")  # Default "right"
+        self.assertIsNone(config.sample_limit)
+        self.assertIsNone(config.augmentation_config)
+        self.assertFalse(config.enable_auto_truncation)
+        self.assertEqual(config.truncation_strategy, "right")
         self.assertEqual(config.preserve_ratio, 0.8)  # Default 0.8
 
     # =============================================================================

@@ -594,20 +594,25 @@ def load_model_tokenizer(
     """
     # Load model
     model = None
+
     if from_vllm:
         try:
             # Use VLLMLoadingConfig.to_vllm_kwargs() method
-            if loading_config and hasattr(loading_config, 'to_vllm_kwargs'):
+            if loading_config and hasattr(loading_config, "to_vllm_kwargs"):
                 vllm_kwargs = loading_config.to_vllm_kwargs()
-                
+
                 # Auto-detect tensor parallel size if not specified
                 if vllm_kwargs.get("tensor_parallel_size") is None:
-                    vllm_kwargs["tensor_parallel_size"] = get_optimal_tensor_parallel_size(model_name_or_path)
+                    vllm_kwargs["tensor_parallel_size"] = (
+                        get_optimal_tensor_parallel_size(model_name_or_path)
+                    )
             else:
                 # No loading config - use defaults
                 vllm_kwargs = {
                     "model": model_name_or_path,
-                    "tensor_parallel_size": get_optimal_tensor_parallel_size(model_name_or_path),
+                    "tensor_parallel_size": get_optimal_tensor_parallel_size(
+                        model_name_or_path
+                    ),
                     "max_model_len": 32768,
                     "trust_remote_code": True,
                     "enforce_eager": True,
@@ -616,9 +621,8 @@ def load_model_tokenizer(
                     "seed": 42,
                     "disable_custom_all_reduce": False,
                 }
-            
             model = LLM(**vllm_kwargs)
-            
+
         except Exception as e:
             print(f"vLLM loading failed: {e}")
             pass

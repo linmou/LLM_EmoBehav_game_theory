@@ -18,19 +18,7 @@ import yaml
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from neuro_manipulation.repe import repe_pipeline_registry 
-from emotion_memory_experiments.dataset_factory import (
-    create_dataset_from_config,
-    create_vllm_config_from_dict,
-    create_benchmark_config_from_dict,
-    create_experiment_config_from_dict,
-)
-from emotion_memory_experiments.data_models import (
-    BenchmarkConfig,
-    BenchmarkItem,
-    ExperimentConfig,
-)
-from emotion_memory_experiments.experiment import EmotionMemoryExperiment
+from .data_models import BenchmarkConfig, BenchmarkItem, ExperimentConfig, VLLMLoadingConfig
 
 
 def load_config(config_path: Path) -> Dict[str, Any]:
@@ -48,51 +36,55 @@ def load_config(config_path: Path) -> Dict[str, Any]:
 def normalize_config_format(config_dict: Dict[str, Any]) -> Dict[str, Any]:
     """
     Normalize different config formats to a consistent internal format.
-    
+
     Handles both:
-    - New format: {models: [...], benchmarks: [...], emotions: [...], output_dir: "..."}  
+    - New format: {models: [...], benchmarks: [...], emotions: [...], output_dir: "..."}
     - Old format: {model: {model_path: "..."}, benchmarks: {...}, emotions: {target_emotions: [...]}, output: {results_dir: "..."}}
-    
+
     Returns normalized config with consistent key structure.
     """
     normalized = config_dict.copy()
-    
+
     # Normalize model format
     if "models" in config_dict and isinstance(config_dict["models"], list):
         if not normalized.get("model"):
             normalized["model"] = {}
-        normalized["model"]["model_path"] = config_dict["models"][0] if config_dict["models"] else ""
-    
-    # Normalize emotions format  
+        normalized["model"]["model_path"] = (
+            config_dict["models"][0] if config_dict["models"] else ""
+        )
+
+    # Normalize emotions format
     if isinstance(config_dict.get("emotions"), list):
         normalized["emotions"] = {
             "target_emotions": config_dict["emotions"],
-            "intensities": config_dict.get("intensities", [1.0])
+            "intensities": config_dict.get("intensities", [1.0]),
         }
-    
+
     # Normalize output format
     if "output_dir" in config_dict:
         if not normalized.get("output"):
             normalized["output"] = {}
         normalized["output"]["results_dir"] = config_dict["output_dir"]
-    
+
     # Normalize execution format
     if "batch_size" in config_dict:
         if not normalized.get("execution"):
             normalized["execution"] = {}
         normalized["execution"]["batch_size"] = config_dict["batch_size"]
-    
+
     if "max_evaluation_workers" in config_dict:
         if not normalized.get("execution"):
             normalized["execution"] = {}
-        normalized["execution"]["max_evaluation_workers"] = config_dict["max_evaluation_workers"]
-    
+        normalized["execution"]["max_evaluation_workers"] = config_dict[
+            "max_evaluation_workers"
+        ]
+
     return normalized
 
 
 def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
     """Convert YAML config to ExperimentConfig object"""
-    
+
     # Normalize config format for consistent processing
     config = normalize_config_format(config_dict)
 
@@ -113,34 +105,63 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
         benchmark_name, benchmark_data = next(iter(benchmarks.items()))
     else:
         raise ValueError(f"Benchmarks must be list or dict, got {type(benchmarks)}")
-    
+
     # Extract normalized values
     model_path = config["model"]["model_path"]
     emotions = config["emotions"]["target_emotions"]
     intensities = config["emotions"]["intensities"]
     output_dir = config["output"]["results_dir"]
-    
+
     # Auto-generate data_path if not provided (like series runner does)
     if "data_path" not in benchmark_data:
         # Create a temporary config to auto-generate the path
         temp_config = BenchmarkConfig(
             name=benchmark_data["name"],
             task_type=benchmark_data["task_type"],
-            data_path=Path("placeholder"),  # Will be replaced by get_data_path()
+            data_path=None,  # None triggers auto-generation in get_data_path()
             sample_limit=benchmark_data.get("sample_limit"),
             augmentation_config=benchmark_data.get("augmentation_config"),
-            enable_auto_truncation=config.get("loading_config", {}).get("enable_auto_truncation", False),
-            truncation_strategy=config.get("loading_config", {}).get("truncation_strategy", "right"),
-            preserve_ratio=config.get("loading_config", {}).get("preserve_ratio", 0.8)
+            enable_auto_truncation=config.get("loading_config", {}).get(
+                "enable_auto_truncation", False
+            ),
+            truncation_strategy=config.get("loading_config", {}).get(
+                "truncation_strategy", "right"
+            ),
+            preserve_ratio=config.get("loading_config", {}).get("preserve_ratio", 0.8),
         )
         # Get the auto-generated data path
         auto_data_path = temp_config.get_data_path()
         benchmark_data = benchmark_data.copy()
         benchmark_data["data_path"] = str(auto_data_path)
-    
-    # Use factory functions for consistent config creation
-    benchmark_config = create_benchmark_config_from_dict(benchmark_data, config)
-    loading_config = create_vllm_config_from_dict(config, model_path)
+
+    # Create BenchmarkConfig with all required fields
+    benchmark_config = BenchmarkConfig(
+        name=benchmark_data["name"],
+        task_type=benchmark_data["task_type"],
+        data_path=Path(benchmark_data["data_path"]),
+        sample_limit=benchmark_data.get("sample_limit"),
+        augmentation_config=benchmark_data.get("augmentation_config"),
+        enable_auto_truncation=benchmark_data.get("enable_auto_truncation", False),
+        truncation_strategy=benchmark_data.get("truncation_strategy", "right"),
+        preserve_ratio=benchmark_data.get("preserve_ratio", 0.8),
+    )
+    # Create VLLMLoadingConfig directly from YAML
+    loading_config = None
+    if "loading_config" in config:
+        loading_cfg = config["loading_config"]
+        loading_config = VLLMLoadingConfig(
+            model_path=loading_cfg.get("model_path", model_path),
+            gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
+            tensor_parallel_size=loading_cfg.get("tensor_parallel_size"),
+            max_model_len=loading_cfg.get("max_model_len", 32768),
+            enforce_eager=loading_cfg.get("enforce_eager", True),
+            quantization=loading_cfg.get("quantization"),
+            trust_remote_code=loading_cfg.get("trust_remote_code", True),
+            dtype=loading_cfg.get("dtype", "float16"),
+            seed=loading_cfg.get("seed", 42),
+            disable_custom_all_reduce=loading_cfg.get("disable_custom_all_reduce", False),
+            additional_vllm_kwargs=loading_cfg.get("additional_vllm_kwargs", {}),
+        )
 
     # Create main experiment config
     exp_config = ExperimentConfig(
@@ -154,8 +175,12 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
         generation_config=config.get("generation_config", config.get("generation", {})),
         loading_config=loading_config,
         repe_eng_config=config.get("repe_eng_config", {}),
-        max_evaluation_workers=config.get("execution", {}).get("max_evaluation_workers", 4),
-        pipeline_queue_size=config.get("pipeline_queue_size", config.get("execution", {}).get("batch_size", 4) * 2),
+        max_evaluation_workers=config.get("execution", {}).get(
+            "max_evaluation_workers", 4
+        ),
+        pipeline_queue_size=config.get(
+            "pipeline_queue_size", config.get("execution", {}).get("batch_size", 4) * 2
+        ),
     )
 
     return exp_config
@@ -191,7 +216,7 @@ def setup_logging(config: Dict[str, Any]) -> logging.Logger:
 def validate_config(config_dict: Dict[str, Any]) -> bool:
     """Validate configuration before running experiment"""
     print("🔍 Validating configuration...")
-    
+
     # Normalize config format for consistent validation
     config = normalize_config_format(config_dict)
     errors = []
@@ -200,7 +225,7 @@ def validate_config(config_dict: Dict[str, Any]) -> bool:
     if not config.get("model", {}).get("model_path"):
         errors.append("Missing model path configuration")
     if not config.get("emotions", {}).get("target_emotions"):
-        errors.append("Missing emotions configuration") 
+        errors.append("Missing emotions configuration")
     if not config.get("benchmarks"):
         errors.append("Missing benchmarks configuration")
 
@@ -208,7 +233,9 @@ def validate_config(config_dict: Dict[str, Any]) -> bool:
     model_path_str = config.get("model", {}).get("model_path", "")
     if model_path_str:
         model_path = Path(model_path_str)
-        if not model_path.exists() and not str(model_path).startswith(("/mock", "Qwen/")):
+        if not model_path.exists() and not str(model_path).startswith(
+            ("/mock", "Qwen/")
+        ):
             errors.append(f"Model path does not exist: {model_path}")
 
     # Check benchmark data files (handle both list and dict formats)
@@ -285,7 +312,6 @@ def run_experiment(
 
             # Show what would be tested
             try:
-                from .dataset_factory import create_dataset_from_config
                 dataset = create_dataset_from_config(exp_config.benchmark)
                 items = len(dataset)
                 conditions = (
@@ -302,6 +328,11 @@ def run_experiment(
             print(f"Dry run complete!")
 
             return True
+
+        # Import heavy dependencies only when actually running (not for dry-run)
+        from neuro_manipulation.repe import repe_pipeline_registry
+
+        from .experiment import EmotionMemoryExperiment
 
         repe_pipeline_registry()
         # Create and run experiment

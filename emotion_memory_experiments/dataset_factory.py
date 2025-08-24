@@ -16,28 +16,25 @@ Key Features:
 Example Usage:
     config = BenchmarkConfig(name="infinitebench", task_type="passkey", ...)
     dataset = create_dataset_from_config(config, max_context_length=1000)
-    
+
     # Or register a new dataset type:
     register_dataset_class("custom_benchmark", CustomDatasetClass)
 """
 
-from typing import Dict, Type, Any, List, Optional, Callable
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from .data_models import (
-    BenchmarkConfig, 
-    VLLMLoadingConfig, 
+    BenchmarkConfig,
     ExperimentConfig,
-    create_vllm_loading_config,
-    create_benchmark_config
+    VLLMLoadingConfig,
 )
 from .datasets.base import BaseBenchmarkDataset
 
 # Import all specialized dataset classes
 from .datasets.infinitebench import InfiniteBenchDataset
-from .datasets.longbench import LongBenchDataset  
 from .datasets.locomo import LoCoMoDataset
-
+from .datasets.longbench import LongBenchDataset
 
 # Registry mapping benchmark names to dataset classes
 # This eliminates if-else chains entirely!
@@ -54,14 +51,14 @@ def create_dataset_from_config(
     max_context_length: Optional[int] = None,
     tokenizer: Optional[Any] = None,
     truncation_strategy: str = "right",
-    **kwargs
+    **kwargs,
 ) -> BaseBenchmarkDataset:
     """
     Create a specialized dataset from configuration using registry lookup.
-    
+
     This factory function eliminates if-else chains by using a registry-based
     approach to select the appropriate dataset class based on the benchmark name.
-    
+
     Args:
         config: Benchmark configuration specifying which dataset to create
         prompt_wrapper: Optional function to format prompts
@@ -69,14 +66,14 @@ def create_dataset_from_config(
         tokenizer: Optional tokenizer for text processing
         truncation_strategy: Strategy for context truncation ("left", "right", "middle")
         **kwargs: Additional keyword arguments passed to dataset constructor
-        
+
     Returns:
         Specialized dataset instance (InfiniteBenchDataset, LongBenchDataset, etc.)
-        
+
     Raises:
         ValueError: If benchmark name is not recognized
         FileNotFoundError: If data file doesn't exist
-        
+
     Example:
         >>> config = BenchmarkConfig(name="infinitebench", task_type="passkey", data_path="data.jsonl")
         >>> dataset = create_dataset_from_config(config, max_context_length=2048)
@@ -85,17 +82,17 @@ def create_dataset_from_config(
     """
     # Normalize benchmark name for case-insensitive lookup
     benchmark_name = config.name.lower().strip()
-    
+
     # Registry lookup (no if-else chains!)
     dataset_class = DATASET_REGISTRY.get(benchmark_name)
-    
+
     if dataset_class is None:
         available_benchmarks = list(DATASET_REGISTRY.keys())
         raise ValueError(
             f"Unknown benchmark: '{config.name}'. "
             f"Available benchmarks: {available_benchmarks}"
         )
-    
+
     # Create dataset instance with all provided parameters
     dataset = dataset_class(
         config=config,
@@ -103,29 +100,28 @@ def create_dataset_from_config(
         max_context_length=max_context_length,
         tokenizer=tokenizer,
         truncation_strategy=truncation_strategy,
-        **kwargs
+        **kwargs,
     )
-    
+
     return dataset
 
 
 def register_dataset_class(
-    benchmark_name: str, 
-    dataset_class: Type[BaseBenchmarkDataset]
+    benchmark_name: str, dataset_class: Type[BaseBenchmarkDataset]
 ) -> None:
     """
     Dynamically register a new dataset class in the factory registry.
-    
+
     This allows adding new benchmark datasets at runtime without modifying
     the core factory code.
-    
+
     Args:
         benchmark_name: Name to use for benchmark identification (case-insensitive)
         dataset_class: Dataset class that extends BaseBenchmarkDataset
-        
+
     Raises:
         TypeError: If dataset_class doesn't extend BaseBenchmarkDataset
-        
+
     Example:
         >>> class MyBenchmarkDataset(BaseBenchmarkDataset):
         ...     # Implementation here
@@ -139,7 +135,7 @@ def register_dataset_class(
             f"Dataset class must extend BaseBenchmarkDataset, "
             f"got {dataset_class.__name__}"
         )
-    
+
     # Normalize name for consistent lookup
     normalized_name = benchmark_name.lower().strip()
     DATASET_REGISTRY[normalized_name] = dataset_class
@@ -148,15 +144,15 @@ def register_dataset_class(
 def get_available_datasets() -> List[str]:
     """
     Get list of all available benchmark dataset types.
-    
+
     Returns:
         List of registered benchmark names (lowercase)
-        
+
     Example:
         >>> datasets = get_available_datasets()
         >>> "infinitebench" in datasets
         True
-        >>> "longbench" in datasets  
+        >>> "longbench" in datasets
         True
     """
     return sorted(DATASET_REGISTRY.keys())
@@ -165,13 +161,13 @@ def get_available_datasets() -> List[str]:
 def unregister_dataset_class(benchmark_name: str) -> bool:
     """
     Remove a dataset class from the registry.
-    
+
     Args:
         benchmark_name: Name of benchmark to remove (case-insensitive)
-        
+
     Returns:
         True if benchmark was found and removed, False otherwise
-        
+
     Example:
         >>> register_dataset_class("temp_benchmark", SomeTempDataset)
         >>> unregister_dataset_class("temp_benchmark")
@@ -186,13 +182,13 @@ def unregister_dataset_class(benchmark_name: str) -> bool:
 def get_dataset_class(benchmark_name: str) -> Optional[Type[BaseBenchmarkDataset]]:
     """
     Get the dataset class for a specific benchmark without creating an instance.
-    
+
     Args:
         benchmark_name: Name of benchmark (case-insensitive)
-        
+
     Returns:
         Dataset class if found, None otherwise
-        
+
     Example:
         >>> cls = get_dataset_class("infinitebench")
         >>> cls.__name__
@@ -204,16 +200,16 @@ def get_dataset_class(benchmark_name: str) -> Optional[Type[BaseBenchmarkDataset
 
 # Config creation functions consolidated here (no backward compatibility needed)
 
+
 def create_vllm_config_from_dict(
-    config_dict: Dict[str, Any], 
-    model_path: str
+    config_dict: Dict[str, Any], model_path: str
 ) -> Optional[VLLMLoadingConfig]:
     """Create VLLMLoadingConfig from configuration dictionary."""
     if "loading_config" not in config_dict:
         return None
-        
+
     loading_cfg_dict = config_dict["loading_config"]
-    return create_vllm_loading_config(
+    return VLLMLoadingConfig(
         model_path=loading_cfg_dict.get("model_path", model_path),
         gpu_memory_utilization=loading_cfg_dict.get("gpu_memory_utilization", 0.90),
         tensor_parallel_size=loading_cfg_dict.get("tensor_parallel_size"),
@@ -223,28 +219,10 @@ def create_vllm_config_from_dict(
         trust_remote_code=loading_cfg_dict.get("trust_remote_code", True),
         dtype=loading_cfg_dict.get("dtype", "float16"),
         seed=loading_cfg_dict.get("seed", 42),
-        disable_custom_all_reduce=loading_cfg_dict.get("disable_custom_all_reduce", False),
+        disable_custom_all_reduce=loading_cfg_dict.get(
+            "disable_custom_all_reduce", False
+        ),
         additional_vllm_kwargs=loading_cfg_dict.get("additional_vllm_kwargs", {}),
-    )
-
-
-def create_benchmark_config_from_dict(
-    benchmark_data: Dict[str, Any],
-    config_dict: Dict[str, Any]
-) -> BenchmarkConfig:
-    """Create BenchmarkConfig from benchmark data and global config."""
-    # Truncation settings from loading_config section (proper separation of concerns)
-    loading_cfg_dict = config_dict.get("loading_config", {})
-    
-    return create_benchmark_config(
-        name=benchmark_data["name"],
-        task_type=benchmark_data["task_type"],
-        data_path=Path(benchmark_data["data_path"]),
-        sample_limit=benchmark_data.get("sample_limit"),
-        augmentation_config=benchmark_data.get("augmentation_config"),
-        enable_auto_truncation=loading_cfg_dict.get("enable_auto_truncation", False),
-        truncation_strategy=loading_cfg_dict.get("truncation_strategy", "right"),
-        preserve_ratio=loading_cfg_dict.get("preserve_ratio", 0.8),
     )
 
 
@@ -252,7 +230,7 @@ def create_experiment_config_from_dict(
     config_dict: Dict[str, Any],
     model_path: str,
     benchmark_config: BenchmarkConfig,
-    loading_config: Optional[VLLMLoadingConfig] = None
+    loading_config: Optional[VLLMLoadingConfig] = None,
 ) -> ExperimentConfig:
     """Create ExperimentConfig from configuration dictionary."""
     return ExperimentConfig(
