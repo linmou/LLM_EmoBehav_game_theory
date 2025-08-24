@@ -49,7 +49,7 @@ from .data_models import (
     ResultRecord,
     DEFAULT_GENERATION_CONFIG
 )
-from .benchmark_adapters import get_adapter
+# Adapters replaced by smart datasets in refactoring
 from .config_loader import load_emotion_memory_config, EmotionMemoryConfigLoader
 
 __version__ = "1.0.0"
@@ -59,7 +59,7 @@ __all__ = [
     "BenchmarkConfig",
     "ResultRecord", 
     "DEFAULT_GENERATION_CONFIG",
-    "get_adapter",
+    # "get_adapter" removed in smart dataset refactoring
     "load_emotion_memory_config",
     "EmotionMemoryConfigLoader"
 ]

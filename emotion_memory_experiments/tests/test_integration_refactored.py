@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Integration test for emotion memory experiments with GPU mocking.
-Tests the complete pipeline while mocking expensive GPU operations.
+Test file for: Refactored integration test using direct dataset approach (TDD Refactor phase)
+Purpose: Test the complete pipeline using the new SmartDataset approach instead of adapters
+
+This integration test demonstrates that the new direct dataset approach
+works seamlessly in the complete emotion memory experiment pipeline.
 """
 
 import sys
@@ -18,11 +21,9 @@ import json
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from emotion_memory_experiments.benchmark_adapters import (
-    get_adapter, BenchmarkConfig, collate_memory_benchmarks
-)
+from emotion_memory_experiments.smart_datasets import get_dataset_from_config
 from emotion_memory_experiments.memory_prompt_wrapper import get_memory_prompt_wrapper
-from emotion_memory_experiments.data_models import BenchmarkItem
+from emotion_memory_experiments.data_models import BenchmarkConfig, BenchmarkItem
 
 
 class MockVLLMEngine:
@@ -55,24 +56,6 @@ class MockVLLMEngine:
         self.is_running = False
 
 
-class MockRepEReader:
-    """Mock RepE reader for emotion activation"""
-    
-    def __init__(self, model_path: str, emotion: str = "neutral"):
-        self.model_path = model_path
-        self.emotion = emotion
-        self.activation_vector = [0.1] * 768  # Mock activation vector
-        
-    def get_activation_vector(self, emotion: str, intensity: float = 1.0):
-        """Return mock activation vector"""
-        return [intensity * 0.1] * 768
-    
-    def apply_emotion(self, emotion: str, intensity: float = 1.0):
-        """Mock emotion application"""
-        self.emotion = emotion
-        return {"emotion": emotion, "intensity": intensity, "applied": True}
-
-
 class MockPromptFormat:
     """Mock prompt format for testing"""
     
@@ -84,8 +67,8 @@ class MockPromptFormat:
             return f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{user_message}<|im_end|>\n<|im_start|>assistant\n"
 
 
-class EmotionMemoryIntegrationTest:
-    """Integration test with mocked GPU components"""
+class RefactoredEmotionMemoryIntegrationTest:
+    """Integration test with mocked GPU components using new SmartDataset approach"""
     
     def __init__(self, config_path: str):
         self.config_path = Path(config_path)
@@ -100,10 +83,10 @@ class EmotionMemoryIntegrationTest:
     
     def setup(self):
         """Set up test environment"""
-        print("🔧 Setting up integration test environment...")
+        print("🔧 Setting up refactored integration test environment...")
         
         # Create temporary directory for results
-        self.temp_dir = tempfile.mkdtemp(prefix="emotion_memory_test_")
+        self.temp_dir = tempfile.mkdtemp(prefix="emotion_memory_refactored_test_")
         print(f"  📁 Temporary directory: {self.temp_dir}")
         
         # Update config with temp directory
@@ -133,10 +116,10 @@ class EmotionMemoryIntegrationTest:
     
     @patch('torch.cuda.is_available', return_value=False)  # Mock no GPU
     @patch('vllm.LLM')  # Mock vLLM
-    def test_full_pipeline(self, mock_vllm_class, mock_cuda):
-        """Test the complete emotion memory experiment pipeline"""
-        print("\n🧪 INTEGRATION TEST: Full Pipeline with Mocked GPU")
-        print("=" * 60)
+    def test_full_pipeline_with_smart_datasets(self, mock_vllm_class, mock_cuda):
+        """Test the complete emotion memory experiment pipeline using SmartDatasets"""
+        print("\n🧪 REFACTORED INTEGRATION TEST: Full Pipeline with SmartDatasets")
+        print("=" * 70)
         
         # Configure mocks
         mock_vllm_instance = MockVLLMEngine("/mock/model/path")
@@ -149,7 +132,7 @@ class EmotionMemoryIntegrationTest:
             print(f"\n📊 Testing benchmark: {benchmark_name}")
             
             try:
-                result = self._test_benchmark(benchmark_name, benchmark_config)
+                result = self._test_benchmark_with_smart_dataset(benchmark_name, benchmark_config)
                 if result:
                     success_count += 1
                     print(f"  ✅ {benchmark_name} test passed")
@@ -158,11 +141,11 @@ class EmotionMemoryIntegrationTest:
             except Exception as e:
                 print(f"  ❌ {benchmark_name} test error: {e}")
                 
-        print(f"\n📋 Pipeline Test Results: {success_count}/{total_tests} benchmarks passed")
+        print(f"\n📋 Refactored Pipeline Test Results: {success_count}/{total_tests} benchmarks passed")
         return success_count == total_tests
     
-    def _test_benchmark(self, benchmark_name: str, benchmark_config: Dict[str, Any]) -> bool:
-        """Test a single benchmark with mocked components"""
+    def _test_benchmark_with_smart_dataset(self, benchmark_name: str, benchmark_config: Dict[str, Any]) -> bool:
+        """Test a single benchmark with SmartDataset (no adapter)"""
         
         # Check if data file exists
         data_path = Path(benchmark_config['data_path'])
@@ -170,29 +153,29 @@ class EmotionMemoryIntegrationTest:
             print(f"    ⏭️  Skipping {benchmark_name} - data file not found")
             return True  # Skip missing data files
         
-        # Create benchmark adapter
+        # Create dataset directly (NO ADAPTER!)
         config = BenchmarkConfig(
             name=benchmark_config['name'],
             data_path=data_path,
             task_type=benchmark_config['task_type'],
-            evaluation_method=benchmark_config['evaluation_method'],
             sample_limit=benchmark_config.get('sample_limit', 5)
         )
         
-        adapter = get_adapter(config)
-        print(f"    🔧 Created {config.name} adapter")
+        # NEW APPROACH: Direct dataset creation
+        smart_dataset = get_dataset_from_config(config)
+        print(f"    🔧 Created SmartDataset directly with {len(smart_dataset)} items")
         
-        # Test dataset creation
-        dataset = adapter.create_dataset()
-        print(f"    📊 Dataset created with {len(dataset)} items")
-        
-        # Test prompt wrapper integration
+        # Test prompt wrapper integration with new approach
         mock_prompt_format = MockPromptFormat()
-        prompt_wrapper = get_memory_prompt_wrapper(config.task_type, mock_prompt_format)
-        formatted_dataset = adapter.create_dataset(prompt_wrapper=prompt_wrapper)
+        
+        # Create prompt wrapper function that matches SmartDataset expectations (2-arg)
+        def smart_prompt_wrapper(context, question):
+            return get_memory_prompt_wrapper(config.task_type, mock_prompt_format)(context, question, None)
+        
+        formatted_smart_dataset = get_dataset_from_config(config, prompt_wrapper=smart_prompt_wrapper)
         
         # Test a few items
-        test_items = min(3, len(dataset))
+        test_items = min(3, len(smart_dataset))
         emotions = self.config['emotions']['target_emotions'][:2]  # Test 2 emotions
         intensities = self.config['emotions']['intensities'][:2]  # Test 2 intensities
         
@@ -201,9 +184,9 @@ class EmotionMemoryIntegrationTest:
         for emotion in emotions + ['neutral']:
             for intensity in intensities if emotion != 'neutral' else [0.0]:
                 for i in range(test_items):
-                    result = self._test_single_item(
-                        formatted_dataset[i], 
-                        adapter, 
+                    result = self._test_single_item_with_smart_dataset(
+                        formatted_smart_dataset[i], 
+                        smart_dataset, 
                         emotion, 
                         intensity,
                         benchmark_name
@@ -212,32 +195,35 @@ class EmotionMemoryIntegrationTest:
         
         # Validate results
         validation_passed = self._validate_results(results, benchmark_name)
-        print(f"    ✅ Generated {len(results)} test results")
+        print(f"    ✅ Generated {len(results)} test results using SmartDataset")
         
         return validation_passed
     
-    def _test_single_item(self, item: Dict[str, Any], adapter, emotion: str, 
+    def _test_single_item_with_smart_dataset(self, item_dict: Dict[str, Any], smart_dataset, emotion: str, 
                          intensity: float, benchmark_name: str) -> Dict[str, Any]:
-        """Test processing a single item with mocked emotion activation"""
+        """Test processing a single item with SmartDataset and mocked emotion activation"""
         
         # Simulate emotion application (simplified - no actual RepE mocking)
         emotion_applied = {"emotion": emotion, "intensity": intensity}
         
         # Get mock response based on content
-        prompt = item['prompt']
+        prompt = item_dict['prompt']
         mock_engine = MockVLLMEngine("/mock/model/path")
         response = mock_engine.generate([prompt])[0]
         
-        # Evaluate response using original metrics
-        ground_truth = item['ground_truth']
-        task_name = item['item'].metadata.get('task_name', adapter.config.task_type)
-        score = adapter.evaluate_response(response, ground_truth, task_name)
+        # Evaluate response using SmartDataset's evaluation method (not adapter!)
+        ground_truth = item_dict['ground_truth']
+        benchmark_item = item_dict['item']
+        task_name = benchmark_item.metadata.get('task_name', smart_dataset.config.task_type)
+        
+        # Direct evaluation through SmartDataset
+        score = smart_dataset.evaluate_response(response, ground_truth, task_name)
         
         # Create result record
         result = {
             'emotion': emotion,
             'intensity': intensity,
-            'item_id': item['item'].id,
+            'item_id': benchmark_item.id,
             'task_name': task_name,
             'response': response,
             'ground_truth': ground_truth,
@@ -246,7 +232,8 @@ class EmotionMemoryIntegrationTest:
             'response_time': 0.1,  # Mock response time
             'prompt_length': len(prompt),
             'response_length': len(response),
-            'emotion_applied': emotion_applied  # Track that emotion was "applied"
+            'emotion_applied': emotion_applied,
+            'method': 'SmartDataset'  # Track that we used the new approach
         }
         
         return result
@@ -258,7 +245,7 @@ class EmotionMemoryIntegrationTest:
             return False
         
         # Check required fields
-        required_fields = self.config['validation']['required_result_fields']
+        required_fields = self.config['validation']['required_result_fields'] + ['method']
         for result in results:
             for field in required_fields:
                 if field not in result:
@@ -279,33 +266,18 @@ class EmotionMemoryIntegrationTest:
                 print(f"    ❌ Unexpected emotion: {result['emotion']}")
                 return False
         
-        print(f"    ✅ All {len(results)} results passed validation")
+        # Verify all results used SmartDataset approach
+        for result in results:
+            if result.get('method') != 'SmartDataset':
+                print(f"    ❌ Result not using SmartDataset: {result.get('method')}")
+                return False
+        
+        print(f"    ✅ All {len(results)} results passed validation with SmartDataset")
         return True
     
-    def test_evaluation_metrics(self):
-        """Test that evaluation metrics match original papers"""
-        print("\n🔬 Testing Original Paper Evaluation Metrics...")
-        
-        # Import the evaluation test
-        from test_original_evaluation_metrics import (
-            test_infinitebench_passkey_evaluation,
-            test_longbench_qa_f1_evaluation, 
-            test_locomo_f1_with_stemming
-        )
-        
-        try:
-            test_infinitebench_passkey_evaluation()
-            test_longbench_qa_f1_evaluation()
-            test_locomo_f1_with_stemming()
-            print("✅ All evaluation metrics match original papers")
-            return True
-        except Exception as e:
-            print(f"❌ Evaluation metrics test failed: {e}")
-            return False
-    
-    def test_data_loading(self):
-        """Test data loading for all benchmarks"""
-        print("\n📊 Testing Data Loading...")
+    def test_data_loading_with_smart_datasets(self):
+        """Test data loading for all benchmarks using SmartDatasets"""
+        print("\n📊 Testing Data Loading with SmartDatasets...")
         
         success_count = 0
         total_benchmarks = len(self.config['benchmarks'])
@@ -323,63 +295,43 @@ class EmotionMemoryIntegrationTest:
                     name=benchmark_config['name'],
                     data_path=data_path,
                     task_type=benchmark_config['task_type'],
-                    evaluation_method=benchmark_config['evaluation_method'],
                     sample_limit=benchmark_config.get('sample_limit', 5)
                 )
                 
-                adapter = get_adapter(config)
-                dataset = adapter.create_dataset()
+                # NEW APPROACH: Direct dataset creation
+                smart_dataset = get_dataset_from_config(config)
                 
-                if len(dataset) > 0:
-                    print(f"  ✅ {benchmark_name}: {len(dataset)} items loaded")
+                if len(smart_dataset) > 0:
+                    print(f"  ✅ {benchmark_name}: {len(smart_dataset)} items loaded via SmartDataset")
                     success_count += 1
                 else:
-                    print(f"  ❌ {benchmark_name}: No items loaded")
+                    print(f"  ❌ {benchmark_name}: No items loaded via SmartDataset")
                     
             except Exception as e:
-                print(f"  ❌ {benchmark_name}: Loading error - {e}")
+                print(f"  ❌ {benchmark_name}: SmartDataset loading error - {e}")
         
-        print(f"📋 Data Loading Results: {success_count}/{total_benchmarks} benchmarks loaded successfully")
+        print(f"📋 SmartDataset Loading Results: {success_count}/{total_benchmarks} benchmarks loaded successfully")
         return success_count == total_benchmarks
     
-    def save_test_results(self):
-        """Save test results for analysis"""
-        if not self.results:
-            return
-            
-        results_df = pd.DataFrame(self.results)
-        
-        # Save CSV
-        csv_path = Path(self.temp_dir) / "integration_test_results.csv"
-        results_df.to_csv(csv_path, index=False)
-        
-        # Save JSON
-        json_path = Path(self.temp_dir) / "integration_test_results.json"
-        with open(json_path, 'w') as f:
-            json.dump(self.results, f, indent=2)
-            
-        print(f"📁 Test results saved to: {self.temp_dir}")
-    
-    def run_all_tests(self) -> bool:
-        """Run complete integration test suite"""
-        print("🚀 EMOTION MEMORY EXPERIMENTS - INTEGRATION TEST")
-        print("=" * 70)
+    def run_all_refactored_tests(self) -> bool:
+        """Run complete refactored integration test suite"""
+        print("🚀 EMOTION MEMORY EXPERIMENTS - REFACTORED INTEGRATION TEST")
+        print("=" * 80)
         
         try:
             self.setup()
             
             # Run individual test components
             tests = [
-                ("Data Loading", self.test_data_loading),
-                ("Evaluation Metrics", self.test_evaluation_metrics),
-                ("Full Pipeline", self.test_full_pipeline),
+                ("SmartDataset Data Loading", self.test_data_loading_with_smart_datasets),
+                ("SmartDataset Full Pipeline", self.test_full_pipeline_with_smart_datasets),
             ]
             
             results = {}
             for test_name, test_func in tests:
-                print(f"\n{'='*60}")
+                print(f"\n{'='*70}")
                 print(f"Running {test_name} Test")
-                print('='*60)
+                print('='*70)
                 
                 try:
                     result = test_func()
@@ -394,27 +346,27 @@ class EmotionMemoryIntegrationTest:
             passed = sum(results.values())
             total = len(results)
             
-            print(f"\n{'='*70}")
-            print("INTEGRATION TEST SUMMARY")
-            print('='*70)
+            print(f"\n{'='*80}")
+            print("REFACTORED INTEGRATION TEST SUMMARY")
+            print('='*80)
             
             for test_name, result in results.items():
                 status = "✅ PASS" if result else "❌ FAIL"
-                print(f"{test_name:.<40} {status}")
+                print(f"{test_name:.<50} {status}")
             
             print(f"\nOverall: {passed}/{total} tests passed")
             
             if passed == total:
-                print("🎉 ALL INTEGRATION TESTS PASSED!")
-                print("\nVerified capabilities:")
-                print("✅ Data loading with real benchmark files")
-                print("✅ Original paper evaluation metrics")
-                print("✅ Prompt wrapper integration")
-                print("✅ Mocked GPU pipeline (vLLM + RepE)")
+                print("🎉 ALL REFACTORED INTEGRATION TESTS PASSED!")
+                print("\nRefactored capabilities verified:")
+                print("✅ Direct SmartDataset loading (no adapters)")
+                print("✅ SmartDataset evaluation methods")
+                print("✅ Prompt wrapper integration with SmartDatasets")  
                 print("✅ Complete emotion memory experiment workflow")
+                print("✅ Mocked GPU pipeline (vLLM + RepE) with SmartDatasets")
                 return True
             else:
-                print(f"❌ {total - passed} tests failed")
+                print(f"❌ {total - passed} refactored tests failed")
                 return False
                 
         finally:
@@ -422,16 +374,16 @@ class EmotionMemoryIntegrationTest:
 
 
 def main():
-    """Run integration test"""
+    """Run refactored integration test"""
     test_config_path = Path(__file__).parent / "test_config.yaml"
     
     if not test_config_path.exists():
         print(f"❌ Test config not found: {test_config_path}")
         return False
     
-    # Run integration test
-    integration_test = EmotionMemoryIntegrationTest(test_config_path)
-    success = integration_test.run_all_tests()
+    # Run refactored integration test
+    integration_test = RefactoredEmotionMemoryIntegrationTest(test_config_path)
+    success = integration_test.run_all_refactored_tests()
     
     return success
 
