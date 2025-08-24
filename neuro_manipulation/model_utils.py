@@ -1,5 +1,6 @@
 import pickle
 
+from data_models import VLLMLoadingConfig
 from transformers import pipeline
 from vllm import LLM
 
@@ -26,12 +27,11 @@ def setup_model_and_tokenizer(config, from_vllm=False):
     Returns:
         tuple: (model, tokenizer, prompt_format, processor)
     """
-    if not isinstance(config, dict):
-        config = config.__dict__
+    try:
+        model_path = config.model_path
+    except:
+        model_path = config.get("model_name_or_path", config.get("model_path"))
 
-    if not isinstance(config, dict):
-        config = config.__dict__
-    model_path = config.get("model_name_or_path", config.get("model_path"))
     model, tokenizer, processor = load_model_tokenizer(
         model_path,
         expand_vocab=False,

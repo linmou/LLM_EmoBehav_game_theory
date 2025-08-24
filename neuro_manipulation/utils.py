@@ -574,7 +574,7 @@ def load_model_tokenizer(
     from_vllm=False,
     auto_load_multimodal=True,
     enable_multi_gpu=True,
-    loading_config=None,
+    loading_config: "Optional[VLLMLoadingConfig]" = None,
 ):
     """
     Enhanced model loading with automatic multimodal detection and processor loading.
@@ -594,7 +594,6 @@ def load_model_tokenizer(
     """
     # Load model
     model = None
-
     if from_vllm:
         try:
             # Use VLLMLoadingConfig.to_vllm_kwargs() method
