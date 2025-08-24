@@ -42,7 +42,12 @@ Example Usage:
     results = experiment.run_experiment()
 """
 
-from .experiment import EmotionMemoryExperiment
+# Import EmotionMemoryExperiment conditionally to avoid vllm dependency during imports
+try:
+    from .experiment import EmotionMemoryExperiment
+except ImportError:
+    # vllm not available, EmotionMemoryExperiment will be None
+    EmotionMemoryExperiment = None
 from .data_models import (
     ExperimentConfig, 
     BenchmarkConfig, 

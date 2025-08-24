@@ -72,7 +72,7 @@ loading_config:
   additional_vllm_kwargs:
     rope-theta: 1000000
     rope-scaling:
-      type: "linear"
+      rope_type: "linear"
       factor: 4.0
 
 # RepE configuration

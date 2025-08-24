@@ -132,65 +132,13 @@ class VLLMLoadingConfig:
             "seed": self.seed,
             "disable_custom_all_reduce": self.disable_custom_all_reduce,
         }
-        
+
         # Add quantization if specified
         if self.quantization:
             base_kwargs["quantization"] = self.quantization
-            
+
         # Merge with additional kwargs, allowing override
         return {**base_kwargs, **self.additional_vllm_kwargs}
-
-
-def create_vllm_loading_config(
-    model_path: str,
-    gpu_memory_utilization: float = 0.90,
-    tensor_parallel_size: Optional[int] = None,
-    max_model_len: int = 32768,
-    enforce_eager: bool = True,
-    quantization: Optional[str] = None,
-    trust_remote_code: bool = True,
-    dtype: str = "float16",
-    seed: int = 42,
-    disable_custom_all_reduce: bool = False,
-    additional_vllm_kwargs: Optional[Dict[str, Any]] = None,
-) -> VLLMLoadingConfig:
-    """Factory function to create VLLMLoadingConfig with safe defaults"""
-    return VLLMLoadingConfig(
-        model_path=model_path,
-        gpu_memory_utilization=gpu_memory_utilization,
-        tensor_parallel_size=tensor_parallel_size,
-        max_model_len=max_model_len,
-        enforce_eager=enforce_eager,
-        quantization=quantization,
-        trust_remote_code=trust_remote_code,
-        dtype=dtype,
-        seed=seed,
-        disable_custom_all_reduce=disable_custom_all_reduce,
-        additional_vllm_kwargs=additional_vllm_kwargs or {},
-    )
-
-
-def create_benchmark_config(
-    name: str,
-    task_type: str,
-    data_path: Path,
-    sample_limit: Optional[int] = None,
-    augmentation_config: Optional[Dict[str, str]] = None,
-    enable_auto_truncation: bool = False,
-    truncation_strategy: str = "right",
-    preserve_ratio: float = 0.8,
-) -> BenchmarkConfig:
-    """Factory function to create BenchmarkConfig with safe defaults"""
-    return BenchmarkConfig(
-        name=name,
-        task_type=task_type,
-        data_path=data_path,
-        sample_limit=sample_limit,
-        augmentation_config=augmentation_config,
-        enable_auto_truncation=enable_auto_truncation,
-        truncation_strategy=truncation_strategy,
-        preserve_ratio=preserve_ratio,
-    )
 
 
 @dataclass

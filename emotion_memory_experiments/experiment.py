@@ -178,8 +178,10 @@ class EmotionMemoryExperiment:
         self.truncation_strategy = "right"
         if config.benchmark.enable_auto_truncation:
             if self.loading_config is None:
-                raise ValueError("Truncation enabled but no loading_config provided for max_model_len")
-                
+                raise ValueError(
+                    "Truncation enabled but no loading_config provided for max_model_len"
+                )
+
             self.max_context_length = calculate_max_context_length(
                 self.loading_config.max_model_len,
                 config.benchmark.preserve_ratio,
@@ -295,8 +297,12 @@ class EmotionMemoryExperiment:
                         start_time = time.time()
                         # Pass all generation parameters from config
                         generation_params = {
-                            "temperature": self.generation_config.get("temperature", 0.1),
-                            "max_new_tokens": self.generation_config.get("max_new_tokens", 100),
+                            "temperature": self.generation_config.get(
+                                "temperature", 0.1
+                            ),
+                            "max_new_tokens": self.generation_config.get(
+                                "max_new_tokens", 100
+                            ),
                             "do_sample": self.generation_config.get("do_sample", False),
                             "top_p": self.generation_config.get("top_p", 0.9),
                             "repetition_penalty": self.generation_config.get(
@@ -310,18 +316,20 @@ class EmotionMemoryExperiment:
                         if self.generation_config.get("min_p", 0.0) != 0.0:
                             generation_params["min_p"] = self.generation_config["min_p"]
                         if self.generation_config.get("presence_penalty", 0.0) != 0.0:
-                            generation_params["presence_penalty"] = self.generation_config[
-                                "presence_penalty"
-                            ]
+                            generation_params["presence_penalty"] = (
+                                self.generation_config["presence_penalty"]
+                            )
                         if self.generation_config.get("frequency_penalty", 0.0) != 0.0:
-                            generation_params["frequency_penalty"] = self.generation_config[
-                                "frequency_penalty"
-                            ]
+                            generation_params["frequency_penalty"] = (
+                                self.generation_config["frequency_penalty"]
+                            )
 
                         # Validate batch structure before accessing
                         if "prompts" not in batch:
-                            raise ValueError(f"Batch missing required 'prompts' key. Available keys: {list(batch.keys())}")
-                        
+                            raise ValueError(
+                                f"Batch missing required 'prompts' key. Available keys: {list(batch.keys())}"
+                            )
+
                         control_outputs = self.rep_control_pipeline(
                             batch["prompts"],  # Use formatted prompts from dataset
                             activations=activations,
@@ -330,41 +338,49 @@ class EmotionMemoryExperiment:
                         )
                         end_time = time.time()
                         pipeline_queue.put((i, batch, control_outputs))
-                        
+
                     except Exception as batch_error:
                         # Handle errors for individual batch processing
                         # This catches AssertionError from memory_prompt_wrapper.augment_context
                         # and other batch-level errors, ensuring the pipeline continues
                         import traceback
+
                         error_trace = traceback.format_exc()
                         self.logger.error(
                             f"🚨 BATCH ERROR in pipeline worker for batch {i}: {str(batch_error)}\n{error_trace}"
                         )
-                        
+
                         # Create an error batch result to maintain sequence integrity
                         error_batch = {
-                            "prompts": [f"ERROR: Batch {i} failed - {str(batch_error)}"],
+                            "prompts": [
+                                f"ERROR: Batch {i} failed - {str(batch_error)}"
+                            ],
                             "items": [MagicMock(id=f"error_{i}")],
-                            "ground_truths": ["ERROR"]
+                            "ground_truths": ["ERROR"],
                         }
-                        error_outputs = [{"generated_text": f"ERROR: {str(batch_error)}"}]
-                        
+                        error_outputs = [
+                            {"generated_text": f"ERROR: {str(batch_error)}"}
+                        ]
+
                         pipeline_queue.put((i, error_batch, error_outputs))
-                        
+
                         # Continue with next batch instead of crashing the worker thread
-                        self.logger.info(f"🔄 Continuing pipeline worker with next batch after error in batch {i}")
+                        self.logger.info(
+                            f"🔄 Continuing pipeline worker with next batch after error in batch {i}"
+                        )
 
             except Exception as worker_error:
                 # Handle catastrophic worker thread errors
                 import traceback
+
                 error_trace = traceback.format_exc()
                 self.logger.error(
                     f"🚨 WORKER THREAD ERROR in pipeline_worker: {str(worker_error)}\n{error_trace}"
                 )
-                
+
                 # Put error marker in queue to prevent main thread from waiting forever
                 pipeline_queue.put(("WORKER_ERROR", str(worker_error), error_trace))
-            
+
             finally:
                 # Always put sentinel value to signal completion, even after errors
                 pipeline_queue.put(None)  # Sentinel value
@@ -385,12 +401,18 @@ class EmotionMemoryExperiment:
                     break  # Worker finished
 
                 # Handle worker thread error case
-                if isinstance(item, tuple) and len(item) == 3 and item[0] == "WORKER_ERROR":
+                if (
+                    isinstance(item, tuple)
+                    and len(item) == 3
+                    and item[0] == "WORKER_ERROR"
+                ):
                     error_type, error_msg, error_trace = item
                     self.logger.error(
                         f"🚨 PIPELINE WORKER FAILED: {error_msg}\n{error_trace}"
                     )
-                    self.logger.info("🔄 Main thread continuing despite worker thread failure")
+                    self.logger.info(
+                        "🔄 Main thread continuing despite worker thread failure"
+                    )
                     break  # Exit main processing loop but don't crash experiment
 
                 batch_idx, batch, control_outputs = item
@@ -430,7 +452,7 @@ class EmotionMemoryExperiment:
         log_prefix = f"{time.time():.2f} [{current_thread().name}]"
 
         results = []
-        
+
         # Validate batch structure with helpful error messages
         required_keys = ["prompts", "items", "ground_truths"]
         missing_keys = [key for key in required_keys if key not in batch]
@@ -440,7 +462,7 @@ class EmotionMemoryExperiment:
                 f"Available keys: {list(batch.keys())}. "
                 f"Expected structure from collate_fn: {required_keys}"
             )
-        
+
         batch_prompts = batch["prompts"]
         batch_items = batch["items"]  # BenchmarkItem objects from adapter
         batch_ground_truths = batch["ground_truths"]
@@ -565,7 +587,6 @@ class EmotionMemoryExperiment:
                 "name": self.config.benchmark.name,
                 "data_path": str(self.config.benchmark.get_data_path()),
                 "task_type": self.config.benchmark.task_type,
-                "evaluation_method": self.config.benchmark.evaluation_method,
                 "sample_limit": self.config.benchmark.sample_limit,
             },
             "output_dir": self.config.output_dir,
@@ -621,6 +642,7 @@ class EmotionMemoryExperiment:
         # Temporarily modify config
         original_sample_limit = self.config.benchmark.sample_limit
         self.config.benchmark.sample_limit = sample_limit
+        self.output_dir = self.output_dir / "sanity_check"
 
         # Reset adapter to pick up new sample limit
         # Benchmark adapter replaced by direct dataset creation

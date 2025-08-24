@@ -47,19 +47,17 @@ class TestImportCoverage(unittest.TestCase):
             self.fail(f"Unexpected import error: {e}")
     
     def test_data_models_exports(self):
-        """Test that data_models exports the correct classes after refactoring"""
+        """Test that data_models exports the correct classes after factory removal"""
         from emotion_memory_experiments.data_models import (
             VLLMLoadingConfig,
             BenchmarkConfig, 
             ExperimentConfig,
-            create_vllm_loading_config,
-            create_benchmark_config
         )
         
-        # These should exist
+        # These dataclasses should exist
         self.assertTrue(hasattr(VLLMLoadingConfig, 'to_vllm_kwargs'))
-        self.assertTrue(callable(create_vllm_loading_config))
-        self.assertTrue(callable(create_benchmark_config))
+        self.assertTrue(hasattr(BenchmarkConfig, 'get_data_path'))
+        self.assertTrue(hasattr(ExperimentConfig, '__init__'))
         
         # Old LoadingConfig should not exist
         try:
@@ -68,16 +66,23 @@ class TestImportCoverage(unittest.TestCase):
         except ImportError:
             pass  # Expected - LoadingConfig shouldn't exist
     
-    def test_loading_config_instantiation_coverage(self):
-        """Test that files using LoadingConfig() can create instances properly"""
-        # Import the factory function
-        from emotion_memory_experiments.data_models import create_vllm_loading_config
+    def test_direct_dataclass_instantiation_coverage(self):
+        """Test that dataclasses can be instantiated directly without factory functions"""
+        from emotion_memory_experiments.data_models import VLLMLoadingConfig
         
-        # Test the factory function works (what the files should be using)
-        config = create_vllm_loading_config(
+        # Test direct instantiation works (replaces factory functions)
+        config = VLLMLoadingConfig(
             model_path="/test/model",
             gpu_memory_utilization=0.85,
-            max_model_len=16384
+            tensor_parallel_size=None,
+            max_model_len=16384,
+            enforce_eager=True,
+            quantization=None,
+            trust_remote_code=True,
+            dtype="float16",
+            seed=42,
+            disable_custom_all_reduce=False,
+            additional_vllm_kwargs={}
         )
         
         self.assertEqual(config.model_path, "/test/model")

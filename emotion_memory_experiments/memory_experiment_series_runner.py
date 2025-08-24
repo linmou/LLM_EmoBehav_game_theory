@@ -40,44 +40,6 @@ else:
 BenchmarkConfig = _data_models.BenchmarkConfig
 ExperimentConfig = _data_models.ExperimentConfig
 VLLMLoadingConfig = _data_models.VLLMLoadingConfig
-create_vllm_loading_config = _data_models.create_vllm_loading_config
-create_benchmark_config = _data_models.create_benchmark_config
-
-# Import factory functions directly without relative imports  
-def create_benchmark_config_from_dict(benchmark_data, config_dict):
-    """Create BenchmarkConfig from benchmark data and global config."""
-    loading_cfg_dict = config_dict.get("loading_config", {})
-    
-    return create_benchmark_config(
-        name=benchmark_data["name"],
-        task_type=benchmark_data["task_type"],
-        data_path=Path(benchmark_data["data_path"]) if "data_path" in benchmark_data else None,
-        sample_limit=benchmark_data.get("sample_limit"),
-        augmentation_config=benchmark_data.get("augmentation_config"),
-        enable_auto_truncation=loading_cfg_dict.get("enable_auto_truncation", False),
-        truncation_strategy=loading_cfg_dict.get("truncation_strategy", "right"),
-        preserve_ratio=loading_cfg_dict.get("preserve_ratio", 0.8),
-    )
-
-def create_vllm_config_from_dict(config_dict, model_path):
-    """Create VLLMLoadingConfig from configuration dictionary."""
-    if "loading_config" not in config_dict:
-        return None
-        
-    loading_cfg_dict = config_dict["loading_config"]
-    return create_vllm_loading_config(
-        model_path=loading_cfg_dict.get("model_path", model_path),
-        gpu_memory_utilization=loading_cfg_dict.get("gpu_memory_utilization", 0.90),
-        tensor_parallel_size=loading_cfg_dict.get("tensor_parallel_size"),
-        max_model_len=loading_cfg_dict.get("max_model_len", 32768),
-        enforce_eager=loading_cfg_dict.get("enforce_eager", True),
-        quantization=loading_cfg_dict.get("quantization"),
-        trust_remote_code=loading_cfg_dict.get("trust_remote_code", True),
-        dtype=loading_cfg_dict.get("dtype", "float16"),
-        seed=loading_cfg_dict.get("seed", 42),
-        disable_custom_all_reduce=loading_cfg_dict.get("disable_custom_all_reduce", False),
-        additional_vllm_kwargs=loading_cfg_dict.get("additional_vllm_kwargs", {}),
-    )
 
 
 class ExperimentStatus:
@@ -488,12 +450,33 @@ class MemoryExperimentSeriesRunner:
     def setup_experiment(self, benchmark_config: Dict, model_name: str):
         """Set up a single memory experiment with the given benchmark and model"""
 
-        # Create BenchmarkConfig from dictionary
-        # Use factory function for consistent config creation
-        benchmark = create_benchmark_config_from_dict(benchmark_config, self.base_config)
+        # Create BenchmarkConfig directly from dictionary with all required fields
+        benchmark = BenchmarkConfig(
+            name=benchmark_config["name"],
+            task_type=benchmark_config["task_type"],
+            data_path=Path(benchmark_config.get("data_path")) if benchmark_config.get("data_path") else None,
+            sample_limit=benchmark_config.get("sample_limit"),
+            augmentation_config=benchmark_config.get("augmentation_config"),
+            enable_auto_truncation=benchmark_config.get("enable_auto_truncation", False),
+            truncation_strategy=benchmark_config.get("truncation_strategy", "right"),
+            preserve_ratio=benchmark_config.get("preserve_ratio", 0.8),
+        )
 
-        # Create VLLMLoadingConfig if specified
-        loading_config = create_vllm_config_from_dict(self.base_config, model_name)
+        # Create VLLMLoadingConfig directly from base config
+        loading_cfg = self.base_config["loading_config"]
+        loading_config = VLLMLoadingConfig(
+            model_path=loading_cfg.get("model_path", model_name),
+            gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
+            tensor_parallel_size=loading_cfg.get("tensor_parallel_size"),
+            max_model_len=loading_cfg.get("max_model_len", 32768),
+            enforce_eager=loading_cfg.get("enforce_eager", True),
+            quantization=loading_cfg.get("quantization"),
+            trust_remote_code=loading_cfg.get("trust_remote_code", True),
+            dtype=loading_cfg.get("dtype", "float16"),
+            seed=loading_cfg.get("seed", 42),
+            disable_custom_all_reduce=loading_cfg.get("disable_custom_all_reduce", False),
+            additional_vllm_kwargs=loading_cfg.get("additional_vllm_kwargs", {}),
+        )
 
         # Create ExperimentConfig
         experiment_config = ExperimentConfig(
@@ -577,7 +560,7 @@ class MemoryExperimentSeriesRunner:
             self.logger.warning(f"Error during CUDA memory cleanup: {str(e)}")
 
     def run_single_experiment(
-        self, benchmark_config: Dict, model_name: str, exp_id: str
+        self, benchmark_config: Dict[str, Any], model_name: str, exp_id: str
     ) -> bool:
         """Run a single memory experiment with the specified benchmark and model"""
         self.logger.info(
@@ -675,8 +658,7 @@ class MemoryExperimentSeriesRunner:
             # Check if task_type is a pattern (contains wildcards or regex characters)
             if self._is_pattern_task_type(task_type):
                 # Create a temporary BenchmarkConfig to discover datasets using factory function
-                # FIXED: Use helper method with factory function to provide all required arguments
-                temp_benchmark = self._create_temporary_benchmark_for_discovery(benchmark_config, task_type)
+                temp_benchmark = BenchmarkConfig(**benchmark_config)
 
                 # Discover task types matching the pattern
                 base_data_dir = self.base_config.get(
@@ -707,39 +689,6 @@ class MemoryExperimentSeriesRunner:
                 expanded_benchmarks.append(benchmark_config)
 
         return expanded_benchmarks
-
-    def _create_temporary_benchmark_for_discovery(self, benchmark_config: Dict[str, Any], task_type: str) -> Any:
-        """
-        Create a temporary BenchmarkConfig for pattern discovery using the factory function.
-        
-        This method extracts the BenchmarkConfig creation logic to improve maintainability
-        and ensure all required arguments are provided with safe defaults.
-        
-        Args:
-            benchmark_config: Dictionary containing benchmark configuration
-            task_type: The task type (potentially a regex pattern)
-            
-        Returns:
-            BenchmarkConfig instance ready for pattern discovery
-            
-        Raises:
-            ValueError: If benchmark configuration is invalid
-        """
-        try:
-            return create_benchmark_config(
-                name=benchmark_config["name"],
-                task_type=task_type,
-                data_path=Path("dummy.jsonl"),  # Temporary path for pattern discovery
-                sample_limit=benchmark_config.get("sample_limit"),
-                augmentation_config=benchmark_config.get("augmentation_config"),
-                enable_auto_truncation=benchmark_config.get("enable_auto_truncation", False),
-                truncation_strategy=benchmark_config.get("truncation_strategy", "right"),
-                preserve_ratio=benchmark_config.get("preserve_ratio", 0.8)
-            )
-        except Exception as e:
-            logging.error(f"Failed to create temporary BenchmarkConfig for pattern discovery: {e}")
-            logging.error(f"Benchmark config: {benchmark_config}")
-            raise ValueError(f"Invalid benchmark configuration for pattern '{task_type}': {e}") from e
 
     def _is_pattern_task_type(self, task_type: str) -> bool:
         """
@@ -850,12 +799,14 @@ class MemoryExperimentSeriesRunner:
         original_benchmarks = self.base_config["benchmarks"]
         models = self.base_config["models"]
 
-        # Expand benchmarks with task_type='all'
+        # Expand benchmarks with task_type is regex pattern
         try:
             benchmarks = self.expand_benchmark_configs(original_benchmarks)
         except Exception as e:
             error_trace = traceback.format_exc()
-            self.logger.error(f"Failed to expand benchmark configurations: {str(e)}\n{error_trace}")
+            self.logger.error(
+                f"Failed to expand benchmark configurations: {str(e)}\n{error_trace}"
+            )
             self.logger.error("Using original benchmarks without expansion")
             benchmarks = original_benchmarks
 
@@ -882,7 +833,9 @@ class MemoryExperimentSeriesRunner:
                 for model_name in models:
                     try:
                         # For folder names, use the formatted version
-                        model_folder_name = self._format_model_name_for_folder(model_name)
+                        model_folder_name = self._format_model_name_for_folder(
+                            model_name
+                        )
                         exp_id = f"{benchmark_name}_{task_type}_{model_folder_name.replace('/', '_')}"
 
                         # Only add if not resuming or not already in report
@@ -891,11 +844,15 @@ class MemoryExperimentSeriesRunner:
                                 f"{benchmark_name}_{task_type}", model_name, exp_id
                             )
                     except Exception as e:
-                        self.logger.error(f"Failed to generate experiment for {benchmark_name}/{task_type} + {model_name}: {e}")
+                        self.logger.error(
+                            f"Failed to generate experiment for {benchmark_name}/{task_type} + {model_name}: {e}"
+                        )
                         continue
         except Exception as e:
             error_trace = traceback.format_exc()
-            self.logger.error(f"Failed to generate experiment combinations: {str(e)}\n{error_trace}")
+            self.logger.error(
+                f"Failed to generate experiment combinations: {str(e)}\n{error_trace}"
+            )
             raise
 
         # Get pending experiments
@@ -943,7 +900,7 @@ class MemoryExperimentSeriesRunner:
                     self.report.update_experiment(
                         exp["exp_id"],
                         status=ExperimentStatus.FAILED,
-                        error=f"Benchmark config not found for {exp['benchmark_name']}"
+                        error=f"Benchmark config not found for {exp['benchmark_name']}",
                     )
                     continue
 
@@ -951,11 +908,15 @@ class MemoryExperimentSeriesRunner:
                 success = self.run_single_experiment(
                     found_benchmark_config, exp["model_name"], exp["exp_id"]
                 )
-                
+
                 if success:
-                    self.logger.info(f"✅ Experiment completed successfully: {exp['benchmark_name']}, {exp['model_name']}")
+                    self.logger.info(
+                        f"✅ Experiment completed successfully: {exp['benchmark_name']}, {exp['model_name']}"
+                    )
                 else:
-                    self.logger.info(f"❌ Experiment failed but series continues: {exp['benchmark_name']}, {exp['model_name']}")
+                    self.logger.info(
+                        f"❌ Experiment failed but series continues: {exp['benchmark_name']}, {exp['model_name']}"
+                    )
 
             except Exception as e:
                 # Catch ANY unexpected errors in the experiment series loop
@@ -965,21 +926,25 @@ class MemoryExperimentSeriesRunner:
                 self.logger.error(
                     f"🚨 SERIES-LEVEL ERROR for experiment {exp['benchmark_name']}, {exp['model_name']}: {str(e)}\n{error_trace}"
                 )
-                
+
                 try:
                     # Try to update the experiment report with the series-level error
                     self.report.update_experiment(
                         exp["exp_id"],
                         status=ExperimentStatus.FAILED,
                         error=f"Series-level error: {str(e)}\n{error_trace}",
-                        end_time=datetime.now().isoformat()
+                        end_time=datetime.now().isoformat(),
                     )
                 except Exception as report_error:
                     # If even updating the report fails, log it but don't stop the series
-                    self.logger.error(f"Failed to update experiment report: {report_error}")
-                
+                    self.logger.error(
+                        f"Failed to update experiment report: {report_error}"
+                    )
+
                 # Continue with the next experiment regardless of the error
-                self.logger.info("🔄 Continuing with next experiment despite series-level error")
+                self.logger.info(
+                    "🔄 Continuing with next experiment despite series-level error"
+                )
 
             finally:
                 # Always try to print progress summary, even if there were errors
@@ -987,7 +952,9 @@ class MemoryExperimentSeriesRunner:
                     summary = self.report.get_summary()
                     self.logger.info(f"Memory experiment series progress: {summary}")
                 except Exception as summary_error:
-                    self.logger.warning(f"Could not generate progress summary: {summary_error}")
+                    self.logger.warning(
+                        f"Could not generate progress summary: {summary_error}"
+                    )
 
         # Final summary
         summary = self.report.get_summary()
