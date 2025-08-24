@@ -15,16 +15,16 @@ models:
 # Use regex patterns in task_type to automatically discover matching datasets
 benchmarks:
   # Discover all datasets for longbench (regex: match any string)
-  - name: "longbench"
-    task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
-    sample_limit: 100
-    augmentation_config:
-      prefix: " I am super happy "
-      suffix: " and I am super happy"
-    # Context truncation settings (now in benchmark config)
-    enable_auto_truncation: true
-    truncation_strategy: "right"
-    preserve_ratio: 0.95
+  # - name: "longbench"
+  #   task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
+  #   sample_limit: 100
+  #   augmentation_config:
+  #     prefix: " I am super happy "
+  #     suffix: " and I am super happy"
+  #   # Context truncation settings (now in benchmark config)
+  #   enable_auto_truncation: true
+  #   truncation_strategy: "right"
+  #   preserve_ratio: 0.95
       
   - name: "infinitebench"
     task_type: "passkey"  # Matches all: narrativeqa, qasper, etc.

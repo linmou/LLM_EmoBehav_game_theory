@@ -45,38 +45,117 @@ def load_config(config_path: Path) -> Dict[str, Any]:
     return config
 
 
+def normalize_config_format(config_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Normalize different config formats to a consistent internal format.
+    
+    Handles both:
+    - New format: {models: [...], benchmarks: [...], emotions: [...], output_dir: "..."}  
+    - Old format: {model: {model_path: "..."}, benchmarks: {...}, emotions: {target_emotions: [...]}, output: {results_dir: "..."}}
+    
+    Returns normalized config with consistent key structure.
+    """
+    normalized = config_dict.copy()
+    
+    # Normalize model format
+    if "models" in config_dict and isinstance(config_dict["models"], list):
+        if not normalized.get("model"):
+            normalized["model"] = {}
+        normalized["model"]["model_path"] = config_dict["models"][0] if config_dict["models"] else ""
+    
+    # Normalize emotions format  
+    if isinstance(config_dict.get("emotions"), list):
+        normalized["emotions"] = {
+            "target_emotions": config_dict["emotions"],
+            "intensities": config_dict.get("intensities", [1.0])
+        }
+    
+    # Normalize output format
+    if "output_dir" in config_dict:
+        if not normalized.get("output"):
+            normalized["output"] = {}
+        normalized["output"]["results_dir"] = config_dict["output_dir"]
+    
+    # Normalize execution format
+    if "batch_size" in config_dict:
+        if not normalized.get("execution"):
+            normalized["execution"] = {}
+        normalized["execution"]["batch_size"] = config_dict["batch_size"]
+    
+    if "max_evaluation_workers" in config_dict:
+        if not normalized.get("execution"):
+            normalized["execution"] = {}
+        normalized["execution"]["max_evaluation_workers"] = config_dict["max_evaluation_workers"]
+    
+    return normalized
+
+
 def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
     """Convert YAML config to ExperimentConfig object"""
+    
+    # Normalize config format for consistent processing
+    config = normalize_config_format(config_dict)
 
     # Extract single benchmark configuration (use first benchmark if multiple provided)
-    benchmarks = config_dict.get("benchmarks", {})
+    benchmarks = config.get("benchmarks", {})
     if not benchmarks:
         raise ValueError("No benchmarks specified in configuration")
 
-    # Take the first benchmark and create configs using factory functions
-    benchmark_name, benchmark_data = next(iter(benchmarks.items()))
-    model_path = config_dict["model"]["model_path"]
+    # Handle both list and dict formats for benchmarks
+    if isinstance(benchmarks, list):
+        # List format: [{"name": "infinitebench", "task_type": "passkey", ...}]
+        if not benchmarks:
+            raise ValueError("Empty benchmarks list in configuration")
+        benchmark_data = benchmarks[0]
+        benchmark_name = benchmark_data.get("name", f"benchmark_0")
+    elif isinstance(benchmarks, dict):
+        # Dict format: {"infinitebench_passkey": {"name": "infinitebench", ...}}
+        benchmark_name, benchmark_data = next(iter(benchmarks.items()))
+    else:
+        raise ValueError(f"Benchmarks must be list or dict, got {type(benchmarks)}")
+    
+    # Extract normalized values
+    model_path = config["model"]["model_path"]
+    emotions = config["emotions"]["target_emotions"]
+    intensities = config["emotions"]["intensities"]
+    output_dir = config["output"]["results_dir"]
+    
+    # Auto-generate data_path if not provided (like series runner does)
+    if "data_path" not in benchmark_data:
+        # Create a temporary config to auto-generate the path
+        temp_config = BenchmarkConfig(
+            name=benchmark_data["name"],
+            task_type=benchmark_data["task_type"],
+            data_path=Path("placeholder"),  # Will be replaced by get_data_path()
+            sample_limit=benchmark_data.get("sample_limit"),
+            augmentation_config=benchmark_data.get("augmentation_config"),
+            enable_auto_truncation=config.get("loading_config", {}).get("enable_auto_truncation", False),
+            truncation_strategy=config.get("loading_config", {}).get("truncation_strategy", "right"),
+            preserve_ratio=config.get("loading_config", {}).get("preserve_ratio", 0.8)
+        )
+        # Get the auto-generated data path
+        auto_data_path = temp_config.get_data_path()
+        benchmark_data = benchmark_data.copy()
+        benchmark_data["data_path"] = str(auto_data_path)
     
     # Use factory functions for consistent config creation
-    benchmark_config = create_benchmark_config_from_dict(benchmark_data, config_dict)
-    loading_config = create_vllm_config_from_dict(config_dict, model_path)
+    benchmark_config = create_benchmark_config_from_dict(benchmark_data, config)
+    loading_config = create_vllm_config_from_dict(config, model_path)
 
     # Create main experiment config
     exp_config = ExperimentConfig(
         model_path=model_path,
-        emotions=config_dict["emotions"]["target_emotions"],
+        emotions=emotions,
         benchmark=benchmark_config,
-        output_dir=config_dict["output"]["results_dir"],
+        output_dir=output_dir,
         # Optional parameters with defaults
-        intensities=config_dict["emotions"].get("intensities", [1.0]),
-        batch_size=config_dict["execution"].get("batch_size", 4),
-        generation_config=config_dict.get("generation", {}),
-        loading_config=loading_config,  # Add loading config
-        repe_eng_config=config_dict.get("repe_eng_config", {}),
-        max_evaluation_workers=config_dict["execution"].get(
-            "max_evaluation_workers", 4
-        ),
-        pipeline_queue_size=config_dict["execution"].get("batch_size", 4) * 2,
+        intensities=intensities,
+        batch_size=config.get("execution", {}).get("batch_size", 4),
+        generation_config=config.get("generation_config", config.get("generation", {})),
+        loading_config=loading_config,
+        repe_eng_config=config.get("repe_eng_config", {}),
+        max_evaluation_workers=config.get("execution", {}).get("max_evaluation_workers", 4),
+        pipeline_queue_size=config.get("pipeline_queue_size", config.get("execution", {}).get("batch_size", 4) * 2),
     )
 
     return exp_config
@@ -109,30 +188,48 @@ def setup_logging(config: Dict[str, Any]) -> logging.Logger:
     return logging.getLogger(__name__)
 
 
-def validate_config(config: Dict[str, Any]) -> bool:
+def validate_config(config_dict: Dict[str, Any]) -> bool:
     """Validate configuration before running experiment"""
     print("🔍 Validating configuration...")
-
+    
+    # Normalize config format for consistent validation
+    config = normalize_config_format(config_dict)
     errors = []
 
     # Check required sections
-    required_sections = ["model", "emotions", "benchmarks", "execution", "output"]
-    for section in required_sections:
-        if section not in config:
-            errors.append(f"Missing required section: {section}")
+    if not config.get("model", {}).get("model_path"):
+        errors.append("Missing model path configuration")
+    if not config.get("emotions", {}).get("target_emotions"):
+        errors.append("Missing emotions configuration") 
+    if not config.get("benchmarks"):
+        errors.append("Missing benchmarks configuration")
 
     # Check model path
-    model_path = Path(config.get("model", {}).get("path", ""))
-    if not model_path.exists() and not str(model_path).startswith("/mock"):
-        errors.append(f"Model path does not exist: {model_path}")
+    model_path_str = config.get("model", {}).get("model_path", "")
+    if model_path_str:
+        model_path = Path(model_path_str)
+        if not model_path.exists() and not str(model_path).startswith(("/mock", "Qwen/")):
+            errors.append(f"Model path does not exist: {model_path}")
 
-    # Check benchmark data files
-    for benchmark_name, benchmark_config in config.get("benchmarks", {}).items():
-        data_path = Path(benchmark_config.get("data_path", ""))
-        if not data_path.exists():
-            errors.append(
-                f"Benchmark data file not found: {data_path} (for {benchmark_name})"
-            )
+    # Check benchmark data files (handle both list and dict formats)
+    benchmarks = config.get("benchmarks", {})
+    if isinstance(benchmarks, list):
+        # List format: [{"name": "infinitebench", "data_path": "...", ...}]
+        for i, benchmark_config in enumerate(benchmarks):
+            benchmark_name = benchmark_config.get("name", f"benchmark_{i}")
+            data_path = Path(benchmark_config.get("data_path", ""))
+            if data_path and not data_path.exists():
+                errors.append(
+                    f"Benchmark data file not found: {data_path} (for {benchmark_name})"
+                )
+    elif isinstance(benchmarks, dict):
+        # Dict format: {"infinitebench_passkey": {"data_path": "...", ...}}
+        for benchmark_name, benchmark_config in benchmarks.items():
+            data_path = Path(benchmark_config.get("data_path", ""))
+            if data_path and not data_path.exists():
+                errors.append(
+                    f"Benchmark data file not found: {data_path} (for {benchmark_name})"
+                )
 
     # Check output directory is writable
     output_dir = Path(config.get("output", {}).get("results_dir", "results"))

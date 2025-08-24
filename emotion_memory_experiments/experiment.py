@@ -13,6 +13,7 @@ from pathlib import Path
 from queue import Queue
 from threading import Thread, current_thread
 from typing import Any, Dict, List, Optional
+from unittest.mock import MagicMock
 
 import pandas as pd
 import torch
@@ -317,8 +318,12 @@ class EmotionMemoryExperiment:
                                 "frequency_penalty"
                             ]
 
+                        # Validate batch structure before accessing
+                        if "prompts" not in batch:
+                            raise ValueError(f"Batch missing required 'prompts' key. Available keys: {list(batch.keys())}")
+                        
                         control_outputs = self.rep_control_pipeline(
-                            batch["prompt"],  # Use formatted prompts from dataset
+                            batch["prompts"],  # Use formatted prompts from dataset
                             activations=activations,
                             batch_size=self.batch_size,
                             **generation_params,
@@ -338,10 +343,9 @@ class EmotionMemoryExperiment:
                         
                         # Create an error batch result to maintain sequence integrity
                         error_batch = {
-                            "prompt": [f"ERROR: Batch {i} failed - {str(batch_error)}"],
-                            "ground_truth": ["ERROR"],
-                            "context": ["ERROR"], 
-                            "question": ["ERROR"]
+                            "prompts": [f"ERROR: Batch {i} failed - {str(batch_error)}"],
+                            "items": [MagicMock(id=f"error_{i}")],
+                            "ground_truths": ["ERROR"]
                         }
                         error_outputs = [{"generated_text": f"ERROR: {str(batch_error)}"}]
                         
@@ -426,7 +430,18 @@ class EmotionMemoryExperiment:
         log_prefix = f"{time.time():.2f} [{current_thread().name}]"
 
         results = []
-        batch_prompts = batch["prompt"]
+        
+        # Validate batch structure with helpful error messages
+        required_keys = ["prompts", "items", "ground_truths"]
+        missing_keys = [key for key in required_keys if key not in batch]
+        if missing_keys:
+            raise ValueError(
+                f"Batch missing required keys: {missing_keys}. "
+                f"Available keys: {list(batch.keys())}. "
+                f"Expected structure from collate_fn: {required_keys}"
+            )
+        
+        batch_prompts = batch["prompts"]
         batch_items = batch["items"]  # BenchmarkItem objects from adapter
         batch_ground_truths = batch["ground_truths"]
 
