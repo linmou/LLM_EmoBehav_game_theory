@@ -13,6 +13,7 @@ from pathlib import Path
 from queue import Queue
 from threading import Thread, current_thread
 from typing import Any, Dict, List, Optional
+from unittest.mock import MagicMock
 
 import pandas as pd
 import torch
@@ -287,44 +288,86 @@ class EmotionMemoryExperiment:
         processed_futures = []  # Keep track of futures
 
         def pipeline_worker():
-            for i, batch in enumerate(data_loader):
-                # Process batch prompts
-                start_time = time.time()
-                # Pass all generation parameters from config
-                generation_params = {
-                    "temperature": self.generation_config.get("temperature", 0.1),
-                    "max_new_tokens": self.generation_config.get("max_new_tokens", 100),
-                    "do_sample": self.generation_config.get("do_sample", False),
-                    "top_p": self.generation_config.get("top_p", 0.9),
-                    "repetition_penalty": self.generation_config.get(
-                        "repetition_penalty", 1.0
-                    ),
-                }
+            try:
+                for i, batch in enumerate(data_loader):
+                    try:
+                        # Process batch prompts
+                        start_time = time.time()
+                        # Pass all generation parameters from config
+                        generation_params = {
+                            "temperature": self.generation_config.get("temperature", 0.1),
+                            "max_new_tokens": self.generation_config.get("max_new_tokens", 100),
+                            "do_sample": self.generation_config.get("do_sample", False),
+                            "top_p": self.generation_config.get("top_p", 0.9),
+                            "repetition_penalty": self.generation_config.get(
+                                "repetition_penalty", 1.0
+                            ),
+                        }
 
-                # Add optional parameters if they exist and are not default
-                if self.generation_config.get("top_k", -1) != -1:
-                    generation_params["top_k"] = self.generation_config["top_k"]
-                if self.generation_config.get("min_p", 0.0) != 0.0:
-                    generation_params["min_p"] = self.generation_config["min_p"]
-                if self.generation_config.get("presence_penalty", 0.0) != 0.0:
-                    generation_params["presence_penalty"] = self.generation_config[
-                        "presence_penalty"
-                    ]
-                if self.generation_config.get("frequency_penalty", 0.0) != 0.0:
-                    generation_params["frequency_penalty"] = self.generation_config[
-                        "frequency_penalty"
-                    ]
+                        # Add optional parameters if they exist and are not default
+                        if self.generation_config.get("top_k", -1) != -1:
+                            generation_params["top_k"] = self.generation_config["top_k"]
+                        if self.generation_config.get("min_p", 0.0) != 0.0:
+                            generation_params["min_p"] = self.generation_config["min_p"]
+                        if self.generation_config.get("presence_penalty", 0.0) != 0.0:
+                            generation_params["presence_penalty"] = self.generation_config[
+                                "presence_penalty"
+                            ]
+                        if self.generation_config.get("frequency_penalty", 0.0) != 0.0:
+                            generation_params["frequency_penalty"] = self.generation_config[
+                                "frequency_penalty"
+                            ]
 
-                control_outputs = self.rep_control_pipeline(
-                    batch["prompt"],  # Use formatted prompts from dataset
-                    activations=activations,
-                    batch_size=self.batch_size,
-                    **generation_params,
+                        # Validate batch structure before accessing
+                        if "prompts" not in batch:
+                            raise ValueError(f"Batch missing required 'prompts' key. Available keys: {list(batch.keys())}")
+                        
+                        control_outputs = self.rep_control_pipeline(
+                            batch["prompts"],  # Use formatted prompts from dataset
+                            activations=activations,
+                            batch_size=self.batch_size,
+                            **generation_params,
+                        )
+                        end_time = time.time()
+                        pipeline_queue.put((i, batch, control_outputs))
+                        
+                    except Exception as batch_error:
+                        # Handle errors for individual batch processing
+                        # This catches AssertionError from memory_prompt_wrapper.augment_context
+                        # and other batch-level errors, ensuring the pipeline continues
+                        import traceback
+                        error_trace = traceback.format_exc()
+                        self.logger.error(
+                            f"🚨 BATCH ERROR in pipeline worker for batch {i}: {str(batch_error)}\n{error_trace}"
+                        )
+                        
+                        # Create an error batch result to maintain sequence integrity
+                        error_batch = {
+                            "prompts": [f"ERROR: Batch {i} failed - {str(batch_error)}"],
+                            "items": [MagicMock(id=f"error_{i}")],
+                            "ground_truths": ["ERROR"]
+                        }
+                        error_outputs = [{"generated_text": f"ERROR: {str(batch_error)}"}]
+                        
+                        pipeline_queue.put((i, error_batch, error_outputs))
+                        
+                        # Continue with next batch instead of crashing the worker thread
+                        self.logger.info(f"🔄 Continuing pipeline worker with next batch after error in batch {i}")
+
+            except Exception as worker_error:
+                # Handle catastrophic worker thread errors
+                import traceback
+                error_trace = traceback.format_exc()
+                self.logger.error(
+                    f"🚨 WORKER THREAD ERROR in pipeline_worker: {str(worker_error)}\n{error_trace}"
                 )
-                end_time = time.time()
-                pipeline_queue.put((i, batch, control_outputs))
-
-            pipeline_queue.put(None)  # Sentinel value
+                
+                # Put error marker in queue to prevent main thread from waiting forever
+                pipeline_queue.put(("WORKER_ERROR", str(worker_error), error_trace))
+            
+            finally:
+                # Always put sentinel value to signal completion, even after errors
+                pipeline_queue.put(None)  # Sentinel value
 
         # Start pipeline worker thread
         worker = Thread(target=pipeline_worker, name="PipelineWorker")
@@ -340,6 +383,15 @@ class EmotionMemoryExperiment:
 
                 if item is None:
                     break  # Worker finished
+
+                # Handle worker thread error case
+                if isinstance(item, tuple) and len(item) == 3 and item[0] == "WORKER_ERROR":
+                    error_type, error_msg, error_trace = item
+                    self.logger.error(
+                        f"🚨 PIPELINE WORKER FAILED: {error_msg}\n{error_trace}"
+                    )
+                    self.logger.info("🔄 Main thread continuing despite worker thread failure")
+                    break  # Exit main processing loop but don't crash experiment
 
                 batch_idx, batch, control_outputs = item
 
@@ -378,7 +430,18 @@ class EmotionMemoryExperiment:
         log_prefix = f"{time.time():.2f} [{current_thread().name}]"
 
         results = []
-        batch_prompts = batch["prompt"]
+        
+        # Validate batch structure with helpful error messages
+        required_keys = ["prompts", "items", "ground_truths"]
+        missing_keys = [key for key in required_keys if key not in batch]
+        if missing_keys:
+            raise ValueError(
+                f"Batch missing required keys: {missing_keys}. "
+                f"Available keys: {list(batch.keys())}. "
+                f"Expected structure from collate_fn: {required_keys}"
+            )
+        
+        batch_prompts = batch["prompts"]
         batch_items = batch["items"]  # BenchmarkItem objects from adapter
         batch_ground_truths = batch["ground_truths"]
 

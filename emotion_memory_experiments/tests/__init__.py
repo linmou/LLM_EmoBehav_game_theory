@@ -1,5 +1,5 @@
 # Test package for emotion memory experiments
 #
 # Test Coverage:
-# - test_error_handling.py: Validates robust error handling in MemoryExperimentSeriesRunner
-#   ensuring experiment series continue even when individual experiments fail
+# - test_memory_experiment_series_runner.py: Comprehensive test suite for MemoryExperimentSeriesRunner
+#   including BenchmarkConfig creation, expand_benchmark_configs, error handling, and robustness testing
