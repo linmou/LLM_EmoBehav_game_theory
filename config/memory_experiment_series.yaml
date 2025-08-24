@@ -61,7 +61,7 @@ loading_config:
   model_path: null  # Will be set by runner for each model
   gpu_memory_utilization: 0.90
   tensor_parallel_size: null  # Auto-detect
-  max_model_len: 32768
+  max_model_len: 127768
   enforce_eager: true
   quantization: null
   trust_remote_code: true

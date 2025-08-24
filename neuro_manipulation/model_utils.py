@@ -1,6 +1,5 @@
 import pickle
 
-from data_models import VLLMLoadingConfig
 from transformers import pipeline
 from vllm import LLM
 
