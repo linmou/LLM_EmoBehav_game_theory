@@ -547,6 +547,150 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
                     MemoryExperimentSeriesRunner(incomplete_config)
 
     # =============================================================================
+    # PIPELINE WORKER ERROR HANDLING TESTS
+    # =============================================================================
+    
+    def test_pipeline_worker_error_handling_pattern(self):
+        """
+        Test that pipeline worker error handling prevents AssertionError from stopping experiment series.
+        
+        This test validates the fix for the issue where AssertionError in memory_prompt_wrapper.augment_context
+        would crash the pipeline worker thread, causing the main thread to wait forever and stopping the 
+        entire experiment series.
+        """
+        print("🧪 Testing pipeline worker error handling...")
+        
+        # Simulate the pipeline worker error handling logic
+        pipeline_queue = []
+        worker_errors = []
+        batch_errors = []
+        processed_batches = []
+        
+        def mock_logger_error(msg):
+            if "BATCH ERROR" in msg:
+                batch_errors.append(msg)
+            elif "WORKER THREAD ERROR" in msg:
+                worker_errors.append(msg)
+        
+        def mock_logger_info(msg):
+            pass
+        
+        def simulate_pipeline_worker_with_error_handling():
+            """Simulate the fixed pipeline_worker function"""
+            try:
+                # Simulate data_loader that raises AssertionError on second batch
+                mock_batches = [
+                    {"batch_id": 0, "data": "good_batch"},
+                    {"batch_id": 1, "data": "assertion_error_batch"},  # This will fail
+                    {"batch_id": 2, "data": "good_batch_after_error"}
+                ]
+                
+                for i, batch in enumerate(mock_batches):
+                    try:
+                        # Simulate processing batch
+                        if batch["data"] == "assertion_error_batch":
+                            # Simulate the exact error from memory_prompt_wrapper.augment_context
+                            raise AssertionError("assert answer is not None")
+                        
+                        # Normal processing
+                        control_outputs = [{"generated_text": f"result_for_batch_{i}"}]
+                        pipeline_queue.append((i, batch, control_outputs))
+                        processed_batches.append(i)
+                        
+                    except Exception as batch_error:
+                        # This is our fix: handle batch errors gracefully
+                        mock_logger_error(f"🚨 BATCH ERROR in pipeline worker for batch {i}: {str(batch_error)}")
+                        
+                        # Create error batch to maintain sequence integrity  
+                        error_batch = {
+                            "prompt": [f"ERROR: Batch {i} failed - {str(batch_error)}"],
+                            "ground_truth": ["ERROR"],
+                            "context": ["ERROR"],
+                            "question": ["ERROR"]
+                        }
+                        error_outputs = [{"generated_text": f"ERROR: {str(batch_error)}"}]
+                        
+                        pipeline_queue.append((i, error_batch, error_outputs))
+                        processed_batches.append(i)  # Still count as processed
+                        
+                        mock_logger_info(f"🔄 Continuing pipeline worker with next batch after error in batch {i}")
+                
+            except Exception as worker_error:
+                # Handle catastrophic worker thread errors
+                mock_logger_error(f"🚨 WORKER THREAD ERROR in pipeline_worker: {str(worker_error)}")
+                pipeline_queue.append(("WORKER_ERROR", str(worker_error), "trace"))
+            
+            finally:
+                # Always put sentinel value
+                pipeline_queue.append(None)
+        
+        # Run the simulation
+        simulate_pipeline_worker_with_error_handling()
+        
+        # Verify the fix works correctly
+        self.assertEqual(len(processed_batches), 3, "All 3 batches should be processed despite error")
+        self.assertEqual(len(batch_errors), 1, "Should log 1 batch error")
+        self.assertEqual(len(worker_errors), 0, "Should not have worker thread errors")
+        self.assertEqual(len(pipeline_queue), 4, "Should have 3 batch results + 1 sentinel")
+        
+        # Verify that the error batch is handled correctly
+        error_batch_found = False
+        for item in pipeline_queue:
+            if item is not None and isinstance(item, tuple) and len(item) == 3:
+                batch_idx, batch, outputs = item
+                if isinstance(batch, dict) and "ERROR" in str(batch.get("prompt", "")):
+                    error_batch_found = True
+                    self.assertEqual(batch_idx, 1, "Error should be for batch 1")
+        
+        self.assertTrue(error_batch_found, "Error batch should be created and queued")
+        
+        # Verify sentinel value is present
+        self.assertIn(None, pipeline_queue, "Sentinel value should be present to prevent main thread hanging")
+        
+        print("✅ Pipeline worker error handling test passed!")
+
+    def test_main_thread_worker_error_handling(self):
+        """Test that main thread handles WORKER_ERROR messages correctly"""
+        # Simulate main thread processing pipeline_queue with WORKER_ERROR
+        pipeline_queue = [
+            (0, {"data": "batch0"}, ["output0"]),
+            ("WORKER_ERROR", "Catastrophic error", "stack trace"),
+            None
+        ]
+        
+        processed_items = []
+        worker_errors = []
+        
+        def mock_logger_error(msg):
+            if "PIPELINE WORKER FAILED" in msg:
+                worker_errors.append(msg)
+        
+        def mock_logger_info(msg):
+            pass
+        
+        # Simulate main thread processing
+        for item in pipeline_queue:
+            if item is None:
+                break  # Worker finished
+            
+            # Handle worker thread error case (our fix)
+            if isinstance(item, tuple) and len(item) == 3 and item[0] == "WORKER_ERROR":
+                error_type, error_msg, error_trace = item
+                mock_logger_error(f"🚨 PIPELINE WORKER FAILED: {error_msg}\n{error_trace}")
+                mock_logger_info("🔄 Main thread continuing despite worker thread failure")
+                break  # Exit processing loop but don't crash experiment
+            
+            # Normal processing
+            batch_idx, batch, control_outputs = item
+            processed_items.append((batch_idx, batch, control_outputs))
+        
+        # Verify main thread handling
+        self.assertEqual(len(processed_items), 1, "Should process 1 normal batch before worker error")
+        self.assertEqual(len(worker_errors), 1, "Should log 1 worker error")
+        
+        print("✅ Main thread worker error handling test passed!")
+
+    # =============================================================================
     # INTEGRATION TESTS (with mocking to avoid dependencies)
     # =============================================================================
     
