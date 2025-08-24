@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+"""
+Test file for import coverage - ensures all modules can be imported.
+
+This test suite prevents import regressions during refactoring by:
+1. Testing that all Python modules can be imported without errors
+2. Verifying that data model exports match the expected API
+3. Catching cases where imports reference non-existent classes
+
+This would have caught the LoadingConfig→VLLMLoadingConfig refactoring issues immediately.
+"""
+import unittest
+import importlib
+import sys
+from pathlib import Path
+
+
+class TestImportCoverage(unittest.TestCase):
+    """Test that all Python files in the project can be imported without errors"""
+    
+    def test_memory_experiment_series_runner_import(self):
+        """Test that memory_experiment_series_runner can be imported"""
+        # This is the Red phase - this test should FAIL before we fix the import
+        try:
+            import emotion_memory_experiments.memory_experiment_series_runner
+            self.assertTrue(True, "Import should succeed after fix")
+        except AttributeError as e:
+            if "LoadingConfig" in str(e):
+                self.fail(f"LoadingConfig import error (expected during Red phase): {e}")
+            else:
+                raise
+        except ImportError as e:
+            self.fail(f"Unexpected import error: {e}")
+    
+    def test_run_emotion_memory_experiment_import(self):
+        """Test that run_emotion_memory_experiment can be imported"""
+        try:
+            import emotion_memory_experiments.run_emotion_memory_experiment
+            self.assertTrue(True, "Import should succeed after fix")
+        except AttributeError as e:
+            if "LoadingConfig" in str(e):
+                self.fail(f"LoadingConfig import error (expected during Red phase): {e}")
+            else:
+                raise
+        except ImportError as e:
+            self.fail(f"Unexpected import error: {e}")
+    
+    def test_data_models_exports(self):
+        """Test that data_models exports the correct classes after refactoring"""
+        from emotion_memory_experiments.data_models import (
+            VLLMLoadingConfig,
+            BenchmarkConfig, 
+            ExperimentConfig,
+            create_vllm_loading_config,
+            create_benchmark_config
+        )
+        
+        # These should exist
+        self.assertTrue(hasattr(VLLMLoadingConfig, 'to_vllm_kwargs'))
+        self.assertTrue(callable(create_vllm_loading_config))
+        self.assertTrue(callable(create_benchmark_config))
+        
+        # Old LoadingConfig should not exist
+        try:
+            from emotion_memory_experiments.data_models import LoadingConfig
+            self.fail("LoadingConfig should not exist after refactoring")
+        except ImportError:
+            pass  # Expected - LoadingConfig shouldn't exist
+    
+    def test_loading_config_instantiation_coverage(self):
+        """Test that files using LoadingConfig() can create instances properly"""
+        # Import the factory function
+        from emotion_memory_experiments.data_models import create_vllm_loading_config
+        
+        # Test the factory function works (what the files should be using)
+        config = create_vllm_loading_config(
+            model_path="/test/model",
+            gpu_memory_utilization=0.85,
+            max_model_len=16384
+        )
+        
+        self.assertEqual(config.model_path, "/test/model")
+        self.assertEqual(config.gpu_memory_utilization, 0.85)
+        self.assertEqual(config.max_model_len, 16384)
+        
+        # Test to_vllm_kwargs works
+        kwargs = config.to_vllm_kwargs()
+        self.assertIn("model", kwargs)
+        self.assertEqual(kwargs["model"], "/test/model")
+
+
+if __name__ == "__main__":
+    unittest.main()

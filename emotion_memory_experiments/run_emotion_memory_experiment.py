@@ -19,12 +19,16 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from neuro_manipulation.repe import repe_pipeline_registry 
-from emotion_memory_experiments.benchmark_adapters import get_adapter
+from emotion_memory_experiments.dataset_factory import (
+    create_dataset_from_config,
+    create_vllm_config_from_dict,
+    create_benchmark_config_from_dict,
+    create_experiment_config_from_dict,
+)
 from emotion_memory_experiments.data_models import (
     BenchmarkConfig,
     BenchmarkItem,
     ExperimentConfig,
-    LoadingConfig,
 )
 from emotion_memory_experiments.experiment import EmotionMemoryExperiment
 
@@ -49,39 +53,13 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
     if not benchmarks:
         raise ValueError("No benchmarks specified in configuration")
 
-    # Take the first benchmark
+    # Take the first benchmark and create configs using factory functions
     benchmark_name, benchmark_data = next(iter(benchmarks.items()))
-    benchmark_config = BenchmarkConfig(
-        name=benchmark_data["name"],
-        data_path=Path(benchmark_data["data_path"]),
-        task_type=benchmark_data["task_type"],
-        evaluation_method=benchmark_data["evaluation_method"],
-        sample_limit=benchmark_data.get("sample_limit"),
-    )
-
-    # Get model path
     model_path = config_dict["model"]["model_path"]
     
-    # Create loading config if specified
-    loading_config = None
-    if "loading_config" in config_dict:
-        loading_cfg_dict = config_dict["loading_config"]
-        loading_config = LoadingConfig(
-            model_path=loading_cfg_dict.get("model_path", model_path),  # Use from loading_config or fallback to model section
-            gpu_memory_utilization=loading_cfg_dict.get("gpu_memory_utilization", 0.90),
-            tensor_parallel_size=loading_cfg_dict.get("tensor_parallel_size"),
-            max_model_len=loading_cfg_dict.get("max_model_len", 32768),
-            enforce_eager=loading_cfg_dict.get("enforce_eager", True),
-            quantization=loading_cfg_dict.get("quantization"),
-            trust_remote_code=loading_cfg_dict.get("trust_remote_code", True),
-            dtype=loading_cfg_dict.get("dtype", "float16"),
-            seed=loading_cfg_dict.get("seed", 42),
-            disable_custom_all_reduce=loading_cfg_dict.get("disable_custom_all_reduce", False),
-            # Truncation settings
-            enable_auto_truncation=loading_cfg_dict.get("enable_auto_truncation", True),
-            truncation_strategy=loading_cfg_dict.get("truncation_strategy", "right"),
-            preserve_ratio=loading_cfg_dict.get("preserve_ratio", 0.95),
-        )
+    # Use factory functions for consistent config creation
+    benchmark_config = create_benchmark_config_from_dict(benchmark_data, config_dict)
+    loading_config = create_vllm_config_from_dict(config_dict, model_path)
 
     # Create main experiment config
     exp_config = ExperimentConfig(
@@ -210,8 +188,8 @@ def run_experiment(
 
             # Show what would be tested
             try:
-                adapter = get_adapter(exp_config.benchmark)
-                dataset = adapter.create_dataset()
+                from .dataset_factory import create_dataset_from_config
+                dataset = create_dataset_from_config(exp_config.benchmark)
                 items = len(dataset)
                 conditions = (
                     len(exp_config.emotions) * len(exp_config.intensities) * items

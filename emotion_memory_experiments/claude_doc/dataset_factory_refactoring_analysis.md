@@ -498,14 +498,129 @@ class InfiniteBenchDataset:
 - Specialized classes reduce memory overhead
 - Dynamic dispatch has minimal runtime cost
 
+## Recent Configuration Refactoring (VLLMLoadingConfig Separation)
+
+### **Problem: Mixed Concerns in LoadingConfig**
+The original `LoadingConfig` mixed infrastructure concerns (vLLM model loading) with application concerns (context truncation):
+
+```python
+@dataclass 
+class LoadingConfig:  # OLD - Mixed concerns
+    # vLLM Infrastructure  
+    model_path: str
+    gpu_memory_utilization: float
+    tensor_parallel_size: Optional[int]
+    
+    # Context Processing (Application logic)
+    enable_auto_truncation: bool = True  # Wrong place!
+    truncation_strategy: str = "middle"   # Wrong place!
+```
+
+### **Solution: Separation of Concerns**
+
+#### **VLLMLoadingConfig (Infrastructure)**
+```python
+@dataclass
+class VLLMLoadingConfig:
+    """Pure vLLM model loading configuration"""
+    model_path: str
+    gpu_memory_utilization: float
+    tensor_parallel_size: Optional[int]
+    max_model_len: int
+    enforce_eager: bool
+    quantization: Optional[str]
+    trust_remote_code: bool
+    dtype: str
+    seed: int
+    disable_custom_all_reduce: bool
+    additional_vllm_kwargs: Dict[str, Any]  # Extensible!
+    
+    def to_vllm_kwargs(self) -> Dict[str, Any]:
+        """Convert to vLLM constructor arguments"""
+        return {k: v for k, v in asdict(self).items() 
+                if k != "additional_vllm_kwargs"} | self.additional_vllm_kwargs
+```
+
+#### **BenchmarkConfig (Application Logic)**  
+```python
+@dataclass
+class BenchmarkConfig:
+    """Dataset and context processing configuration"""
+    name: str
+    data_path: Path
+    task_type: str
+    sample_limit: Optional[int]
+    # Moved from LoadingConfig - proper separation!
+    enable_auto_truncation: bool
+    truncation_strategy: str
+    augmentation_config: Optional[AnswerAugmentationConfig]
+```
+
+### **Factory Functions for Safe Instantiation**
+```python
+def create_vllm_config_from_dict(base_config: Dict, model_name: str) -> VLLMLoadingConfig:
+    """Factory function with safe defaults - no dataclass defaults!"""
+    return VLLMLoadingConfig(
+        model_path=base_config.get("model_path", model_name),
+        gpu_memory_utilization=base_config.get("gpu_memory_utilization", 0.90),
+        tensor_parallel_size=base_config.get("tensor_parallel_size", 1),
+        max_model_len=base_config.get("max_model_len", 8192),
+        enforce_eager=base_config.get("enforce_eager", True),
+        quantization=base_config.get("quantization", None),
+        trust_remote_code=base_config.get("trust_remote_code", True),
+        dtype=base_config.get("dtype", "half"),
+        seed=base_config.get("seed", 0),
+        disable_custom_all_reduce=base_config.get("disable_custom_all_reduce", True),
+        additional_vllm_kwargs=base_config.get("additional_vllm_kwargs", {})
+    )
+```
+
+### **Benefits of Configuration Separation**
+
+#### **1. Clear Responsibility Boundaries**
+- **VLLMLoadingConfig**: Only vLLM model instantiation parameters
+- **BenchmarkConfig**: Only dataset processing and context handling
+- **No cross-cutting concerns**: Each config class has single responsibility
+
+#### **2. Extensibility Without Modification**
+```python
+# Add new vLLM parameters without code changes
+config = create_vllm_config_from_dict({
+    "model_path": "/path/to/model",
+    "additional_vllm_kwargs": {
+        "speculative_model": "/path/to/draft/model",  # New vLLM feature
+        "num_speculative_tokens": 5,                  # Future parameter  
+        "custom_sampling_params": {"top_k": 40}       # Any new option
+    }
+})
+```
+
+#### **3. Production Safety**
+- **No dataclass defaults**: Prevents accidental missing configurations
+- **Factory functions**: Provide safe defaults at instantiation time  
+- **Type safety**: mypy catches configuration errors at build time
+
+### **Integration with Dataset Factory**
+The configuration factory functions are consolidated in `dataset_factory.py`:
+```python
+# emotion_memory_experiments/dataset_factory.py
+def create_vllm_config_from_dict(...) -> VLLMLoadingConfig: ...
+def create_benchmark_config_from_dict(...) -> BenchmarkConfig: ... 
+def create_experiment_config_from_dict(...) -> ExperimentConfig: ...
+```
+
+This maintains the single-file approach while providing clean configuration creation throughout the system.
+
 ## Conclusion
 
-The refactoring from monolithic if-else chains to registry-based factory pattern represents a textbook example of improving software architecture through design patterns. The transformation achieved:
+The refactoring from monolithic if-else chains to registry-based factory pattern, combined with proper separation of configuration concerns, represents a textbook example of improving software architecture through design patterns. The transformation achieved:
 
 - **97% reduction** in maintenance complexity
 - **O(n) → O(1)** performance improvement for dataset selection  
 - **Complete elimination** of if-else branching logic
 - **Runtime extensibility** through dynamic registration
 - **Improved testability** through specialized classes
+- **Clean separation of concerns** between infrastructure and application logic
+- **Production safety** through factory functions instead of dataclass defaults
 
 This refactoring demonstrates how thoughtful application of design patterns can transform complex, unmaintainable code into clean, extensible architecture while preserving all existing functionality. The registry-based factory pattern proves particularly valuable for systems that need to support multiple similar but distinct behaviors, making it an excellent architectural choice for benchmark evaluation frameworks.

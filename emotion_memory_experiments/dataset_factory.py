@@ -24,7 +24,13 @@ Example Usage:
 from typing import Dict, Type, Any, List, Optional, Callable
 from pathlib import Path
 
-from .data_models import BenchmarkConfig
+from .data_models import (
+    BenchmarkConfig, 
+    VLLMLoadingConfig, 
+    ExperimentConfig,
+    create_vllm_loading_config,
+    create_benchmark_config
+)
 from .datasets.base import BaseBenchmarkDataset
 
 # Import all specialized dataset classes
@@ -196,11 +202,69 @@ def get_dataset_class(benchmark_name: str) -> Optional[Type[BaseBenchmarkDataset
     return DATASET_REGISTRY.get(normalized_name)
 
 
-# Alternative factory function name for backward compatibility
-def create_specialized_dataset(config: BenchmarkConfig, **kwargs) -> BaseBenchmarkDataset:
-    """
-    Alternative name for create_dataset_from_config for backward compatibility.
+# Config creation functions consolidated here (no backward compatibility needed)
+
+def create_vllm_config_from_dict(
+    config_dict: Dict[str, Any], 
+    model_path: str
+) -> Optional[VLLMLoadingConfig]:
+    """Create VLLMLoadingConfig from configuration dictionary."""
+    if "loading_config" not in config_dict:
+        return None
+        
+    loading_cfg_dict = config_dict["loading_config"]
+    return create_vllm_loading_config(
+        model_path=loading_cfg_dict.get("model_path", model_path),
+        gpu_memory_utilization=loading_cfg_dict.get("gpu_memory_utilization", 0.90),
+        tensor_parallel_size=loading_cfg_dict.get("tensor_parallel_size"),
+        max_model_len=loading_cfg_dict.get("max_model_len", 32768),
+        enforce_eager=loading_cfg_dict.get("enforce_eager", True),
+        quantization=loading_cfg_dict.get("quantization"),
+        trust_remote_code=loading_cfg_dict.get("trust_remote_code", True),
+        dtype=loading_cfg_dict.get("dtype", "float16"),
+        seed=loading_cfg_dict.get("seed", 42),
+        disable_custom_all_reduce=loading_cfg_dict.get("disable_custom_all_reduce", False),
+        additional_vllm_kwargs=loading_cfg_dict.get("additional_vllm_kwargs", {}),
+    )
+
+
+def create_benchmark_config_from_dict(
+    benchmark_data: Dict[str, Any],
+    config_dict: Dict[str, Any]
+) -> BenchmarkConfig:
+    """Create BenchmarkConfig from benchmark data and global config."""
+    # Truncation settings from loading_config section (proper separation of concerns)
+    loading_cfg_dict = config_dict.get("loading_config", {})
     
-    This is an alias for create_dataset_from_config with identical functionality.
-    """
-    return create_dataset_from_config(config, **kwargs)
+    return create_benchmark_config(
+        name=benchmark_data["name"],
+        task_type=benchmark_data["task_type"],
+        data_path=Path(benchmark_data["data_path"]),
+        sample_limit=benchmark_data.get("sample_limit"),
+        augmentation_config=benchmark_data.get("augmentation_config"),
+        enable_auto_truncation=loading_cfg_dict.get("enable_auto_truncation", False),
+        truncation_strategy=loading_cfg_dict.get("truncation_strategy", "right"),
+        preserve_ratio=loading_cfg_dict.get("preserve_ratio", 0.8),
+    )
+
+
+def create_experiment_config_from_dict(
+    config_dict: Dict[str, Any],
+    model_path: str,
+    benchmark_config: BenchmarkConfig,
+    loading_config: Optional[VLLMLoadingConfig] = None
+) -> ExperimentConfig:
+    """Create ExperimentConfig from configuration dictionary."""
+    return ExperimentConfig(
+        model_path=model_path,
+        emotions=config_dict["emotions"],
+        intensities=config_dict["intensities"],
+        benchmark=benchmark_config,
+        output_dir=config_dict.get("output_dir", "results/memory_experiments"),
+        batch_size=config_dict.get("batch_size", 4),
+        generation_config=config_dict.get("generation_config"),
+        loading_config=loading_config,
+        repe_eng_config=config_dict.get("repe_eng_config"),
+        max_evaluation_workers=config_dict.get("max_evaluation_workers", 4),
+        pipeline_queue_size=config_dict.get("pipeline_queue_size", 2),
+    )

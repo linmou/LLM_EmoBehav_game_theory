@@ -596,64 +596,26 @@ def load_model_tokenizer(
     model = None
     if from_vllm:
         try:
-            # Check if we have a VLLMLoadingConfig object with to_vllm_kwargs method
+            # Use VLLMLoadingConfig.to_vllm_kwargs() method
             if loading_config and hasattr(loading_config, 'to_vllm_kwargs'):
-                # Use the new VLLMLoadingConfig.to_vllm_kwargs() method
                 vllm_kwargs = loading_config.to_vllm_kwargs()
                 
                 # Auto-detect tensor parallel size if not specified
                 if vllm_kwargs.get("tensor_parallel_size") is None:
                     vllm_kwargs["tensor_parallel_size"] = get_optimal_tensor_parallel_size(model_name_or_path)
-                    
             else:
-                # Legacy support for dict-based config or old LoadingConfig
-                if loading_config:
-                    # Handle both dict and old LoadingConfig object
-                    if hasattr(loading_config, '__dict__'):
-                        config = loading_config.__dict__
-                    else:
-                        config = loading_config
-                else:
-                    config = {}
-                
-                # Use loading_config values with defaults
-                gpu_memory_utilization = config.get("gpu_memory_utilization", 0.90)
-                tensor_parallel_size = config.get("tensor_parallel_size")
-                max_model_len = config.get("max_model_len", 32768)
-                enforce_eager = config.get("enforce_eager", True)
-                quantization = config.get("quantization")
-                trust_remote_code = config.get("trust_remote_code", True)
-                dtype = config.get("dtype", "float16")
-                seed = config.get("seed", 42)
-                disable_custom_all_reduce = config.get("disable_custom_all_reduce", False)
-                
-                # Auto-detect tensor parallel size if not specified
-                if tensor_parallel_size is None:
-                    tensor_parallel_size = get_optimal_tensor_parallel_size(model_name_or_path)
-                
-                # Check if this is an AWQ model (override quantization if detected)
-                is_awq_model = (
-                    "awq" in model_name_or_path.lower() or "AWQ" in model_name_or_path
-                )
-                if is_awq_model and not quantization:
-                    quantization = "awq"
-
-                # Build vLLM kwargs
+                # No loading config - use defaults
                 vllm_kwargs = {
                     "model": model_name_or_path,
-                    "tensor_parallel_size": tensor_parallel_size,
-                    "max_model_len": max_model_len,
-                    "trust_remote_code": trust_remote_code,
-                    "enforce_eager": enforce_eager,
-                    "gpu_memory_utilization": gpu_memory_utilization,
-                    "dtype": dtype,
-                    "seed": seed,
-                    "disable_custom_all_reduce": disable_custom_all_reduce,
+                    "tensor_parallel_size": get_optimal_tensor_parallel_size(model_name_or_path),
+                    "max_model_len": 32768,
+                    "trust_remote_code": True,
+                    "enforce_eager": True,
+                    "gpu_memory_utilization": 0.90,
+                    "dtype": "float16",
+                    "seed": 42,
+                    "disable_custom_all_reduce": False,
                 }
-                
-                # Add quantization if specified
-                if quantization:
-                    vllm_kwargs["quantization"] = quantization
             
             model = LLM(**vllm_kwargs)
             
