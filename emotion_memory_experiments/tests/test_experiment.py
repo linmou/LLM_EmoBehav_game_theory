@@ -51,7 +51,8 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Setup mocks
         mock_model = MagicMock()
         mock_tokenizer = MagicMock()
-        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat")
+        mock_processor = MagicMock()
+        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat", mock_processor)
         mock_model_detector.num_layers.return_value = 12
         mock_load_emotion_readers.return_value = {"anger": MagicMock(), "happiness": MagicMock()}
         mock_get_pipeline.return_value = MockRepControlPipeline(["test response"])
@@ -66,7 +67,6 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Verify initialization
         self.assertEqual(experiment.config, config)
         self.assertIsNotNone(experiment.logger)
-        self.assertIsNotNone(experiment.benchmark_adapter)
         self.assertIsNotNone(experiment.emotion_rep_readers)
         self.assertIsNotNone(experiment.rep_control_pipeline)
         
@@ -85,7 +85,7 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Setup mocks
         mock_model = MagicMock()
         mock_tokenizer = MagicMock()
-        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat")
+        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat", MagicMock())
         mock_model_detector.num_layers.return_value = 12
         
         # Mock emotion reader
@@ -111,13 +111,11 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Mock is_vllm to True since we're using MockOutput
         experiment.is_vllm = True
         
-        # Get test data
-        benchmark_data = experiment.benchmark_adapter.get_data()
+        # Build dataloader instead of using benchmark_adapter
+        dataloader = experiment.build_dataloader()
         
-        # Process emotion condition
-        results = experiment._process_emotion_condition(
-            benchmark_data, mock_rep_reader, "anger", 1.0
-        )
+        # Process emotion condition using dataloader
+        results = experiment._infer_with_activation(mock_rep_reader, dataloader)
         
         # Verify results
         self.assertEqual(len(results), 3)
@@ -138,7 +136,8 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Setup mocks (same as above)
         mock_model = MagicMock()
         mock_tokenizer = MagicMock()
-        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat")
+        mock_processor = MagicMock()
+        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat", mock_processor)
         mock_model_detector.num_layers.return_value = 12
         mock_load_emotion_readers.return_value = {"anger": MagicMock()}
         
@@ -156,13 +155,11 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Mock is_vllm to True since we're using MockOutput
         experiment.is_vllm = True
         
-        # Get test data
-        benchmark_data = experiment.benchmark_adapter.get_data()
+        # Build dataloader instead of using benchmark_adapter
+        dataloader = experiment.build_dataloader()
         
-        # Process neutral condition
-        results = experiment._process_emotion_condition(
-            benchmark_data, None, "neutral", 0.0
-        )
+        # Process neutral condition using dataloader
+        results = experiment._infer_with_activation(None, dataloader)
         
         # Verify results
         self.assertEqual(len(results), 1)
@@ -181,7 +178,7 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Setup mocks
         mock_model = MagicMock()
         mock_tokenizer = MagicMock()
-        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat")
+        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat", MagicMock())
         mock_model_detector.num_layers.return_value = 12
         mock_load_emotion_readers.return_value = {"anger": MagicMock()}
         mock_get_pipeline.return_value = MockRepControlPipeline(["test"])
@@ -247,7 +244,7 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Setup mocks
         mock_model = MagicMock()
         mock_tokenizer = MagicMock()
-        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat")
+        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat", MagicMock())
         mock_model_detector.num_layers.return_value = 12
         
         # Mock emotion reader
@@ -296,7 +293,7 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Setup mocks
         mock_model = MagicMock()
         mock_tokenizer = MagicMock()
-        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat")
+        mock_setup_model.return_value = (mock_model, mock_tokenizer, "chat", MagicMock())
         mock_model_detector.num_layers.return_value = 12
         mock_load_emotion_readers.return_value = {"anger": MagicMock()}
         mock_get_pipeline.return_value = MockRepControlPipeline(["test"])
@@ -311,14 +308,11 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         # Mock is_vllm to True since we're using MockOutput
         experiment.is_vllm = True
         
-        # Mock adapter to raise evaluation error
-        with patch.object(experiment.benchmark_adapter, 'evaluate_response', 
-                         side_effect=Exception("Evaluation failed")):
-            
-            benchmark_data = experiment.benchmark_adapter.get_data()
-            results = experiment._process_emotion_condition(
-                benchmark_data, None, "neutral", 0.0
-            )
+        # Mock dataset evaluation to raise error
+        with patch.object(experiment, 'dataset') as mock_dataset:
+            mock_dataset.evaluate_response.side_effect = Exception("Evaluation failed")
+            dataloader = experiment.build_dataloader()
+            results = experiment._infer_with_activation(None, dataloader)
             
             # Should still return results with score 0.0
             self.assertEqual(len(results), 1)

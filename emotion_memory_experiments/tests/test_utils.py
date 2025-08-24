@@ -177,8 +177,11 @@ def create_mock_benchmark_config(task_type: str = 'passkey', num_items: int = 10
         name='infinitebench' if task_type != 'locomo' else 'locomo',
         data_path=temp_file,
         task_type=task_type,
-        evaluation_method=f'get_score_one_{task_type}',
-        sample_limit=num_items
+        sample_limit=num_items,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=0.8
     )
 
 
@@ -198,7 +201,11 @@ def create_mock_experiment_config(task_type: str = 'passkey', num_items: int = 5
             "max_new_tokens": 50,
             "do_sample": False,
             "top_p": 0.9
-        }
+        },
+        loading_config=None,
+        repe_eng_config=None,
+        max_evaluation_workers=2,
+        pipeline_queue_size=1
     )
 
 

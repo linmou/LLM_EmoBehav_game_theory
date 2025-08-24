@@ -27,11 +27,12 @@ from neuro_manipulation.model_utils import (
 )
 from neuro_manipulation.repe.pipelines import get_pipeline
 
+from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
+
 # NEW: Import directly from the specialized dataset factory
 from .dataset_factory import create_dataset_from_config
-from .truncation_utils import calculate_max_context_length
-from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 from .memory_prompt_wrapper import get_memory_prompt_wrapper
+from .truncation_utils import calculate_max_context_length
 
 
 class EmotionMemoryExperiment:
@@ -82,7 +83,9 @@ class EmotionMemoryExperiment:
         )
         self.logger.info(f"Log file created at: {log_file}")
 
-        self.enable_thinking = bool(self.generation_config.get("enable_thinking", False))
+        self.enable_thinking = bool(
+            self.generation_config.get("enable_thinking", False)
+        )
 
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
         self.repe_config = get_repe_eng_config(
@@ -169,69 +172,54 @@ class EmotionMemoryExperiment:
         # Batch size for DataLoader
         self.batch_size = config.batch_size
 
-        # Calculate max context length for truncation
+        # Calculate max context length for truncation (now from benchmark config)
         self.max_context_length = None
         self.truncation_strategy = "right"
-        if self.loading_config and self.loading_config.enable_auto_truncation:
+        if config.benchmark.enable_auto_truncation:
+            if self.loading_config is None:
+                raise ValueError("Truncation enabled but no loading_config provided for max_model_len")
+                
             self.max_context_length = calculate_max_context_length(
                 self.loading_config.max_model_len,
-                self.loading_config.preserve_ratio,
+                config.benchmark.preserve_ratio,
                 prompt_overhead=200,  # Reserve for prompt template
             )
-            self.truncation_strategy = self.loading_config.truncation_strategy
+            self.truncation_strategy = config.benchmark.truncation_strategy
             self.logger.info(
                 f"Context truncation enabled: max_length={self.max_context_length}, "
                 f"strategy='{self.truncation_strategy}'"
             )
 
     def build_dataloader(self) -> DataLoader:
-        """Build DataLoader using adapter (PROPER ARCHITECTURE)"""
+        """
+        Build DataLoader with proper dataset integration.
 
+        Creates dataset using factory pattern and configures DataLoader
+        to use the dataset's specialized collate function.
+        """
         self.logger.info(
-            f"Creating benchmark dataset via adapter with sample_num={self.sample_num if self.sample_num is not None else 'all'}"
+            f"Creating benchmark dataset with sample_num={self.sample_num if self.sample_num is not None else 'all'}"
         )
 
-        # Pass truncation parameters if enabled
-        dataloader_kwargs = {
-            "batch_size": self.batch_size,
-            "shuffle": False,
-            "prompt_wrapper": self.memory_prompt_wrapper_partial,
-            "collate_fn": self._collate_memory_benchmarks,
-        }
-
-        if self.max_context_length:
-            dataloader_kwargs.update(
-                {
-                    "max_context_length": self.max_context_length,
-                    "tokenizer": self.tokenizer,
-                    "truncation_strategy": self.truncation_strategy,
-                }
-            )
-
-        # Create dataset with proper parameters
+        # Create dataset with all required parameters
         self.dataset = create_dataset_from_config(
             self.config.benchmark,
             prompt_wrapper=self.memory_prompt_wrapper_partial,
             max_context_length=self.max_context_length,
             tokenizer=self.tokenizer,
-            truncation_strategy=self.truncation_strategy
+            truncation_strategy=self.truncation_strategy,
         )
-        
-        # Create DataLoader
-        data_loader = DataLoader(self.dataset, collate_fn=self.dataset.collate_fn, **dataloader_kwargs)
 
-        return data_loader
+        # Use dataset's specialized collate function - each dataset type
+        # has specific collation requirements for different benchmarks
+        dataloader = DataLoader(
+            self.dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            collate_fn=self.dataset.collate_fn,
+        )
 
-    def _collate_memory_benchmarks(self, batch):
-        """Custom collate function for adapter datasets"""
-        return {
-            "prompt": [item["prompt"] for item in batch],
-            "items": [item["item"] for item in batch],
-            "contexts": [item["context"] for item in batch],
-            "questions": [item["question"] for item in batch],
-            "ground_truths": [item["ground_truth"] for item in batch],
-            "metadata": [item.get("metadata", {}) for item in batch],
-        }
+        return dataloader
 
     def run_experiment(self) -> pd.DataFrame:
         """Run the complete emotion memory experiment"""
