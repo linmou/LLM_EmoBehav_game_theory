@@ -119,10 +119,16 @@ def expand_benchmark_configs_real(benchmarks):
         task_type = benchmark_config.get("task_type", "")
         
         if is_pattern_task_type(task_type):
-            # Use REAL BenchmarkConfig class and method
-            benchmark = BenchmarkConfig(
+            # Use REAL BenchmarkConfig class and method with factory function
+            benchmark = data_models.create_benchmark_config(
                 name=benchmark_config["name"],
-                task_type=task_type
+                task_type=task_type,
+                data_path=data_models.Path("dummy.jsonl"),  # Temporary path for pattern discovery
+                sample_limit=benchmark_config.get("sample_limit"),
+                augmentation_config=benchmark_config.get("augmentation_config"),
+                enable_auto_truncation=benchmark_config.get("enable_auto_truncation", False),
+                truncation_strategy=benchmark_config.get("truncation_strategy", "right"),
+                preserve_ratio=benchmark_config.get("preserve_ratio", 0.8)
             )
             
             try:
