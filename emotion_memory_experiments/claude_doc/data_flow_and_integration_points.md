@@ -104,8 +104,8 @@ def _parse_config(yaml_config: Dict[str, Any]) -> ExperimentConfig:
 
 #### **Output**: Structured Configuration Objects
 - `ExperimentConfig`: High-level experiment parameters
-- `BenchmarkConfig`: Dataset-specific configuration
-- `LoadingConfig`: Model loading parameters
+- `BenchmarkConfig`: Dataset-specific configuration with context processing settings
+- `VLLMLoadingConfig`: Model loading parameters with extensible vLLM arguments
 - `Generation Config`: Inference parameters
 
 ### **Stage 2: Dataset Factory and Specialization**
@@ -576,8 +576,8 @@ def _save_experiment_config(self):
 ```python
 # YAML String → Python Objects → Experiment State
 yaml_config → ExperimentConfig → EmotionMemoryExperiment
-yaml_config → BenchmarkConfig → Specialized Dataset
-yaml_config → LoadingConfig → Model Loading Parameters
+yaml_config → BenchmarkConfig → Specialized Dataset (with context processing)
+yaml_config → VLLMLoadingConfig → Model Loading Parameters (with extensible vLLM args)
 ```
 
 ### **Raw Data → Structured Items**

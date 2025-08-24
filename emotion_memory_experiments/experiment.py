@@ -530,7 +530,7 @@ class EmotionMemoryExperiment:
 
         self.logger.info(f"Experiment configuration saved to {config_filename}")
 
-    def _serialize_loading_config(self) -> dict:
+    def _serialize_loading_config(self) -> dict | None:
         """Convert LoadingConfig to a serializable dictionary"""
         if self.loading_config is None:
             return None
@@ -546,9 +546,9 @@ class EmotionMemoryExperiment:
             "dtype": self.loading_config.dtype,
             "seed": self.loading_config.seed,
             "disable_custom_all_reduce": self.loading_config.disable_custom_all_reduce,
-            "enable_auto_truncation": self.loading_config.enable_auto_truncation,
-            "truncation_strategy": self.loading_config.truncation_strategy,
-            "preserve_ratio": self.loading_config.preserve_ratio,
+            "enable_auto_truncation": self.config.benchmark.enable_auto_truncation,
+            "truncation_strategy": self.config.benchmark.truncation_strategy,
+            "preserve_ratio": self.config.benchmark.preserve_ratio,
         }
 
     def run_sanity_check(self, sample_limit: int = 5) -> pd.DataFrame:

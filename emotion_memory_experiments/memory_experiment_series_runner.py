@@ -39,7 +39,45 @@ else:
 
 BenchmarkConfig = _data_models.BenchmarkConfig
 ExperimentConfig = _data_models.ExperimentConfig
-LoadingConfig = _data_models.LoadingConfig
+VLLMLoadingConfig = _data_models.VLLMLoadingConfig
+create_vllm_loading_config = _data_models.create_vllm_loading_config
+create_benchmark_config = _data_models.create_benchmark_config
+
+# Import factory functions directly without relative imports  
+def create_benchmark_config_from_dict(benchmark_data, config_dict):
+    """Create BenchmarkConfig from benchmark data and global config."""
+    loading_cfg_dict = config_dict.get("loading_config", {})
+    
+    return create_benchmark_config(
+        name=benchmark_data["name"],
+        task_type=benchmark_data["task_type"],
+        data_path=Path(benchmark_data["data_path"]) if "data_path" in benchmark_data else None,
+        sample_limit=benchmark_data.get("sample_limit"),
+        augmentation_config=benchmark_data.get("augmentation_config"),
+        enable_auto_truncation=loading_cfg_dict.get("enable_auto_truncation", False),
+        truncation_strategy=loading_cfg_dict.get("truncation_strategy", "right"),
+        preserve_ratio=loading_cfg_dict.get("preserve_ratio", 0.8),
+    )
+
+def create_vllm_config_from_dict(config_dict, model_path):
+    """Create VLLMLoadingConfig from configuration dictionary."""
+    if "loading_config" not in config_dict:
+        return None
+        
+    loading_cfg_dict = config_dict["loading_config"]
+    return create_vllm_loading_config(
+        model_path=loading_cfg_dict.get("model_path", model_path),
+        gpu_memory_utilization=loading_cfg_dict.get("gpu_memory_utilization", 0.90),
+        tensor_parallel_size=loading_cfg_dict.get("tensor_parallel_size"),
+        max_model_len=loading_cfg_dict.get("max_model_len", 32768),
+        enforce_eager=loading_cfg_dict.get("enforce_eager", True),
+        quantization=loading_cfg_dict.get("quantization"),
+        trust_remote_code=loading_cfg_dict.get("trust_remote_code", True),
+        dtype=loading_cfg_dict.get("dtype", "float16"),
+        seed=loading_cfg_dict.get("seed", 42),
+        disable_custom_all_reduce=loading_cfg_dict.get("disable_custom_all_reduce", False),
+        additional_vllm_kwargs=loading_cfg_dict.get("additional_vllm_kwargs", {}),
+    )
 
 
 class ExperimentStatus:
@@ -451,24 +489,11 @@ class MemoryExperimentSeriesRunner:
         """Set up a single memory experiment with the given benchmark and model"""
 
         # Create BenchmarkConfig from dictionary
-        benchmark = BenchmarkConfig(
-            name=benchmark_config["name"],
-            task_type=benchmark_config["task_type"],
-            data_path=(
-                Path(benchmark_config["data_path"])
-                if "data_path" in benchmark_config
-                else None
-            ),
-            sample_limit=benchmark_config.get("sample_limit"),
-            augmentation_config=benchmark_config.get("augmentation_config"),
-        )
+        # Use factory function for consistent config creation
+        benchmark = create_benchmark_config_from_dict(benchmark_config, self.base_config)
 
-        # Create LoadingConfig if specified
-        loading_config = None
-        if "loading_config" in self.base_config:
-            loading_config = LoadingConfig(
-                model_path=model_name, **self.base_config["loading_config"]
-            )
+        # Create VLLMLoadingConfig if specified
+        loading_config = create_vllm_config_from_dict(self.base_config, model_name)
 
         # Create ExperimentConfig
         experiment_config = ExperimentConfig(
@@ -856,21 +881,21 @@ class MemoryExperimentSeriesRunner:
 
             # Find the benchmark config
             # exp["benchmark_name"] is now in format "benchmark_tasktype"
-            benchmark_config: Optional[Dict[str, Any]] = None
+            found_benchmark_config: Optional[Dict[str, Any]] = None
             for bench in benchmarks:
                 bench_identifier = f"{bench['name']}_{bench['task_type']}"
                 if bench_identifier == exp["benchmark_name"]:
-                    benchmark_config = bench
+                    found_benchmark_config = bench
                     break
 
-            if not benchmark_config:
+            if not found_benchmark_config:
                 self.logger.error(
                     f"Benchmark config not found for {exp['benchmark_name']}"
                 )
                 continue
 
             self.run_single_experiment(
-                benchmark_config, exp["model_name"], exp["exp_id"]
+                found_benchmark_config, exp["model_name"], exp["exp_id"]
             )
 
             # Print summary after each experiment
