@@ -30,7 +30,6 @@ class BenchmarkConfig:
     name: str
     task_type: str  # e.g., 'passkey', 'kv_retrieval', 'longbook_qa_eng'
     data_path: Optional[Path] = None  # Auto-generated if None
-    evaluation_method: Optional[str] = None  # Can be removed
     sample_limit: Optional[int] = None
     augmentation_config: Optional[Dict[str, str]] = (
         None  # Custom prefix/suffix for context and answer marking

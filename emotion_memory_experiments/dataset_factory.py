@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+"""
+Registry-based Dataset Factory for eliminating if-else chains
+
+This module implements a factory pattern using a registry to create specialized
+dataset classes based on configuration. It replaces if-else branching with
+polymorphic dispatch through a registry lookup table.
+
+Key Features:
+- Registry-based dataset class selection (no if-else chains)
+- Case-insensitive benchmark name handling
+- Dynamic registration of new dataset types
+- Seamless parameter passing to dataset constructors
+- Informative error messages for unknown benchmarks
+
+Example Usage:
+    config = BenchmarkConfig(name="infinitebench", task_type="passkey", ...)
+    dataset = create_dataset_from_config(config, max_context_length=1000)
+    
+    # Or register a new dataset type:
+    register_dataset_class("custom_benchmark", CustomDatasetClass)
+"""
+
+from typing import Dict, Type, Any, List, Optional, Callable
+from pathlib import Path
+
+from .data_models import BenchmarkConfig
+from .datasets.base import BaseBenchmarkDataset
+
+# Import all specialized dataset classes
+from .datasets.infinitebench import InfiniteBenchDataset
+from .datasets.longbench import LongBenchDataset  
+from .datasets.locomo import LoCoMoDataset
+
+
+# Registry mapping benchmark names to dataset classes
+# This eliminates if-else chains entirely!
+DATASET_REGISTRY: Dict[str, Type[BaseBenchmarkDataset]] = {
+    "infinitebench": InfiniteBenchDataset,
+    "longbench": LongBenchDataset,
+    "locomo": LoCoMoDataset,
+}
+
+
+def create_dataset_from_config(
+    config: BenchmarkConfig,
+    prompt_wrapper: Optional[Callable[[str, str], str]] = None,
+    max_context_length: Optional[int] = None,
+    tokenizer: Optional[Any] = None,
+    truncation_strategy: str = "right",
+    **kwargs
+) -> BaseBenchmarkDataset:
+    """
+    Create a specialized dataset from configuration using registry lookup.
+    
+    This factory function eliminates if-else chains by using a registry-based
+    approach to select the appropriate dataset class based on the benchmark name.
+    
+    Args:
+        config: Benchmark configuration specifying which dataset to create
+        prompt_wrapper: Optional function to format prompts
+        max_context_length: Maximum context length for truncation
+        tokenizer: Optional tokenizer for text processing
+        truncation_strategy: Strategy for context truncation ("left", "right", "middle")
+        **kwargs: Additional keyword arguments passed to dataset constructor
+        
+    Returns:
+        Specialized dataset instance (InfiniteBenchDataset, LongBenchDataset, etc.)
+        
+    Raises:
+        ValueError: If benchmark name is not recognized
+        FileNotFoundError: If data file doesn't exist
+        
+    Example:
+        >>> config = BenchmarkConfig(name="infinitebench", task_type="passkey", data_path="data.jsonl")
+        >>> dataset = create_dataset_from_config(config, max_context_length=2048)
+        >>> isinstance(dataset, InfiniteBenchDataset)
+        True
+    """
+    # Normalize benchmark name for case-insensitive lookup
+    benchmark_name = config.name.lower().strip()
+    
+    # Registry lookup (no if-else chains!)
+    dataset_class = DATASET_REGISTRY.get(benchmark_name)
+    
+    if dataset_class is None:
+        available_benchmarks = list(DATASET_REGISTRY.keys())
+        raise ValueError(
+            f"Unknown benchmark: '{config.name}'. "
+            f"Available benchmarks: {available_benchmarks}"
+        )
+    
+    # Create dataset instance with all provided parameters
+    dataset = dataset_class(
+        config=config,
+        prompt_wrapper=prompt_wrapper,
+        max_context_length=max_context_length,
+        tokenizer=tokenizer,
+        truncation_strategy=truncation_strategy,
+        **kwargs
+    )
+    
+    return dataset
+
+
+def register_dataset_class(
+    benchmark_name: str, 
+    dataset_class: Type[BaseBenchmarkDataset]
+) -> None:
+    """
+    Dynamically register a new dataset class in the factory registry.
+    
+    This allows adding new benchmark datasets at runtime without modifying
+    the core factory code.
+    
+    Args:
+        benchmark_name: Name to use for benchmark identification (case-insensitive)
+        dataset_class: Dataset class that extends BaseBenchmarkDataset
+        
+    Raises:
+        TypeError: If dataset_class doesn't extend BaseBenchmarkDataset
+        
+    Example:
+        >>> class MyBenchmarkDataset(BaseBenchmarkDataset):
+        ...     # Implementation here
+        ...     pass
+        >>> register_dataset_class("my_benchmark", MyBenchmarkDataset)
+        >>> "my_benchmark" in get_available_datasets()
+        True
+    """
+    if not issubclass(dataset_class, BaseBenchmarkDataset):
+        raise TypeError(
+            f"Dataset class must extend BaseBenchmarkDataset, "
+            f"got {dataset_class.__name__}"
+        )
+    
+    # Normalize name for consistent lookup
+    normalized_name = benchmark_name.lower().strip()
+    DATASET_REGISTRY[normalized_name] = dataset_class
+
+
+def get_available_datasets() -> List[str]:
+    """
+    Get list of all available benchmark dataset types.
+    
+    Returns:
+        List of registered benchmark names (lowercase)
+        
+    Example:
+        >>> datasets = get_available_datasets()
+        >>> "infinitebench" in datasets
+        True
+        >>> "longbench" in datasets  
+        True
+    """
+    return sorted(DATASET_REGISTRY.keys())
+
+
+def unregister_dataset_class(benchmark_name: str) -> bool:
+    """
+    Remove a dataset class from the registry.
+    
+    Args:
+        benchmark_name: Name of benchmark to remove (case-insensitive)
+        
+    Returns:
+        True if benchmark was found and removed, False otherwise
+        
+    Example:
+        >>> register_dataset_class("temp_benchmark", SomeTempDataset)
+        >>> unregister_dataset_class("temp_benchmark")
+        True
+        >>> "temp_benchmark" in get_available_datasets()
+        False
+    """
+    normalized_name = benchmark_name.lower().strip()
+    return DATASET_REGISTRY.pop(normalized_name, None) is not None
+
+
+def get_dataset_class(benchmark_name: str) -> Optional[Type[BaseBenchmarkDataset]]:
+    """
+    Get the dataset class for a specific benchmark without creating an instance.
+    
+    Args:
+        benchmark_name: Name of benchmark (case-insensitive)
+        
+    Returns:
+        Dataset class if found, None otherwise
+        
+    Example:
+        >>> cls = get_dataset_class("infinitebench")
+        >>> cls.__name__
+        'InfiniteBenchDataset'
+    """
+    normalized_name = benchmark_name.lower().strip()
+    return DATASET_REGISTRY.get(normalized_name)
+
+
+# Alternative factory function name for backward compatibility
+def create_specialized_dataset(config: BenchmarkConfig, **kwargs) -> BaseBenchmarkDataset:
+    """
+    Alternative name for create_dataset_from_config for backward compatibility.
+    
+    This is an alias for create_dataset_from_config with identical functionality.
+    """
+    return create_dataset_from_config(config, **kwargs)

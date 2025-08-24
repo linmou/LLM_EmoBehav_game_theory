@@ -27,8 +27,9 @@ from neuro_manipulation.model_utils import (
 )
 from neuro_manipulation.repe.pipelines import get_pipeline
 
-from .adapters.truncation_utils import calculate_max_context_length
-from .benchmark_adapters import get_adapter
+# NEW: Import directly from the specialized dataset factory
+from .dataset_factory import create_dataset_from_config
+from .truncation_utils import calculate_max_context_length
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 from .memory_prompt_wrapper import get_memory_prompt_wrapper
 
@@ -129,13 +130,9 @@ class EmotionMemoryExperiment:
             control_method=self.repe_config["control_method"],
         )
 
-        # Load benchmark adapter
-        self.benchmark_adapter = get_adapter(config.benchmark)
-        self.logger.info(f"Loaded benchmark: {config.benchmark.name}")
-
-        # Validate adapter dataset (without prompt wrapper for info only)
-        test_dataset = self.benchmark_adapter.get_dataset()
-        dataset_size = len(test_dataset)  # type: ignore[arg-type]
+        # Validate dataset creation (early validation)
+        test_dataset = create_dataset_from_config(config.benchmark)
+        dataset_size = len(test_dataset)
         self.logger.info(f"Benchmark contains {dataset_size} items")
 
         # Create partial function for dataset integration
@@ -211,7 +208,17 @@ class EmotionMemoryExperiment:
                 }
             )
 
-        data_loader = self.benchmark_adapter.get_dataloader(**dataloader_kwargs)
+        # Create dataset with proper parameters
+        self.dataset = create_dataset_from_config(
+            self.config.benchmark,
+            prompt_wrapper=self.memory_prompt_wrapper_partial,
+            max_context_length=self.max_context_length,
+            tokenizer=self.tokenizer,
+            truncation_strategy=self.truncation_strategy
+        )
+        
+        # Create DataLoader
+        data_loader = DataLoader(self.dataset, collate_fn=self.dataset.collate_fn, **dataloader_kwargs)
 
         return data_loader
 
@@ -408,7 +415,8 @@ class EmotionMemoryExperiment:
                     response = output[0]["generated_text"].replace(prompt, "").strip()
 
                 try:
-                    score = self.benchmark_adapter.evaluate_response(
+                    # Use dataset's evaluation method
+                    score = self.dataset.evaluate_response(
                         response, ground_truth, self.config.benchmark.task_type
                     )
                 except Exception as e:
@@ -564,7 +572,7 @@ class EmotionMemoryExperiment:
         self.config.benchmark.sample_limit = sample_limit
 
         # Reset adapter to pick up new sample limit
-        self.benchmark_adapter = get_adapter(self.config.benchmark)
+        # Benchmark adapter replaced by direct dataset creation
 
         try:
             return self.run_experiment()
