@@ -708,7 +708,7 @@ class MemoryExperimentSeriesRunner:
 
         return expanded_benchmarks
 
-    def _create_temporary_benchmark_for_discovery(self, benchmark_config: Dict[str, Any], task_type: str) -> "_data_models.BenchmarkConfig":
+    def _create_temporary_benchmark_for_discovery(self, benchmark_config: Dict[str, Any], task_type: str) -> Any:
         """
         Create a temporary BenchmarkConfig for pattern discovery using the factory function.
         
@@ -851,7 +851,13 @@ class MemoryExperimentSeriesRunner:
         models = self.base_config["models"]
 
         # Expand benchmarks with task_type='all'
-        benchmarks = self.expand_benchmark_configs(original_benchmarks)
+        try:
+            benchmarks = self.expand_benchmark_configs(original_benchmarks)
+        except Exception as e:
+            error_trace = traceback.format_exc()
+            self.logger.error(f"Failed to expand benchmark configurations: {str(e)}\n{error_trace}")
+            self.logger.error("Using original benchmarks without expansion")
+            benchmarks = original_benchmarks
 
         self.logger.info(
             f"Starting memory experiment series with {len(benchmarks)} benchmarks "
@@ -869,19 +875,28 @@ class MemoryExperimentSeriesRunner:
                 )
 
         # Generate experiment IDs and initialize report
-        for benchmark_config in benchmarks:
-            benchmark_name = benchmark_config["name"]
-            task_type = benchmark_config["task_type"]
-            for model_name in models:
-                # For folder names, use the formatted version
-                model_folder_name = self._format_model_name_for_folder(model_name)
-                exp_id = f"{benchmark_name}_{task_type}_{model_folder_name.replace('/', '_')}"
+        try:
+            for benchmark_config in benchmarks:
+                benchmark_name = benchmark_config["name"]
+                task_type = benchmark_config["task_type"]
+                for model_name in models:
+                    try:
+                        # For folder names, use the formatted version
+                        model_folder_name = self._format_model_name_for_folder(model_name)
+                        exp_id = f"{benchmark_name}_{task_type}_{model_folder_name.replace('/', '_')}"
 
-                # Only add if not resuming or not already in report
-                if not self.resume or exp_id not in self.report.experiments:
-                    self.report.add_experiment(
-                        f"{benchmark_name}_{task_type}", model_name, exp_id
-                    )
+                        # Only add if not resuming or not already in report
+                        if not self.resume or exp_id not in self.report.experiments:
+                            self.report.add_experiment(
+                                f"{benchmark_name}_{task_type}", model_name, exp_id
+                            )
+                    except Exception as e:
+                        self.logger.error(f"Failed to generate experiment for {benchmark_name}/{task_type} + {model_name}: {e}")
+                        continue
+        except Exception as e:
+            error_trace = traceback.format_exc()
+            self.logger.error(f"Failed to generate experiment combinations: {str(e)}\n{error_trace}")
+            raise
 
         # Get pending experiments
         pending_experiments = self.report.get_pending_experiments()
@@ -898,41 +913,81 @@ class MemoryExperimentSeriesRunner:
                 f"Running experiment {i+1}/{total_experiments}: {exp['benchmark_name']}, {exp['model_name']}"
             )
 
-            # Verify model exists before running the experiment
-            model_name = exp["model_name"]
-            if not self._check_model_existence(model_name):
+            try:
+                # Verify model exists before running the experiment
+                model_name = exp["model_name"]
+                if not self._check_model_existence(model_name):
+                    self.logger.error(
+                        f"Skipping experiment with {exp['benchmark_name']} and {model_name} due to missing model."
+                    )
+                    self.report.update_experiment(
+                        exp["exp_id"],
+                        status=ExperimentStatus.FAILED,
+                        error=f"Model {model_name} could not be found or downloaded.",
+                    )
+                    continue
+
+                # Find the benchmark config
+                # exp["benchmark_name"] is now in format "benchmark_tasktype"
+                found_benchmark_config: Optional[Dict[str, Any]] = None
+                for bench in benchmarks:
+                    bench_identifier = f"{bench['name']}_{bench['task_type']}"
+                    if bench_identifier == exp["benchmark_name"]:
+                        found_benchmark_config = bench
+                        break
+
+                if not found_benchmark_config:
+                    self.logger.error(
+                        f"Benchmark config not found for {exp['benchmark_name']}"
+                    )
+                    self.report.update_experiment(
+                        exp["exp_id"],
+                        status=ExperimentStatus.FAILED,
+                        error=f"Benchmark config not found for {exp['benchmark_name']}"
+                    )
+                    continue
+
+                # Run the individual experiment (this has its own error handling)
+                success = self.run_single_experiment(
+                    found_benchmark_config, exp["model_name"], exp["exp_id"]
+                )
+                
+                if success:
+                    self.logger.info(f"✅ Experiment completed successfully: {exp['benchmark_name']}, {exp['model_name']}")
+                else:
+                    self.logger.info(f"❌ Experiment failed but series continues: {exp['benchmark_name']}, {exp['model_name']}")
+
+            except Exception as e:
+                # Catch ANY unexpected errors in the experiment series loop
+                # This ensures that even if there are issues with config processing,
+                # report updating, or other series-level operations, we continue with the next experiment
+                error_trace = traceback.format_exc()
                 self.logger.error(
-                    f"Skipping experiment with {exp['benchmark_name']} and {model_name} due to missing model."
+                    f"🚨 SERIES-LEVEL ERROR for experiment {exp['benchmark_name']}, {exp['model_name']}: {str(e)}\n{error_trace}"
                 )
-                self.report.update_experiment(
-                    exp["exp_id"],
-                    status=ExperimentStatus.FAILED,
-                    error=f"Model {model_name} could not be found or downloaded.",
-                )
-                continue
+                
+                try:
+                    # Try to update the experiment report with the series-level error
+                    self.report.update_experiment(
+                        exp["exp_id"],
+                        status=ExperimentStatus.FAILED,
+                        error=f"Series-level error: {str(e)}\n{error_trace}",
+                        end_time=datetime.now().isoformat()
+                    )
+                except Exception as report_error:
+                    # If even updating the report fails, log it but don't stop the series
+                    self.logger.error(f"Failed to update experiment report: {report_error}")
+                
+                # Continue with the next experiment regardless of the error
+                self.logger.info("🔄 Continuing with next experiment despite series-level error")
 
-            # Find the benchmark config
-            # exp["benchmark_name"] is now in format "benchmark_tasktype"
-            found_benchmark_config: Optional[Dict[str, Any]] = None
-            for bench in benchmarks:
-                bench_identifier = f"{bench['name']}_{bench['task_type']}"
-                if bench_identifier == exp["benchmark_name"]:
-                    found_benchmark_config = bench
-                    break
-
-            if not found_benchmark_config:
-                self.logger.error(
-                    f"Benchmark config not found for {exp['benchmark_name']}"
-                )
-                continue
-
-            self.run_single_experiment(
-                found_benchmark_config, exp["model_name"], exp["exp_id"]
-            )
-
-            # Print summary after each experiment
-            summary = self.report.get_summary()
-            self.logger.info(f"Memory experiment series progress: {summary}")
+            finally:
+                # Always try to print progress summary, even if there were errors
+                try:
+                    summary = self.report.get_summary()
+                    self.logger.info(f"Memory experiment series progress: {summary}")
+                except Exception as summary_error:
+                    self.logger.warning(f"Could not generate progress summary: {summary_error}")
 
         # Final summary
         summary = self.report.get_summary()
