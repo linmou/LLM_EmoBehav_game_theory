@@ -46,16 +46,29 @@ class BenchmarkConfig:
         """
         Discover task types matching the regex pattern in task_type.
 
+        This method scans for files matching the pattern {benchmark_name}_{task_type}.jsonl
+        and filters task types using regex pattern matching. Uses regex.search() to allow
+        pattern matching anywhere in the task type name, not just at the beginning.
+
         Args:
             base_data_dir: Base directory for memory benchmark data
 
         Returns:
-            List of task types matching the regex pattern
+            List of task types matching the regex pattern, sorted alphabetically
 
         Examples:
-            - task_type='.*' -> ['narrativeqa', 'qasper'] (all tasks)
-            - task_type='.*qa.*' -> ['narrativeqa'] (contains 'qa')
-            - task_type='pass.*' -> ['passkey'] (starts with 'pass')
+            - task_type='.*' -> ['narrativeqa', 'qasper'] (matches all tasks)
+            - task_type='.*qa.*' -> ['narrativeqa', 'multifieldqa_en'] (contains 'qa' anywhere)
+            - task_type='pass.*' -> ['passkey'] (starts with 'pass')  
+            - task_type='retrieval' -> ['passage_retrieval_en', 'kv_retrieval'] (contains 'retrieval')
+            - task_type='.*retrieval.*' -> ['passage_retrieval_en', 'kv_retrieval'] (explicit wildcards)
+            - task_type='qa$' -> ['narrativeqa'] (ends with 'qa')
+
+        Notes:
+            - Uses regex.search() instead of regex.match() to allow pattern matching 
+              anywhere in the task type name, not just from the beginning
+            - Empty list returned if no files match the pattern
+            - Raises ValueError for invalid regex patterns
         """
         base_path = Path(base_data_dir)
         glob_pattern = str(base_path / f"{self.name}_*.jsonl")
@@ -73,7 +86,7 @@ class BenchmarkConfig:
                 prefix = f"{self.name}_"
                 if filename.startswith(prefix):
                     task_type = filename[len(prefix) :]
-                    if regex_pattern.match(task_type):
+                    if regex_pattern.search(task_type):
                         task_types.append(task_type)
         except re.error as e:
             raise ValueError(f"Invalid regex pattern '{self.task_type}': {str(e)}")
