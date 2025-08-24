@@ -674,10 +674,9 @@ class MemoryExperimentSeriesRunner:
 
             # Check if task_type is a pattern (contains wildcards or regex characters)
             if self._is_pattern_task_type(task_type):
-                # Create a temporary BenchmarkConfig to discover datasets
-                temp_benchmark = BenchmarkConfig(
-                    name=benchmark_config["name"], task_type=task_type
-                )
+                # Create a temporary BenchmarkConfig to discover datasets using factory function
+                # FIXED: Use helper method with factory function to provide all required arguments
+                temp_benchmark = self._create_temporary_benchmark_for_discovery(benchmark_config, task_type)
 
                 # Discover task types matching the pattern
                 base_data_dir = self.base_config.get(
@@ -708,6 +707,39 @@ class MemoryExperimentSeriesRunner:
                 expanded_benchmarks.append(benchmark_config)
 
         return expanded_benchmarks
+
+    def _create_temporary_benchmark_for_discovery(self, benchmark_config: Dict[str, Any], task_type: str) -> "_data_models.BenchmarkConfig":
+        """
+        Create a temporary BenchmarkConfig for pattern discovery using the factory function.
+        
+        This method extracts the BenchmarkConfig creation logic to improve maintainability
+        and ensure all required arguments are provided with safe defaults.
+        
+        Args:
+            benchmark_config: Dictionary containing benchmark configuration
+            task_type: The task type (potentially a regex pattern)
+            
+        Returns:
+            BenchmarkConfig instance ready for pattern discovery
+            
+        Raises:
+            ValueError: If benchmark configuration is invalid
+        """
+        try:
+            return create_benchmark_config(
+                name=benchmark_config["name"],
+                task_type=task_type,
+                data_path=Path("dummy.jsonl"),  # Temporary path for pattern discovery
+                sample_limit=benchmark_config.get("sample_limit"),
+                augmentation_config=benchmark_config.get("augmentation_config"),
+                enable_auto_truncation=benchmark_config.get("enable_auto_truncation", False),
+                truncation_strategy=benchmark_config.get("truncation_strategy", "right"),
+                preserve_ratio=benchmark_config.get("preserve_ratio", 0.8)
+            )
+        except Exception as e:
+            logging.error(f"Failed to create temporary BenchmarkConfig for pattern discovery: {e}")
+            logging.error(f"Benchmark config: {benchmark_config}")
+            raise ValueError(f"Invalid benchmark configuration for pattern '{task_type}': {e}") from e
 
     def _is_pattern_task_type(self, task_type: str) -> bool:
         """
