@@ -18,16 +18,17 @@ benchmarks:
   - name: "longbench"
     task_type: ".*qa.*"  # Matches all: narrativeqa, qasper, etc.
     sample_limit: 100
+    enable_auto_truncation: true
+    truncation_strategy: "right"
+    preserve_ratio: 0.95
     # augmentation_config:
   #     prefix: " I am super happy "
   #     suffix: " and I am super happy"
   #   # Context truncation settings (now in benchmark config)
-  #   enable_auto_truncation: true
-  #   truncation_strategy: "right"
-  #   preserve_ratio: 0.95
+
       
   - name: "infinitebench"
-    task_type: "passkey"  # Matches all: narrativeqa, qasper, etc.
+    task_type: "passkey" 
     sample_limit: 100
     augmentation_config: null
     # Context truncation settings (now in benchmark config)
