@@ -688,7 +688,6 @@ class MemoryExperimentSeriesRunner:
                 discovered_tasks = temp_benchmark.discover_datasets_by_pattern(
                     base_data_dir
                 )
-                __import__("ipdb").set_trace()
                 if not discovered_tasks:
                     self.logger.warning(
                         f"No datasets found for benchmark '{benchmark_config['name']}' "

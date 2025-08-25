@@ -132,7 +132,7 @@ class LongContextQAPromptWrapper(MemoryPromptWrapper):
     def system_prompt(self, context, question):
         """Create system prompt specifically for long context QA"""
         if context:
-            return f"{self.system_prompt_format}\n\nDocument:\n{context}\n\nQuestion: {question}"
+            return f"{self.system_prompt_format}\n\nDocument:\n{context}\n\nQuestion: {question}, keep the answer short and concise, just return the answer, no other text."
         else:
             return f"{self.system_prompt_format}\n\nQuestion: {question}"
 
