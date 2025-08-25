@@ -643,7 +643,7 @@ class EmotionMemoryExperiment:
         # Temporarily modify config
         original_sample_limit = self.config.benchmark.sample_limit
         self.config.benchmark.sample_limit = sample_limit
-        self.output_dir = self.output_dir / "sanity_check"
+        self.output_dir = self.output_dir.parent / "sanity_check" / self.output_dir.name
         os.makedirs(self.output_dir, exist_ok=True)
 
         try:

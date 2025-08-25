@@ -196,16 +196,20 @@ class LongbenchRetrievalPromptWrapper(MemoryPromptWrapper):
         assert answer is not None
         assert answer in context
 
-        try:
-            answer_num = int(answer.rsplit(" ", 1)[-1])
-        except ValueError as e:
-            raise e(
+        match = re.match(r"(.+?)(\d+)$", answer)
+        if match:
+            answer_prefix = match.group(1)
+            answer_num = int(match.group(2))
+        else:
+            raise ValueError(
                 f"Answer {answer} format has no valid paragraph number, the answer should be like 'Paragraph 1' or '段落 1', the given answer is {answer}"
             )
-        answer_prefix = answer.rsplit(" ", 1)[0]
 
-        paragraph_start = context.find(f"{answer_prefix} {answer_num}")
-        paragraph_end = context.find(f"{answer_prefix} {answer_num + 1}")
+        paragraph_start = context.find(f"{answer_prefix}{answer_num}")
+        paragraph_end = context.find(f"{answer_prefix}{answer_num + 1}")
+        assert (
+            paragraph_start != -1 and paragraph_end != -1
+        ), f" {answer_prefix}{answer_num} or {answer_prefix}{answer_num + 1} not found in context"
 
         answer_paragraph = context[paragraph_start:paragraph_end]
 

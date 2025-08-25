@@ -109,9 +109,13 @@ class BaseBenchmarkDataset(Dataset, ABC):
         # Create prompt using wrapper or default format
         if self.prompt_wrapper:
             if item.context:
-                prompt = self.prompt_wrapper(item.context, item.input_text)
+                prompt = self.prompt_wrapper(
+                    item.context, item.input_text, answer=item.ground_truth
+                )
             else:
-                prompt = self.prompt_wrapper("", item.input_text)
+                prompt = self.prompt_wrapper(
+                    "", item.input_text, answer=item.ground_truth
+                )
         else:
             # Default prompt format
             if item.context:
