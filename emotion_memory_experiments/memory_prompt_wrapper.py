@@ -137,6 +137,19 @@ class LongContextQAPromptWrapper(MemoryPromptWrapper):
             return f"{self.system_prompt_format}\n\nQuestion: {question}"
 
 
+class LongbenchRetrievalPromptWrapper(MemoryPromptWrapper):
+    """Specialized prompt wrapper for long context retrieval tasks (LongBench)"""
+
+    system_prompt_format = "You are a helpful AI assistant. Please read the following document carefully and answer the question based on the information provided."
+
+    def system_prompt(self, context, question):
+        """Create system prompt specifically for long context QA"""
+        if context:
+            return f"{self.system_prompt_format}\n\nDocument:\n{context}\n\nQuestion: Which paragraph talk about the topic of {question}?"
+        else:
+            return f"{self.system_prompt_format}\n\nQuestion: {question}"
+
+
 def get_memory_prompt_wrapper(
     task_type: str, prompt_format: PromptFormat
 ) -> MemoryPromptWrapper:
@@ -159,10 +172,10 @@ def get_memory_prompt_wrapper(
         for keyword in ["conversational", "locomo", "conversation"]
     ):
         return ConversationalQAPromptWrapper(prompt_format)
-    elif any(
-        keyword in task_type_lower for keyword in ["long", "longbook", "longbench"]
-    ):
+    elif any(keyword in task_type_lower for keyword in ["qa"]):
         return LongContextQAPromptWrapper(prompt_format)
+    elif any(keyword in task_type_lower for keyword in ["retrieval", "longbench"]):
+        return LongbenchRetrievalPromptWrapper(prompt_format)
     else:
         # Default to general memory prompt wrapper
         return MemoryPromptWrapper(prompt_format)

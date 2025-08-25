@@ -314,13 +314,13 @@ def _register_hook_on_worker_rpc(worker_self, layer_index, block_name, hook_func
             )
             return False
 
-        logger.info(
+        logger.debug(
             f"RPC: Worker Rank {rank} registering hook {hook_func.__name__} to {target_module.__class__.__name__} (Layer {layer_index}, Block {block_name})"
         )
         handle = target_module.register_forward_hook(hook_func)
 
         if handle:
-            logger.info(f"RPC: Worker Rank {rank} hook registered successfully.")
+            logger.debug(f"RPC: Worker Rank {rank} hook registered successfully.")
             # Store the handle if we need to remove it later (more complex)
             # We might need a way to manage multiple handles per module if needed
             if not hasattr(worker_self, "_hook_handles"):
