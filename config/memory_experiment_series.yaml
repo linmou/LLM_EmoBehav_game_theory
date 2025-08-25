@@ -7,34 +7,33 @@ version: "1.0.0"
 
 # Models to test (supports both HuggingFace paths and local paths)
 models:
-  - "Qwen/Qwen2.5-0.5B-Instruct"
-  - "Qwen/Qwen2.5-1.5B-Instruct"
-    #  - "Qwen/Qwen2.5-3B-Instruct"
+  #- "Qwen/Qwen2.5-0.5B-Instruct"
+  # - "Qwen/Qwen2.5-1.5B-Instruct"
+  - "Qwen/Qwen2.5-7B-Instruct"
 
 # Benchmarks to test (data_path auto-generated if not specified)
 # Use regex patterns in task_type to automatically discover matching datasets
 benchmarks:
   # Discover all datasets for longbench (regex: match any string)
   - name: "longbench"
-    task_type: ".*qa.*"  # Matches all: narrativeqa, qasper, etc.
-    sample_limit: 100
+    task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
+    sample_limit: 200
     enable_auto_truncation: true
     truncation_strategy: "right"
     preserve_ratio: 0.95
-    # augmentation_config:
-  #     prefix: " I am super happy "
-  #     suffix: " and I am super happy"
-  #   # Context truncation settings (now in benchmark config)
+    augmentation_config:
+      prefix: "  I feel so euphoric that I could dance and laugh all day long. I'm practically bursting with delight and can't stop smiling. Every fiber of my being is radiating with pure, unbridled happiness. I remeber this feeling."
+      suffix: " I remember this feeling. I'm absolutely thrilled and can barely contain my excitement! My heart is overflowing with pure joy right now. I feel like I'm walking on clouds - everything seems perfect today."
 
       
-  - name: "infinitebench"
-    task_type: "passkey" 
-    sample_limit: 100
-    augmentation_config: null
+      #- name: "infinitebench"
+      #task_type: "passkey" 
+      #sample_limit: 100
+      #augmentation_config: null
     # Context truncation settings (now in benchmark config)
-    enable_auto_truncation: true
-    truncation_strategy: "right"
-    preserve_ratio: 0.95 
+    #enable_auto_truncation: true
+    #truncation_strategy: "right"
+    #preserve_ratio: 0.95 
   # Discover only QA-related tasks in infinitebench 
   #- name: "infinitebench"
   #  task_type: ".*qa.*"  # Matches: longbook_qa_eng, etc.
@@ -54,7 +53,7 @@ benchmarks:
   #   task_type: "narrativeqa"  # Exact match only
 
 # Emotions to actively induce (neutral baseline handled automatically)
-emotions: ["anger", "happiness"]
+emotions: ["happiness"]
 intensities: [1.5]
 
 # vLLM loading configuration (all fields required after refactoring)
@@ -95,12 +94,12 @@ generation_config:
   enable_thinking: false
 
 # Execution settings
-batch_size: 10
+batch_size: 200
 max_evaluation_workers: 2
 pipeline_queue_size: 2
 
 # Output configuration
-output_dir: "results/memory_emotion_series"
+output_dir: "results/memory_emotion_retrieval_series"
 
 # Optional: run only sanity checks instead of full experiments
 run_sanity_check: true
