@@ -160,7 +160,7 @@ class EmotionMemoryExperiment:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.output_dir = (
             Path(config.output_dir)
-            / f"emotion_memory_{config.benchmark.name}_{timestamp}"
+            / f"emotion_memory_{config.model_path.split('/')[-1]}_{config.benchmark.name}_{config.benchmark.task_type}_{timestamp}"
         )
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
