@@ -56,6 +56,10 @@ class MemoryPromptWrapper(PromptWrapper):
         prefix = augmentation_config.get("prefix", "")
         suffix = augmentation_config.get("suffix", "")
 
+        assert (
+            prefix and suffix
+        ), "Prefix and suffix are required for augmenting context"
+
         result = context
 
         assert answer is not None
@@ -110,6 +114,33 @@ class PasskeyPromptWrapper(MemoryPromptWrapper):
         else:
             return f"{self.system_prompt_format}\n\nQuestion: {question}"
 
+    def augment_context(self, context, augmentation_config, answer):
+        if not context or not augmentation_config:
+            return context
+
+        prefix = augmentation_config.get("prefix", "")
+        suffix = augmentation_config.get("suffix", "")
+
+        assert (
+            prefix and suffix
+        ), "Prefix and suffix are required for augmenting context"
+
+        result = context
+
+        assert answer is not None
+        assert answer in context
+
+        formatted_answer = (
+            f"The pass key is {answer}. Remember it. {answer} is the pass key."
+        )
+
+        result = context.replace(
+            formatted_answer,
+            f"{prefix}{formatted_answer}{suffix}",
+        )
+
+        return result
+
 
 class ConversationalQAPromptWrapper(MemoryPromptWrapper):
     """Specialized prompt wrapper for conversational QA tasks (LoCoMo)"""
@@ -145,9 +176,44 @@ class LongbenchRetrievalPromptWrapper(MemoryPromptWrapper):
     def system_prompt(self, context, question):
         """Create system prompt specifically for long context QA"""
         if context:
-            return f"{self.system_prompt_format}\n\nDocument:\n{context}\n\nQuestion: Which paragraph talk about the topic of {question}?"
+            return f"{self.system_prompt_format}\n\nDocument:\n{context}\n\nQuestion: Which paragraph talk about the topic of {question}? Just return the paragraph number, like Paragraph 1 , 段落 1, no other text."
         else:
             return f"{self.system_prompt_format}\n\nQuestion: {question}"
+
+    def augment_context(self, context, augmentation_config, answer):
+        if not context or not augmentation_config:
+            return context
+
+        prefix = augmentation_config.get("prefix", "")
+        suffix = augmentation_config.get("suffix", "")
+
+        assert (
+            prefix and suffix
+        ), "Prefix and suffix are required for augmenting context"
+
+        result = context
+
+        assert answer is not None
+        assert answer in context
+
+        try:
+            answer_num = int(answer.rsplit(" ", 1)[-1])
+        except ValueError as e:
+            raise e(
+                f"Answer {answer} format has no valid paragraph number, the answer should be like 'Paragraph 1' or '段落 1', the given answer is {answer}"
+            )
+        answer_prefix = answer.rsplit(" ", 1)[0]
+
+        paragraph_start = context.find(f"{answer_prefix} {answer_num}")
+        paragraph_end = context.find(f"{answer_prefix} {answer_num + 1}")
+
+        answer_paragraph = context[paragraph_start:paragraph_end]
+
+        result = context.replace(
+            answer_paragraph, f"{prefix}{answer_paragraph}{suffix}"
+        )
+
+        return result
 
 
 def get_memory_prompt_wrapper(
