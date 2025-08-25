@@ -5,6 +5,7 @@ Follows the pattern from emotion_game_experiment.py but adapted for memory bench
 
 import json
 import logging
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -643,9 +644,7 @@ class EmotionMemoryExperiment:
         original_sample_limit = self.config.benchmark.sample_limit
         self.config.benchmark.sample_limit = sample_limit
         self.output_dir = self.output_dir / "sanity_check"
-
-        # Reset adapter to pick up new sample limit
-        # Benchmark adapter replaced by direct dataset creation
+        os.makedirs(self.output_dir, exist_ok=True)
 
         try:
             return self.run_experiment()
