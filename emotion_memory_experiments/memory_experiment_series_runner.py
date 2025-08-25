@@ -454,10 +454,16 @@ class MemoryExperimentSeriesRunner:
         benchmark = BenchmarkConfig(
             name=benchmark_config["name"],
             task_type=benchmark_config["task_type"],
-            data_path=Path(benchmark_config.get("data_path")) if benchmark_config.get("data_path") else None,
+            data_path=(
+                Path(benchmark_config.get("data_path"))
+                if benchmark_config.get("data_path")
+                else None
+            ),
             sample_limit=benchmark_config.get("sample_limit"),
             augmentation_config=benchmark_config.get("augmentation_config"),
-            enable_auto_truncation=benchmark_config.get("enable_auto_truncation", False),
+            enable_auto_truncation=benchmark_config.get(
+                "enable_auto_truncation", False
+            ),
             truncation_strategy=benchmark_config.get("truncation_strategy", "right"),
             preserve_ratio=benchmark_config.get("preserve_ratio", 0.8),
         )
@@ -474,7 +480,9 @@ class MemoryExperimentSeriesRunner:
             trust_remote_code=loading_cfg.get("trust_remote_code", True),
             dtype=loading_cfg.get("dtype", "float16"),
             seed=loading_cfg.get("seed", 42),
-            disable_custom_all_reduce=loading_cfg.get("disable_custom_all_reduce", False),
+            disable_custom_all_reduce=loading_cfg.get(
+                "disable_custom_all_reduce", False
+            ),
             additional_vllm_kwargs=loading_cfg.get("additional_vllm_kwargs", {}),
         )
 
@@ -658,7 +666,20 @@ class MemoryExperimentSeriesRunner:
             # Check if task_type is a pattern (contains wildcards or regex characters)
             if self._is_pattern_task_type(task_type):
                 # Create a temporary BenchmarkConfig to discover datasets using factory function
-                temp_benchmark = BenchmarkConfig(**benchmark_config)
+                temp_benchmark = BenchmarkConfig(
+                    name=benchmark_config["name"],
+                    task_type=task_type,
+                    data_path=None,
+                    sample_limit=benchmark_config.get("sample_limit"),
+                    augmentation_config=benchmark_config.get("augmentation_config"),
+                    enable_auto_truncation=benchmark_config.get(
+                        "enable_auto_truncation", False
+                    ),
+                    truncation_strategy=benchmark_config.get(
+                        "truncation_strategy", "right"
+                    ),
+                    preserve_ratio=benchmark_config.get("preserve_ratio", 0.8),
+                )
 
                 # Discover task types matching the pattern
                 base_data_dir = self.base_config.get(
@@ -667,7 +688,7 @@ class MemoryExperimentSeriesRunner:
                 discovered_tasks = temp_benchmark.discover_datasets_by_pattern(
                     base_data_dir
                 )
-
+                __import__("ipdb").set_trace()
                 if not discovered_tasks:
                     self.logger.warning(
                         f"No datasets found for benchmark '{benchmark_config['name']}' "
