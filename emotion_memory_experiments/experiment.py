@@ -234,7 +234,7 @@ class EmotionMemoryExperiment:
             self.cur_emotion = emotion
 
             # Build DataLoader for this emotion (fresh dataset each time)
-            data_loader = self.build_dataloader(emotion)
+            data_loader = self.build_dataloader(self.cur_emotion)
 
             for intensity in self.config.intensities:
                 self.logger.info(f"Processing intensity: {intensity}")
@@ -249,7 +249,7 @@ class EmotionMemoryExperiment:
         self.logger.info("Processing neutral baseline")
 
         # Use the same rep_reader for neutral (with 0 intensity)
-        data_loader = self.build_dataloader()
+        data_loader = self.build_dataloader(self.cur_emotion)
         neutral_results = self._infer_with_activation(rep_reader, data_loader)
         all_results.extend(neutral_results)
 

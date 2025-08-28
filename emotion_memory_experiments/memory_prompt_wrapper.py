@@ -44,6 +44,10 @@ class MemoryPromptWrapper(PromptWrapper):
             "prefix": " ",
             "suffix": " I'm completely stunned and can't believe what just happened! My mind is racing trying to process this unexpected turn of events. I feel caught off guard and amazed - this is the last thing I ever expected to encounter! "
         }
+        "neutral": {
+            "prefix": " ",
+            "suffix": " "
+        }
     }
 
     def __init__(self, prompt_format: PromptFormat):
