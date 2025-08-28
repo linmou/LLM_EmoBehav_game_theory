@@ -4,16 +4,16 @@ Contains exact implementations from official InfiniteBench and LongBench reposit
 All functions are self-contained without external dependencies.
 """
 
+import json
 import re
 import string
-import json
 from collections import Counter
-from typing import Any, List, Union, Tuple
-
+from typing import Any, List, Tuple, Union
 
 # ============================================================================
 # INFINITEBENCH EVALUATION FUNCTIONS (from compute_scores.py)
 # ============================================================================
+
 
 def normalize_answer(s: str) -> str:
     """Lower text and remove punctuation, articles and extra whitespace."""
@@ -41,7 +41,10 @@ def normalize_zh_answer(s: str) -> str:
         return "".join(text.split())
 
     def remove_punc(text):
-        cn_punctuation = "！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—''‛""„‟…‧﹏."
+        cn_punctuation = (
+            "！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—''‛"
+            "„‟…‧﹏."
+        )
         all_punctuation = set(string.punctuation + cn_punctuation)
         return "".join(ch for ch in text if ch not in all_punctuation)
 
@@ -67,7 +70,7 @@ def qa_f1_score(pred: str, ground_truths: Union[str, List[str]]) -> float:
     """Computes the F1 score for QA tasks (InfiniteBench version)."""
     if not isinstance(ground_truths, list):
         ground_truths = [ground_truths]
-    
+
     f1 = 0
     for ground_truth in ground_truths:
         normalized_prediction = normalize_answer(pred)
@@ -85,7 +88,7 @@ def qa_f1_score_zh(pred: str, ground_truths: Union[str, List[str]]) -> float:
     """QA F1 score for Chinese (character-level)."""
     if not isinstance(ground_truths, list):
         ground_truths = [ground_truths]
-    
+
     f1 = 0
     for ground_truth in ground_truths:
         norm_pred = normalize_zh_answer(pred)
@@ -111,32 +114,40 @@ def first_int_match(prediction: str) -> str:
     return pred_value
 
 
-def get_score_one_kv_retrieval(pred: str, label: Union[str, List[str]], model_name: str) -> bool:
+def get_score_one_kv_retrieval(
+    pred: str, label: Union[str, List[str]], model_name: str
+) -> bool:
     """InfiniteBench KV retrieval evaluation."""
     if isinstance(label, list):
         label = label[0]
-    
-    for c in ['\n', ':', '\"', '\'', '.', ',', '?', '!', '{', '}']:
-        pred = pred.replace(c, ' ')
+
+    for c in ["\n", ":", '"', "'", ".", ",", "?", "!", "{", "}"]:
+        pred = pred.replace(c, " ")
     words = pred.split()
     return str(label) in words
 
 
-def get_score_one_passkey(pred: str, label: Union[str, List[str]], model_name: str) -> bool:
+def get_score_one_passkey(
+    pred: str, label: Union[str, List[str]], model_name: str
+) -> bool:
     """InfiniteBench passkey evaluation."""
     if isinstance(label, list):
         label = label[0]
     return str(label) == first_int_match(pred)
 
 
-def get_score_one_number_string(pred: str, label: Union[str, List[str]], model_name: str) -> bool:
+def get_score_one_number_string(
+    pred: str, label: Union[str, List[str]], model_name: str
+) -> bool:
     """InfiniteBench number string evaluation."""
     if isinstance(label, list):
         label = label[0]
     return str(label) == first_int_match(pred)
 
 
-def get_score_one_code_run(pred: str, label: Union[str, List[str]], model_name: str) -> bool:
+def get_score_one_code_run(
+    pred: str, label: Union[str, List[str]], model_name: str
+) -> bool:
     """InfiniteBench code run evaluation."""
     if isinstance(label, list):
         label = label[0]
@@ -158,10 +169,10 @@ def get_score_one_code_debug(pred: str, label: List, model_name: str) -> bool:
     pred = pred.strip()
     if len(label) < 2:
         return False
-        
+
     label_c = label[1]
     fn_name = label[0]
-    
+
     # Check for A-J pattern first
     pattern = r"\b[A-J]\b(?!.*\b[A-J]\b)"
     match = re.search(pattern, pred)
@@ -169,31 +180,26 @@ def get_score_one_code_debug(pred: str, label: List, model_name: str) -> bool:
         extracted_pred = match.group(0)
         if extracted_pred == label_c:
             return True
-    
+
     # Check answer prefixes
-    ans_prefixes = [
-        "answer is:",
-        "is:",
-        "answer:",
-        "correct option is:"
-    ]
-    
+    ans_prefixes = ["answer is:", "is:", "answer:", "correct option is:"]
+
     pred = pred.strip()
     for c in ["\n", "`", "'", '"', "-", "*", "Option", "option"]:
         pred = pred.replace(c, " ")
     while "  " in pred:
         pred = pred.replace("  ", " ")
-        
+
     if pred.startswith(label_c) or pred.startswith(fn_name):
         return True
-        
+
     for prefix in ans_prefixes:
         idx = pred.find(prefix)
         if idx == -1:
             continue
         if len(pred) < idx + len(prefix) + 1:
             return False
-        after_prefix = pred[idx + len(prefix) + 1:]
+        after_prefix = pred[idx + len(prefix) + 1 :]
         for s in [label_c, fn_name]:
             if after_prefix.startswith(s):
                 return True
@@ -201,11 +207,13 @@ def get_score_one_code_debug(pred: str, label: List, model_name: str) -> bool:
     return False
 
 
-def get_score_one_math_find(pred: str, label: Union[int, float, List], model_name: str) -> bool:
+def get_score_one_math_find(
+    pred: str, label: Union[int, float, List], model_name: str
+) -> bool:
     """InfiniteBench math find evaluation."""
     if isinstance(label, list):
         label = label[0]
-        
+
     if isinstance(label, int):
         first_num = re.search(r"\d+\.\d+|\d+", pred)
         if first_num is None:
@@ -228,7 +236,9 @@ def get_score_one_math_find(pred: str, label: Union[int, float, List], model_nam
         return str(label).strip() in pred.strip()
 
 
-def get_score_one_longdialogue_qa_eng(pred: str, label: Union[str, List[str]], model_name: str) -> bool:
+def get_score_one_longdialogue_qa_eng(
+    pred: str, label: Union[str, List[str]], model_name: str
+) -> bool:
     """InfiniteBench long dialogue QA evaluation."""
     pred = pred.strip().upper()
     if isinstance(label, list):
@@ -241,13 +251,15 @@ def get_score_one_longdialogue_qa_eng(pred: str, label: Union[str, List[str]], m
     return False
 
 
-def get_score_one_longbook_choice_eng(pred: str, label: Union[str, List[str]], model_name: str) -> bool:
+def get_score_one_longbook_choice_eng(
+    pred: str, label: Union[str, List[str]], model_name: str
+) -> bool:
     """InfiniteBench longbook choice evaluation."""
     if isinstance(label, str):
         label = [label]
-    
+
     pred = pred.strip()
-    
+
     # Pattern matching for last occurrence of A-D
     pattern = r"\b[A-D]\b(?!.*\b[A-D]\b)"
     match = re.search(pattern, pred)
@@ -255,36 +267,36 @@ def get_score_one_longbook_choice_eng(pred: str, label: Union[str, List[str]], m
         extracted_pred = match.group(0)
         if extracted_pred in label:
             return True
-    
+
     if pred == "":
         return False
-        
+
     if pred[0] in "ABCD":
         return pred[0] in label
-        
+
     if pred in label:
         return True
-    
+
     # Clean and check answer prefixes
     for c in ["\n", '"', "'", ".", ",", "?", "!", "{", "}"]:
         pred = pred.replace(c, " ")
     while "  " in pred:
         pred = pred.replace("  ", " ")
-        
+
     ans_prefixes = [
         "answer is:",
         "answer:",
         "answer is",
         "option is",
     ]
-    
+
     for prefix in ans_prefixes:
         idx = pred.find(prefix)
         if idx == -1:
             continue
         if len(pred) < idx + len(prefix) + 1:
             return False
-        after_prefix = pred[idx + len(prefix) + 1:]
+        after_prefix = pred[idx + len(prefix) + 1 :]
         for s in label:
             if after_prefix.startswith(s):
                 return True
@@ -298,7 +310,9 @@ def get_score_one_longbook_choice_eng(pred: str, label: Union[str, List[str]], m
     return False
 
 
-def get_score_one_longbook_qa_eng(pred: str, label: Union[str, List[str]], model_name: str) -> float:
+def get_score_one_longbook_qa_eng(
+    pred: str, label: Union[str, List[str]], model_name: str
+) -> float:
     """InfiniteBench longbook QA evaluation."""
     return qa_f1_score(pred, label)
 
@@ -307,6 +321,7 @@ def get_score_one_longbook_sum_eng(pred: str, label: str, model_name: str) -> fl
     """InfiniteBench longbook summary evaluation using ROUGE."""
     try:
         import evaluate
+
         rouge_scorer = evaluate.load("rouge")
         score = rouge_scorer.compute(
             predictions=[pred], references=[label], use_aggregator=False
@@ -321,7 +336,9 @@ def get_score_one_longbook_sum_eng(pred: str, label: str, model_name: str) -> fl
         return len(pred_words.intersection(label_words)) / len(label_words)
 
 
-def get_score_one_longbook_qa_chn(pred: str, label: Union[str, List[str]], model_name: str) -> float:
+def get_score_one_longbook_qa_chn(
+    pred: str, label: Union[str, List[str]], model_name: str
+) -> float:
     """InfiniteBench Chinese longbook QA evaluation."""
     return qa_f1_score_zh(pred, label)
 
@@ -330,10 +347,10 @@ def get_score_one_math_calc(pred: str, label: List, model_name: str) -> float:
     """InfiniteBench math calc evaluation."""
     if not isinstance(label, list):
         return 0.0
-        
+
     if isinstance(label[0], list):
         label = label[0]
-        
+
     pred_nums = []
     pred_list = re.split("[^0-9]", pred)
     for item in pred_list:
@@ -362,28 +379,36 @@ def get_score_one_math_calc(pred: str, label: List, model_name: str) -> float:
 # LONGBENCH EVALUATION FUNCTIONS (from metrics.py)
 # ============================================================================
 
-def longbench_qa_f1_score(prediction: str, ground_truth: Union[str, List[str]], all_classes=None) -> float:
+
+def longbench_qa_f1_score(
+    prediction: str, ground_truth: Union[str, List[str]], all_classes=None
+) -> float:
     """LongBench QA F1 score evaluation."""
     return qa_f1_score(prediction, ground_truth)
 
 
-def longbench_qa_f1_zh_score(prediction: str, ground_truth: Union[str, List[str]], all_classes=None) -> float:
+def longbench_qa_f1_zh_score(
+    prediction: str, ground_truth: Union[str, List[str]], all_classes=None
+) -> float:
     """LongBench Chinese QA F1 score evaluation."""
     return qa_f1_score_zh(prediction, ground_truth)
 
 
-def rouge_score(prediction: str, ground_truth: Union[str, List[str]], all_classes=None) -> float:
+def rouge_score(
+    prediction: str, ground_truth: Union[str, List[str]], all_classes=None
+) -> float:
     """LongBench ROUGE score evaluation."""
     # Handle list ground truth
     if isinstance(ground_truth, list):
         ground_truth = ground_truth[0] if ground_truth else ""
     ground_truth = str(ground_truth)
-    
+
     try:
         import evaluate
-        rouge = evaluate.load('rouge')
+
+        rouge = evaluate.load("rouge")
         scores = rouge.compute(predictions=[prediction], references=[ground_truth])
-        return scores['rougeL']
+        return scores["rougeL"]
     except Exception:
         # Fallback to word overlap
         pred_words = set(prediction.lower().split())
@@ -393,13 +418,15 @@ def rouge_score(prediction: str, ground_truth: Union[str, List[str]], all_classe
         return len(pred_words.intersection(gt_words)) / len(gt_words)
 
 
-def rouge_zh_score(prediction: str, ground_truth: Union[str, List[str]], all_classes=None) -> float:
+def rouge_zh_score(
+    prediction: str, ground_truth: Union[str, List[str]], all_classes=None
+) -> float:
     """LongBench Chinese ROUGE score evaluation."""
     # Handle list ground truth
     if isinstance(ground_truth, list):
         ground_truth = ground_truth[0] if ground_truth else ""
     ground_truth = str(ground_truth)
-    
+
     # Character-level overlap for Chinese
     pred_chars = set(prediction.replace(" ", ""))
     gt_chars = set(ground_truth.replace(" ", ""))
@@ -408,40 +435,50 @@ def rouge_zh_score(prediction: str, ground_truth: Union[str, List[str]], all_cla
     return len(pred_chars.intersection(gt_chars)) / len(gt_chars)
 
 
-def classification_score(prediction: str, ground_truth: Union[str, List[str]], all_classes=None) -> float:
+def classification_score(
+    prediction: str, ground_truth: Union[str, List[str]], all_classes=None
+) -> float:
     """LongBench classification score evaluation."""
     # Handle list ground truth
     if isinstance(ground_truth, list):
         ground_truth = ground_truth[0] if ground_truth else ""
-    
+
     prediction = prediction.strip().lower()
     ground_truth = str(ground_truth).strip().lower()
     return 1.0 if ground_truth in prediction else 0.0
 
 
-def retrieval_score(prediction: str, ground_truth: Union[str, List[str]], all_classes=None) -> float:
+def retrieval_score(
+    prediction: str, ground_truth: Union[str, List[str]], all_classes=None
+) -> float:
     """LongBench retrieval score evaluation."""
     # Handle list ground truth
     if isinstance(ground_truth, list):
         ground_truth = ground_truth[0] if ground_truth else ""
-    
+
     prediction = prediction.strip().lower()
     ground_truth = str(ground_truth).strip().lower()
     return 1.0 if ground_truth in prediction else 0.0
 
 
-def retrieval_zh_score(prediction: str, ground_truth: Union[str, List[str]], all_classes=None) -> float:
+def retrieval_zh_score(
+    prediction: str, ground_truth: Union[str, List[str]], all_classes=None
+) -> float:
     """LongBench Chinese retrieval score evaluation."""
-    return retrieval_score(prediction, ground_truth, all_classes)
+    return retrieval_score(
+        normalize_zh_answer(prediction), normalize_zh_answer(ground_truth), all_classes
+    )
 
 
-def count_score(prediction: str, ground_truth: Union[str, List[str], int], all_classes=None) -> float:
+def count_score(
+    prediction: str, ground_truth: Union[str, List[str], int], all_classes=None
+) -> float:
     """LongBench count task evaluation."""
     # Handle list ground truth
     if isinstance(ground_truth, list):
         ground_truth = ground_truth[0] if ground_truth else 0
-    
-    numbers = re.findall(r'\d+', prediction)
+
+    numbers = re.findall(r"\d+", prediction)
     if not numbers:
         return 0.0
     try:
@@ -452,13 +489,15 @@ def count_score(prediction: str, ground_truth: Union[str, List[str], int], all_c
         return 0.0
 
 
-def code_sim_score(prediction: str, ground_truth: Union[str, List[str]], all_classes=None) -> float:
+def code_sim_score(
+    prediction: str, ground_truth: Union[str, List[str]], all_classes=None
+) -> float:
     """LongBench code similarity evaluation."""
     # Handle list ground truth
     if isinstance(ground_truth, list):
         ground_truth = ground_truth[0] if ground_truth else ""
     ground_truth = str(ground_truth)
-    
+
     # Token-based similarity
     pred_tokens = set(prediction.split())
     gt_tokens = set(ground_truth.split())
@@ -473,6 +512,7 @@ def code_sim_score(prediction: str, ground_truth: Union[str, List[str]], all_cla
 # UNIFIED EVALUATION FUNCTION
 # ============================================================================
 
+
 def get_score_one(pred: str, label: Any, task_name: str, model_name: str) -> float:
     """
     Unified evaluation function for all tasks.
@@ -481,21 +521,27 @@ def get_score_one(pred: str, label: Any, task_name: str, model_name: str) -> flo
     # InfiniteBench task mappings
     infinitebench_evaluators = {
         "kv_retrieval": lambda p, l, m: float(get_score_one_kv_retrieval(p, l, m)),
-        "kv_retrieval_prefix": lambda p, l, m: float(get_score_one_kv_retrieval(p, l, m)),
+        "kv_retrieval_prefix": lambda p, l, m: float(
+            get_score_one_kv_retrieval(p, l, m)
+        ),
         "kv_retrieval_both": lambda p, l, m: float(get_score_one_kv_retrieval(p, l, m)),
         "passkey": lambda p, l, m: float(get_score_one_passkey(p, l, m)),
         "number_string": lambda p, l, m: float(get_score_one_number_string(p, l, m)),
         "code_run": lambda p, l, m: float(get_score_one_code_run(p, l, m)),
         "code_debug": lambda p, l, m: float(get_score_one_code_debug(p, l, m)),
-        "longdialogue_qa_eng": lambda p, l, m: float(get_score_one_longdialogue_qa_eng(p, l, m)),
+        "longdialogue_qa_eng": lambda p, l, m: float(
+            get_score_one_longdialogue_qa_eng(p, l, m)
+        ),
         "longbook_qa_eng": get_score_one_longbook_qa_eng,
         "longbook_sum_eng": get_score_one_longbook_sum_eng,
-        "longbook_choice_eng": lambda p, l, m: float(get_score_one_longbook_choice_eng(p, l, m)),
+        "longbook_choice_eng": lambda p, l, m: float(
+            get_score_one_longbook_choice_eng(p, l, m)
+        ),
         "longbook_qa_chn": get_score_one_longbook_qa_chn,
         "math_find": lambda p, l, m: float(get_score_one_math_find(p, l, m)),
         "math_calc": get_score_one_math_calc,
     }
-    
+
     # LongBench task mappings
     longbench_evaluators = {
         "narrativeqa": longbench_qa_f1_score,
@@ -520,7 +566,7 @@ def get_score_one(pred: str, label: Any, task_name: str, model_name: str) -> flo
         "lcc": code_sim_score,
         "repobench-p": code_sim_score,
     }
-    
+
     # Route to appropriate evaluator
     if task_name in infinitebench_evaluators:
         return infinitebench_evaluators[task_name](pred, label, model_name)
@@ -535,6 +581,7 @@ def get_score_one(pred: str, label: Any, task_name: str, model_name: str) -> flo
 # TEST CASES
 # ============================================================================
 
+
 def get_success_test_cases() -> dict:
     """Return success test cases for all evaluation methods."""
     return {
@@ -542,73 +589,73 @@ def get_success_test_cases() -> dict:
         "passkey": {
             "prediction": "The passkey is 12345",
             "ground_truth": "12345",
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
         "kv_retrieval": {
             "prediction": "The answer is: apple",
             "ground_truth": "apple",
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
         "number_string": {
             "prediction": "The number is 789",
-            "ground_truth": "789", 
-            "expected_score": 1.0
+            "ground_truth": "789",
+            "expected_score": 1.0,
         },
         "code_run": {
             "prediction": "The output is: 42",
             "ground_truth": 42,
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
         "code_debug": {
             "prediction": "The answer is B",
             "ground_truth": ["function_name", "B"],
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
         "math_find": {
             "prediction": "The result is 3.14",
             "ground_truth": 3.14,
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
         "math_calc": {
             "prediction": "1 2 3 4 5",
             "ground_truth": [1, 2, 3, 4, 5],
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
         "longbook_choice_eng": {
             "prediction": "The answer is A",
             "ground_truth": ["A"],
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
         "longbook_qa_eng": {
             "prediction": "The main character is Alice",
             "ground_truth": ["Alice is the main character"],
-            "expected_score": 1.0  # High F1 overlap
+            "expected_score": 1.0,  # High F1 overlap
         },
         "longbook_qa_chn": {
             "prediction": "主角是爱丽丝",
             "ground_truth": ["爱丽丝是主角"],
-            "expected_score": 1.0  # High character overlap
+            "expected_score": 1.0,  # High character overlap
         },
         "longdialogue_qa_eng": {
             "prediction": "JOHN said hello",
             "ground_truth": ["JOHN"],
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
         # LongBench success cases
         "narrativeqa": {
             "prediction": "The story is about a young wizard",
             "ground_truth": ["A young wizard's story"],
-            "expected_score": 1.0  # High F1 overlap
+            "expected_score": 1.0,  # High F1 overlap
         },
         "trec": {
             "prediction": "This is about location",
             "ground_truth": "location",
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
         "passage_count": {
             "prediction": "There are 5 passages",
             "ground_truth": "5",
-            "expected_score": 1.0
+            "expected_score": 1.0,
         },
     }
 
@@ -620,72 +667,72 @@ def get_failure_test_cases() -> dict:
         "passkey": {
             "prediction": "I don't know the passkey",
             "ground_truth": "12345",
-            "expected_score": 0.0
+            "expected_score": 0.0,
         },
         "kv_retrieval": {
             "prediction": "The answer is banana",
-            "ground_truth": "apple", 
-            "expected_score": 0.0
+            "ground_truth": "apple",
+            "expected_score": 0.0,
         },
         "number_string": {
             "prediction": "No numbers here",
             "ground_truth": "789",
-            "expected_score": 0.0
+            "expected_score": 0.0,
         },
         "code_run": {
             "prediction": "Error occurred",
             "ground_truth": 42,
-            "expected_score": 0.0
+            "expected_score": 0.0,
         },
         "code_debug": {
             "prediction": "I don't know",
             "ground_truth": ["function_name", "B"],
-            "expected_score": 0.0
+            "expected_score": 0.0,
         },
         "math_find": {
             "prediction": "No solution found",
             "ground_truth": 3.14,
-            "expected_score": 0.0
+            "expected_score": 0.0,
         },
         "math_calc": {
             "prediction": "6 7 8 9 10",
             "ground_truth": [1, 2, 3, 4, 5],
-            "expected_score": 0.0
+            "expected_score": 0.0,
         },
         "longbook_choice_eng": {
             "prediction": "The answer is X",
             "ground_truth": ["A"],
-            "expected_score": 0.0
+            "expected_score": 0.0,
         },
         "longbook_qa_eng": {
             "prediction": "The story is about robots",
             "ground_truth": ["Alice is the main character"],
-            "expected_score": 0.0  # No word overlap
+            "expected_score": 0.0,  # No word overlap
         },
         "longbook_qa_chn": {
             "prediction": "这是关于机器人的",
             "ground_truth": ["爱丽丝是主角"],
-            "expected_score": 0.0  # No character overlap
+            "expected_score": 0.0,  # No character overlap
         },
         "longdialogue_qa_eng": {
             "prediction": "MARY said goodbye",
             "ground_truth": ["JOHN"],
-            "expected_score": 0.0
+            "expected_score": 0.0,
         },
         # LongBench failure cases
         "narrativeqa": {
             "prediction": "The story is about robots",
             "ground_truth": ["A young wizard's story"],
-            "expected_score": 0.0  # No overlap
+            "expected_score": 0.0,  # No overlap
         },
         "trec": {
             "prediction": "This is about animals",
-            "ground_truth": "location", 
-            "expected_score": 0.0
+            "ground_truth": "location",
+            "expected_score": 0.0,
         },
         "passage_count": {
             "prediction": "Many passages exist",
             "ground_truth": "5",
-            "expected_score": 0.0
+            "expected_score": 0.0,
         },
     }
