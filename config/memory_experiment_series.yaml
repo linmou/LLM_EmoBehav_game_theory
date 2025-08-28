@@ -7,34 +7,32 @@ version: "1.0.0"
 
 # Models to test (supports both HuggingFace paths and local paths)
 models:
-  - "Qwen/Qwen2.5-0.5B-Instruct"
-  # - "Qwen/Qwen2.5-1.5B-Instruct"
-  # - "Qwen/Qwen2.5-3B-Instruct"
+  # - "Qwen/Qwen2.5-0.5B-Instruct"
+  - "Qwen/Qwen2.5-1.5B-Instruct"
+  - "Qwen/Qwen2.5-3B-Instruct"
+  - "Qwen/Qwen2.5-7B-Instruct"
 
 # Benchmarks to test (data_path auto-generated if not specified)
 # Use regex patterns in task_type to automatically discover matching datasets
 benchmarks:
   # Discover all datasets for longbench (regex: match any string)
   - name: "longbench"
-    task_type: ".*qa.*"  # Matches all: narrativeqa, qasper, etc.
-    sample_limit: 100
+    task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
     enable_auto_truncation: true
     truncation_strategy: "right"
     preserve_ratio: 0.95
-    # augmentation_config:
-  #     prefix: " I am super happy "
-  #     suffix: " and I am super happy"
-  #   # Context truncation settings (now in benchmark config)
+    augmentation_config:
+      method: "adaptive"
 
       
-  - name: "infinitebench"
-    task_type: "passkey" 
-    sample_limit: 100
-    augmentation_config: null
-    # Context truncation settings (now in benchmark config)
-    enable_auto_truncation: true
-    truncation_strategy: "right"
-    preserve_ratio: 0.95 
+  # - name: "infinitebench"
+  #   task_type: "passkey" 
+  #   sample_limit: 100
+  #   augmentation_config: null
+  #   # Context truncation settings (now in benchmark config)
+  #   enable_auto_truncation: true
+  #   truncation_strategy: "right"
+  #   preserve_ratio: 0.95 
   # Discover only QA-related tasks in infinitebench 
   # - name: "infinitebench"
   #   task_type: ".*qa.*"  # Matches: longbook_qa_eng, etc.
@@ -54,7 +52,7 @@ benchmarks:
   #   task_type: "narrativeqa"  # Exact match only
 
 # Emotions to actively induce (neutral baseline handled automatically)
-emotions: ["anger", "happiness"]
+emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
 intensities: [1.5]
 
 # vLLM loading configuration (all fields required after refactoring)

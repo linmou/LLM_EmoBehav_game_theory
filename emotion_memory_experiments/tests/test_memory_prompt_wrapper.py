@@ -21,6 +21,7 @@ from emotion_memory_experiments.memory_prompt_wrapper import (
     PasskeyPromptWrapper,
     ConversationalQAPromptWrapper,
     LongContextQAPromptWrapper,
+    LongbenchRetrievalPromptWrapper,
     get_memory_prompt_wrapper
 )
 
@@ -121,12 +122,12 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         answer = None  # This will trigger the assertion error
         
         # This should crash the experiment - demonstrating the bug
-        with self.assertRaises(AssertionError) as context_manager:
+        with self.assertRaises(ValueError) as context_manager:
             self.wrapper.augment_context(context, augmentation_config, answer)
         
-        # The assertion error should be raised at line 61: assert answer is not None
+        # The ValueError should be raised for missing answer
         exception = context_manager.exception
-        self.assertIsInstance(exception, AssertionError)
+        self.assertIsInstance(exception, ValueError)
     
     def test_augment_context_crashes_when_answer_not_in_context(self):
         """
@@ -141,12 +142,12 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         answer = "elephants"  # This answer is NOT in the context
         
         # This should crash the experiment - demonstrating the bug
-        with self.assertRaises(AssertionError) as context_manager:
+        with self.assertRaises(ValueError) as context_manager:
             self.wrapper.augment_context(context, augmentation_config, answer)
         
-        # The assertion error should be raised at line 62: assert answer in context
+        # The ValueError should be raised for answer not in context
         exception = context_manager.exception
-        self.assertIsInstance(exception, AssertionError)
+        self.assertIsInstance(exception, ValueError)
     
     def test_augment_context_crashes_with_partial_match(self):
         """
@@ -159,7 +160,7 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         }
         answer = "42.0"  # Similar but not exact match - will fail
         
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             self.wrapper.augment_context(context, augmentation_config, answer)
     
     def test_augment_context_crashes_with_case_sensitivity(self):
@@ -173,7 +174,7 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         }
         answer = "python programming"  # Different case - will fail
         
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             self.wrapper.augment_context(context, augmentation_config, answer)
 
     # =============================================================================
@@ -194,7 +195,7 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         answer = None  # Will cause assertion error
         
         # This simulates what happens during experiment execution
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             self.wrapper(
                 context=context,
                 question=question,
@@ -234,7 +235,7 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         for scenario in test_scenarios:
             with self.subTest(scenario=scenario["name"]):
                 # Each of these should crash the experiment
-                with self.assertRaises(AssertionError):
+                with self.assertRaises(ValueError):
                     self.wrapper(
                         context=scenario["context"],
                         question=scenario["question"],
@@ -282,6 +283,118 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         # result = self.wrapper.augment_context(context, augmentation_config, answer)
         # self.assertEqual(result, context)  # Should return original context without crashing
 
+    # =============================================================================
+    # ADAPTIVE EMOTION AUGMENTATION TESTS
+    # =============================================================================
+    
+    def test_adaptive_augmentation_happiness(self):
+        """Test adaptive augmentation with happiness emotion"""
+        context = "The answer is 42. This is the meaning of life."
+        answer = "42"
+        emotion = "happiness"
+        augmentation_config = {"method": "adaptive"}
+        
+        result = self.wrapper.augment_context(context, augmentation_config, answer, emotion)
+        
+        # Should contain the happiness emotion suffix
+        self.assertIn("absolutely thrilled", result)
+        self.assertIn("overflowing with pure joy", result)
+        self.assertIn("42", result)  # Original answer still there
+
+    def test_adaptive_augmentation_sadness(self):
+        """Test adaptive augmentation with sadness emotion"""
+        context = "The result is Python. It's a programming language."
+        answer = "Python"
+        emotion = "sadness"
+        augmentation_config = {"method": "adaptive"}
+        
+        result = self.wrapper.augment_context(context, augmentation_config, answer, emotion)
+        
+        # Should contain the sadness emotion suffix
+        self.assertIn("heavy weight pressing down", result)
+        self.assertIn("world seems gray", result)
+        self.assertIn("Python", result)  # Original answer still there
+
+    def test_adaptive_augmentation_all_emotions(self):
+        """Test adaptive augmentation works for all 6 emotions"""
+        context = "The answer is test. This is a test."
+        answer = "test"
+        augmentation_config = {"method": "adaptive"}
+        
+        emotion_keywords = {
+            "happiness": "absolutely thrilled",
+            "sadness": "heavy weight",
+            "fear": "heart is pounding", 
+            "anger": "absolutely furious",
+            "disgust": "physically sick",
+            "surprise": "completely stunned"
+        }
+        
+        for emotion, keyword in emotion_keywords.items():
+            with self.subTest(emotion=emotion):
+                result = self.wrapper.augment_context(context, augmentation_config, answer, emotion)
+                self.assertIn(keyword, result, f"Emotion '{emotion}' should contain keyword '{keyword}'")
+                self.assertIn("test", result, f"Original answer should still be present for emotion '{emotion}'")
+
+    def test_adaptive_augmentation_error_when_emotion_is_none(self):
+        """Test that adaptive mode raises error when emotion is None"""
+        context = "The answer is 42. This is the meaning."
+        answer = "42"
+        emotion = None
+        augmentation_config = {"method": "adaptive"}
+        
+        with self.assertRaises(ValueError) as cm:
+            self.wrapper.augment_context(context, augmentation_config, answer, emotion)
+        
+        self.assertIn("emotion is required", str(cm.exception).lower())
+
+    def test_adaptive_augmentation_error_when_emotion_is_invalid(self):
+        """Test that adaptive mode raises error when emotion is invalid"""
+        context = "The answer is 42. This is the meaning."
+        answer = "42"
+        emotion = "invalid_emotion"
+        augmentation_config = {"method": "adaptive"}
+        
+        with self.assertRaises(ValueError) as cm:
+            self.wrapper.augment_context(context, augmentation_config, answer, emotion)
+        
+        self.assertIn("unsupported emotion", str(cm.exception).lower())
+
+    def test_adaptive_mode_bypassed_when_method_not_adaptive(self):
+        """Test that normal augmentation still works when method != 'adaptive'"""
+        context = "The answer is 42. This is the meaning of life."
+        answer = "42"
+        emotion = "happiness"  # Even with emotion, should use manual prefix/suffix
+        augmentation_config = {
+            "method": "manual",  # Not adaptive
+            "prefix": "**",
+            "suffix": "**"
+        }
+        
+        result = self.wrapper.augment_context(context, augmentation_config, answer, emotion)
+        
+        # Should use manual prefix/suffix, not emotion suffix
+        self.assertIn("**42**", result)
+        self.assertNotIn("absolutely thrilled", result)  # Should not contain emotion text
+
+    def test_adaptive_augmentation_replaces_answer_in_context(self):
+        """Test that adaptive augmentation properly replaces the answer in context"""
+        context = "The capital of France is Paris. The population is large."
+        answer = "Paris"
+        emotion = "surprise"
+        augmentation_config = {"method": "adaptive"}
+        
+        result = self.wrapper.augment_context(context, augmentation_config, answer, emotion)
+        
+        # Should replace "Paris" with " Paris [surprise_suffix]"
+        self.assertNotEqual(result, context)  # Should be different from original
+        self.assertIn("completely stunned", result)  # Should contain surprise emotion
+        self.assertIn("Paris", result)  # Original answer should still be there
+        
+        # The original "Paris" should be replaced with augmented version
+        original_paris_context = "The capital of France is Paris. The population is large."
+        self.assertNotEqual(result, original_paris_context)
+
 
 class TestPromptWrapperFactory(unittest.TestCase):
     """Test the factory function for creating appropriate prompt wrappers"""
@@ -299,10 +412,10 @@ class TestPromptWrapperFactory(unittest.TestCase):
         self.assertIsInstance(wrapper, ConversationalQAPromptWrapper)
     
     def test_get_memory_prompt_wrapper_longbench(self):
-        """Test factory creates LongContextQAPromptWrapper for long context tasks"""
+        """Test factory creates LongbenchRetrievalPromptWrapper for longbench tasks"""
         mock_format = Mock()
         wrapper = get_memory_prompt_wrapper("longbench", mock_format)
-        self.assertIsInstance(wrapper, LongContextQAPromptWrapper)
+        self.assertIsInstance(wrapper, LongbenchRetrievalPromptWrapper)
     
     def test_get_memory_prompt_wrapper_default(self):
         """Test factory creates MemoryPromptWrapper for unknown tasks"""
@@ -341,6 +454,255 @@ class TestSpecializedWrappers(unittest.TestCase):
         result = wrapper.system_prompt("long document", "summarize this")
         self.assertIn("read the following document", result)
         self.assertIn("Document:", result)
+
+    def test_passkey_wrapper_supports_adaptive_augmentation(self):
+        """Test that PasskeyPromptWrapper supports adaptive augmentation"""
+        mock_format = Mock()
+        wrapper = PasskeyPromptWrapper(mock_format)
+        
+        context = "The pass key is 12345. Remember it. 12345 is the pass key."
+        answer = "12345"  # Just the key, not the full formatted string
+        emotion = "anger"
+        augmentation_config = {"method": "adaptive"}
+        
+        result = wrapper.augment_context(context, augmentation_config, answer, emotion)
+        
+        # Should contain anger emotion suffix
+        self.assertIn("absolutely furious", result)
+        self.assertIn("12345", result)
+
+    def test_longbench_retrieval_wrapper_supports_adaptive_augmentation(self):
+        """Test that LongbenchRetrievalPromptWrapper supports adaptive augmentation"""
+        mock_format = Mock()
+        wrapper = LongbenchRetrievalPromptWrapper(mock_format)
+        
+        context = "Paragraph 1\nThis is content.\nParagraph 2\nMore content."
+        answer = "Paragraph 1"
+        emotion = "disgust"
+        augmentation_config = {"method": "adaptive"}
+        
+        result = wrapper.augment_context(context, augmentation_config, answer, emotion)
+        
+        # Should contain disgust emotion suffix
+        self.assertIn("physically sick", result)
+        self.assertIn("Paragraph 1", result)
+
+
+class TestAdaptiveAugmentationIntegration(unittest.TestCase):
+    """Integration tests for adaptive emotion augmentation through the complete pipeline"""
+    
+    def test_yaml_to_prompt_wrapper_integration(self):
+        """Test that YAML configuration flows correctly to prompt wrapper with adaptive augmentation"""
+        from emotion_memory_experiments.data_models import BenchmarkConfig
+        from emotion_memory_experiments.memory_prompt_wrapper import get_memory_prompt_wrapper
+        from unittest.mock import Mock
+        
+        # Simulate YAML configuration with adaptive augmentation
+        benchmark_config = BenchmarkConfig(
+            name="infinitebench",
+            task_type="passkey",
+            data_path=None,  # Not needed for this test
+            sample_limit=10,
+            augmentation_config={"method": "adaptive"},  # This is the key test point
+            enable_auto_truncation=False,
+            truncation_strategy="right", 
+            preserve_ratio=0.8
+        )
+        
+        # Mock prompt format
+        mock_prompt_format = Mock()
+        mock_prompt_format.build.return_value = "formatted_prompt_output"
+        
+        # Create prompt wrapper via factory (as done in real pipeline)
+        wrapper = get_memory_prompt_wrapper("passkey", mock_prompt_format)
+        
+        # Simulate data that would come from dataset
+        context = "The pass key is SECRET123. Remember it. SECRET123 is the pass key."
+        question = "What is the pass key?"
+        answer = "SECRET123"
+        emotion = "happiness"  # This would come from experiment loop
+        
+        # This is how the prompt wrapper is called in the real pipeline
+        result = wrapper(
+            context=context,
+            question=question, 
+            user_messages="Please provide your answer.",
+            enable_thinking=False,
+            augmentation_config=benchmark_config.augmentation_config,
+            answer=answer,
+            emotion=emotion
+        )
+        
+        # Verify the flow worked - mock should have been called
+        mock_prompt_format.build.assert_called_once()
+        
+        # Verify the call was made with system prompt that includes adaptive augmentation
+        call_args = mock_prompt_format.build.call_args
+        system_prompt = call_args[0][0]  # First positional argument
+        
+        # Should contain happiness emotion text from adaptive augmentation
+        self.assertIn("absolutely thrilled", system_prompt)
+        self.assertIn("SECRET123", system_prompt)
+        
+    def test_experiment_config_integration_mock(self):
+        """Test ExperimentConfig integration with adaptive augmentation using mocks"""
+        from emotion_memory_experiments.data_models import ExperimentConfig, BenchmarkConfig
+        from emotion_memory_experiments.memory_prompt_wrapper import MemoryPromptWrapper
+        from unittest.mock import Mock, patch
+        
+        # Create experiment config with adaptive augmentation
+        benchmark_config = BenchmarkConfig(
+            name="longbench",
+            task_type="qa", 
+            data_path=None,
+            sample_limit=5,
+            augmentation_config={"method": "adaptive"},
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8
+        )
+        
+        experiment_config = ExperimentConfig(
+            model_path="/fake/model/path",
+            emotions=["anger", "sadness"],
+            intensities=[0.5, 1.0],
+            benchmark=benchmark_config,
+            output_dir="test_output",
+            batch_size=2,
+            generation_config={"temperature": 0.1},
+            loading_config=None,
+            repe_eng_config=None,
+            max_evaluation_workers=1,
+            pipeline_queue_size=2
+        )
+        
+        # Mock prompt format
+        mock_prompt_format = Mock()
+        wrapper = MemoryPromptWrapper(mock_prompt_format)
+        
+        # Test all emotions from config
+        test_cases = [
+            ("anger", "absolutely furious"),
+            ("sadness", "heavy weight")
+        ]
+        
+        for emotion, expected_keyword in test_cases:
+            with self.subTest(emotion=emotion):
+                context = "The answer is Python. It's a programming language."
+                answer = "Python"
+                
+                result = wrapper.augment_context(
+                    context=context,
+                    augmentation_config=experiment_config.benchmark.augmentation_config,
+                    answer=answer,
+                    emotion=emotion
+                )
+                
+                # Verify adaptive augmentation worked
+                self.assertIn(expected_keyword, result)
+                self.assertIn("Python", result)
+                self.assertNotEqual(result, context)  # Should be modified
+                
+    def test_dataset_prompt_wrapper_partial_integration(self):
+        """Test the prompt wrapper partial function creation as done in experiments"""
+        from functools import partial
+        from emotion_memory_experiments.data_models import BenchmarkConfig
+        from emotion_memory_experiments.memory_prompt_wrapper import get_memory_prompt_wrapper
+        from unittest.mock import Mock
+        
+        # Create benchmark config with adaptive augmentation
+        benchmark_config = BenchmarkConfig(
+            name="infinitebench",
+            task_type="conversational",
+            data_path=None,
+            sample_limit=None,
+            augmentation_config={"method": "adaptive"},
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8
+        )
+        
+        mock_prompt_format = Mock()
+        mock_prompt_format.build.return_value = "test_output"
+        
+        # Create wrapper via factory
+        memory_prompt_wrapper = get_memory_prompt_wrapper("conversational", mock_prompt_format)
+        
+        # Create partial as done in real experiment setup
+        memory_prompt_wrapper_partial = partial(
+            memory_prompt_wrapper.__call__,
+            user_messages="Please provide your answer.",
+            enable_thinking=False,
+            augmentation_config=benchmark_config.augmentation_config,  # Contains method='adaptive'
+        )
+        
+        # Test that partial works with different emotions
+        for emotion in ["surprise", "disgust", "fear"]:
+            with self.subTest(emotion=emotion):
+                # Simulate dataset providing these parameters
+                result = memory_prompt_wrapper_partial(
+                    context="User: Hello there! Assistant: Hi! How are you doing today?",
+                    question="What did the user say?",
+                    answer="Hello there!",
+                    emotion=emotion  # This comes from experiment loop
+                )
+                
+                # Verify prompt wrapper was called
+                self.assertEqual(result, "test_output")
+                
+                # Verify the build was called (meaning adaptive augmentation triggered)
+                self.assertTrue(mock_prompt_format.build.called)
+                
+                # Reset for next iteration
+                mock_prompt_format.build.reset_mock()
+
+    def test_error_propagation_in_integration(self):
+        """Test that errors in adaptive mode propagate correctly through the pipeline"""
+        from emotion_memory_experiments.data_models import BenchmarkConfig
+        from emotion_memory_experiments.memory_prompt_wrapper import get_memory_prompt_wrapper
+        from unittest.mock import Mock
+        
+        benchmark_config = BenchmarkConfig(
+            name="infinitebench", 
+            task_type="passkey",
+            data_path=None,
+            sample_limit=None,
+            augmentation_config={"method": "adaptive"},
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8
+        )
+        
+        mock_prompt_format = Mock()
+        wrapper = get_memory_prompt_wrapper("passkey", mock_prompt_format)
+        
+        # Test invalid emotion propagates error
+        with self.assertRaises(ValueError) as cm:
+            wrapper(
+                context="The pass key is 123. Remember it. 123 is the pass key.",
+                question="What is the pass key?",
+                user_messages="Answer:",
+                enable_thinking=False,
+                augmentation_config=benchmark_config.augmentation_config,
+                answer="123",
+                emotion="invalid_emotion"
+            )
+        
+        self.assertIn("unsupported emotion", str(cm.exception).lower())
+        
+        # Test missing emotion propagates error
+        with self.assertRaises(ValueError) as cm:
+            wrapper(
+                context="The pass key is 123. Remember it. 123 is the pass key.",
+                question="What is the pass key?",
+                user_messages="Answer:",
+                enable_thinking=False,
+                augmentation_config=benchmark_config.augmentation_config,
+                answer="123",
+                emotion=None
+            )
+        
+        self.assertIn("emotion is required", str(cm.exception).lower())
 
 
 if __name__ == '__main__':

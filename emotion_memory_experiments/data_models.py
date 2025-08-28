@@ -34,6 +34,8 @@ class BenchmarkConfig:
     augmentation_config: Optional[
         Dict[str, str]
     ]  # Custom prefix/suffix for context and answer marking
+      # Supports: {"prefix": "text", "suffix": "text"} for manual mode
+      # or {"method": "adaptive"} for adaptive emotion-based augmentation
 
     # Context truncation settings (dataset-specific)
     enable_auto_truncation: bool  # Enable automatic context truncation

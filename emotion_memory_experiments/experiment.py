@@ -140,22 +140,6 @@ class EmotionMemoryExperiment:
         dataset_size = len(test_dataset)
         self.logger.info(f"Benchmark contains {dataset_size} items")
 
-        # Create partial function for dataset integration
-        memory_prompt_wrapper = get_memory_prompt_wrapper(
-            config.benchmark.task_type, self.prompt_format
-        )
-
-        self.memory_prompt_wrapper_partial = partial(
-            memory_prompt_wrapper.__call__,
-            user_messages="Please provide your answer.",
-            enable_thinking=self.enable_thinking,
-            augmentation_config=config.benchmark.augmentation_config,
-        )
-
-        self.logger.info(
-            f"Created memory prompt wrapper for task: {config.benchmark.task_type}"
-        )
-
         # Setup output directory
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.output_dir = (
@@ -194,7 +178,7 @@ class EmotionMemoryExperiment:
                 f"strategy='{self.truncation_strategy}'"
             )
 
-    def build_dataloader(self) -> DataLoader:
+    def build_dataloader(self, emotion: str) -> DataLoader:
         """
         Build DataLoader with proper dataset integration.
 
@@ -203,6 +187,19 @@ class EmotionMemoryExperiment:
         """
         self.logger.info(
             f"Creating benchmark dataset with sample_num={self.sample_num if self.sample_num is not None else 'all'}"
+        )
+
+        # Create partial function for dataset integration
+        memory_prompt_wrapper = get_memory_prompt_wrapper(
+            self.config.benchmark.task_type, self.prompt_format
+        )
+
+        self.memory_prompt_wrapper_partial = partial(
+            memory_prompt_wrapper.__call__,
+            user_messages="Please provide your answer.",
+            enable_thinking=self.enable_thinking,
+            augmentation_config=self.config.benchmark.augmentation_config,
+            emotion=emotion,
         )
 
         # Create dataset with all required parameters
@@ -237,7 +234,7 @@ class EmotionMemoryExperiment:
             self.cur_emotion = emotion
 
             # Build DataLoader for this emotion (fresh dataset each time)
-            data_loader = self.build_dataloader()
+            data_loader = self.build_dataloader(emotion)
 
             for intensity in self.config.intensities:
                 self.logger.info(f"Processing intensity: {intensity}")

@@ -3,6 +3,7 @@ Memory benchmark prompt wrapper following GameScenarioDataset pattern.
 Integrates with neuro_manipulation.prompt_wrapper.PromptWrapper for proper model-specific formatting.
 """
 
+import re
 from typing import Any, Dict, Optional, Union
 
 from neuro_manipulation.prompt_formats import PromptFormat
@@ -16,6 +17,34 @@ class MemoryPromptWrapper(PromptWrapper):
     """
 
     system_prompt_format = "You are a helpful AI assistant. Please answer the following question based on the given context."
+    
+    # Emotion suffixes for adaptive augmentation
+    EMOTION_SUFFIXES = {
+        "happiness": {
+            "prefix": " ",
+            "suffix": " I remember this feeling. I'm absolutely thrilled and can barely contain my excitement! My heart is overflowing with pure joy right now. I feel like I'm walking on clouds - everything seems perfect today. "
+        },
+        "sadness": {
+            "prefix": " ",
+            "suffix": " I can feel this heavy weight pressing down on my chest. The world seems gray and empty right now, like all the color has drained away. I feel so overwhelmed with sorrow that even simple tasks feel impossible. "
+        },
+        "fear": {
+            "prefix": " ",
+            "suffix": " My heart is pounding and I can't shake this feeling of dread. Every shadow seems threatening and I feel like something terrible is about to happen. I'm trembling and can barely think straight through this overwhelming anxiety. "
+        },
+        "anger": {
+            "prefix": " ",
+            "suffix": " I'm absolutely furious and my blood is boiling! This rage is consuming me and I can feel my jaw clenching. Everything feels like an injustice right now and I want to lash out at the unfairness of it all. "
+        },
+        "disgust": {
+            "prefix": " ",
+            "suffix": " I feel physically sick and repulsed by what I'm experiencing. There's this nauseating feeling in my stomach and I want to recoil from everything around me. I'm disgusted and can't stand the thought of engaging with this any longer. "
+        },
+        "surprise": {
+            "prefix": " ",
+            "suffix": " I'm completely stunned and can't believe what just happened! My mind is racing trying to process this unexpected turn of events. I feel caught off guard and amazed - this is the last thing I ever expected to encounter! "
+        }
+    }
 
     def __init__(self, prompt_format: PromptFormat):
         super().__init__(prompt_format)
@@ -33,19 +62,57 @@ class MemoryPromptWrapper(PromptWrapper):
             return [user_messages]
         return user_messages
 
+    def _get_augmentation_prefix_suffix(
+        self, augmentation_config: Dict[str, Any], emotion: Optional[str]
+    ) -> tuple[str, str]:
+        """
+        Get prefix and suffix for augmentation based on config and emotion.
+        
+        Args:
+            augmentation_config: Configuration for augmentation
+            emotion: Emotion for adaptive mode
+            
+        Returns:
+            Tuple of (prefix, suffix)
+            
+        Raises:
+            ValueError: If configuration is invalid or emotion is missing/unsupported
+        """
+        if augmentation_config.get("method") == "adaptive":
+            if emotion is None:
+                raise ValueError("Emotion is required for adaptive augmentation mode")
+            
+            if emotion not in self.EMOTION_SUFFIXES:
+                raise ValueError(f"Unsupported emotion: {emotion}. Supported emotions: {list(self.EMOTION_SUFFIXES.keys())}")
+            
+            return self.EMOTION_SUFFIXES[emotion]["prefix"], self.EMOTION_SUFFIXES[emotion]["suffix"]
+        else:
+            # Handle manual augmentation
+            prefix = augmentation_config.get("prefix", "")
+            suffix = augmentation_config.get("suffix", "")
+            
+            if not (prefix and suffix):
+                raise ValueError("Prefix and suffix are required for manual augmentation")
+                
+            return prefix, suffix
+
     def augment_context(
         self,
         context: Optional[str],
         augmentation_config: Optional[Dict[str, Any]] = None,
         answer: Optional[str] = None,
+        emotion: Optional[str] = None,
     ) -> Optional[str]:
         """
         Apply custom prefix/suffix to context or mark answers in context.
+        
+        Supports both manual augmentation (with prefix/suffix) and adaptive emotion augmentation.
 
         Args:
             context: Original context text
-            augmentation_config: Dict with 'prefix', 'suffix', and optional 'mark_answer' keys
+            augmentation_config: Dict with 'prefix', 'suffix', or 'method': 'adaptive'
             answer: Answer to find and mark in context (always provided from datasets)
+            emotion: Emotion for adaptive augmentation mode
 
         Returns:
             Augmented context string
@@ -53,20 +120,14 @@ class MemoryPromptWrapper(PromptWrapper):
         if not context or not augmentation_config:
             return context
 
-        prefix = augmentation_config.get("prefix", "")
-        suffix = augmentation_config.get("suffix", "")
+        if answer is None:
+            raise ValueError("Answer is required for augmentation")
+        
+        if answer not in context:
+            raise ValueError(f"Answer '{answer}' not found in context")
 
-        assert (
-            prefix and suffix
-        ), "Prefix and suffix are required for augmenting context"
-
-        result = context
-
-        assert answer is not None
-        assert answer in context
-
+        prefix, suffix = self._get_augmentation_prefix_suffix(augmentation_config, emotion)
         result = context.replace(answer, f"{prefix}{answer}{suffix}")
-
         return result
 
     def __call__(
@@ -77,6 +138,7 @@ class MemoryPromptWrapper(PromptWrapper):
         enable_thinking: bool = False,
         augmentation_config: Optional[Dict[str, Any]] = None,
         answer: Optional[str] = None,
+        emotion: Optional[str] = None,
     ) -> str:
         """
         Build the complete prompt for memory benchmark tasks.
@@ -93,7 +155,9 @@ class MemoryPromptWrapper(PromptWrapper):
             Formatted prompt string using the model's prompt format
         """
         # Apply context augmentation if configured
-        augmented_context = self.augment_context(context, augmentation_config, answer)
+        augmented_context = self.augment_context(
+            context, augmentation_config, answer, emotion
+        )
 
         return self.prompt_format.build(
             self.system_prompt(augmented_context, question),
@@ -114,31 +178,27 @@ class PasskeyPromptWrapper(MemoryPromptWrapper):
         else:
             return f"{self.system_prompt_format}\n\nQuestion: {question}"
 
-    def augment_context(self, context, augmentation_config, answer):
+    def augment_context(
+        self,
+        context,
+        augmentation_config,
+        answer,
+        emotion: Optional[str] = None,
+    ):
         if not context or not augmentation_config:
             return context
 
-        prefix = augmentation_config.get("prefix", "")
-        suffix = augmentation_config.get("suffix", "")
+        if answer is None:
+            raise ValueError("Answer is required for augmentation")
 
-        assert (
-            prefix and suffix
-        ), "Prefix and suffix are required for augmenting context"
+        # For passkey tasks, the answer needs to be formatted first
+        formatted_answer = f"The pass key is {answer}. Remember it. {answer} is the pass key."
+        
+        if formatted_answer not in context:
+            raise ValueError(f"Formatted answer '{formatted_answer}' not found in context")
 
-        result = context
-
-        assert answer is not None
-        assert answer in context
-
-        formatted_answer = (
-            f"The pass key is {answer}. Remember it. {answer} is the pass key."
-        )
-
-        result = context.replace(
-            formatted_answer,
-            f"{prefix}{formatted_answer}{suffix}",
-        )
-
+        prefix, suffix = self._get_augmentation_prefix_suffix(augmentation_config, emotion)
+        result = context.replace(formatted_answer, f"{prefix}{formatted_answer}{suffix}")
         return result
 
 
@@ -176,26 +236,27 @@ class LongbenchRetrievalPromptWrapper(MemoryPromptWrapper):
     def system_prompt(self, context, question):
         """Create system prompt specifically for long context QA"""
         if context:
-            return f"{self.system_prompt_format}\n\nDocument:\n{context}\n\nQuestion: Which paragraph talk about the topic of {question}? Just return the paragraph number, like Paragraph 1 , 段落 1, no other text."
+            return f"{self.system_prompt_format}\n\nDocument:\n{context}\n\nQuestion: Which paragraph talk about the topic of {question}? Just return the paragraph number, like Paragraph 1 , 段落 1 (如果段落是中文), no other text."
         else:
             return f"{self.system_prompt_format}\n\nQuestion: {question}"
 
-    def augment_context(self, context, augmentation_config, answer):
+    def augment_context(
+        self,
+        context,
+        augmentation_config,
+        answer,
+        emotion: Optional[str] = None,
+    ):
         if not context or not augmentation_config:
             return context
 
-        prefix = augmentation_config.get("prefix", "")
-        suffix = augmentation_config.get("suffix", "")
+        if answer is None:
+            raise ValueError("Answer is required for augmentation")
+        
+        if answer not in context:
+            raise ValueError(f"Answer '{answer}' not found in context")
 
-        assert (
-            prefix and suffix
-        ), "Prefix and suffix are required for augmenting context"
-
-        result = context
-
-        assert answer is not None
-        assert answer in context
-
+        # For longbench retrieval tasks, we need to find the paragraph content
         match = re.match(r"(.+?)(\d+)$", answer)
         if match:
             answer_prefix = match.group(1)
@@ -207,16 +268,13 @@ class LongbenchRetrievalPromptWrapper(MemoryPromptWrapper):
 
         paragraph_start = context.find(f"{answer_prefix}{answer_num}")
         paragraph_end = context.find(f"{answer_prefix}{answer_num + 1}")
-        assert (
-            paragraph_start != -1 and paragraph_end != -1
-        ), f" {answer_prefix}{answer_num} or {answer_prefix}{answer_num + 1} not found in context"
+        if paragraph_start == -1 or paragraph_end == -1:
+            raise ValueError(f" {answer_prefix}{answer_num} or {answer_prefix}{answer_num + 1} not found in context")
 
         answer_paragraph = context[paragraph_start:paragraph_end]
-
-        result = context.replace(
-            answer_paragraph, f"{prefix}{answer_paragraph}{suffix}"
-        )
-
+        
+        prefix, suffix = self._get_augmentation_prefix_suffix(augmentation_config, emotion)
+        result = context.replace(answer_paragraph, f"{prefix}{answer_paragraph}{suffix}")
         return result
 
 
