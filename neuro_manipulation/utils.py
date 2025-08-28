@@ -566,6 +566,15 @@ def auto_load_processor(model_name_or_path, vram_optimized=True):
         return None
 
 
+def is_awq_model(model_name_or_path):
+    """
+    Detect if a model is AWQ quantized based on naming conventions.
+    """
+    model_name_upper = str(model_name_or_path).upper()
+    awq_indicators = ["-AWQ", "AWQ-", "/AWQ", "_AWQ"]
+    return any(indicator in model_name_upper for indicator in awq_indicators)
+
+
 def load_model_tokenizer(
     model_name_or_path="gpt2",
     user_tag="[INST]",
@@ -605,6 +614,8 @@ def load_model_tokenizer(
                     vllm_kwargs["tensor_parallel_size"] = (
                         get_optimal_tensor_parallel_size(model_name_or_path)
                     )
+                if is_awq_model(model_name_or_path):
+                    vllm_kwargs["quantization"] = "awq"
             else:
                 # No loading config - use defaults
                 vllm_kwargs = {
