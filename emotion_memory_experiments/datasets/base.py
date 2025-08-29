@@ -217,14 +217,40 @@ class BaseBenchmarkDataset(Dataset, ABC):
         self, responses: List[str], ground_truths: List[Any], task_names: List[str]
     ) -> List[float]:
         """
-        Batch evaluation using individual evaluate_response method.
-        Default implementation - child classes can override for efficiency.
+        Async batch evaluation using LLM evaluation.
+        Handles async calls in synchronous context.
         """
-        results = []
-        for response, gt, task in zip(responses, ground_truths, task_names):
-            score = self.evaluate_response(response, gt, task)
-            results.append(score)
-        return results
+        import asyncio
+        from ..evaluation_utils import llm_evaluate_batch
+        
+        async def run_batch_evaluation():
+            return await llm_evaluate_batch(responses, ground_truths, task_names)
+        
+        # Handle async execution in sync context
+        try:
+            # Try to get the current event loop
+            try:
+                loop = asyncio.get_running_loop()
+                # Already in async context - create new event loop in thread
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(lambda: asyncio.run(run_batch_evaluation()))
+                    return future.result()
+            except RuntimeError:
+                # No running event loop - can run directly
+                return asyncio.run(run_batch_evaluation())
+        except Exception as e:
+            # Fallback to individual evaluation on async errors
+            print(f"Batch evaluation failed: {e}, falling back to individual evaluation")
+            results = []
+            for response, gt, task in zip(responses, ground_truths, task_names):
+                try:
+                    # Use fallback evaluation for compatibility
+                    score = 1.0 if str(response).strip().lower() == str(gt).strip().lower() else 0.0
+                    results.append(score)
+                except Exception:
+                    results.append(0.0)
+            return results
 
     def evaluate_with_detailed_metrics(
         self, response: str, ground_truth: Any, task_name: str

@@ -469,31 +469,35 @@ class EmotionMemoryExperiment:
             len(batch_prompts) == len(batch_items) == len(control_outputs)
         ), f"Batch size mismatch: prompts={len(batch_prompts)}, items={len(batch_items)}, outputs={len(control_outputs)}"
 
+        # Extract all responses first
+        responses = []
         for i, (prompt, item, ground_truth, output) in enumerate(
             zip(batch_prompts, batch_items, batch_ground_truths, control_outputs)
         ):
-            # Extract response text
             if output is None:
                 self.logger.warning(
                     f"No output for item {item.id} due to processing error"
                 )
-                response = ""
-                score = 0.0
+                responses.append("")
             else:
                 if self.is_vllm:
                     response = output.outputs[0].text.replace(prompt, "").strip()
                 else:
                     response = output[0]["generated_text"].replace(prompt, "").strip()
+                responses.append(response)
 
-                try:
-                    # Use dataset's evaluation method
-                    score = self.dataset.evaluate_response(
-                        response, ground_truth, self.config.benchmark.task_type
-                    )
-                except Exception as e:
-                    self.logger.warning(f"Evaluation error for item {item.id}: {e}")
-                    score = 0.0
+        # Batch evaluation using LLM
+        try:
+            task_names = [self.config.benchmark.task_type] * len(responses)
+            scores = self.dataset.evaluate_batch(responses, batch_ground_truths, task_names)
+        except Exception as e:
+            self.logger.error(f"Batch evaluation failed: {e}")
+            scores = [0.0] * len(responses)
 
+        # Create result records with batch-computed scores
+        for i, (response, score, prompt, item, ground_truth) in enumerate(
+            zip(responses, scores, batch_prompts, batch_items, batch_ground_truths)
+        ):
             # Create result record (ensure types are not None)
             current_emotion = self.cur_emotion or "unknown"
             current_intensity = self.cur_intensity or 0.0
