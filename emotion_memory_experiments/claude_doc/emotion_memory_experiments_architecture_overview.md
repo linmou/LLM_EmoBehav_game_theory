@@ -11,10 +11,11 @@ The `emotion_memory_experiments` module is a sophisticated research framework de
 - **After**: Clean registry-based factory with specialized dataset classes
 - **Benefit**: Eliminates branching complexity, enables dynamic registration of new benchmarks
 
-### 2. **Scientific Evaluation Integrity**
-- Uses **exact evaluation metrics** from original InfiniteBench, LongBench, and LoCoMo papers
-- Comprehensive evaluation utility functions replicated from official repositories
-- Validation against real benchmark data to ensure scientific validity
+### 2. **LLM-Based Semantic Evaluation ** 
+- **Revolutionary Change**: Replaced 30+ rule-based evaluators with unified GPT-4o-mini evaluation
+- **Semantic Understanding**: Handles multilingual responses and paraphrasing correctly
+- **Concurrent Processing**: 8 simultaneous API calls per batch for efficiency
+- **Example Impact**: Chinese QA response "有两人叫阿四", ground truth ['两', '2', '两个'] now scores 1.0 instead of 0.25
 
 ### 3. **Seamless Integration with Neural Manipulation Framework**
 - Follows established patterns from `emotion_game_experiment.py`
@@ -83,13 +84,18 @@ graph TB
   - Automatic context truncation with configurable strategies
   - Task-specific evaluation routing without if-else chains
 
-### 4. **Evaluation System** - Academic Rigor
+### 4. **LLM-Based Evaluation System** - Semantic Understanding  
 - **Location**: `emotion_memory_experiments/evaluation_utils.py`
-- **Content**: 400+ lines of evaluation functions replicated from original papers
-- **Coverage**: 
-  - InfiniteBench: exact match, F1 scoring, ROUGE metrics
-  - LongBench: token-level F1, Chinese character-level evaluation
-  - Custom metrics for each task type with proper normalization
+- **Revolutionary Update (August 2025)**: Replaced rule-based evaluation with GPT-4o-mini
+- **Core Functions**:
+  - `llm_evaluate_response()`: Async semantic evaluation with few-shot examples
+  - `llm_evaluate_batch()`: Concurrent evaluation (8 simultaneous API calls)
+  - Unified evaluation for ALL task types (no more task-specific functions)
+- **Benefits**: 
+  - Semantic understanding over pattern matching
+  - Multilingual support (Chinese QA accuracy dramatically improved)
+  - Handles paraphrasing and alternative valid responses
+  - Simplified maintenance (1 function vs 30+ task-specific evaluators)
 
 ## Data Flow Architecture
 
@@ -244,10 +250,14 @@ tests/
 3. Register in factory: `register_dataset_class("new_benchmark", NewDatasetClass)`
 4. No modifications to existing code required
 
-### **Adding New Evaluation Metrics**
-1. Implement metric function in `evaluation_utils.py`
-2. Update dataset class `get_task_metrics()` method
-3. Optionally implement `evaluate_with_detailed_metrics()` for multi-metric analysis
+### **Adding New Evaluation Metrics (Updated for LLM System)**
+**Note**: With the LLM-based evaluation system (August 2025), custom evaluation metrics are typically unnecessary as GPT-4o-mini provides semantic understanding. However, for specialized domains:
+
+1. **Option 1 (Recommended)**: Modify the few-shot examples in `llm_evaluate_response()` 
+2. **Option 2**: Create task-specific prompts for specialized evaluation domains
+3. **Option 3**: For non-semantic metrics (e.g., length, format), add to `evaluation_utils.py` and route via dataset mappings
+
+**Legacy approach no longer recommended**: Creating task-specific evaluation functions
 
 ### **Integration Opportunities**
 - Support for additional neural manipulation techniques
