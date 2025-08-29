@@ -213,35 +213,69 @@ class BaseBenchmarkDataset(Dataset, ABC):
 
         return raw_data
 
+    def _run_async_evaluation_safely(self, async_func):
+        """
+        Helper method to safely run async evaluation in both sync and async contexts.
+        
+        Handles three scenarios:
+        1. Already in async context -> Use ThreadPoolExecutor  
+        2. Not in async context -> Use asyncio.run()
+        3. Event loop issues -> Force new event loop
+        
+        Args:
+            async_func: Async function to execute
+            
+        Returns:
+            Result from async_func or raises exception for caller to handle
+        """
+        import asyncio
+        import concurrent.futures
+        
+        # First, try to detect if we're already in an async context
+        try:
+            loop = asyncio.get_running_loop()
+            # We ARE in an async context - use thread pool to avoid blocking the current loop
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                # Run the async operation in a new event loop in a separate thread
+                future = executor.submit(lambda: asyncio.run(async_func()))
+                return future.result()
+        except RuntimeError:
+            # We are NOT in an async context - safe to create a new event loop
+            try:
+                return asyncio.run(async_func())
+            except RuntimeError as inner_e:
+                # Handle specific case where event loop is closed during cleanup
+                if "Event loop is closed" in str(inner_e):
+                    print(f"Event loop cleanup issue detected: {inner_e}")
+                    # Force new event loop
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    try:
+                        return loop.run_until_complete(async_func())
+                    finally:
+                        loop.close()
+                        asyncio.set_event_loop(None)
+                else:
+                    raise inner_e
+
     def evaluate_batch(
         self, responses: List[str], ground_truths: List[Any], task_names: List[str]
     ) -> List[float]:
         """
         Async batch evaluation using LLM evaluation.
-        Handles async calls in synchronous context.
+        Handles async calls in synchronous context gracefully.
         """
-        import asyncio
         from ..evaluation_utils import llm_evaluate_batch
         
         async def run_batch_evaluation():
             return await llm_evaluate_batch(responses, ground_truths, task_names)
         
-        # Handle async execution in sync context
+        # Try async evaluation with robust error handling
         try:
-            # Try to get the current event loop
-            try:
-                loop = asyncio.get_running_loop()
-                # Already in async context - create new event loop in thread
-                import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    future = executor.submit(lambda: asyncio.run(run_batch_evaluation()))
-                    return future.result()
-            except RuntimeError:
-                # No running event loop - can run directly
-                return asyncio.run(run_batch_evaluation())
+            return self._run_async_evaluation_safely(run_batch_evaluation)
         except Exception as e:
-            # Fallback to individual evaluation on async errors
-            print(f"Batch evaluation failed: {e}, falling back to individual evaluation")
+            # Fallback to individual evaluation on any async-related errors
+            print(f"Async batch evaluation failed: {e}, falling back to individual evaluation")
             results = []
             for response, gt, task in zip(responses, ground_truths, task_names):
                 try:
