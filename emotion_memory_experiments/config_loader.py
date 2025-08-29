@@ -35,8 +35,11 @@ class EmotionMemoryConfigLoader:
             name=benchmark_section.get('name', 'infinitebench'),
             data_path=Path(benchmark_section.get('data_path', '')),
             task_type=benchmark_section.get('task_type', 'passkey'),
-            evaluation_method=benchmark_section.get('evaluation_method', 'auto'),
-            sample_limit=benchmark_section.get('sample_limit', None)
+            sample_limit=benchmark_section.get('sample_limit', None),
+            augmentation_config=benchmark_section.get('augmentation_config', None),
+            enable_auto_truncation=benchmark_section.get('enable_auto_truncation', True),
+            truncation_strategy=benchmark_section.get('truncation_strategy', 'right'),
+            preserve_ratio=benchmark_section.get('preserve_ratio', 0.8)
         )
         
         # Parse model and emotions
@@ -65,7 +68,11 @@ class EmotionMemoryConfigLoader:
             benchmark=benchmark_config,
             output_dir=output_dir,
             batch_size=batch_size,
-            generation_config=generation_config if generation_config else None
+            generation_config=generation_config if generation_config else None,
+            loading_config=None,  # Add missing required fields
+            repe_eng_config=None,
+            max_evaluation_workers=1,
+            pipeline_queue_size=10
         )
     
     @staticmethod

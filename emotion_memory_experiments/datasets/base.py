@@ -106,15 +106,20 @@ class BaseBenchmarkDataset(Dataset, ABC):
         """Get item by index with prompt formatting"""
         item = self.items[idx]
 
+        # Extract options from metadata for multiple choice questions
+        options = None
+        if item.metadata and 'options' in item.metadata:
+            options = item.metadata['options']
+
         # Create prompt using wrapper or default format
         if self.prompt_wrapper:
             if item.context:
                 prompt = self.prompt_wrapper(
-                    item.context, item.input_text, answer=item.ground_truth
+                    item.context, item.input_text, answer=item.ground_truth, options=options
                 )
             else:
                 prompt = self.prompt_wrapper(
-                    "", item.input_text, answer=item.ground_truth
+                    "", item.input_text, answer=item.ground_truth, options=options
                 )
         else:
             # Default prompt format
