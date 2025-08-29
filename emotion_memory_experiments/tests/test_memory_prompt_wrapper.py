@@ -705,6 +705,84 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
         self.assertIn("emotion is required", str(cm.exception).lower())
 
 
+class TestLongbenchRetrievalBugReproduction(unittest.TestCase):
+    """
+    Test file responsible for: LongbenchRetrievalPromptWrapper.augment_context line 276 bug
+    Purpose: RED PHASE - Reproduce the exact bug using real LongBench data
+    
+    The bug occurs in line 276: raise ValueError(f" {answer_prefix}{answer_num} or {answer_prefix}{answer_num + 1} not found in context")
+    when the code tries to find paragraph boundaries but fails to find the next paragraph.
+    """
+    
+    def setUp(self):
+        """Set up test fixtures"""
+        from unittest.mock import Mock
+        self.mock_prompt_format = Mock()
+        self.mock_prompt_format.build.return_value = "formatted_prompt_output"
+        self.wrapper = LongbenchRetrievalPromptWrapper(self.mock_prompt_format)
+        
+        # Load real data case that triggers the bug
+        import json
+        self.real_bug_case = {
+            "context": "Paragraph 1: The Lake Causeway (Calzada del Lago in Spanish) runs north from the lake shore to the city centre, where it continues as Via 5...\n\nParagraph 2: Mordashov is the son of Russian parents...\n\nParagraph 30: The embodiment of the Gopher mascot came to life in 1952 when University of Minnesota assistant bandmaster Jerome Glass bought a fuzzy wool gopher suit with a papier-mâché head and asked one of the band members to climb into it.  \"Goldy\" Gopher (the first name seems to have appeared sometime in the 1960s) became a fixture within the University of Minnesota Marching Band and Pep Band, as each year a band member was chosen to don the suit for that season. Wherever these two bands performed, Goldy was there to glad-hand with the crowd, hug the little kids, torment the cheerleaders and generally add a friendly Minnesota flavor to the event.",
+            "answer": "Paragraph 30"
+        }
+    
+    def test_real_longbench_last_paragraph_handles_gracefully(self):
+        """
+        GREEN PHASE: Test that last paragraph augmentation now works correctly
+        
+        This uses real data from longbench_passage_retrieval_en.jsonl line 9 where
+        the answer is "Paragraph 30" (the last paragraph). The fix should handle
+        this gracefully without crashing.
+        """
+        # Use real data that previously caused crash
+        context = self.real_bug_case["context"]
+        answer = self.real_bug_case["answer"]  # "Paragraph 30" - the LAST paragraph
+        augmentation_config = {"method": "adaptive"}
+        emotion = "anger"
+        
+        # This should now work without crashing
+        result = self.wrapper.augment_context(context, augmentation_config, answer, emotion)
+        
+        # Verify the result is valid
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, str)
+        self.assertNotEqual(result, context)  # Should be different from original
+        
+        # Should contain the original paragraph 30 content
+        self.assertIn("Paragraph 30:", result)
+        self.assertIn("Goldy", result)  # Content from paragraph 30
+        
+        # Should contain emotion augmentation (anger)
+        self.assertIn("absolutely furious", result)  # Anger emotion text
+    
+    def test_experiment_pipeline_integration_works(self):
+        """
+        GREEN PHASE: Integration test showing experiment pipeline now works
+        
+        This simulates exactly what happens in memory_experiment_series_runner when it
+        processes real LongBench data with last paragraphs - should now work.
+        """
+        # This is how the experiment pipeline calls the prompt wrapper
+        result = self.wrapper(
+            context=self.real_bug_case["context"],
+            question="Which paragraph discusses the main topic?",
+            user_messages="Please provide your answer.",
+            enable_thinking=False,
+            augmentation_config={"method": "adaptive"},
+            answer=self.real_bug_case["answer"],  # "Paragraph 30"
+            emotion="anger"
+        )
+        
+        # Verify the pipeline produces a valid prompt
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, str)
+        
+        # Mock should have been called to build the prompt
+        self.mock_prompt_format.build.assert_called_once()
+
+
 if __name__ == '__main__':
     print("🧪 Running Memory Prompt Wrapper Tests")
     print("🔴 RED PHASE: These tests demonstrate the AssertionError bug")
