@@ -15,29 +15,22 @@ models:
 # Use regex patterns in task_type to automatically discover matching datasets
 benchmarks:
   # Discover all datasets for longbench (regex: match any string)
-  - name: "longbench"
-    task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
-    enable_auto_truncation: true
-    truncation_strategy: "right"
-    preserve_ratio: 0.95
-    augmentation_config:
-      method: "adaptive"
+  #- name: "longbench"
+  #  task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
+  #  enable_auto_truncation: true
+  #  truncation_strategy: "right"
+  #  preserve_ratio: 0.95
+  #  augmentation_config:
+  #    method: "adaptive"
 
       
-  # - name: "infinitebench"
-  #   task_type: "passkey" 
-  #   sample_limit: 100
-  #   augmentation_config: null
-  #   # Context truncation settings (now in benchmark config)
-  #   enable_auto_truncation: true
-  #   truncation_strategy: "right"
-  #   preserve_ratio: 0.95 
-  #- name: "infinitebench"
-  #  task_type: ".*qa.*"  # Matches: longbook_qa_eng, etc.
-  #  evaluation_method: "exact_match"
-  #  sample_limit: 50
-
-  # More regex examples (commented out):
+  - name: "infinitebench"
+    task_type: ".*qa.*" 
+    enable_auto_truncation: true
+    truncation_strategy: "right"
+    preserve_ratio: 0.95 
+  
+      # More regex examples (commented out):
   # - name: "longbench"
   #   task_type: "narrative.*"  # Matches: narrativeqa
   # - name: "infinitebench"
@@ -91,12 +84,12 @@ generation_config:
   enable_thinking: false
 
 # Execution settings
-batch_size: 200
+batch_size: 300
 max_evaluation_workers: 2
 pipeline_queue_size: 2
 
 # Output configuration
-output_dir: "results/memory_emotion_retrieval_series/adaptive_aug_suffix"
+output_dir: "results/memory_emotion_docQA_series"
 
 # Optional: run only sanity checks instead of full experiments
 run_sanity_check: true
