@@ -34,7 +34,12 @@ class TestBaseBenchmarkDatasetInterface(unittest.TestCase):
         self.mock_config = BenchmarkConfig(
             name="test_benchmark",
             task_type="test_task",
-            data_path=Path("test_data.json")
+            data_path=Path("test_data.json"),
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8
         )
         
         # Create a simple mock tokenizer
