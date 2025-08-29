@@ -26,19 +26,20 @@ class InfiniteBenchDataset(BaseBenchmarkDataset):
     
     # Static mapping eliminates if-else chains
     # Maps task names to evaluator function names in evaluation_utils
+    # All tasks now use unified LLM evaluation
     TASK_EVALUATORS = {
-        "passkey": "get_score_one_passkey",
-        "kv_retrieval": "get_score_one_kv_retrieval",
-        "number_string": "get_score_one_number_string",
-        "code_run": "get_score_one_code_run",
-        "code_debug": "get_score_one_code_debug",
-        "math_find": "get_score_one_math_find",
-        "math_calc": "get_score_one_math_calc",
-        "longdialogue_qa_eng": "get_score_one_longdialogue_qa_eng",
-        "longbook_choice_eng": "get_score_one_longbook_choice_eng", 
-        "longbook_qa_eng": "get_score_one_longbook_qa_eng",
-        "longbook_sum_eng": "get_score_one_longbook_sum_eng",
-        "longbook_qa_chn": "get_score_one_longbook_qa_chn"
+        "passkey": "llm_evaluate_response",
+        "kv_retrieval": "llm_evaluate_response",
+        "number_string": "llm_evaluate_response",
+        "code_run": "llm_evaluate_response",
+        "code_debug": "llm_evaluate_response",
+        "math_find": "llm_evaluate_response",
+        "math_calc": "llm_evaluate_response",
+        "longdialogue_qa_eng": "llm_evaluate_response",
+        "longbook_choice_eng": "llm_evaluate_response", 
+        "longbook_qa_eng": "llm_evaluate_response",
+        "longbook_sum_eng": "llm_evaluate_response",
+        "longbook_qa_chn": "llm_evaluate_response"
     }
     
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
@@ -89,9 +90,32 @@ class InfiniteBenchDataset(BaseBenchmarkDataset):
         # Get the evaluator function from evaluation_utils
         evaluator_func = getattr(evaluation_utils, evaluator_name)
         
-        # Call the evaluator - convert boolean results to float
-        result = evaluator_func(response, ground_truth, "emotion_model")
-        return float(result)
+        # Handle async LLM evaluation function
+        if evaluator_name == "llm_evaluate_response":
+            import asyncio
+            
+            async def run_async_eval():
+                return await evaluator_func(response, ground_truth, task_name)
+            
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # Already in async context - create new event loop in thread
+                    import concurrent.futures
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        future = executor.submit(lambda: asyncio.run(run_async_eval()))
+                        return float(future.result())
+                else:
+                    # Not in async context - can run directly
+                    return float(asyncio.run(run_async_eval()))
+            except Exception as e:
+                print(f"LLM evaluation failed: {e}, using fallback")
+                # Fallback to simple exact match
+                return 1.0 if str(response).strip().lower() == str(ground_truth).strip().lower() else 0.0
+        else:
+            # Call the evaluator - convert boolean results to float (legacy evaluators)
+            result = evaluator_func(response, ground_truth, "emotion_model")
+            return float(result)
     
     def get_task_metrics(self, task_name: str) -> List[str]:
         """Return metrics available for InfiniteBench task"""

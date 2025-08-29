@@ -27,28 +27,29 @@ class LongBenchDataset(BaseBenchmarkDataset):
 
     # Static mapping eliminates if-else chains
     # Maps task names to evaluator function names in evaluation_utils
+    # All tasks now use unified LLM evaluation
     METRIC_EVALUATORS = {
-        "narrativeqa": "longbench_qa_f1_score",
-        "qasper": "longbench_qa_f1_score",
-        "multifieldqa_en": "longbench_qa_f1_score",
-        "multifieldqa_zh": "longbench_qa_f1_zh_score",
-        "hotpotqa": "longbench_qa_f1_score",
-        "2wikimqa": "longbench_qa_f1_score",
-        "musique": "longbench_qa_f1_score",
-        "dureader": "rouge_zh_score",
-        "gov_report": "rouge_score",
-        "qmsum": "rouge_score",
-        "multi_news": "rouge_score",
-        "vcsum": "rouge_zh_score",
-        "trec": "classification_score",
-        "triviaqa": "longbench_qa_f1_score",
-        "samsum": "rouge_score",
-        "lsht": "classification_score",
-        "passage_retrieval_en": "retrieval_score",
-        "passage_count": "count_score",
-        "passage_retrieval_zh": "retrieval_zh_score",
-        "lcc": "code_sim_score",
-        "repobench-p": "code_sim_score",
+        "narrativeqa": "llm_evaluate_response",
+        "qasper": "llm_evaluate_response",
+        "multifieldqa_en": "llm_evaluate_response",
+        "multifieldqa_zh": "llm_evaluate_response",
+        "hotpotqa": "llm_evaluate_response",
+        "2wikimqa": "llm_evaluate_response",
+        "musique": "llm_evaluate_response",
+        "dureader": "llm_evaluate_response",
+        "gov_report": "llm_evaluate_response",
+        "qmsum": "llm_evaluate_response",
+        "multi_news": "llm_evaluate_response",
+        "vcsum": "llm_evaluate_response",
+        "trec": "llm_evaluate_response",
+        "triviaqa": "llm_evaluate_response",
+        "samsum": "llm_evaluate_response",
+        "lsht": "llm_evaluate_response",
+        "passage_retrieval_en": "llm_evaluate_response",
+        "passage_count": "llm_evaluate_response",
+        "passage_retrieval_zh": "llm_evaluate_response",
+        "lcc": "llm_evaluate_response",
+        "repobench-p": "llm_evaluate_response",
     }
 
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
@@ -104,9 +105,32 @@ class LongBenchDataset(BaseBenchmarkDataset):
         # Get the evaluator function from evaluation_utils
         evaluator_func = getattr(evaluation_utils, evaluator_name)
 
-        # Call the evaluator - these return floats directly
-        result = evaluator_func(response, ground_truth)
-        return float(result)
+        # Handle async LLM evaluation function
+        if evaluator_name == "llm_evaluate_response":
+            import asyncio
+            
+            async def run_async_eval():
+                return await evaluator_func(response, ground_truth, task_name)
+            
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # Already in async context - create new event loop in thread
+                    import concurrent.futures
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        future = executor.submit(lambda: asyncio.run(run_async_eval()))
+                        return float(future.result())
+                else:
+                    # Not in async context - can run directly
+                    return float(asyncio.run(run_async_eval()))
+            except Exception as e:
+                print(f"LLM evaluation failed: {e}, using fallback")
+                # Fallback to simple exact match
+                return 1.0 if str(response).strip().lower() == str(ground_truth).strip().lower() else 0.0
+        else:
+            # Call the evaluator - these return floats directly (legacy evaluators)
+            result = evaluator_func(response, ground_truth)
+            return float(result)
 
     def get_task_metrics(self, task_name: str) -> List[str]:
         """Return metrics available for LongBench task"""
