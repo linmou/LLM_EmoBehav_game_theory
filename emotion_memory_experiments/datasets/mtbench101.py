@@ -359,34 +359,38 @@ class MTBench101Dataset(BaseBenchmarkDataset):
         return system_prompt, query
 
     def evaluate_response(
-        self, response: str, ground_truth: Any, task_name: str
+        self, response: str, ground_truth: Any, task_name: str, prompt: str
     ) -> float:
         """Sync wrapper for MTBench101 evaluation - ThreadPoolExecutor compatibility"""
 
         # Extract metadata from ground_truth if it's a BenchmarkItem
-        if hasattr(ground_truth, "metadata") and ground_truth.metadata:
-            history = ground_truth.metadata.get("history")
-            ref_answer = ground_truth.metadata.get("ref_answer")
-            if history is None:
-                raise ValueError("Missing 'history' in ground_truth metadata")
-        else:
-            raise ValueError(
-                "ground_truth must have metadata attribute with required fields"
-            )
+        history = prompt
+        ref_answer = ground_truth
 
         system_prompt, query = self.eval_prompt_construct(
             task_name, ref_answer or "", response, history
         )
 
-        eval_results = llm_evaluate_response(system_prompt, query, self.llm_eval_config)
+        ratings: List[int] = []
+        max_attempts = 7
+        attempts = 0
 
-        # Extract rating from results
-        if eval_results.get("Rating") is not None:
-            return float(int(eval_results["Rating"]))
-        else:
-            raise ValueError(
-                "Evaluation results missing both 'Rating' and 'answer' fields"
+        while len(ratings) < 5 and attempts < max_attempts:
+            attempts += 1
+
+            eval_results = llm_evaluate_response(
+                system_prompt, query, self.llm_eval_config
             )
+
+            # Extract rating from results
+            if eval_results.get("Rating") is not None:
+                ratings.append(int(eval_results["Rating"]))
+
+        # Ensure we have ratings from all attempts
+        if not ratings:
+            raise ValueError("Failed to get any valid ratings after all attempts")
+
+        return float(min(ratings))
 
     def get_task_metrics(self) -> List[str]:
         """Return available evaluation metrics for MTBench101 tasks"""

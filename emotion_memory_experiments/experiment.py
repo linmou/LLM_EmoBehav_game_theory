@@ -492,7 +492,7 @@ class EmotionExperiment:
         try:
             task_names = [self.config.benchmark.task_type] * len(responses)
             scores = self.dataset.evaluate_batch(
-                responses, batch_ground_truths, task_names
+                responses, batch_ground_truths, task_names, batch_prompts
             )
         except Exception as e:
             self.logger.error(f"Batch evaluation failed: {e}")

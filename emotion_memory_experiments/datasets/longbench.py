@@ -116,13 +116,13 @@ response in json format: {{"answer": "1.0 for correct, 0.0 for incorrect"}}"""
         return items
 
     def evaluate_response(
-        self, response: str, ground_truth: Any, task_name: str
+        self, response: str, ground_truth: Any, task_name: str, prompt: str
     ) -> float:
         """Route to metric-specific LongBench evaluator"""
-        return self._route_to_evaluator(task_name, response, ground_truth)
+        return self._route_to_evaluator(task_name, response, ground_truth, prompt)
 
     def _route_to_evaluator(
-        self, task_name: str, response: str, ground_truth: Any
+        self, task_name: str, response: str, ground_truth: Any, prompt: str
     ) -> float:
         """Route to specific evaluator without if-else chains"""
         evaluator_name = self.METRIC_EVALUATORS.get(task_name)
@@ -137,17 +137,16 @@ response in json format: {{"answer": "1.0 for correct, 0.0 for incorrect"}}"""
         if evaluator_name == "llm_evaluate_response":
             # Construct evaluation prompt using our template
             query = self.PROMPT_FORMAT.format(
-                response=response,
-                ground_truth=ground_truth
+                response=response, ground_truth=ground_truth
             )
-            
+
             result = evaluation_utils.llm_evaluate_response(
                 system_prompt="You are an expert evaluator.",
                 query=query,
-                llm_eval_config=self.llm_eval_config
+                llm_eval_config=self.llm_eval_config,
             )
             return float(result.get("answer", 0.0))
-        
+
         else:
             # Handle non-LLM evaluators
             evaluator_func = getattr(evaluation_utils, evaluator_name)
@@ -249,7 +248,7 @@ response in json format: {{"answer": "1.0 for correct, 0.0 for incorrect"}}"""
             range_scores = []
             for i in range_indices:
                 score = self.evaluate_response(
-                    responses[i], ground_truths[i], task_names[i]
+                    responses[i], ground_truths[i], task_names[i], prompts[i]
                 )
                 range_scores.append(score)
 

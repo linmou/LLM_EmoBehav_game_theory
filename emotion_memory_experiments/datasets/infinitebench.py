@@ -82,7 +82,7 @@ class InfiniteBenchDataset(BaseBenchmarkDataset):
         return items
 
     def evaluate_response(
-        self, response: str, ground_truth: Any, task_name: str
+        self, response: str, ground_truth: Any, task_name: str, prompt: str
     ) -> float:
         """Route to task-specific InfiniteBench evaluator"""
         return self._route_to_evaluator(task_name, response, ground_truth)
@@ -109,19 +109,16 @@ Response: {response}
 Expected: {ground_truth}
 
 response in json format: {{"answer": "1.0 for correct, 0.0 for incorrect"}}"""
-            
-            query = prompt_format.format(
-                response=response,
-                ground_truth=ground_truth
-            )
-            
+
+            query = prompt_format.format(response=response, ground_truth=ground_truth)
+
             result = evaluation_utils.llm_evaluate_response(
                 system_prompt="You are an expert evaluator.",
                 query=query,
-                llm_eval_config=self.llm_eval_config
+                llm_eval_config=self.llm_eval_config,
             )
             return float(result.get("answer", 0.0))
-        
+
         else:
             # Handle non-LLM evaluators
             evaluator_func = getattr(evaluation_utils, evaluator_name)
@@ -183,7 +180,7 @@ response in json format: {{"answer": "1.0 for correct, 0.0 for incorrect"}}"""
         self, response: str, ground_truth: Any, task_name: str
     ) -> Dict[str, float]:
         """Return detailed metrics for InfiniteBench evaluation"""
-        base_score = self.evaluate_response(response, ground_truth, task_name)
+        base_score = self.evaluate_response(response, ground_truth, task_name, prompt)
 
         metrics = {"overall_score": base_score}
 

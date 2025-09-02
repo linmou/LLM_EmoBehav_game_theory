@@ -79,7 +79,7 @@ class BaseBenchmarkDataset(Dataset, ABC):
 
     @abstractmethod
     def evaluate_response(
-        self, response: str, ground_truth: Any, task_name: str
+        self, response: str, ground_truth: Any, task_name: str, prompt: str
     ) -> float:
         """
         Evaluate a response against ground truth for this benchmark.
@@ -257,7 +257,11 @@ class BaseBenchmarkDataset(Dataset, ABC):
         return raw_data
 
     def evaluate_batch(
-        self, responses: List[str], ground_truths: List[Any], task_names: List[str]
+        self,
+        responses: List[str],
+        ground_truths: List[Any],
+        task_names: List[str],
+        prompts: List[str],
     ) -> List[float]:
         """
         ThreadPoolExecutor-based batch evaluation using individual evaluate_response calls.
@@ -266,8 +270,10 @@ class BaseBenchmarkDataset(Dataset, ABC):
 
         with ThreadPoolExecutor(max_workers=min(8, len(responses))) as executor:
             futures = [
-                executor.submit(self.evaluate_response, resp, gt, task)
-                for resp, gt, task in zip(responses, ground_truths, task_names)
+                executor.submit(self.evaluate_response, resp, gt, task, prompt)
+                for resp, gt, task, prompt in zip(
+                    responses, ground_truths, task_names, prompts
+                )
             ]
             return [future.result() for future in futures]
 
