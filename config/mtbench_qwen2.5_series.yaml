@@ -1,19 +1,20 @@
 # Memory Experiment Series Configuration
 # For use with emotion_memory_experiments/memory_experiment_series_runner.py
 
-experiment_name: "memory_emotion_series"
+experiment_name: "mtbench101_qwen2.5"
 description: "Emotion effects on memory benchmarks with Qwen2.5 series models"
-version: "1.0.0"
+version: "2.0.0"
 
 # Models to test (supports both HuggingFace paths and local paths)
 models:
   # - "Qwen/Qwen2.5-0.5B-Instruct"
   - "Qwen/Qwen2.5-1.5B-Instruct"
   - "Qwen/Qwen2.5-3B-Instruct"
-  - "Qwen/Qwen2.5-7B-Instruct"
+  # - "Qwen/Qwen2.5-7B-Instruct"
 
 # Benchmarks to test (data_path auto-generated if not specified)
 # Use regex patterns in task_type to automatically discover matching datasets
+base_data_dir: "data/mtbench"
 benchmarks:
   # Discover all datasets for longbench (regex: match any string)
   # - name: "longbench"
@@ -22,8 +23,8 @@ benchmarks:
   #   truncation_strategy: "right"
   #   preserve_ratio: 0.95
 
-  - name: "infinitebench"
-    task_type: ".*qa_eng_121k.*"
+  - name: "mtbench101"
+    task_type: ".*"
     # enable_auto_truncation: true
     # truncation_strategy: "right"
     # preserve_ratio: 0.95
@@ -105,7 +106,7 @@ max_evaluation_workers: 2
 pipeline_queue_size: 2
 
 # Output configuration
-output_dir: "results/memory_emotion_series"
+output_dir: "results/mtbench101_qwen2.5_series"
 
 # Optional: run only sanity checks instead of full experiments
 run_sanity_check: true

@@ -466,6 +466,7 @@ class MemoryExperimentSeriesRunner:
             ),
             truncation_strategy=benchmark_config.get("truncation_strategy", "right"),
             preserve_ratio=benchmark_config.get("preserve_ratio", 0.8),
+            llm_eval_config=benchmark_config.get("llm_eval_config"),
         )
 
         # Create VLLMLoadingConfig directly from base config
@@ -510,9 +511,9 @@ class MemoryExperimentSeriesRunner:
 
             return MockExperiment(experiment_config)
         else:
-            from .experiment import EmotionMemoryExperiment
+            from .experiment import EmotionExperiment
 
-            experiment = EmotionMemoryExperiment(experiment_config)
+            experiment = EmotionExperiment(experiment_config)
             return experiment
 
     def _clean_cuda_memory(self) -> None:
@@ -665,10 +666,13 @@ class MemoryExperimentSeriesRunner:
 
             # Check if task_type is a pattern (contains wildcards or regex characters)
             if self._is_pattern_task_type(task_type):
-                # Create a temporary BenchmarkConfig to discover datasets using factory function
+                # Create a temporary BenchmarkConfig to discover datasets
+                # NOTE: This temp config is ONLY used for pattern discovery via discover_datasets_by_pattern().
+                # It should NEVER have get_data_path() called on it, as that would generate invalid paths
+                # like "infinitebench_.*qa_eng_121k.*.jsonl" instead of concrete file paths.
                 temp_benchmark = BenchmarkConfig(
                     name=benchmark_config["name"],
-                    task_type=task_type,
+                    task_type=task_type,  # This is a regex pattern, not a literal task name
                     data_path=None,
                     sample_limit=benchmark_config.get("sample_limit"),
                     augmentation_config=benchmark_config.get("augmentation_config"),
@@ -679,6 +683,7 @@ class MemoryExperimentSeriesRunner:
                         "truncation_strategy", "right"
                     ),
                     preserve_ratio=benchmark_config.get("preserve_ratio", 0.8),
+                    llm_eval_config=benchmark_config.get("llm_eval_config"),
                 )
 
                 # Discover task types matching the pattern
@@ -700,9 +705,12 @@ class MemoryExperimentSeriesRunner:
                 )
 
                 # Create individual configs for each discovered task
+                # Each expanded config will have a literal task name (not a regex pattern)
                 for task_type in discovered_tasks:
                     expanded_config = copy.deepcopy(benchmark_config)
-                    expanded_config["task_type"] = task_type
+                    expanded_config["task_type"] = (
+                        task_type  # Now a concrete task name like "longbook_qa_eng_121k"
+                    )
                     expanded_benchmarks.append(expanded_config)
             else:
                 # Keep existing non-'all' configs as-is

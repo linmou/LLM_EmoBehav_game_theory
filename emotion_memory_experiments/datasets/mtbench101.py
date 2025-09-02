@@ -365,56 +365,28 @@ class MTBench101Dataset(BaseBenchmarkDataset):
 
         # Extract metadata from ground_truth if it's a BenchmarkItem
         if hasattr(ground_truth, "metadata") and ground_truth.metadata:
-            history = ground_truth.metadata.get("history", "")
-            ref_answer = ground_truth.metadata.get("ref_answer", "")
+            history = ground_truth.metadata.get("history")
+            ref_answer = ground_truth.metadata.get("ref_answer")
+            if history is None:
+                raise ValueError("Missing 'history' in ground_truth metadata")
         else:
-            # Fallback for simple ground truth
-            history = ""
-            ref_answer = str(ground_truth) if ground_truth else ""
+            raise ValueError(
+                "ground_truth must have metadata attribute with required fields"
+            )
 
         system_prompt, query = self.eval_prompt_construct(
-            task_name, ref_answer, response, history
+            task_name, ref_answer or "", response, history
         )
 
-        ratings: List[int] = []
-        max_attempts = 5
-        attempts = 0
+        eval_results = llm_evaluate_response(system_prompt, query, self.llm_eval_config)
 
-        while len(ratings) < 5 and attempts < max_attempts:
-            attempts += 1
-            try:
-                eval_results = llm_evaluate_response(
-                    system_prompt, query, self.llm_eval_config
-                )
-
-                # Handle different response formats
-                if eval_results.get("Rating") is not None:
-                    ratings.append(int(eval_results["Rating"]))
-                elif eval_results.get("answer") is not None:
-                    # Try to extract rating from answer field
-                    answer = str(eval_results["answer"])
-                    # Handle formats like "[[1]]", "[1]", "1", etc.
-                    import re
-
-                    rating_match = re.search(r"(\d+)", answer)
-                    if rating_match:
-                        rating = int(rating_match.group(1))
-                        # Clamp to valid range 1-10
-                        rating = max(1, min(10, rating))
-                        ratings.append(rating)
-                else:
-                    # Fallback: return a middle score
-                    ratings.append(5)
-
-            except (ValueError, KeyError, TypeError) as e:
-                # On error, use middle score and continue
-                ratings.append(5)
-
-        # Ensure we have at least one rating
-        if not ratings:
-            ratings = [5]
-
-        return float(min(ratings))
+        # Extract rating from results
+        if eval_results.get("Rating") is not None:
+            return float(int(eval_results["Rating"]))
+        else:
+            raise ValueError(
+                "Evaluation results missing both 'Rating' and 'answer' fields"
+            )
 
     def get_task_metrics(self) -> List[str]:
         """Return available evaluation metrics for MTBench101 tasks"""

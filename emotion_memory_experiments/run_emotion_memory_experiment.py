@@ -18,7 +18,12 @@ import yaml
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from .data_models import BenchmarkConfig, BenchmarkItem, ExperimentConfig, VLLMLoadingConfig
+from .data_models import (
+    BenchmarkConfig,
+    BenchmarkItem,
+    ExperimentConfig,
+    VLLMLoadingConfig,
+)
 
 
 def load_config(config_path: Path) -> Dict[str, Any]:
@@ -159,7 +164,9 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
             trust_remote_code=loading_cfg.get("trust_remote_code", True),
             dtype=loading_cfg.get("dtype", "float16"),
             seed=loading_cfg.get("seed", 42),
-            disable_custom_all_reduce=loading_cfg.get("disable_custom_all_reduce", False),
+            disable_custom_all_reduce=loading_cfg.get(
+                "disable_custom_all_reduce", False
+            ),
             additional_vllm_kwargs=loading_cfg.get("additional_vllm_kwargs", {}),
         )
 
@@ -332,11 +339,11 @@ def run_experiment(
         # Import heavy dependencies only when actually running (not for dry-run)
         from neuro_manipulation.repe import repe_pipeline_registry
 
-        from .experiment import EmotionMemoryExperiment
+        from .experiment import EmotionExperiment
 
         repe_pipeline_registry()
         # Create and run experiment
-        experiment = EmotionMemoryExperiment(exp_config)
+        experiment = EmotionExperiment(exp_config)
         logger.info(f"Starting emotion memory experiment")
 
         # Run the experiment
