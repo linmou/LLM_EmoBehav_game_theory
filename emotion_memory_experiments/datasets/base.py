@@ -5,6 +5,7 @@ Provides common functionality while enforcing specialized implementation require
 
 import json
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -29,10 +30,15 @@ class BaseBenchmarkDataset(Dataset, ABC):
     - get_task_metrics(): Available metrics for tasks
     """
 
+    LLM_EVAL_CONFIG = {
+        "model": "gpt-4o-mini",
+        "temperature": 0.0,
+    }
+
     def __init__(
         self,
         config: BenchmarkConfig,
-        prompt_wrapper: Optional[Callable] = None,
+        prompt_wrapper: Optional[Callable],
         max_context_length: Optional[int] = None,
         tokenizer: Any = None,
         truncation_strategy: str = "right",
@@ -42,6 +48,12 @@ class BaseBenchmarkDataset(Dataset, ABC):
         self.max_context_length = max_context_length
         self.tokenizer = tokenizer
         self.truncation_strategy = truncation_strategy
+        if hasattr(self, "LLM_EVAL_CONFIG"):
+            self.llm_eval_config = deepcopy(self.LLM_EVAL_CONFIG)
+            if self.config.llm_eval_config:
+                self.llm_eval_config.update(self.config.llm_eval_config)
+        else:
+            self.llm_eval_config = self.config.llm_eval_config
 
         # Load data using child class implementation
         self.items: List[BenchmarkItem] = self._load_and_parse_data()
@@ -108,19 +120,18 @@ class BaseBenchmarkDataset(Dataset, ABC):
 
         # Extract options from metadata for multiple choice questions
         options = None
-        if item.metadata and 'options' in item.metadata:
-            options = item.metadata['options']
+        if item.metadata and "options" in item.metadata:
+            options = item.metadata["options"]
 
         # Create prompt using wrapper or default format
         if self.prompt_wrapper:
-            if item.context:
-                prompt = self.prompt_wrapper(
-                    item.context, item.input_text, answer=item.ground_truth, options=options
-                )
-            else:
-                prompt = self.prompt_wrapper(
-                    "", item.input_text, answer=item.ground_truth, options=options
-                )
+            prompt = self.prompt_wrapper(
+                context=item.context if item.context else "",
+                question=item.input_text,
+                answer=item.ground_truth,
+                options=options,
+            )
+
         else:
             # Default prompt format
             if item.context:
@@ -141,58 +152,90 @@ class BaseBenchmarkDataset(Dataset, ABC):
         }
 
     def _apply_truncation(self, items: List[BenchmarkItem]) -> List[BenchmarkItem]:
-        """Apply truncation to contexts that exceed max_context_length"""
-        truncated_items = []
+        """
+        Apply truncation to contexts that exceed max_context_length, processing
+        in batches to manage memory usage.
+        """
+        # Define a batch size. This should ideally be an attribute of your class,
+        # e.g., self.batch_size, configured during initialization.
+        batch_size = 32  # You can adjust this value based on your available memory.
 
-        for item in items:
-            if not item.context:
-                truncated_items.append(item)
-                continue
+        all_truncated_items = []
+        self.tokenizer.truncation_side = self.truncation_strategy
 
-            # Count tokens in current context
-            context_tokens = self.tokenizer.encode(
-                item.context, add_special_tokens=False
-            )
+        # Process the items in batches
+        for i in range(0, len(items), batch_size):
+            # Create a slice of the list for the current batch
+            batch_items = items[i : i + batch_size]
 
-            if len(context_tokens) <= self.max_context_length:
-                # No truncation needed
-                truncated_items.append(item)
+            # Separate items with None contexts from those that need processing
+            items_to_process = []
+            contexts_to_tokenize = []
+            original_indices = []
+
+            for j, item in enumerate(batch_items):
+                if item.context is not None:
+                    items_to_process.append(item)
+                    contexts_to_tokenize.append(item.context or "")
+                    original_indices.append(j)
+
+            # Process contexts that are not None
+            if contexts_to_tokenize:
+                # Tokenize the batch of contexts
+                tokenized_result = self.tokenizer(
+                    contexts_to_tokenize,
+                    add_special_tokens=False,
+                    truncation=True,
+                    max_length=self.max_context_length,
+                    return_tensors=None,  # Return lists, not tensors
+                    padding=False,  # No padding needed
+                )
+
+                # Decode the batch of tokenized inputs back to text
+                truncated_contexts = self.tokenizer.batch_decode(
+                    tokenized_result["input_ids"], skip_special_tokens=True
+                )
             else:
-                # Apply truncation based on strategy
-                if self.truncation_strategy == "right":
-                    # Keep leftmost tokens
-                    truncated_tokens = context_tokens[: self.max_context_length]
-                elif self.truncation_strategy == "left":
-                    # Keep rightmost tokens
-                    truncated_tokens = context_tokens[-self.max_context_length :]
+                truncated_contexts = []
+
+            # Create new BenchmarkItem objects for the processed batch
+            processed_idx = 0
+            for j, item in enumerate(batch_items):
+                if item.context is not None:
+                    # Process items that had contexts
+                    original_context = item.context or ""
+                    truncated_context = truncated_contexts[processed_idx]
+                    processed_idx += 1
+
+                    # Always add truncation_info for processed contexts
+                    metadata = deepcopy(item.metadata) if item.metadata else {}
+                    metadata["truncation_info"] = {
+                        "original_length": len(original_context),
+                        "truncated_length": len(truncated_context),
+                        "strategy": self.truncation_strategy,
+                        "was_truncated": len(truncated_context) < len(original_context),
+                    }
+
+                    truncated_item = BenchmarkItem(
+                        id=item.id,
+                        context=truncated_context,
+                        input_text=item.input_text,
+                        ground_truth=item.ground_truth,
+                        metadata=metadata,
+                    )
                 else:
-                    # Default to right truncation
-                    truncated_tokens = context_tokens[: self.max_context_length]
+                    # Preserve None contexts as-is
+                    truncated_item = BenchmarkItem(
+                        id=item.id,
+                        context=None,
+                        input_text=item.input_text,
+                        ground_truth=item.ground_truth,
+                        metadata=deepcopy(item.metadata) if item.metadata else None,
+                    )
 
-                # Decode back to text
-                truncated_context = self.tokenizer.decode(
-                    truncated_tokens, skip_special_tokens=True
-                )
+                all_truncated_items.append(truncated_item)
 
-                # Create new item with truncated context
-                truncated_item = BenchmarkItem(
-                    id=item.id,
-                    context=truncated_context,
-                    input_text=item.input_text,
-                    ground_truth=item.ground_truth,
-                    metadata={
-                        **(item.metadata or {}),
-                        "truncation_info": {
-                            "original_length": len(context_tokens),
-                            "truncated_length": len(truncated_tokens),
-                            "strategy": self.truncation_strategy,
-                            "was_truncated": True,
-                        },
-                    },
-                )
-                truncated_items.append(truncated_item)
-
-        return truncated_items
+        return all_truncated_items
 
     def _load_raw_data(self) -> List[Dict[str, Any]]:
         """
@@ -213,78 +256,20 @@ class BaseBenchmarkDataset(Dataset, ABC):
 
         return raw_data
 
-    def _run_async_evaluation_safely(self, async_func):
-        """
-        Helper method to safely run async evaluation in both sync and async contexts.
-        
-        Handles three scenarios:
-        1. Already in async context -> Use ThreadPoolExecutor  
-        2. Not in async context -> Use asyncio.run()
-        3. Event loop issues -> Force new event loop
-        
-        Args:
-            async_func: Async function to execute
-            
-        Returns:
-            Result from async_func or raises exception for caller to handle
-        """
-        import asyncio
-        import concurrent.futures
-        
-        # First, try to detect if we're already in an async context
-        try:
-            loop = asyncio.get_running_loop()
-            # We ARE in an async context - use thread pool to avoid blocking the current loop
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                # Run the async operation in a new event loop in a separate thread
-                future = executor.submit(lambda: asyncio.run(async_func()))
-                return future.result()
-        except RuntimeError:
-            # We are NOT in an async context - safe to create a new event loop
-            try:
-                return asyncio.run(async_func())
-            except RuntimeError as inner_e:
-                # Handle specific case where event loop is closed during cleanup
-                if "Event loop is closed" in str(inner_e):
-                    print(f"Event loop cleanup issue detected: {inner_e}")
-                    # Force new event loop
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    try:
-                        return loop.run_until_complete(async_func())
-                    finally:
-                        loop.close()
-                        asyncio.set_event_loop(None)
-                else:
-                    raise inner_e
-
     def evaluate_batch(
         self, responses: List[str], ground_truths: List[Any], task_names: List[str]
     ) -> List[float]:
         """
-        Async batch evaluation using LLM evaluation.
-        Handles async calls in synchronous context gracefully.
+        ThreadPoolExecutor-based batch evaluation using individual evaluate_response calls.
         """
-        from ..evaluation_utils import llm_evaluate_batch
-        
-        async def run_batch_evaluation():
-            return await llm_evaluate_batch(responses, ground_truths, task_names)
-        
-        # Try async evaluation with robust error handling
-        try:
-            return self._run_async_evaluation_safely(run_batch_evaluation)
-        except Exception as e:
-            # Fallback to individual evaluation on any async-related errors
-            print(f"Async batch evaluation failed: {e}, falling back to individual evaluation")
-            results = []
-            for response, gt, task in zip(responses, ground_truths, task_names):
-                try:
-                    # Use fallback evaluation for compatibility
-                    score = 1.0 if str(response).strip().lower() == str(gt).strip().lower() else 0.0
-                    results.append(score)
-                except Exception:
-                    results.append(0.0)
-            return results
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=min(8, len(responses))) as executor:
+            futures = [
+                executor.submit(self.evaluate_response, resp, gt, task)
+                for resp, gt, task in zip(responses, ground_truths, task_names)
+            ]
+            return [future.result() for future in futures]
 
     def evaluate_with_detailed_metrics(
         self, response: str, ground_truth: Any, task_name: str

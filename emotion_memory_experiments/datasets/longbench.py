@@ -3,6 +3,7 @@ LongBenchDataset - Specialized dataset for LongBench evaluation.
 Handles LongBench-specific data format and routes to appropriate metric evaluators.
 """
 
+import inspect
 from typing import Any, Dict, List
 
 # Import all LongBench evaluators
@@ -50,6 +51,36 @@ class LongBenchDataset(BaseBenchmarkDataset):
         "passage_retrieval_zh": "llm_evaluate_response",
         "lcc": "llm_evaluate_response",
         "repobench-p": "llm_evaluate_response",
+    }
+
+    PROMPT_FORMAT = """Evaluate if the response correctly answers what was expected. Consider semantic meaning, not just exact words.
+
+Examples:
+Response: "The passkey is 42"
+Expected: "42"  
+Answer: CORRECT
+
+Response: "The capital is Paris"
+Expected: "Paris"
+Answer: CORRECT
+
+Response: "I don't know"
+Expected: "Tokyo"
+Answer: INCORRECT
+
+Response: "The answer is B"
+Expected: ["B"]
+Answer: CORRECT
+
+Now evaluate:
+Response: {response}
+Expected: {ground_truth}
+
+response in json format: {{"answer": "1.0 for correct, 0.0 for incorrect"}}"""
+
+    LLM_EVAL_CONFIG = {
+        "model": "gpt-4o-mini",
+        "temperature": 0.0,
     }
 
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
@@ -102,34 +133,41 @@ class LongBenchDataset(BaseBenchmarkDataset):
                 get_score_one(response, ground_truth, task_name, "emotion_model")
             )
 
-        # Get the evaluator function from evaluation_utils
-        evaluator_func = getattr(evaluation_utils, evaluator_name)
-
-        # Handle async LLM evaluation function
+        # Handle LLM evaluation with prompt construction
         if evaluator_name == "llm_evaluate_response":
-            import asyncio
+            # Construct evaluation prompt using our template
+            query = self.PROMPT_FORMAT.format(
+                response=response,
+                ground_truth=ground_truth
+            )
             
-            async def run_async_eval():
-                return await evaluator_func(response, ground_truth, task_name)
-            
-            try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # Already in async context - create new event loop in thread
-                    import concurrent.futures
-                    with concurrent.futures.ThreadPoolExecutor() as executor:
-                        future = executor.submit(lambda: asyncio.run(run_async_eval()))
-                        return float(future.result())
-                else:
-                    # Not in async context - can run directly
-                    return float(asyncio.run(run_async_eval()))
-            except Exception as e:
-                print(f"LLM evaluation failed: {e}, using fallback")
-                # Fallback to simple exact match
-                return 1.0 if str(response).strip().lower() == str(ground_truth).strip().lower() else 0.0
+            result = evaluation_utils.llm_evaluate_response(
+                system_prompt="You are an expert evaluator.",
+                query=query,
+                llm_eval_config=self.llm_eval_config
+            )
+            return float(result.get("answer", 0.0))
+        
         else:
-            # Call the evaluator - these return floats directly (legacy evaluators)
-            result = evaluator_func(response, ground_truth)
+            # Handle non-LLM evaluators
+            evaluator_func = getattr(evaluation_utils, evaluator_name)
+
+            func_signature = inspect.signature(evaluator_func)
+            func_params = func_signature.parameters.keys()
+            all_available_args = {
+                "response": response,
+                "ground_truth": ground_truth,
+                "task_name": task_name,
+                "llm_eval_config": self.llm_eval_config,
+            }
+
+            args_to_pass = {
+                name: all_available_args[name]
+                for name in func_params
+                if name in all_available_args
+            }
+
+            result = evaluator_func(**args_to_pass)
             return float(result)
 
     def get_task_metrics(self, task_name: str) -> List[str]:

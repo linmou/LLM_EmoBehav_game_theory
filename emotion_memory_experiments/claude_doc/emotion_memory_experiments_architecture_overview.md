@@ -1,4 +1,5 @@
 # Emotion Memory Experiments - Architecture Overview
+<!-- Version: 2.1.0 - Updated: 2025-09-02 - MTBench101 Integration -->
 
 ## Executive Summary
 
@@ -37,6 +38,7 @@ graph TB
     Specialized --> InfiniteBench[InfiniteBenchDataset]
     Specialized --> LongBench[LongBenchDataset] 
     Specialized --> LoCoMo[LoCoMoDataset]
+    Specialized --> MTBench101[MTBench101Dataset]
     
     Experiment --> RepE[RepE Pipeline]
     Experiment --> DataLoader[PyTorch DataLoader]
@@ -66,6 +68,7 @@ graph TB
       "infinitebench": InfiniteBenchDataset,
       "longbench": LongBenchDataset,
       "locomo": LoCoMoDataset,
+      "mtbench101": MTBench101Dataset,
   }
   ```
 - **Benefits**: 
@@ -79,6 +82,7 @@ graph TB
   - **InfiniteBenchDataset**: 12 task types with task-specific evaluators
   - **LongBenchDataset**: Multi-language QA with F1 scoring
   - **LoCoMoDataset**: Conversational QA with temporal context
+  - **MTBench101Dataset**: Conversational evaluation with judge-based scoring
 - **Key Features**:
   - PyTorch Dataset interface (`__len__`, `__getitem__`)
   - Automatic context truncation with configurable strategies

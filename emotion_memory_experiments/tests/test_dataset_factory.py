@@ -127,7 +127,13 @@ class TestDatasetFactory(unittest.TestCase):
         config = BenchmarkConfig(
             name="infinitebench",
             task_type="passkey",
-            data_path=test_file
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         dataset = create_dataset_from_config(config)
@@ -147,7 +153,13 @@ class TestDatasetFactory(unittest.TestCase):
         config = BenchmarkConfig(
             name="longbench",
             task_type="narrativeqa",
-            data_path=test_file
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         dataset = create_dataset_from_config(config)
@@ -167,7 +179,13 @@ class TestDatasetFactory(unittest.TestCase):
         config = BenchmarkConfig(
             name="locomo",
             task_type="conversational_qa",
-            data_path=test_file
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         dataset = create_dataset_from_config(config)
@@ -207,7 +225,13 @@ class TestDatasetFactory(unittest.TestCase):
         config = BenchmarkConfig(
             name="unknown_benchmark",
             task_type="some_task",
-            data_path=test_file
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         with self.assertRaises(ValueError) as context:
@@ -229,7 +253,13 @@ class TestDatasetFactory(unittest.TestCase):
         config = BenchmarkConfig(
             name="infinitebench",
             task_type="passkey",
-            data_path=test_file
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         # Mock tokenizer for testing
@@ -271,7 +301,13 @@ class TestDatasetFactory(unittest.TestCase):
         config = BenchmarkConfig(
             name="custom_benchmark",
             task_type="test",
-            data_path=test_file
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         dataset = create_dataset_from_config(config)

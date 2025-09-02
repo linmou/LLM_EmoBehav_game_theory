@@ -1,7 +1,11 @@
 """
 YAML configuration loader for emotion memory experiments.
 Allows users to define experiment configurations in YAML format.
+
+DEPRECATED: This module is deprecated and only used for tests.
+Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.
 """
+import warnings
 import yaml
 from pathlib import Path
 from typing import Dict, Any, List, Union
@@ -9,11 +13,24 @@ from .data_models import ExperimentConfig, BenchmarkConfig
 
 
 class EmotionMemoryConfigLoader:
-    """Loads emotion memory experiment configurations from YAML files."""
+    """Loads emotion memory experiment configurations from YAML files.
+    
+    DEPRECATED: This class is deprecated and only used for tests.
+    Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.
+    """
     
     @staticmethod
     def load_from_yaml(config_path: Union[str, Path]) -> ExperimentConfig:
-        """Load experiment configuration from YAML file."""
+        """Load experiment configuration from YAML file.
+        
+        DEPRECATED: This method is deprecated and only used for tests.
+        """
+        warnings.warn(
+            "EmotionMemoryConfigLoader.load_from_yaml is deprecated and only used for tests. "
+            "Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         config_path = Path(config_path)
         
         if not config_path.exists():
@@ -39,7 +56,8 @@ class EmotionMemoryConfigLoader:
             augmentation_config=benchmark_section.get('augmentation_config', None),
             enable_auto_truncation=benchmark_section.get('enable_auto_truncation', True),
             truncation_strategy=benchmark_section.get('truncation_strategy', 'right'),
-            preserve_ratio=benchmark_section.get('preserve_ratio', 0.8)
+            preserve_ratio=benchmark_section.get('preserve_ratio', 0.8),
+            llm_eval_config=benchmark_section.get('llm_eval_config', None)
         )
         
         # Parse model and emotions
@@ -77,7 +95,15 @@ class EmotionMemoryConfigLoader:
     
     @staticmethod
     def create_sample_config(output_path: Union[str, Path]) -> Path:
-        """Create a sample YAML configuration file."""
+        """Create a sample YAML configuration file.
+        
+        DEPRECATED: This method is deprecated and only used for tests.
+        """
+        warnings.warn(
+            "EmotionMemoryConfigLoader.create_sample_config is deprecated and only used for tests.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         output_path = Path(output_path)
         
         sample_config = {
@@ -132,5 +158,15 @@ class EmotionMemoryConfigLoader:
 
 
 def load_emotion_memory_config(config_path: Union[str, Path]) -> ExperimentConfig:
-    """Convenience function to load emotion memory experiment config from YAML."""
+    """Convenience function to load emotion memory experiment config from YAML.
+    
+    DEPRECATED: This function is deprecated and only used for tests.
+    Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.
+    """
+    warnings.warn(
+        "load_emotion_memory_config is deprecated and only used for tests. "
+        "Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     return EmotionMemoryConfigLoader.load_from_yaml(config_path)
