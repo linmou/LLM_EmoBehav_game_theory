@@ -58,7 +58,8 @@ class TestDataModels(unittest.TestCase):
             augmentation_config=None,
             enable_auto_truncation=True,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         self.assertEqual(config.name, "infinitebench")
@@ -79,7 +80,8 @@ class TestDataModels(unittest.TestCase):
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="left",
-            preserve_ratio=0.9
+            preserve_ratio=0.9,
+            llm_eval_config=None
         )
         
         self.assertIsNone(config.sample_limit)
@@ -95,7 +97,8 @@ class TestDataModels(unittest.TestCase):
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         config = ExperimentConfig(
@@ -128,7 +131,8 @@ class TestDataModels(unittest.TestCase):
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         config = ExperimentConfig(

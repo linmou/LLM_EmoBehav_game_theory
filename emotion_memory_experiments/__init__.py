@@ -7,7 +7,7 @@ memory benchmarks like InfiniteBench and LoCoMo.
 
 Key Components:
 - EmotionMemoryExperiment: Main experiment orchestrator
-- BenchmarkAdapter: Adapters for different benchmark formats  
+- BenchmarkAdapter: Adapters for different benchmark formats
 - Data models for configuration and results
 - YAML configuration loader for easy experiment setup
 - Comprehensive test suite
@@ -15,21 +15,21 @@ Key Components:
 Example Usage:
     # Using YAML configuration (recommended)
     from emotion_memory_experiments.config_loader import load_emotion_memory_config
-    
+
     exp_config = load_emotion_memory_config("config/emotion_memory_passkey.yaml")
     experiment = EmotionMemoryExperiment(exp_config)
     results = experiment.run_experiment()
-    
+
     # Using programmatic configuration
     from emotion_memory_experiments import EmotionMemoryExperiment
     from emotion_memory_experiments.data_models import ExperimentConfig, BenchmarkConfig
-    
+
     benchmark_config = BenchmarkConfig(
         name="infinitebench",
-        data_path="passkey_data.jsonl", 
+        data_path="passkey_data.jsonl",
         task_type="passkey"
     )
-    
+
     exp_config = ExperimentConfig(
         model_path="/path/to/model",
         emotions=["anger", "happiness"],
@@ -37,34 +37,34 @@ Example Usage:
         benchmark=benchmark_config,
         output_dir="results"
     )
-    
+
     experiment = EmotionMemoryExperiment(exp_config)
     results = experiment.run_experiment()
 """
 
 # Import EmotionMemoryExperiment conditionally to avoid vllm dependency during imports
 try:
-    from .experiment import EmotionMemoryExperiment
+    from .experiment import EmotionExperiment
 except ImportError:
     # vllm not available, EmotionMemoryExperiment will be None
-    EmotionMemoryExperiment = None
-from .data_models import (
-    ExperimentConfig, 
-    BenchmarkConfig, 
-    ResultRecord,
-    DEFAULT_GENERATION_CONFIG
-)
+    EmotionExperiment = None
 # Adapters replaced by smart datasets in refactoring
-from .config_loader import load_emotion_memory_config, EmotionMemoryConfigLoader
+from .config_loader import EmotionMemoryConfigLoader, load_emotion_memory_config
+from .data_models import (
+    DEFAULT_GENERATION_CONFIG,
+    BenchmarkConfig,
+    ExperimentConfig,
+    ResultRecord,
+)
 
 __version__ = "1.0.0"
 __all__ = [
-    "EmotionMemoryExperiment",
-    "ExperimentConfig", 
+    "EmotionExperiment",
+    "ExperimentConfig",
     "BenchmarkConfig",
-    "ResultRecord", 
+    "ResultRecord",
     "DEFAULT_GENERATION_CONFIG",
     # "get_adapter" removed in smart dataset refactoring
     "load_emotion_memory_config",
-    "EmotionMemoryConfigLoader"
+    "EmotionMemoryConfigLoader",
 ]

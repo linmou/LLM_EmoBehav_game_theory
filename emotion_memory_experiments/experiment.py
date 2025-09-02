@@ -1,6 +1,6 @@
 """
-Main emotion memory experiment class.
-Follows the pattern from emotion_game_experiment.py but adapted for memory benchmarks.
+Main emotion experiment class.
+Follows the pattern from emotion_game_experiment.py but adapted for otherbenchmarks.
 """
 
 import json
@@ -37,10 +37,10 @@ from .dataset_factory import create_dataset_from_config
 from .truncation_utils import calculate_max_context_length
 
 
-class EmotionMemoryExperiment:
+class EmotionExperiment:
     """
-    Main experiment class for testing emotion effects on memory benchmarks.
-    Closely follows EmotionGameExperiment pattern but adapted for memory tasks.
+    Main experiment class for testing emotion effects on benchmarks.
+    Closely follows EmotionGameExperiment pattern but adapted for tasks.
     """
 
     def __init__(self, config: ExperimentConfig):
@@ -55,7 +55,7 @@ class EmotionMemoryExperiment:
         # Setup logging (same pattern as emotion_game_experiment)
         self.logger = logging.getLogger(__name__)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        log_file = f"logs/emotion_memory_experiment_{timestamp}.log"
+        log_file = f"logs/emotion_experiment_{timestamp}.log"
 
         if not self.logger.handlers:
             Path("logs").mkdir(parents=True, exist_ok=True)
@@ -81,7 +81,7 @@ class EmotionMemoryExperiment:
             self.logger.propagate = False
 
         self.logger.info(
-            f"Initializing emotion memory experiment with model: {config.model_path}"
+            f"Initializing emotion experiment with model: {config.model_path}"
         )
         self.logger.info(f"Log file created at: {log_file}")
 
@@ -144,7 +144,7 @@ class EmotionMemoryExperiment:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.output_dir = (
             Path(config.output_dir)
-            / f"emotion_memory_{config.model_path.split('/')[-1]}_{config.benchmark.name}_{config.benchmark.task_type}_{timestamp}"
+            / f"{config.model_path.split('/')[-1]}_{config.benchmark.name}_{config.benchmark.task_type}_{timestamp}"
         )
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -225,8 +225,8 @@ class EmotionMemoryExperiment:
         return dataloader
 
     def run_experiment(self) -> pd.DataFrame:
-        """Run the complete emotion memory experiment"""
-        self.logger.info("Starting emotion memory experiment")
+        """Run the complete emotion experiment"""
+        self.logger.info("Starting emotion experiment")
         all_results = []
 
         # Test each emotion with each intensity
@@ -420,7 +420,7 @@ class EmotionMemoryExperiment:
                 # Submit post-processing to executor
                 active_post_proc_tasks += 1
                 future = post_proc_executor.submit(
-                    self._post_process_memory_batch, batch, control_outputs, batch_idx
+                    self._post_process_batch, batch, control_outputs, batch_idx
                 )
                 processed_futures.append((batch_idx, future))
 
@@ -444,10 +444,10 @@ class EmotionMemoryExperiment:
         worker.join()
         return batch_results
 
-    def _post_process_memory_batch(
+    def _post_process_batch(
         self, batch: Dict[str, Any], control_outputs: List, batch_idx: int
     ) -> List[ResultRecord]:
-        """Post-process memory batch using adapter dataset format (PROPER ARCHITECTURE)"""
+        """Post-process batch using adapter dataset format (PROPER ARCHITECTURE)"""
         start_time = time.time()
         log_prefix = f"{time.time():.2f} [{current_thread().name}]"
 
