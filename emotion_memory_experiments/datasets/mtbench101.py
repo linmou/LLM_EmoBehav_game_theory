@@ -32,7 +32,7 @@ class MTBench101Dataset(BaseBenchmarkDataset):
         Note that only the response of the 'assistant' in the LAST ROUND of conversations is the output of the large language model (the AI assistant) that needs to be evaluated; the previous conversations is the groud truth history which do NOT need to be evaluated."
 
     # Score format instruction
-    SCORE_FORMAT = "\n\n Note that only the response of the 'assistant' in the LAST ROUND of conversations is the output of the large language model (the AI assistant) that needs to be evaluated!! You must provide your explanation. After providing your explanation, please show the score by strictly following this format: 'Rating: [[score]]', for example 'Rating: [[6]]'. The DIALGUE need to be judged is in this format: \n *** \n DIALGUE \n ***"
+    SCORE_FORMAT = "\n\n Note that only the response of the 'assistant' in the LAST ROUND of conversations is the output of the large language model (the AI assistant) that needs to be evaluated!! You must provide your explanation. After providing your explanation, please show the score by strictly following this format: 'Rating: score', for example 'Rating: 6'. The DIALGUE need to be judged is in this format: \n *** \n DIALGUE \n ***"
 
     eval_CM = "The capacity of a large language model to recall and utilize previously mentioned information from earlier in the conversation is a critical indicator of its conversational memory abilities. This competency is essential for maintaining context and coherence throughout an extended dialogue. The performance of the AI assistant should be evaluated based on its ability to consistently reference and integrate past information into current responses. The evaluation criteria are as follows:\n\
     \n\
@@ -343,7 +343,7 @@ class MTBench101Dataset(BaseBenchmarkDataset):
             # Tasks that need reference answers (MR, GR)
             system_prompt = self.JUDGE + self.UNIQUE_PROMPT[task] + self.SCORE_FORMAT
             query = "The dialogue need to be judged is: \n *** \n {history} \n, AI's last response is: {prediction} \n ***\n {score_format}\n\
-                        The reference solution is: \n ### \n {ref_answer} \n ###\n\n response in json format: {{'explanation': 'rationale or justification for the score', 'Rating': '[[score]]'}}".format(
+                        The reference solution is: \n ### \n {ref_answer} \n ###\n\n response in json format: {{'explanation': 'rationale or justification for the score', 'Rating': 'score'}}".format(
                 history=history,
                 ref_answer=ref_answer,
                 score_format=self.SCORE_FORMAT,
@@ -352,7 +352,7 @@ class MTBench101Dataset(BaseBenchmarkDataset):
         else:
             # Tasks that don't need reference answers
             system_prompt = self.JUDGE + self.UNIQUE_PROMPT[task] + self.SCORE_FORMAT
-            query = "The dialogue need to be judged is: \n *** \n {history} \n, AI's last response is: {prediction} \n *** \n {score_format} . response in json format: {{'explanation': 'rationale or justification for the score', 'Rating': '[[score]]'}}".format(
+            query = "The dialogue need to be judged is: \n *** \n {history} \n, AI's last response is: {prediction} \n *** \n {score_format} . response in json format: {{'explanation': 'rationale or justification for the score', 'Rating': 'score'}}".format(
                 history=history, prediction=response, score_format=self.SCORE_FORMAT
             )
 
