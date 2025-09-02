@@ -1,4 +1,5 @@
 # Data Flow and Integration Points Analysis
+<!-- Version: 1.5.0 - Updated: 2025-01-02 - Universal Benchmark Prompt Wrapper Factory -->
 
 ## Overview
 
@@ -210,12 +211,22 @@ repe_config = get_repe_eng_config(
 
 ### **Stage 4: Prompt Wrapper Integration**
 
-#### **Memory-Specific Prompt Formatting**
+#### **Universal Benchmark Prompt Formatting**
 ```python
-# Create memory prompt wrapper for specific task type
-memory_prompt_wrapper = get_memory_prompt_wrapper(
-    task_type="passkey",           # From benchmark config
-    prompt_format=prompt_format    # From model loading
+# Create benchmark prompt wrapper using universal factory
+from emotion_memory_experiments.benchmark_prompt_wrapper import get_benchmark_prompt_wrapper
+
+benchmark_prompt_wrapper = get_benchmark_prompt_wrapper(
+    benchmark_name="mtbench101",    # From benchmark config  
+    task_type="CM",                 # From benchmark config
+    prompt_format=prompt_format     # From model loading
+)
+
+# Legacy memory benchmark support
+memory_prompt_wrapper = get_benchmark_prompt_wrapper(
+    benchmark_name="infinitebench", # Supports infinitebench, longbench, locomo
+    task_type="passkey",            # From benchmark config
+    prompt_format=prompt_format     # From model loading
 )
 
 # Create partial function with experiment-specific parameters

@@ -113,7 +113,13 @@ class TestLongBenchDataset(unittest.TestCase):
         config = BenchmarkConfig(
             name="longbench",
             task_type="narrativeqa",
-            data_path=test_file
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         dataset = LongBenchDataset(config)
@@ -134,7 +140,17 @@ class TestLongBenchDataset(unittest.TestCase):
             self.skipTest("LongBenchDataset not implemented yet (Red phase)")
         
         test_file = self._create_longbench_test_data("narrativeqa")
-        config = BenchmarkConfig(name="longbench", task_type="narrativeqa", data_path=test_file)
+        config = BenchmarkConfig(
+            name="longbench", 
+            task_type="narrativeqa", 
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
         dataset = LongBenchDataset(config)
         
         # Should have static evaluator mapping
@@ -153,7 +169,17 @@ class TestLongBenchDataset(unittest.TestCase):
             self.skipTest("LongBenchDataset not implemented yet (Red phase)")
         
         test_file = self._create_longbench_test_data("narrativeqa")
-        config = BenchmarkConfig(name="longbench", task_type="narrativeqa", data_path=test_file)
+        config = BenchmarkConfig(
+            name="longbench", 
+            task_type="narrativeqa", 
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
         dataset = LongBenchDataset(config)
         
         # Test exact match gets full score
@@ -179,7 +205,17 @@ class TestLongBenchDataset(unittest.TestCase):
             self.skipTest("LongBenchDataset not implemented yet (Red phase)")
         
         test_file = self._create_longbench_test_data("gov_report")
-        config = BenchmarkConfig(name="longbench", task_type="gov_report", data_path=test_file)
+        config = BenchmarkConfig(
+            name="longbench", 
+            task_type="gov_report", 
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
         dataset = LongBenchDataset(config)
         
         # Test ROUGE scoring (partial match should get some score)
@@ -197,7 +233,17 @@ class TestLongBenchDataset(unittest.TestCase):
             self.skipTest("LongBenchDataset not implemented yet (Red phase)")
         
         test_file = self._create_longbench_test_data("trec")
-        config = BenchmarkConfig(name="longbench", task_type="trec", data_path=test_file)
+        config = BenchmarkConfig(
+            name="longbench", 
+            task_type="trec", 
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
         dataset = LongBenchDataset(config)
         
         # Test correct classification
@@ -214,7 +260,17 @@ class TestLongBenchDataset(unittest.TestCase):
             self.skipTest("LongBenchDataset not implemented yet (Red phase)")
         
         test_file = self._create_longbench_test_data("passage_count")
-        config = BenchmarkConfig(name="longbench", task_type="passage_count", data_path=test_file)
+        config = BenchmarkConfig(
+            name="longbench", 
+            task_type="passage_count", 
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
         dataset = LongBenchDataset(config)
         
         # Test correct count
@@ -231,7 +287,17 @@ class TestLongBenchDataset(unittest.TestCase):
             self.skipTest("LongBenchDataset not implemented yet (Red phase)")
         
         test_file = self._create_longbench_test_data("lcc")
-        config = BenchmarkConfig(name="longbench", task_type="lcc", data_path=test_file)
+        config = BenchmarkConfig(
+            name="longbench", 
+            task_type="lcc", 
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
         dataset = LongBenchDataset(config)
         
         # Test similar code gets some score
@@ -249,7 +315,17 @@ class TestLongBenchDataset(unittest.TestCase):
             self.skipTest("LongBenchDataset not implemented yet (Red phase)")
         
         test_file = self._create_longbench_test_data("narrativeqa")
-        config = BenchmarkConfig(name="longbench", task_type="narrativeqa", data_path=test_file)
+        config = BenchmarkConfig(
+            name="longbench", 
+            task_type="narrativeqa", 
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
         dataset = LongBenchDataset(config)
         
         # Test QA tasks
@@ -290,7 +366,17 @@ class TestLongBenchDataset(unittest.TestCase):
             json.dump(test_data, f)
         self.temp_files.append(temp_file)
         
-        config = BenchmarkConfig(name="longbench", task_type="narrativeqa", data_path=temp_file)
+        config = BenchmarkConfig(
+            name="longbench", 
+            task_type="narrativeqa", 
+            data_path=temp_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
         dataset = LongBenchDataset(config)
         
         item = dataset.items[0]
@@ -305,7 +391,17 @@ class TestLongBenchDataset(unittest.TestCase):
             self.skipTest("LongBenchDataset not implemented yet (Red phase)")
         
         test_file = self._create_longbench_test_data("narrativeqa")
-        config = BenchmarkConfig(name="longbench", task_type="narrativeqa", data_path=test_file)
+        config = BenchmarkConfig(
+            name="longbench", 
+            task_type="narrativeqa", 
+            data_path=test_file,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
         dataset = LongBenchDataset(config)
         
         # Unknown task should use generic evaluator

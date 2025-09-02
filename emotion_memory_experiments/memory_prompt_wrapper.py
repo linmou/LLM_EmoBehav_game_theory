@@ -358,33 +358,3 @@ class LongbenchRetrievalPromptWrapper(MemoryPromptWrapper):
         )
         return context.replace(answer_paragraph, f"{prefix}{answer_paragraph}{suffix}")
 
-
-def get_memory_prompt_wrapper(
-    task_type: str, prompt_format: PromptFormat
-) -> MemoryPromptWrapper:
-    """
-    Factory function to get appropriate prompt wrapper for memory benchmark task.
-
-    Args:
-        task_type: Type of memory task (e.g., 'passkey', 'conversational_qa', 'long_qa')
-        prompt_format: PromptFormat instance for the model
-
-    Returns:
-        Appropriate MemoryPromptWrapper subclass
-    """
-    task_type_lower = task_type.lower()
-
-    if "passkey" in task_type_lower:
-        return PasskeyPromptWrapper(prompt_format)
-    elif any(
-        keyword in task_type_lower
-        for keyword in ["conversational", "locomo", "conversation"]
-    ):
-        return ConversationalQAPromptWrapper(prompt_format)
-    elif any(keyword in task_type_lower for keyword in ["qa"]):
-        return LongContextQAPromptWrapper(prompt_format)
-    elif any(keyword in task_type_lower for keyword in ["retrieval", "longbench"]):
-        return LongbenchRetrievalPromptWrapper(prompt_format)
-    else:
-        # Default to general memory prompt wrapper
-        return MemoryPromptWrapper(prompt_format)

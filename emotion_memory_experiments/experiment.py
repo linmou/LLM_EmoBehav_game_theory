@@ -29,11 +29,11 @@ from neuro_manipulation.model_utils import (
 )
 from neuro_manipulation.repe.pipelines import get_pipeline
 
+from .benchmark_prompt_wrapper import get_benchmark_prompt_wrapper
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 
 # NEW: Import directly from the specialized dataset factory
 from .dataset_factory import create_dataset_from_config
-from .memory_prompt_wrapper import get_memory_prompt_wrapper
 from .truncation_utils import calculate_max_context_length
 
 
@@ -190,12 +190,14 @@ class EmotionMemoryExperiment:
         )
 
         # Create partial function for dataset integration
-        memory_prompt_wrapper = get_memory_prompt_wrapper(
-            self.config.benchmark.task_type, self.prompt_format
+        benchmark_prompt_wrapper = get_benchmark_prompt_wrapper(
+            self.config.benchmark.name,
+            self.config.benchmark.task_type,
+            self.prompt_format,
         )
 
-        self.memory_prompt_wrapper_partial = partial(
-            memory_prompt_wrapper.__call__,
+        self.benchmark_prompt_wrapper_partial = partial(
+            benchmark_prompt_wrapper.__call__,
             user_messages="Please provide your answer.",
             enable_thinking=self.enable_thinking,
             augmentation_config=self.config.benchmark.augmentation_config,
@@ -205,7 +207,7 @@ class EmotionMemoryExperiment:
         # Create dataset with all required parameters
         self.dataset = create_dataset_from_config(
             self.config.benchmark,
-            prompt_wrapper=self.memory_prompt_wrapper_partial,
+            prompt_wrapper=self.benchmark_prompt_wrapper_partial,
             max_context_length=self.max_context_length,
             tokenizer=self.tokenizer,
             truncation_strategy=self.truncation_strategy,
@@ -339,7 +341,7 @@ class EmotionMemoryExperiment:
 
                     except Exception as batch_error:
                         # Handle errors for individual batch processing
-                        # This catches AssertionError from memory_prompt_wrapper.augment_context
+                        # This catches AssertionError from benchmark_prompt_wrapper augmentation
                         # and other batch-level errors, ensuring the pipeline continues
                         import traceback
 
@@ -489,7 +491,9 @@ class EmotionMemoryExperiment:
         # Batch evaluation using LLM
         try:
             task_names = [self.config.benchmark.task_type] * len(responses)
-            scores = self.dataset.evaluate_batch(responses, batch_ground_truths, task_names)
+            scores = self.dataset.evaluate_batch(
+                responses, batch_ground_truths, task_names
+            )
         except Exception as e:
             self.logger.error(f"Batch evaluation failed: {e}")
             scores = [0.0] * len(responses)

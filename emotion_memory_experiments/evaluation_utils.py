@@ -581,107 +581,39 @@ def get_score_one(pred: str, label: Any, task_name: str, model_name: str) -> flo
 # LLM-BASED EVALUATION FUNCTIONS
 # ============================================================================
 
-import asyncio
-import openai
 from typing import List
+
+import openai
+
 from api_configs import OAI_CONFIG
 
 
-async def llm_evaluate_response(response: str, ground_truth: any, task_name: str, model_name: str = "gpt-4o-mini") -> float:
+def llm_evaluate_response(
+    system_prompt: str,
+    query: str,
+    llm_eval_config: dict[str, Any],
+) -> dict[str, Any]:
     """
-    Async LLM evaluation with hardcoded prompt and few-shot examples.
-    Returns 1.0 for correct, 0.0 for incorrect.
+    Async LLM evaluation with system prompt and query.
     """
-    
-    client = openai.AsyncOpenAI(
-        api_key=OAI_CONFIG["api_key"],
-        base_url=OAI_CONFIG["base_url"]
-    )
-    
-    # Hardcoded prompt with few-shot examples
-    prompt = f"""Evaluate if the response correctly answers what was expected. Consider semantic meaning, not just exact words.
 
-Examples:
-Response: "The passkey is 42"
-Expected: "42"  
-Answer: CORRECT
-
-Response: "The capital is Paris"
-Expected: "Paris"
-Answer: CORRECT
-
-Response: "I don't know"
-Expected: "Tokyo"
-Answer: INCORRECT
-
-Response: "The answer is B"
-Expected: ["B"]
-Answer: CORRECT
-
-Now evaluate:
-Response: {response}
-Expected: {ground_truth}
-
-Answer: CORRECT or INCORRECT"""
+    client = openai.OpenAI(**OAI_CONFIG)  # TODO: don't build client here
 
     try:
-        response_obj = await client.chat.completions.create(
-            model=model_name,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
-            max_tokens=5,
-            timeout=10
+        response_obj = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": query},
+            ],
+            **llm_eval_config,
+            response_format={"type": "json_object"},
         )
-        
-        result = response_obj.choices[0].message.content.strip().upper()
-        return 1.0 if result == "CORRECT" else 0.0
-        
+
+        result = response_obj.choices[0].message.content
+        return json.loads(result)
+
     except Exception as e:
-        raise RuntimeError(f"LLM evaluation failed for response '{response[:50]}...': {e}")
-
-
-async def llm_evaluate_batch(responses: List[str], ground_truths: List[any], task_names: List[str]) -> List[float]:
-    """
-    Async batch evaluation with concurrency control.
-    """
-    from functools import partial
-    
-    # Create evaluation function with task_name bound  
-    eval_func = partial(llm_evaluate_response, task_name=task_names[0])
-    
-    # Create semaphore to limit concurrent API calls
-    semaphore = asyncio.Semaphore(8)
-    
-    async def evaluate_with_semaphore(response: str, ground_truth: any, index: int) -> tuple[int, float]:
-        """Evaluate single item with concurrency control"""
-        async with semaphore:
-            try:
-                score = await eval_func(response, ground_truth)
-                return index, score
-            except Exception as e:
-                print(f"Evaluation failed for item {index}: {e}")
-                return index, 0.0
-    
-    # Create all evaluation tasks
-    tasks = [
-        evaluate_with_semaphore(resp, gt, i)
-        for i, (resp, gt) in enumerate(zip(responses, ground_truths))
-    ]
-    
-    # Execute all tasks concurrently
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    
-    # Sort results by index and extract scores
-    scores = [0.0] * len(responses)
-    for result in results:
-        if isinstance(result, tuple):
-            index, score = result
-            scores[index] = score
-        else:
-            # Exception case - already logged in evaluate_with_semaphore
-            pass
-    
-    return scores[:len(responses)]  # Ensure we return exactly the right number
+        raise RuntimeError(f"LLM evaluation failed for query '{query[:50]}...': {e}")
 
 
 # ============================================================================

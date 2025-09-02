@@ -39,13 +39,55 @@ class TestBaseBenchmarkDatasetInterface(unittest.TestCase):
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         # Create a simple mock tokenizer
         self.mock_tokenizer = Mock()
-        self.mock_tokenizer.encode.return_value = [1, 2, 3, 4, 5]  # 5 tokens
+        self.mock_tokenizer.encode.side_effect = self._mock_encode
         self.mock_tokenizer.decode.return_value = "decoded text"
+        self.mock_tokenizer.model_max_length = 131072  # Set realistic model max length
+        
+        # Mock the batch tokenization for truncation support
+        def mock_tokenizer_call(texts, add_special_tokens=False, truncation=False, max_length=None, return_tensors=None, padding=False):
+            """Mock tokenizer callable that returns proper structure"""
+            result = {"input_ids": []}
+            for text in texts:
+                tokens = self._mock_encode(text, add_special_tokens, truncation, max_length)
+                result["input_ids"].append(tokens)
+            return result
+        
+        self.mock_tokenizer.side_effect = mock_tokenizer_call
+        
+        # Mock batch_decode for truncation
+        def mock_batch_decode(input_ids, skip_special_tokens=True):
+            """Mock batch decode that returns truncated text"""
+            results = []
+            for tokens in input_ids:
+                if not tokens:
+                    results.append("")
+                else:
+                    # Simple mock: return shortened text based on token count
+                    word_count = len(tokens)
+                    results.append(" ".join([f"word{i}" for i in range(word_count)]))
+            return results
+        
+        self.mock_tokenizer.batch_decode = mock_batch_decode
+    
+    def _mock_encode(self, text, add_special_tokens=False, truncation=False, max_length=None):
+        """Mock encode that returns realistic token counts based on text length"""
+        if not text:
+            return []
+        # Simple heuristic: 1 token per word (split by spaces) 
+        words = text.strip().split()
+        tokens = list(range(len(words)))
+        
+        # Handle truncation parameter
+        if truncation and max_length:
+            tokens = tokens[:max_length]
+        
+        return tokens
     
     def test_base_dataset_is_abstract(self):
         """Test that BaseBenchmarkDataset cannot be instantiated directly"""
@@ -119,7 +161,7 @@ class TestBaseBenchmarkDatasetInterface(unittest.TestCase):
         
         class TestDataset(BaseBenchmarkDataset):
             def _load_and_parse_data(self):
-                return [BenchmarkItem(id="1", input_text="Q", context="C", ground_truth="A")]
+                return [BenchmarkItem(id="1", input_text="Q", context="C", ground_truth="A", metadata=None)]
             def evaluate_response(self, response, ground_truth, task_name):
                 return 1.0
             def get_task_metrics(self, task_name):
@@ -146,7 +188,7 @@ class TestBaseBenchmarkDatasetInterface(unittest.TestCase):
         
         class TestDataset(BaseBenchmarkDataset):
             def _load_and_parse_data(self):
-                return [BenchmarkItem(id="1", input_text="Q", context="C", ground_truth="A")]
+                return [BenchmarkItem(id="1", input_text="Q", context="C", ground_truth="A", metadata=None)]
             def evaluate_response(self, response, ground_truth, task_name):
                 return 1.0
             def get_task_metrics(self, task_name):
@@ -180,7 +222,8 @@ class TestBaseBenchmarkDatasetInterface(unittest.TestCase):
                     id="1", 
                     input_text="Q", 
                     context="This is a very long context that should be truncated",
-                    ground_truth="A"
+                    ground_truth="A",
+                    metadata=None
                 )]
             def evaluate_response(self, response, ground_truth, task_name):
                 return 1.0
@@ -198,7 +241,8 @@ class TestBaseBenchmarkDatasetInterface(unittest.TestCase):
             id="test",
             context="This is a very long context that should be truncated",
             input_text="Question",
-            ground_truth="Answer"
+            ground_truth="Answer",
+            metadata=None
         )
         
         truncated_items = dataset._apply_truncation([long_item])
@@ -210,6 +254,200 @@ class TestBaseBenchmarkDatasetInterface(unittest.TestCase):
         # Should have truncation metadata
         self.assertIn('truncation_info', truncated_items[0].metadata)
         self.assertTrue(truncated_items[0].metadata['truncation_info']['was_truncated'])
+
+    def test_truncation_strategies(self):
+        """Test different truncation strategies (right vs left)"""
+        if BaseBenchmarkDataset is None:
+            self.skipTest("BaseBenchmarkDataset not implemented yet (Red phase)")
+        
+        class TestDataset(BaseBenchmarkDataset):
+            def _load_and_parse_data(self):
+                return [BenchmarkItem(id="1", input_text="Q", context="C", ground_truth="A", metadata=None)]
+            def evaluate_response(self, response, ground_truth, task_name):
+                return 1.0
+            def get_task_metrics(self, task_name):
+                return ["accuracy"]
+        
+        long_item = BenchmarkItem(
+            id="test",
+            context="one two three four five",  # 5 tokens with mock tokenizer
+            input_text="Question",
+            ground_truth="Answer",
+            metadata=None
+        )
+        
+        # Test right truncation
+        dataset_right = TestDataset(
+            config=self.mock_config,
+            max_context_length=3,
+            tokenizer=self.mock_tokenizer,
+            truncation_strategy="right"
+        )
+        
+        result_right = dataset_right._apply_truncation([long_item])
+        self.assertEqual(result_right[0].metadata['truncation_info']['strategy'], "right")
+        self.assertTrue(result_right[0].metadata['truncation_info']['was_truncated'])
+        
+        # Test left truncation  
+        dataset_left = TestDataset(
+            config=self.mock_config,
+            max_context_length=3,
+            tokenizer=self.mock_tokenizer,
+            truncation_strategy="left"
+        )
+        
+        result_left = dataset_left._apply_truncation([long_item])
+        self.assertEqual(result_left[0].metadata['truncation_info']['strategy'], "left")
+        self.assertTrue(result_left[0].metadata['truncation_info']['was_truncated'])
+
+    def test_truncation_no_context(self):
+        """Test truncation with None and empty contexts"""
+        if BaseBenchmarkDataset is None:
+            self.skipTest("BaseBenchmarkDataset not implemented yet (Red phase)")
+        
+        class TestDataset(BaseBenchmarkDataset):
+            def _load_and_parse_data(self):
+                return [BenchmarkItem(id="1", input_text="Q", context="C", ground_truth="A", metadata=None)]
+            def evaluate_response(self, response, ground_truth, task_name):
+                return 1.0
+            def get_task_metrics(self, task_name):
+                return ["accuracy"]
+        
+        dataset = TestDataset(
+            config=self.mock_config,
+            max_context_length=3,
+            tokenizer=self.mock_tokenizer,
+            truncation_strategy="right"
+        )
+        
+        # Test None context
+        none_item = BenchmarkItem(
+            id="none_test",
+            context=None,
+            input_text="Question",
+            ground_truth="Answer", 
+            metadata=None
+        )
+        
+        result_none = dataset._apply_truncation([none_item])
+        self.assertEqual(len(result_none), 1)
+        self.assertIsNone(result_none[0].context)
+        # No truncation metadata should be added for None context
+        if result_none[0].metadata:
+            self.assertNotIn('truncation_info', result_none[0].metadata)
+        
+        # Test empty context
+        empty_item = BenchmarkItem(
+            id="empty_test",
+            context="",
+            input_text="Question",
+            ground_truth="Answer",
+            metadata=None
+        )
+        
+        result_empty = dataset._apply_truncation([empty_item])
+        self.assertEqual(len(result_empty), 1)
+        self.assertEqual(result_empty[0].context, "")
+
+    def test_truncation_metadata_preservation(self):
+        """Test that original metadata is preserved during truncation"""
+        if BaseBenchmarkDataset is None:
+            self.skipTest("BaseBenchmarkDataset not implemented yet (Red phase)")
+        
+        class TestDataset(BaseBenchmarkDataset):
+            def _load_and_parse_data(self):
+                return [BenchmarkItem(id="1", input_text="Q", context="C", ground_truth="A", metadata=None)]
+            def evaluate_response(self, response, ground_truth, task_name):
+                return 1.0
+            def get_task_metrics(self, task_name):
+                return ["accuracy"]
+        
+        dataset = TestDataset(
+            config=self.mock_config,
+            max_context_length=2,
+            tokenizer=self.mock_tokenizer,
+            truncation_strategy="right"
+        )
+        
+        # Item with existing metadata
+        original_metadata = {
+            "task_type": "qa",
+            "difficulty": "hard",
+            "nested": {"key": "value"}
+        }
+        
+        item = BenchmarkItem(
+            id="meta_test",
+            context="one two three four five",  # Will be truncated
+            input_text="Question",
+            ground_truth="Answer",
+            metadata=original_metadata
+        )
+        
+        result = dataset._apply_truncation([item])
+        truncated = result[0]
+        
+        # Original metadata should be preserved
+        self.assertEqual(truncated.metadata["task_type"], "qa")
+        self.assertEqual(truncated.metadata["difficulty"], "hard")
+        self.assertEqual(truncated.metadata["nested"]["key"], "value")
+        
+        # Truncation info should be added
+        self.assertIn('truncation_info', truncated.metadata)
+        info = truncated.metadata['truncation_info']
+        
+        # Verify truncation info structure
+        expected_fields = ['original_length', 'truncated_length', 'strategy', 'was_truncated']
+        for field in expected_fields:
+            self.assertIn(field, info, f"Missing truncation field: {field}")
+        
+        self.assertTrue(info['was_truncated'])
+        self.assertEqual(info['strategy'], "right")
+
+    def test_truncation_batch_processing(self):
+        """Test truncation with mixed batch of items"""
+        if BaseBenchmarkDataset is None:
+            self.skipTest("BaseBenchmarkDataset not implemented yet (Red phase)")
+        
+        class TestDataset(BaseBenchmarkDataset):
+            def _load_and_parse_data(self):
+                return [BenchmarkItem(id="1", input_text="Q", context="C", ground_truth="A", metadata=None)]
+            def evaluate_response(self, response, ground_truth, task_name):
+                return 1.0
+            def get_task_metrics(self, task_name):
+                return ["accuracy"]
+        
+        dataset = TestDataset(
+            config=self.mock_config,
+            max_context_length=3,
+            tokenizer=self.mock_tokenizer,
+            truncation_strategy="right"
+        )
+        
+        items = [
+            # Short context - no truncation needed
+            BenchmarkItem(id="short", context="short", input_text="Q1", ground_truth="A1", metadata=None),
+            # Long context - needs truncation  
+            BenchmarkItem(id="long", context="one two three four five", input_text="Q2", ground_truth="A2", metadata=None),
+            # None context - no truncation
+            BenchmarkItem(id="none", context=None, input_text="Q3", ground_truth="A3", metadata=None),
+        ]
+        
+        result = dataset._apply_truncation(items)
+        
+        self.assertEqual(len(result), 3)
+        
+        # First item: processed context, should have truncation_info (was_truncated = False)
+        self.assertIn('truncation_info', result[0].metadata)
+        self.assertFalse(result[0].metadata['truncation_info']['was_truncated'])
+        
+        # Second item: processed context, should have truncation_info (was_truncated = True)
+        self.assertIn('truncation_info', result[1].metadata)
+        self.assertTrue(result[1].metadata['truncation_info']['was_truncated'])
+        
+        # Third item: None context, no truncation_info
+        if result[2].metadata:
+            self.assertNotIn('truncation_info', result[2].metadata)
     
     def test_collate_function_interface(self):
         """Test collate function produces expected batch format"""
@@ -219,8 +457,8 @@ class TestBaseBenchmarkDatasetInterface(unittest.TestCase):
         class TestDataset(BaseBenchmarkDataset):
             def _load_and_parse_data(self):
                 return [
-                    BenchmarkItem(id="1", input_text="Q1", context="C1", ground_truth="A1"),
-                    BenchmarkItem(id="2", input_text="Q2", context="C2", ground_truth="A2")
+                    BenchmarkItem(id="1", input_text="Q1", context="C1", ground_truth="A1", metadata=None),
+                    BenchmarkItem(id="2", input_text="Q2", context="C2", ground_truth="A2", metadata=None)
                 ]
             def evaluate_response(self, response, ground_truth, task_name):
                 return 1.0
@@ -257,7 +495,7 @@ class TestBaseBenchmarkDatasetInterface(unittest.TestCase):
         class TestDataset(BaseBenchmarkDataset):
             def _load_and_parse_data(self):
                 return [
-                    BenchmarkItem(id=str(i), input_text=f"Q{i}", context=f"C{i}", ground_truth=f"A{i}")
+                    BenchmarkItem(id=str(i), input_text=f"Q{i}", context=f"C{i}", ground_truth=f"A{i}", metadata=None)
                     for i in range(5)
                 ]
             def evaluate_response(self, response, ground_truth, task_name):

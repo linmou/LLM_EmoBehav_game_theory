@@ -34,13 +34,15 @@ class BenchmarkConfig:
     augmentation_config: Optional[
         Dict[str, str]
     ]  # Custom prefix/suffix for context and answer marking
-      # Supports: {"prefix": "text", "suffix": "text"} for manual mode
-      # or {"method": "adaptive"} for adaptive emotion-based augmentation
+    # Supports: {"prefix": "text", "suffix": "text"} for manual mode
+    # or {"method": "adaptive"} for adaptive emotion-based augmentation
 
     # Context truncation settings (dataset-specific)
     enable_auto_truncation: bool  # Enable automatic context truncation
     truncation_strategy: str  # "right" or "left" (via tokenizer)
     preserve_ratio: float  # Ratio of max_model_len to use for context
+
+    llm_eval_config: Optional[Dict[str, Any]]
 
     def discover_datasets_by_pattern(
         self, base_data_dir: str = "data/memory_benchmarks"
@@ -61,13 +63,13 @@ class BenchmarkConfig:
         Examples:
             - task_type='.*' -> ['narrativeqa', 'qasper'] (matches all tasks)
             - task_type='.*qa.*' -> ['narrativeqa', 'multifieldqa_en'] (contains 'qa' anywhere)
-            - task_type='pass.*' -> ['passkey'] (starts with 'pass')  
+            - task_type='pass.*' -> ['passkey'] (starts with 'pass')
             - task_type='retrieval' -> ['passage_retrieval_en', 'kv_retrieval'] (contains 'retrieval')
             - task_type='.*retrieval.*' -> ['passage_retrieval_en', 'kv_retrieval'] (explicit wildcards)
             - task_type='qa$' -> ['narrativeqa'] (ends with 'qa')
 
         Notes:
-            - Uses regex.search() instead of regex.match() to allow pattern matching 
+            - Uses regex.search() instead of regex.match() to allow pattern matching
               anywhere in the task type name, not just from the beginning
             - Empty list returned if no files match the pattern
             - Raises ValueError for invalid regex patterns

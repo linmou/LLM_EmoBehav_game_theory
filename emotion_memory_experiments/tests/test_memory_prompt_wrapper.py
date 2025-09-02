@@ -396,33 +396,7 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         self.assertNotEqual(result, original_paris_context)
 
 
-class TestPromptWrapperFactory(unittest.TestCase):
-    """Test the factory function for creating appropriate prompt wrappers"""
-    
-    def test_get_memory_prompt_wrapper_passkey(self):
-        """Test factory creates PasskeyPromptWrapper for passkey tasks"""
-        mock_format = Mock()
-        wrapper = get_memory_prompt_wrapper("passkey", mock_format)
-        self.assertIsInstance(wrapper, PasskeyPromptWrapper)
-    
-    def test_get_memory_prompt_wrapper_conversational(self):
-        """Test factory creates ConversationalQAPromptWrapper for conversational tasks"""
-        mock_format = Mock()
-        wrapper = get_memory_prompt_wrapper("conversational_qa", mock_format)
-        self.assertIsInstance(wrapper, ConversationalQAPromptWrapper)
-    
-    def test_get_memory_prompt_wrapper_longbench(self):
-        """Test factory creates LongbenchRetrievalPromptWrapper for longbench tasks"""
-        mock_format = Mock()
-        wrapper = get_memory_prompt_wrapper("longbench", mock_format)
-        self.assertIsInstance(wrapper, LongbenchRetrievalPromptWrapper)
-    
-    def test_get_memory_prompt_wrapper_default(self):
-        """Test factory creates MemoryPromptWrapper for unknown tasks"""
-        mock_format = Mock()
-        wrapper = get_memory_prompt_wrapper("unknown_task", mock_format)
-        self.assertIsInstance(wrapper, MemoryPromptWrapper)
-        self.assertNotIsInstance(wrapper, (PasskeyPromptWrapper, ConversationalQAPromptWrapper, LongContextQAPromptWrapper))
+# Factory tests removed - now handled in test_benchmark_prompt_wrapper.py
 
 
 class TestSpecializedWrappers(unittest.TestCase):
@@ -494,7 +468,7 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
     def test_yaml_to_prompt_wrapper_integration(self):
         """Test that YAML configuration flows correctly to prompt wrapper with adaptive augmentation"""
         from emotion_memory_experiments.data_models import BenchmarkConfig
-        from emotion_memory_experiments.memory_prompt_wrapper import get_memory_prompt_wrapper
+        # Factory function removed - use benchmark_prompt_wrapper.get_benchmark_prompt_wrapper
         from unittest.mock import Mock
         
         # Simulate YAML configuration with adaptive augmentation
@@ -506,7 +480,8 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
             augmentation_config={"method": "adaptive"},  # This is the key test point
             enable_auto_truncation=False,
             truncation_strategy="right", 
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         # Mock prompt format
@@ -514,7 +489,8 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
         mock_prompt_format.build.return_value = "formatted_prompt_output"
         
         # Create prompt wrapper via factory (as done in real pipeline)
-        wrapper = get_memory_prompt_wrapper("passkey", mock_prompt_format)
+        # Use PasskeyPromptWrapper directly since we're testing the specific wrapper
+        wrapper = PasskeyPromptWrapper(mock_prompt_format)
         
         # Simulate data that would come from dataset
         context = "The pass key is SECRET123. Remember it. SECRET123 is the pass key."
@@ -559,7 +535,8 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
             augmentation_config={"method": "adaptive"},
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         experiment_config = ExperimentConfig(
@@ -607,7 +584,7 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
         """Test the prompt wrapper partial function creation as done in experiments"""
         from functools import partial
         from emotion_memory_experiments.data_models import BenchmarkConfig
-        from emotion_memory_experiments.memory_prompt_wrapper import get_memory_prompt_wrapper
+        # Factory function removed - use benchmark_prompt_wrapper.get_benchmark_prompt_wrapper
         from unittest.mock import Mock
         
         # Create benchmark config with adaptive augmentation
@@ -619,14 +596,16 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
             augmentation_config={"method": "adaptive"},
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         mock_prompt_format = Mock()
         mock_prompt_format.build.return_value = "test_output"
         
         # Create wrapper via factory
-        memory_prompt_wrapper = get_memory_prompt_wrapper("conversational", mock_prompt_format)
+        # Use ConversationalQAPromptWrapper directly since we're testing the specific wrapper
+        memory_prompt_wrapper = ConversationalQAPromptWrapper(mock_prompt_format)
         
         # Create partial as done in real experiment setup
         memory_prompt_wrapper_partial = partial(
@@ -659,7 +638,7 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
     def test_error_propagation_in_integration(self):
         """Test that errors in adaptive mode propagate correctly through the pipeline"""
         from emotion_memory_experiments.data_models import BenchmarkConfig
-        from emotion_memory_experiments.memory_prompt_wrapper import get_memory_prompt_wrapper
+        # Factory function removed - use benchmark_prompt_wrapper.get_benchmark_prompt_wrapper
         from unittest.mock import Mock
         
         benchmark_config = BenchmarkConfig(
@@ -670,11 +649,13 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
             augmentation_config={"method": "adaptive"},
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         mock_prompt_format = Mock()
-        wrapper = get_memory_prompt_wrapper("passkey", mock_prompt_format)
+        # Use PasskeyPromptWrapper directly since we're testing the specific wrapper
+        wrapper = PasskeyPromptWrapper(mock_prompt_format)
         
         # Test invalid emotion propagates error
         with self.assertRaises(ValueError) as cm:
