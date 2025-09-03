@@ -7,10 +7,10 @@ version: "2.0.0"
 
 # Models to test (supports both HuggingFace paths and local paths)
 models:
-  # - "Qwen/Qwen2.5-0.5B-Instruct"
+  - "Qwen/Qwen2.5-0.5B-Instruct"
   - "Qwen/Qwen2.5-1.5B-Instruct"
   - "Qwen/Qwen2.5-3B-Instruct"
-  # - "Qwen/Qwen2.5-7B-Instruct"
+    #- "Qwen/Qwen2.5-7B"
 
 # Benchmarks to test (data_path auto-generated if not specified)
 # Use regex patterns in task_type to automatically discover matching datasets
@@ -22,9 +22,14 @@ benchmarks:
   #   enable_auto_truncation: true
   #   truncation_strategy: "right"
   #   preserve_ratio: 0.95
-
   - name: "mtbench101"
-    task_type: "AR"
+    task_type: "TS"
+  - name: "mtbench101"
+    task_type: "CC"
+      #- name: "mtbench101"
+    #task_type: "AR"
+      # - name: "mtbench101"
+      #task_type: "MR"
     # enable_auto_truncation: true
     # truncation_strategy: "right"
     # preserve_ratio: 0.95
@@ -75,11 +80,11 @@ loading_config:
   seed: 42
   disable_custom_all_reduce: false
   # Additional vLLM parameters for extensibility:
-  additional_vllm_kwargs:
-    rope_scaling:
-      rope_type: "yarn"
-      factor: 4.0
-      original_max_position_embeddings: 32768
+  #additional_vllm_kwargs:
+  #  rope_scaling:
+  #    rope_type: "yarn"
+  #    factor: 4.0
+  #    original_max_position_embeddings: 32768
 
 
 # RepE configuration
@@ -101,12 +106,12 @@ generation_config:
   enable_thinking: false
 
 # Execution settings
-batch_size: 300
+batch_size: 50
 max_evaluation_workers: 2
 pipeline_queue_size: 2
 
 # Output configuration
-output_dir: "results/mtbench101_qwen2.5_series"
+output_dir: "results/mtbench101_qwen2.5_series_2"
 
 # Optional: run only sanity checks instead of full experiments
-run_sanity_check: true
+run_sanity_check: false

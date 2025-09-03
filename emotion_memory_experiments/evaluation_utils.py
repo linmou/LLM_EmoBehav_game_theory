@@ -588,6 +588,18 @@ import openai
 from api_configs import OAI_CONFIG
 
 
+_global_client = None
+
+
+def _get_openai_client():
+    """Get or create global OpenAI client to prevent file descriptor leaks"""
+    global _global_client
+    if _global_client is None:
+        _global_client = openai.OpenAI(**OAI_CONFIG)
+    return _global_client
+
+
+
 def llm_evaluate_response(
     system_prompt: str,
     query: str,
@@ -597,7 +609,7 @@ def llm_evaluate_response(
     Async LLM evaluation with system prompt and query.
     """
 
-    client = openai.OpenAI(**OAI_CONFIG)  # TODO: don't build client here
+    client = _get_openai_client()
 
     try:
         response_obj = client.chat.completions.create(

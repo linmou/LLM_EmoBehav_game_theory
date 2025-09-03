@@ -246,7 +246,7 @@ class MTBench101Dataset(BaseBenchmarkDataset):
     }
 
     LLM_EVALUAT_CONFIG = {
-        "model": "gpt-4o",
+        "model": "gpt-4.1-mini",
         "temperature": 0.0,
     }
 
@@ -372,10 +372,10 @@ class MTBench101Dataset(BaseBenchmarkDataset):
         )
 
         ratings: List[int] = []
-        max_attempts = 7
+        max_attempts = 2
         attempts = 0
 
-        while len(ratings) < 5 and attempts < max_attempts:
+        while len(ratings) < 3 and attempts < max_attempts:
             attempts += 1
 
             eval_results = llm_evaluate_response(
