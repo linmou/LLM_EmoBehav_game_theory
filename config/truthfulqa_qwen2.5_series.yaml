@@ -1,8 +1,8 @@
 # Memory Experiment Series Configuration
 # For use with emotion_memory_experiments/memory_experiment_series_runner.py
 
-experiment_name: "mtbench101_qwen2.5"
-description: "Emotion effects on mtbench101 benchmarks with Qwen2.5 series models"
+experiment_name: "truthfulqa_qwen2.5"
+description: "Emotion effects on TruthfulQA benchmarks with Qwen2.5 series models"
 version: "1.0.0"
 
 # Models to test (supports both HuggingFace paths and local paths)
@@ -14,7 +14,7 @@ models:
 
 # Benchmarks to test (data_path auto-generated if not specified)
 # Use regex patterns in task_type to automatically discover matching datasets
-base_data_dir: "data/mtbench"
+base_data_dir: "data/TruthfulQA"
 benchmarks:
   # Discover all datasets for longbench (regex: match any string)
   # - name: "longbench"
@@ -22,10 +22,8 @@ benchmarks:
   #   enable_auto_truncation: true
   #   truncation_strategy: "right"
   #   preserve_ratio: 0.95
-  - name: "mtbench101"
-    task_type: "TS"
-  - name: "mtbench101"
-    task_type: "CC"
+  - name: "truthfulqa"
+    task_type: "mc1"
       #- name: "mtbench101"
     #task_type: "AR"
       # - name: "mtbench101"
@@ -111,7 +109,7 @@ max_evaluation_workers: 2
 pipeline_queue_size: 2
 
 # Output configuration
-output_dir: "results/mtbench101_qwen2.5_series_2"
+output_dir: "results/truthfulqa_qwen2.5_series"
 
 # Optional: run only sanity checks instead of full experiments
-run_sanity_check: false
+run_sanity_check: true
