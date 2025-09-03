@@ -19,6 +19,9 @@ from .memory_prompt_wrapper import (
 # Import new MTBench101 wrapper
 from .mtbench101_prompt_wrapper import MTBench101PromptWrapper
 
+# Import TruthfulQA wrapper
+from .truthfulqa_prompt_wrapper import TruthfulQAPromptWrapper
+
 
 def get_benchmark_prompt_wrapper(
     benchmark_name: str, 
@@ -49,6 +52,10 @@ def get_benchmark_prompt_wrapper(
     
     benchmark_lower = benchmark_name.lower()
     task_lower = task_type.lower()
+    
+    # TruthfulQA - multiple choice tasks
+    if benchmark_lower == "truthfulqa":
+        return TruthfulQAPromptWrapper(prompt_format, task_type)
     
     # MTBench101 - all tasks use unified wrapper with task-specific configuration
     if benchmark_lower == "mtbench101":
@@ -104,6 +111,9 @@ def get_supported_benchmarks():
         Dict mapping benchmark names to supported task types
     """
     return {
+        "truthfulqa": [
+            "mc1", "mc2"
+        ],
         "mtbench101": [
             "CM", "SI", "AR", "TS", "CC", "CR", 
             "FR", "SC", "SA", "MR", "GR", "IC", "PI"
