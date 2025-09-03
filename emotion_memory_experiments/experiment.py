@@ -89,6 +89,11 @@ class EmotionExperiment:
             self.generation_config.get("enable_thinking", False)
         )
 
+        # Validate dataset creation (early validation)
+        test_dataset = create_dataset_from_config(config.benchmark)
+        dataset_size = len(test_dataset)
+        self.logger.info(f"Benchmark contains {dataset_size} items")
+
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
         self.repe_config = get_repe_eng_config(
             config.model_path, yaml_config=config.repe_eng_config
@@ -134,11 +139,6 @@ class EmotionExperiment:
             block_name=self.repe_config["block_name"],
             control_method=self.repe_config["control_method"],
         )
-
-        # Validate dataset creation (early validation)
-        test_dataset = create_dataset_from_config(config.benchmark)
-        dataset_size = len(test_dataset)
-        self.logger.info(f"Benchmark contains {dataset_size} items")
 
         # Setup output directory
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
