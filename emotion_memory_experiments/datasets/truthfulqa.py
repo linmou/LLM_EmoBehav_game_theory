@@ -37,7 +37,11 @@ class TruthfulQADataset(BaseBenchmarkDataset):
             ValueError: If data format is invalid
             KeyError: If required fields are missing
         """
-        data_path = Path(self.config.data_path)
+        # Use get_data_path() to handle None data_path and auto-generation
+        # TruthfulQA uses custom data directory matching config: base_data_dir: "data/TruthfulQA"
+        # Expected path format: data/TruthfulQA/{name}_{task_type}.jsonl
+        # e.g., data/TruthfulQA/truthfulqa_mc1.jsonl, data/TruthfulQA/truthfulqa_mc2.jsonl
+        data_path = self.config.get_data_path(base_data_dir="data/TruthfulQA")
         if not data_path.exists():
             raise FileNotFoundError(f"TruthfulQA data file not found: {data_path}")
 

@@ -398,6 +398,128 @@ class TestTruthfulQADataset(unittest.TestCase):
         # Verify item structure
         self.assertEqual(item_data['ground_truth'], ["Nothing in particular happens when you eat a pomegranate."])
         self.assertIsInstance(item_data['prompt'], str)
+    
+    def test_auto_generated_data_path_from_none(self):
+        """Test dataset can handle None data_path and auto-generate it using get_data_path().
+        
+        CRITICAL REGRESSION TEST: This test reproduces the real-world bug where 
+        memory_experiment_series_runner creates BenchmarkConfig with data_path=None,
+        expecting datasets to call get_data_path() method for auto-generation.
+        
+        Without this test, we missed that TruthfulQA was directly accessing data_path
+        instead of using the get_data_path() method, causing TypeError when data_path=None.
+        """
+        
+        config = BenchmarkConfig(
+            name="truthfulqa",  # Lowercase to match config file
+            task_type="mc1", 
+            data_path=None,  # This is what memory_experiment_series_runner sets!
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right", 
+            preserve_ratio=0.9,
+            llm_eval_config=None
+        )
+        
+        # This should auto-generate data_path as: data/TruthfulQA/truthfulqa_mc1.jsonl
+        auto_path = config.get_data_path(base_data_dir="data/TruthfulQA")
+        expected_path = Path("data/TruthfulQA/truthfulqa_mc1.jsonl") 
+        self.assertEqual(auto_path, expected_path)
+        
+        # Create temp data at the auto-generated path location
+        test_data_dir = Path("data/TruthfulQA")
+        test_data_dir.mkdir(parents=True, exist_ok=True)
+        
+        test_file = test_data_dir / "truthfulqa_mc1.jsonl"
+        try:
+            # Write test data to the auto-generated path
+            with open(test_file, 'w') as f:
+                for item in self.sample_data:
+                    json.dump(item, f)
+                    f.write('\n')
+            
+            # This should work - dataset should call config.get_data_path() instead of accessing data_path directly
+            dataset = TruthfulQADataset(config, prompt_wrapper=None)
+            self.assertEqual(len(dataset.items), 2)
+            
+        finally:
+            # Clean up test data
+            if test_file.exists():
+                test_file.unlink()
+            # Clean up directories if they're empty (but be careful not to remove existing ones)
+            try:
+                if test_data_dir.exists() and not any(test_data_dir.iterdir()):
+                    test_data_dir.rmdir()
+                    # Also clean up parent "data" directory if it's empty and didn't exist before
+                    data_dir = Path("data")
+                    if data_dir.exists() and not any(data_dir.iterdir()):
+                        data_dir.rmdir()
+            except OSError:
+                # Directory not empty or doesn't exist - that's fine
+                pass
+    
+    def test_prompt_wrapper_interface_consistency(self):
+        """Test TruthfulQAPromptWrapper follows the expected interface pattern.
+        
+        CRITICAL REGRESSION TEST: This reproduces the bug where the emotion memory
+        experiment framework expects all prompt wrappers to have a consistent interface.
+        Some system components call prompt wrappers with 'user_messages' parameter,
+        but TruthfulQAPromptWrapper originally didn't accept it, causing TypeError.
+        
+        Root Cause Analysis:
+        - MemoryPromptWrapper accepts: (context, question, user_messages, enable_thinking, ...)
+        - MTBench101PromptWrapper accepts: (user_messages, assistant_messages, ...)
+        - TruthfulQAPromptWrapper originally only accepted: (context, question, options, answer)
+        - Framework components pass user_messages to all wrappers uniformly
+        
+        This test ensures interface compatibility across all benchmark wrappers.
+        """
+        dataset = TruthfulQADataset(self.mc1_config, prompt_wrapper=None)
+        
+        # Create a mock prompt wrapper that mimics the interface problem
+        from emotion_memory_experiments.benchmark_prompt_wrapper import get_benchmark_prompt_wrapper
+        from neuro_manipulation.prompt_formats import PromptFormat
+        
+        # Create a mock PromptFormat 
+        mock_prompt_format = Mock(spec=PromptFormat)
+        mock_prompt_format.build.return_value = "TEST_PROMPT"
+        
+        # Get TruthfulQA prompt wrapper through factory
+        prompt_wrapper = get_benchmark_prompt_wrapper("truthfulqa", "mc1", mock_prompt_format)
+        
+        # This should work - normal interface call through base dataset
+        item = dataset.items[0]
+        options = item.metadata["options"]
+        
+        try:
+            # This is how base.py calls it - should work
+            prompt1 = prompt_wrapper(
+                context=item.context if item.context else "",
+                question=item.input_text,
+                answer=item.ground_truth,
+                options=options,
+            )
+            
+            # This is the problematic call that causes the bug - some system component
+            # expects all prompt wrappers to accept user_messages
+            prompt2 = prompt_wrapper(
+                context=item.context if item.context else "",
+                question=item.input_text, 
+                answer=item.ground_truth,
+                options=options,
+                user_messages=["Please provide your answer."]  # This causes the TypeError
+            )
+            
+            # Both should succeed
+            self.assertIsInstance(prompt1, str)
+            self.assertIsInstance(prompt2, str)
+            
+        except TypeError as e:
+            if "unexpected keyword argument 'user_messages'" in str(e):
+                self.fail(f"TruthfulQAPromptWrapper should accept user_messages parameter for interface consistency: {e}")
+            else:
+                raise
 
 
 class TestTruthfulQAPromptWrapper(unittest.TestCase):

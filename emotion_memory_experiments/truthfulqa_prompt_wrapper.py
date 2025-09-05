@@ -1,9 +1,15 @@
 """
 TruthfulQAPromptWrapper - Specialized prompt wrapper for TruthfulQA multiple choice tasks.
 Handles MC1 and MC2 format with clear answer instructions.
+
+Interface Compatibility:
+- Accepts user_messages parameter for interface consistency with other benchmark wrappers
+- Accepts **kwargs to handle additional parameters passed by different system components
+- This ensures compatibility with emotion memory experiment framework that may pass
+  various parameters to all prompt wrappers uniformly
 """
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from neuro_manipulation.prompt_formats import PromptFormat
 from neuro_manipulation.prompt_wrapper import PromptWrapper
@@ -43,6 +49,8 @@ class TruthfulQAPromptWrapper(PromptWrapper):
         question: str,
         answer: Optional[str] = None,
         options: Optional[List[str]] = None,
+        user_messages: Optional[Union[str, List[str]]] = None,
+        **kwargs  # Accept additional parameters for interface compatibility
     ) -> str:
         """
         Format TruthfulQA prompt using the proper PromptFormat.build() architecture.
@@ -52,6 +60,8 @@ class TruthfulQAPromptWrapper(PromptWrapper):
             question: Raw question text (same as context)
             answer: Ground truth answer (unused in prompt generation)
             options: List of option texts (required for formatting)
+            user_messages: Optional user messages (accepted for interface compatibility)
+            **kwargs: Additional parameters for interface compatibility
 
         Returns:
             Formatted prompt string ready for model input
@@ -62,6 +72,9 @@ class TruthfulQAPromptWrapper(PromptWrapper):
         # Validate that options are provided
         if not options or not isinstance(options, list) or len(options) < 2:
             raise ValueError("TruthfulQA requires a list of at least 2 options")
+        
+        # user_messages parameter is accepted for interface compatibility but not used
+        # TruthfulQA uses pre-defined answer instructions based on task_type (mc1/mc2)
 
         # Format question with options
         formatted_question_with_options = self._create_question_with_options(
@@ -129,7 +142,7 @@ class TruthfulQAPromptWrapper(PromptWrapper):
         else:
             raise ValueError(f"Unknown task_type: {self.task_type}")
 
-    def format_mc_prompt_from_raw(self, question: str, options: List[str]) -> str:
+    def format_mc_prompt_from_raw(self, question: str, options: List[str], **kwargs) -> str:
         """
         Format a multiple choice prompt from raw question and options.
 
@@ -161,7 +174,7 @@ class TruthfulQAPromptWrapper(PromptWrapper):
                 raise ValueError(f"Option {i} must be non-empty string")
 
         # Use main __call__ method with raw question as context
-        return self(question, question, options=options)
+        return self(question, question, options=options, **kwargs)
 
     def _create_numbered_context(self, question: str, options: List[str]) -> str:
         """

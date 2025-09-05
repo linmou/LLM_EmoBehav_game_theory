@@ -22,7 +22,7 @@ benchmarks:
   #   enable_auto_truncation: true
   #   truncation_strategy: "right"
   #   preserve_ratio: 0.95
-  - name: "truthfulqa"
+  - name: "TruthfulQA"
     task_type: "mc1"
       #- name: "mtbench101"
     #task_type: "AR"
