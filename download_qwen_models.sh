@@ -2,18 +2,39 @@
 
 # List of Gemma 3 instruct-tuned models to download
 MODELS=(
-  "google/gemma-3-270m-it"
-  "google/gemma-3-1b-it"
-  "google/gemma-3-4b-it"
-  "google/gemma-3-12b-it"
-  "google/gemma-3-27b-it"
+  # Mamba models
+  #"state-spaces/mamba-370m-hf"
+  #"state-spaces/mamba-790m-hf"
+  #"state-spaces/mamba-1.4b-hf"
+  #"state-spaces/mamba-2.8b-hf"
+  
+  # Mamba2 models
+  #"state-spaces/mamba2-370m"
+  #"state-spaces/mamba2-780m"
+  #"state-spaces/mamba2-1.3b"
+  #"state-spaces/mamba2-2.7b"
+  
+  # Falcon Mamba
+  #"tiiuae/falcon-mamba-7b"
+  #"tiiuae/falcon-mamba-7b-instruct"
+  
+  # Zamba2 models
+  #"Zyphra/Zamba2-1.2B-Instruct"
+  #"Zyphra/Zamba2-2.7B-Instruct"
+  #"Zyphra/Zamba2-7B-Instruct"
+  
+  # Bamba (IBM's latest SSM-transformer hybrid)
+  #"ibm-ai-platform/Bamba-9B-v2"
+  "Qwen/Qwen2.5-0.5B"
+  "Qwen/Qwen2.5-1.5B"
+  "Qwen/Qwen2.5-3B"
+  "Qwen/Qwen2.5-7B"
 )
 # Base directory for saving models
-BASE_DIR="$HOME/huggingface_models/google"
+BASE_DIR="$HOME/huggingface_models"
 
 for MODEL in "${MODELS[@]}"; do
-  MODEL_NAME=$(basename "$MODEL")
-  LOCAL_DIR="$BASE_DIR/$MODEL_NAME"
+  LOCAL_DIR="$BASE_DIR/$MODEL"
   echo "Downloading $MODEL to $LOCAL_DIR ..."
   HF_HUB_ENABLE_HF_TRANSFER=1 huggingface-cli download "$MODEL" --local-dir "$LOCAL_DIR"
 done

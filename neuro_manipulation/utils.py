@@ -566,6 +566,15 @@ def auto_load_processor(model_name_or_path, vram_optimized=True):
         return None
 
 
+def is_awq_model(model_name_or_path):
+    """
+    Detect if a model is AWQ quantized based on naming conventions.
+    """
+    model_name_upper = str(model_name_or_path).upper()
+    awq_indicators = ["-AWQ", "AWQ-", "/AWQ", "_AWQ"]
+    return any(indicator in model_name_upper for indicator in awq_indicators)
+
+
 def load_model_tokenizer(
     model_name_or_path="gpt2",
     user_tag="[INST]",
@@ -574,6 +583,7 @@ def load_model_tokenizer(
     from_vllm=False,
     auto_load_multimodal=True,
     enable_multi_gpu=True,
+    loading_config: "Optional[VLLMLoadingConfig]" = None,
 ):
     """
     Enhanced model loading with automatic multimodal detection and processor loading.
@@ -585,6 +595,7 @@ def load_model_tokenizer(
         expand_vocab: Whether to expand vocabulary with tags
         from_vllm: Whether to use vLLM for loading
         auto_load_multimodal: Whether to auto-detect and load multimodal processor
+        loading_config: Optional LoadingConfig object or dict with vLLM loading parameters
 
     Returns:
         tuple: (model, tokenizer, processor_or_none)
@@ -594,43 +605,34 @@ def load_model_tokenizer(
     model = None
     if from_vllm:
         try:
-            model = LLM(
-                model=model_name_or_path,
-                tensor_parallel_size=get_optimal_tensor_parallel_size(
-                    model_name_or_path
-                ),
-                max_model_len=1000,
-                trust_remote_code=True,
-                enforce_eager=True,
-            )
-            # Check if this is an AWQ model
-            is_awq_model = (
-                "awq" in model_name_or_path.lower() or "AWQ" in model_name_or_path
-            )
+            # Use VLLMLoadingConfig.to_vllm_kwargs() method
+            if loading_config and hasattr(loading_config, "to_vllm_kwargs"):
+                vllm_kwargs = loading_config.to_vllm_kwargs()
 
-            if is_awq_model:
-                # AWQ models require specific quantization configuration
-                model = LLM(
-                    model=model_name_or_path,
-                    tensor_parallel_size=get_optimal_tensor_parallel_size(
-                        model_name_or_path
-                    ),
-                    max_model_len=40000,
-                    trust_remote_code=True,
-                    enforce_eager=True,
-                    quantization="awq",
-                )
+                # Auto-detect tensor parallel size if not specified
+                if vllm_kwargs.get("tensor_parallel_size") is None:
+                    vllm_kwargs["tensor_parallel_size"] = (
+                        get_optimal_tensor_parallel_size(model_name_or_path)
+                    )
+                if is_awq_model(model_name_or_path):
+                    vllm_kwargs["quantization"] = "awq"
             else:
-                # Standard vLLM configuration
-                model = LLM(
-                    model=model_name_or_path,
-                    tensor_parallel_size=get_optimal_tensor_parallel_size(
+                # No loading config - use defaults
+                vllm_kwargs = {
+                    "model": model_name_or_path,
+                    "tensor_parallel_size": get_optimal_tensor_parallel_size(
                         model_name_or_path
                     ),
-                    max_model_len=40000,
-                    trust_remote_code=True,
-                    enforce_eager=True,
-                )
+                    "max_model_len": 32768,
+                    "trust_remote_code": True,
+                    "enforce_eager": True,
+                    "gpu_memory_utilization": 0.90,
+                    "dtype": "float16",
+                    "seed": 42,
+                    "disable_custom_all_reduce": False,
+                }
+            model = LLM(**vllm_kwargs)
+
         except Exception as e:
             print(f"vLLM loading failed: {e}")
             pass
