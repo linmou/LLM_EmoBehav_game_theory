@@ -41,7 +41,7 @@ experiment:
     - "sadness"
     - "disgust"
     - "fear"
-      #  - "surprise"
+    - "surprise"
 
   intensity:
     - 1.5
@@ -49,7 +49,7 @@ experiment:
   run_sanity_check: false
 
   output:
-    base_dir: "results/Qwen2.5_MM_Series_Prisoners_Dilemma"
+    base_dir: "results/Qwen2.5_MM_Series_Prisoners_Dilemma_repeng_images"
     save_plots: true
     plot_format: "png"
 
@@ -57,6 +57,6 @@ experiment:
 repe_config:
   # Essential for multimodal processing
   multimodal_intent: true
-  data_dir: "data/image"  # Points to directory with emotion JSON files
-  emotions: ["happiness", "sadness", "anger", "fear", "disgust"]
+  data_dir: "data/dalle_gen_images"  # Points to directory with emotion JSON files
+  emotions: ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
   rebuild: false
