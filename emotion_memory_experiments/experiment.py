@@ -247,7 +247,7 @@ class EmotionExperiment:
 
         # Add neutral baseline
         self.cur_emotion = "neutral"
-        self.cur_intensity = 0.0
+        self.cur_intensity = 0.0  # set to 0.0 to avoid using activations
         self.logger.info("Processing neutral baseline")
 
         # Use the same rep_reader for neutral (with 0 intensity)
@@ -263,22 +263,18 @@ class EmotionExperiment:
             f"Setting up activations for emotion {self.cur_emotion} with intensity {self.cur_intensity}"
         )
 
-        # Setup activations
-        if self.cur_emotion == "neutral" or self.cur_intensity == 0.0:
-            activations = {}
-        else:
-            # For vLLM models, use cpu device
-            device = torch.device("cpu") if self.is_vllm else self.model.device
-            activations = {
-                layer: torch.tensor(
-                    self.cur_intensity
-                    * rep_reader.directions[layer]
-                    * rep_reader.direction_signs[layer]
-                )
-                .to(device)
-                .half()
-                for layer in self.hidden_layers
-            }
+        # For vLLM models, use cpu device
+        device = torch.device("cpu") if self.is_vllm else self.model.device
+        activations = {
+            layer: torch.tensor(
+                self.cur_intensity
+                * rep_reader.directions[layer]
+                * rep_reader.direction_signs[layer]
+            )
+            .to(device)
+            .half()
+            for layer in self.hidden_layers
+        }
 
         # Process batches using DataLoader (matches EmotionGameExperiment._forward_dataloader pattern)
         return self._forward_dataloader(data_loader, activations)

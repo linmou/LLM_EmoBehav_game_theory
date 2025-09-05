@@ -42,6 +42,7 @@ class TestMTBench101Factory:
             name="mtbench101",
             task_type="CM",
             data_path=None,  # Will use auto-discovery
+            base_data_dir="data/mtbench",
             sample_limit=5,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -63,6 +64,7 @@ class TestMTBench101Factory:
             name="mtbench101",
             task_type="CM", 
             data_path=None,  # Should auto-discover data/mtbench/mtbench101_CM.jsonl
+            base_data_dir="data/mtbench",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -87,18 +89,20 @@ class TestMTBench101Factory:
                 name="mtbench101",
                 task_type=task_type,
                 data_path=None,
+                base_data_dir="data/mtbench",
                 sample_limit=2,  # Small for testing
                 augmentation_config=None,
                 enable_auto_truncation=False,
                 truncation_strategy="right", 
-                preserve_ratio=0.8
+                preserve_ratio=0.8,
+                llm_eval_config=None
             )
             
             dataset = create_dataset_from_config(config)
             assert isinstance(dataset, MTBench101Dataset)
             
             # Check that correct task file was discovered
-            resolved_path = dataset.config.get_data_path(base_data_dir="data/mtbench")
+            resolved_path = dataset.config.get_data_path()
             assert task_type in str(resolved_path)
 
     def test_factory_error_handling_unknown_task(self):
@@ -107,6 +111,7 @@ class TestMTBench101Factory:
             name="mtbench101",
             task_type="UNKNOWN_TASK",
             data_path=None,
+            base_data_dir="data/mtbench",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -128,6 +133,7 @@ class TestMTBench101Factory:
             name="mtbench101", 
             task_type="SI",
             data_path=explicit_path,  # Explicit path provided
+            base_data_dir="data/mtbench",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -170,6 +176,7 @@ class TestMTBench101Factory:
             name="invalid_dataset",  # Non-existent dataset name
             task_type="CM",
             data_path=None,
+            base_data_dir="data/mtbench",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,

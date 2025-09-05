@@ -124,6 +124,7 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
             name=benchmark_data["name"],
             task_type=benchmark_data["task_type"],
             data_path=None,  # None triggers auto-generation in get_data_path()
+            base_data_dir=config.get("base_data_dir", "data/memory_benchmarks"),
             sample_limit=benchmark_data.get("sample_limit"),
             augmentation_config=benchmark_data.get("augmentation_config"),
             enable_auto_truncation=config.get("loading_config", {}).get(
@@ -133,6 +134,7 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
                 "truncation_strategy", "right"
             ),
             preserve_ratio=config.get("loading_config", {}).get("preserve_ratio", 0.8),
+            llm_eval_config=benchmark_data.get("llm_eval_config"),
         )
         # Get the auto-generated data path
         auto_data_path = temp_config.get_data_path()
@@ -144,11 +146,13 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
         name=benchmark_data["name"],
         task_type=benchmark_data["task_type"],
         data_path=Path(benchmark_data["data_path"]),
+        base_data_dir=config.get("base_data_dir", "data/memory_benchmarks"),
         sample_limit=benchmark_data.get("sample_limit"),
         augmentation_config=benchmark_data.get("augmentation_config"),
         enable_auto_truncation=benchmark_data.get("enable_auto_truncation", False),
         truncation_strategy=benchmark_data.get("truncation_strategy", "right"),
         preserve_ratio=benchmark_data.get("preserve_ratio", 0.8),
+        llm_eval_config=benchmark_data.get("llm_eval_config"),
     )
     # Create VLLMLoadingConfig directly from YAML
     loading_config = None

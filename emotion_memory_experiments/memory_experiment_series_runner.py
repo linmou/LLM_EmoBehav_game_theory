@@ -459,6 +459,7 @@ class MemoryExperimentSeriesRunner:
                 if benchmark_config.get("data_path")
                 else None
             ),
+            base_data_dir=benchmark_config.get("base_data_dir"),
             sample_limit=benchmark_config.get("sample_limit"),
             augmentation_config=benchmark_config.get("augmentation_config"),
             enable_auto_truncation=benchmark_config.get(
@@ -674,6 +675,7 @@ class MemoryExperimentSeriesRunner:
                     name=benchmark_config["name"],
                     task_type=task_type,  # This is a regex pattern, not a literal task name
                     data_path=None,
+                    base_data_dir=benchmark_config.get("base_data_dir", None),
                     sample_limit=benchmark_config.get("sample_limit"),
                     augmentation_config=benchmark_config.get("augmentation_config"),
                     enable_auto_truncation=benchmark_config.get(
@@ -687,16 +689,11 @@ class MemoryExperimentSeriesRunner:
                 )
 
                 # Discover task types matching the pattern
-                base_data_dir = self.base_config.get(
-                    "base_data_dir", "data/memory_benchmarks"
-                )
-                discovered_tasks = temp_benchmark.discover_datasets_by_pattern(
-                    base_data_dir
-                )
+                discovered_tasks = temp_benchmark.discover_datasets_by_pattern()
                 if not discovered_tasks:
                     self.logger.warning(
                         f"No datasets found for benchmark '{benchmark_config['name']}' "
-                        f"in directory '{base_data_dir}'. Skipping."
+                        f"in directory '{temp_benchmark.base_data_dir}'. Skipping."
                     )
                     continue
 

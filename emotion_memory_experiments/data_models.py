@@ -29,7 +29,8 @@ class ResultRecord:
 class BenchmarkConfig:
     name: str
     task_type: str  # e.g., 'passkey', 'kv_retrieval', 'longbook_qa_eng'
-    data_path: Path  # Auto-generated if None
+    data_path: Optional[Path]  # Auto-generated if None
+    base_data_dir: Optional[str]
     sample_limit: Optional[int]
     augmentation_config: Optional[
         Dict[str, str]
@@ -45,7 +46,7 @@ class BenchmarkConfig:
     llm_eval_config: Optional[Dict[str, Any]]
 
     def discover_datasets_by_pattern(
-        self, base_data_dir: str = "data/memory_benchmarks"
+        self, base_data_dir: Optional[str] = None
     ) -> List[str]:
         """
         Discover task types matching the regex pattern in task_type.
@@ -74,6 +75,10 @@ class BenchmarkConfig:
             - Empty list returned if no files match the pattern
             - Raises ValueError for invalid regex patterns
         """
+        if base_data_dir is None:
+            assert self.base_data_dir is not None, "base_data_dir is required"
+            base_data_dir = self.base_data_dir
+
         base_path = Path(base_data_dir)
         glob_pattern = str(base_path / f"{self.name}_*.jsonl")
 
@@ -97,7 +102,7 @@ class BenchmarkConfig:
 
         return sorted(task_types)
 
-    def get_data_path(self, base_data_dir: str = "data/memory_benchmarks") -> Path:
+    def get_data_path(self, base_data_dir: Optional[str] = None) -> Path:
         """
         Get the data path for this benchmark. Auto-generates if not set.
 
@@ -113,6 +118,10 @@ class BenchmarkConfig:
         """
         if self.data_path is not None:
             return self.data_path
+
+        if base_data_dir is None:
+            assert self.base_data_dir is not None, "base_data_dir is required"
+            base_data_dir = self.base_data_dir
 
         # Auto-generate path based on naming convention
         filename = f"{self.name}_{self.task_type}.jsonl"

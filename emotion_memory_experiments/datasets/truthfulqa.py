@@ -41,7 +41,7 @@ class TruthfulQADataset(BaseBenchmarkDataset):
         # TruthfulQA uses custom data directory matching config: base_data_dir: "data/TruthfulQA"
         # Expected path format: data/TruthfulQA/{name}_{task_type}.jsonl
         # e.g., data/TruthfulQA/truthfulqa_mc1.jsonl, data/TruthfulQA/truthfulqa_mc2.jsonl
-        data_path = self.config.get_data_path(base_data_dir="data/TruthfulQA")
+        data_path = self.config.get_data_path()
         if not data_path.exists():
             raise FileNotFoundError(f"TruthfulQA data file not found: {data_path}")
 

@@ -65,6 +65,7 @@ class TestTruthfulQADataset(unittest.TestCase):
             name="truthfulqa",
             task_type="mc1",
             data_path=Path(self.temp_file.name),
+            base_data_dir="data/TruthfulQA",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -78,6 +79,7 @@ class TestTruthfulQADataset(unittest.TestCase):
             name="truthfulqa",
             task_type="mc2",
             data_path=Path(self.temp_file.name),
+            base_data_dir="data/TruthfulQA",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -113,6 +115,7 @@ class TestTruthfulQADataset(unittest.TestCase):
             name="truthfulqa",
             task_type="mc1",
             data_path=Path("nonexistent_file.jsonl"),
+            base_data_dir="data/TruthfulQA",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -139,6 +142,7 @@ class TestTruthfulQADataset(unittest.TestCase):
                 name="truthfulqa",
                 task_type="mc1",
                 data_path=Path(temp_file.name),
+                base_data_dir="data/TruthfulQA",
                 sample_limit=None,
                 augmentation_config=None,
                 enable_auto_truncation=False,
@@ -168,6 +172,7 @@ class TestTruthfulQADataset(unittest.TestCase):
                 name="truthfulqa",
                 task_type="mc1",
                 data_path=Path(temp_file.name),
+                base_data_dir="data/TruthfulQA",
                 sample_limit=None,
                 augmentation_config=None,
                 enable_auto_truncation=False,
@@ -197,6 +202,7 @@ class TestTruthfulQADataset(unittest.TestCase):
                 name="truthfulqa",
                 task_type="mc1",
                 data_path=Path(temp_file.name),
+                base_data_dir="data/TruthfulQA",
                 sample_limit=None,
                 augmentation_config=None,
                 enable_auto_truncation=False,
@@ -350,6 +356,7 @@ class TestTruthfulQADataset(unittest.TestCase):
                 name="truthfulqa",
                 task_type="mc1",
                 data_path=Path(temp_file.name),
+                base_data_dir="data/TruthfulQA",
                 sample_limit=None,
                 augmentation_config=None,
                 enable_auto_truncation=False,
@@ -414,6 +421,7 @@ class TestTruthfulQADataset(unittest.TestCase):
             name="truthfulqa",  # Lowercase to match config file
             task_type="mc1", 
             data_path=None,  # This is what memory_experiment_series_runner sets!
+            base_data_dir="data/TruthfulQA",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -423,7 +431,7 @@ class TestTruthfulQADataset(unittest.TestCase):
         )
         
         # This should auto-generate data_path as: data/TruthfulQA/truthfulqa_mc1.jsonl
-        auto_path = config.get_data_path(base_data_dir="data/TruthfulQA")
+        auto_path = config.get_data_path()
         expected_path = Path("data/TruthfulQA/truthfulqa_mc1.jsonl") 
         self.assertEqual(auto_path, expected_path)
         

@@ -252,7 +252,7 @@ class MTBench101Dataset(BaseBenchmarkDataset):
 
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
         """Load MTBench101-specific conversation data format"""
-        data_path = self.config.get_data_path(base_data_dir="data/mtbench")
+        data_path = self.config.get_data_path()
         conversations = []
 
         # Load conversations from task-specific file

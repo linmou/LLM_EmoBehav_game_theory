@@ -44,15 +44,17 @@ class TestRegexPatternDiscovery(unittest.TestCase):
             name="longbench",
             task_type=".*retrieval.*",  # Should match files containing 'retrieval'
             data_path=None,
+            base_data_dir="data/memory_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         # Discover datasets matching the pattern
-        discovered = config.discover_datasets_by_pattern("data/memory_benchmarks")
+        discovered = config.discover_datasets_by_pattern()
         
         # Expected: All task types containing 'retrieval' 
         expected_retrieval_tasks = [
@@ -89,14 +91,16 @@ class TestRegexPatternDiscovery(unittest.TestCase):
             name="longbench",
             task_type="retrieval",  # No leading .* - should still match files containing 'retrieval'
             data_path=None,
+            base_data_dir="data/memory_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
-        discovered = config.discover_datasets_by_pattern("data/memory_benchmarks")
+        discovered = config.discover_datasets_by_pattern()
         
         # Expected: All task types containing 'retrieval' anywhere
         expected_retrieval_tasks = [
@@ -124,14 +128,16 @@ class TestRegexPatternDiscovery(unittest.TestCase):
             name="infinitebench",
             task_type="pass.*",  # Should match files starting with 'pass'
             data_path=None,
+            base_data_dir="data/memory_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right", 
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
-        discovered = config.discover_datasets_by_pattern("data/memory_benchmarks")
+        discovered = config.discover_datasets_by_pattern()
         
         expected_pass_tasks = ["passkey"]
         self.assertEqual(discovered, expected_pass_tasks)
@@ -146,14 +152,16 @@ class TestRegexPatternDiscovery(unittest.TestCase):
             name="longbench",
             task_type=".*qa$",  # Should match files ending with 'qa'
             data_path=None,
+            base_data_dir="data/memory_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
-        discovered = config.discover_datasets_by_pattern("data/memory_benchmarks")
+        discovered = config.discover_datasets_by_pattern()
         
         expected_qa_tasks = ["narrativeqa", "hotpotqa"]
         self.assertEqual(sorted(discovered), sorted(expected_qa_tasks))
@@ -168,14 +176,16 @@ class TestRegexPatternDiscovery(unittest.TestCase):
             name="longbench",
             task_type="narrativeqa",  # Literal match
             data_path=None,
+            base_data_dir="data/memory_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
-        discovered = config.discover_datasets_by_pattern("data/memory_benchmarks")
+        discovered = config.discover_datasets_by_pattern()
         
         self.assertEqual(discovered, ["narrativeqa"])
 
@@ -189,14 +199,16 @@ class TestRegexPatternDiscovery(unittest.TestCase):
             name="longbench",
             task_type="nonexistent.*pattern",
             data_path=None,
+            base_data_dir="data/memory_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
-        discovered = config.discover_datasets_by_pattern("data/memory_benchmarks")
+        discovered = config.discover_datasets_by_pattern()
         
         self.assertEqual(discovered, [])
 
@@ -210,11 +222,13 @@ class TestRegexPatternDiscovery(unittest.TestCase):
             name="longbench", 
             task_type="[invalid regex",  # Invalid regex - missing closing bracket
             data_path=None,
+            base_data_dir="data/memory_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
         with self.assertRaises(ValueError) as context:
@@ -232,14 +246,16 @@ class TestRegexPatternDiscovery(unittest.TestCase):
             name="longbench",
             task_type=".*",  # Match everything
             data_path=None,
+            base_data_dir="data/memory_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
             truncation_strategy="right",
-            preserve_ratio=0.8
+            preserve_ratio=0.8,
+            llm_eval_config=None
         )
         
-        discovered = config.discover_datasets_by_pattern("data/memory_benchmarks")
+        discovered = config.discover_datasets_by_pattern()
         
         expected_longbench_tasks = [
             "narrativeqa",
@@ -272,11 +288,13 @@ class TestRegexPatternDiscovery(unittest.TestCase):
                 name="longbench",
                 task_type=".*retrieval.*",
                 data_path=None,
+                base_data_dir=temp_dir,
                 sample_limit=None,
                 augmentation_config=None,
                 enable_auto_truncation=False,
                 truncation_strategy="right", 
-                preserve_ratio=0.8
+                preserve_ratio=0.8,
+                llm_eval_config=None
             )
             
             discovered = config.discover_datasets_by_pattern(temp_dir)
