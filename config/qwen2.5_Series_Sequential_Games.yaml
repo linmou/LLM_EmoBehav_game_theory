@@ -77,6 +77,6 @@ experiment:
   run_sanity_check: true
 
   output:
-    base_dir: "results/Qwen2.5_Series_Multi_Games"
+    base_dir: "results/Qwen2.5_Series_Sequential_Games"
     save_plots: true
     plot_format: "png" 

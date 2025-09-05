@@ -65,7 +65,7 @@ echo "🔧 Checking dependencies..."
 pip install psutil requests openai > /dev/null 2>&1 || echo "⚠️ Some dependencies may be missing"
 
 # Run the complete test
-python run_complete_compatibility_test.py \
+python tests/run_complete_compatibility_test.py \
     --model_path "$MODEL_PATH" \
     --model_name "$MODEL_NAME" \
     --emotion "$EMOTION" \

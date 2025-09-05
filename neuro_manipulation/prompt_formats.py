@@ -53,6 +53,72 @@ class ModelPromptFormat(abc.ABC):
         return False
 
 
+class DefaultInstFormat(ModelPromptFormat):
+    __system_begin = "<<SYS>>"
+    __system_end = "<</SYS>>"
+    __user_tag = "[INST]"
+    __assistant_tag = "[/INST]"
+    __end_of_turn = "</s>"
+
+    @classproperty
+    def system_begin(cls):
+        return cls.__system_begin
+
+    @classproperty
+    def system_end(cls):
+        return cls.__system_end
+
+    @classproperty
+    def user_tag(cls):
+        return cls.__user_tag
+
+    @classproperty
+    def assistant_tag(cls):
+        return cls.__assistant_tag
+
+    @classproperty
+    def end_of_turn(cls):
+        return cls.__end_of_turn
+
+    @staticmethod
+    def build(
+        system_prompt,
+        user_messages: list,
+        assistant_answers: list = [],
+        images: list = None,
+    ):
+        """
+        <s>[INST] <<SYS>>
+        {{ system_prompt }}
+        <</SYS>>
+
+        {{ user_message_1 }} [/INST] {{ model_answer_1 }} </s>
+        <s>[INST] {{ user_message_2 }} [/INST]
+        """
+
+        assert len(user_messages), f" user_messages: {user_messages} should not empty"
+        assert len(user_messages) - len(assistant_answers) in [
+            0,
+            1,
+        ], f" user_messages: {user_messages} and assistant_answers: {assistant_answers} should have the same length or assistant_answers should have one less element"
+
+        if system_prompt:
+            prompt = f""" {DefaultInstFormat.user_tag} {DefaultInstFormat.system_begin}{system_prompt} {DefaultInstFormat.system_end} {user_messages[0]} {DefaultInstFormat.assistant_tag}"""
+        else:
+            prompt = f""" {DefaultInstFormat.user_tag} {user_messages[0]} {DefaultInstFormat.assistant_tag}"""
+
+        for mid in range(len(assistant_answers)):
+            prompt += f"{assistant_answers[mid]} {DefaultInstFormat.end_of_turn}"
+            if mid < len(user_messages) - 1:
+                prompt += f"{DefaultInstFormat.user_tag} {user_messages[mid+1]} {DefaultInstFormat.assistant_tag}"
+
+        return prompt
+
+    @staticmethod
+    def name_pattern(model_name):
+        return True  # Default format should match any model as fallback
+
+
 class Llama2InstFormat(ModelPromptFormat):
     __system_begin = "<<SYS>>"
     __system_end = "<</SYS>>"
@@ -402,12 +468,83 @@ class QwenVLInstFormat(ModelPromptFormat):
         )
 
 
+class Qwen3InstFormat(ModelPromptFormat):
+    __user_tag = "<|im_start|>user"
+    __assistant_tag = "<|im_start|>assistant"
+    __system_tag = "<|im_start|>system"
+    __end_of_turn = "<|im_end|>"
+
+    @classproperty
+    def user_tag(cls):
+        return cls.__user_tag
+
+    @classproperty
+    def assistant_tag(cls):
+        return cls.__assistant_tag
+
+    @classproperty
+    def system_tag(cls):
+        return cls.__system_tag
+
+    @classproperty
+    def end_of_turn(cls):
+        return cls.__end_of_turn
+
+    @staticmethod
+    def build(
+        system_prompt,
+        user_messages: list,
+        assistant_answers: list = [],
+        enable_thinking=False,
+    ):
+        """
+        <|im_start|>system
+        system_prompt<|im_end|>
+        <|im_start|>user
+        user_message<|im_end|>
+        <|im_start|>assistant
+        """
+
+        assert len(user_messages), f" user_messages: {user_messages} should not empty"
+        assert len(user_messages) - len(assistant_answers) in [
+            0,
+            1,
+        ], f" user_messages: {user_messages} and assistant_answers: {assistant_answers} should have the same length or assistant_answers should have one less element"
+
+        prompt = ""
+
+        if system_prompt:
+            prompt += f"{Qwen3InstFormat.system_tag}\n{system_prompt}{Qwen3InstFormat.end_of_turn}\n"
+
+        # Add thinking mode instruction if enabled (without modifying original list)
+        first_user_message = user_messages[0]
+        if enable_thinking:
+            first_user_message = f"/think\n{first_user_message}"
+
+        prompt += f"{Qwen3InstFormat.user_tag}\n{first_user_message}{Qwen3InstFormat.end_of_turn}\n"
+
+        for mid in range(len(assistant_answers)):
+            prompt += f"{Qwen3InstFormat.assistant_tag}\n{assistant_answers[mid]}{Qwen3InstFormat.end_of_turn}\n"
+            if mid < len(user_messages) - 1:
+                prompt += f"{Qwen3InstFormat.user_tag}\n{user_messages[mid+1]}{Qwen3InstFormat.end_of_turn}\n"
+
+        prompt += f"{Qwen3InstFormat.assistant_tag}\n"
+
+        return prompt
+
+    @staticmethod
+    def name_pattern(model_name):
+        return (
+            "qwen3" in model_name.lower()
+            or "qwen-3" in model_name.lower()
+            or "Qwen3" in model_name
+        )
+
+
 class ManualPromptFormat:
     """
     Manually defined prompt format.
     """
-
-    # format_ls will be defined after all classes
 
     @staticmethod
     def get(model_name) -> ModelPromptFormat:
@@ -420,11 +557,26 @@ class ManualPromptFormat:
 
     @staticmethod
     def build(
-        model_name, system_prompt, user_messages: list, assistant_messages: list = []
+        model_name,
+        system_prompt,
+        user_messages: list,
+        assistant_messages: list = [],
+        enable_thinking=False,
     ) -> str:
-        return ManualPromptFormat.get(model_name).build(
-            system_prompt, user_messages, assistant_messages
-        )
+        format_cls = ManualPromptFormat.get(model_name)
+        # Check if the format class supports enable_thinking parameter
+        if (
+            hasattr(format_cls.build, "__code__")
+            and "enable_thinking" in format_cls.build.__code__.co_varnames
+        ):
+            return format_cls.build(
+                system_prompt,
+                user_messages,
+                assistant_messages,
+                enable_thinking=enable_thinking,
+            )
+        else:
+            return format_cls.build(system_prompt, user_messages, assistant_messages)
 
 
 class PromptFormat:
@@ -443,6 +595,8 @@ class PromptFormat:
         MistralInstFormat,
         RWKVsFormat,
         QwenVLInstFormat,
+        Qwen3InstFormat,
+        DefaultInstFormat,  # Fallback format - should be last
     ]
 
     def __init__(self, tokenizer: AutoTokenizer):
@@ -462,6 +616,7 @@ class PromptFormat:
         user_messages: list,
         assistant_messages: list = [],
         images: list = None,
+        enable_thinking=False,
     ) -> str:
         """
         Build a prompt string using the tokenizer's chat template
@@ -470,7 +625,8 @@ class PromptFormat:
             system_prompt (str): System prompt to use
             user_messages (list): List of user messages
             assistant_messages (list): List of assistant messages (optional)
-            images (list): List of images for multimodal inputs (optional)
+            images (list): List of images (optional)
+            enable_thinking (bool): Whether to enable thinking mode (optional)
 
         Returns:
             str: The formatted prompt string
@@ -502,9 +658,26 @@ class PromptFormat:
         if len(user_messages) > len(assistant_messages):
             chat.append({"role": "user", "content": user_messages[-1]})
 
+        # For Qwen3 models with thinking mode, use manual format directly
+        if enable_thinking and (
+            "qwen3" in self.model_name.lower()
+            or "qwen-3" in self.model_name.lower()
+            or "Qwen3" in self.model_name
+        ):
+            format_cls = Qwen3InstFormat
+            return format_cls.build(
+                system_prompt,
+                user_messages,
+                assistant_messages,
+                enable_thinking=enable_thinking,
+            )
+
         try:
             prompt_str = self.tokenizer.apply_chat_template(
-                chat, tokenize=False, add_generation_prompt=True
+                chat,
+                tokenize=False,
+                add_generation_prompt=True,
+                encoding_strategy="auto",
             )
             # Verify messages appear in correct order in the prompt string
             self._verify_message_order_in_prompt(prompt_str, chat)
@@ -539,6 +712,33 @@ class PromptFormat:
             print("Falling back to ManualPromptFormat")
             prompt_str = ManualPromptFormat.build(
                 self.model_name, system_prompt, user_messages, assistant_messages
+            )
+            # For Qwen3, try the manual format with thinking mode support
+            for format_cls in PromptFormat.format_ls:
+                if format_cls.name_pattern(self.model_name):
+                    if (
+                        hasattr(format_cls, "build")
+                        and "enable_thinking" in format_cls.build.__code__.co_varnames
+                    ):
+                        prompt_str = format_cls.build(
+                            system_prompt,
+                            user_messages,
+                            assistant_messages,
+                            enable_thinking=enable_thinking,
+                        )
+                    else:
+                        prompt_str = format_cls.build(
+                            system_prompt, user_messages, assistant_messages
+                        )
+                    return prompt_str
+
+            # Final fallback
+            prompt_str = ManualPromptFormat.build(
+                self.model_name,
+                system_prompt,
+                user_messages,
+                assistant_messages,
+                enable_thinking=enable_thinking,
             )
             return prompt_str
 
@@ -587,7 +787,9 @@ class Gemma3InstFormat(ModelPromptFormat):
     def name_pattern(model_name):
         """Match Gemma 3 multimodal model names."""
         model_lower = model_name.lower()
-        return "gemma-3" in model_lower and any(size in model_lower for size in ["4b", "12b", "27b"])
+        return "gemma-3" in model_lower and any(
+            size in model_lower for size in ["4b", "12b", "27b"]
+        )
 
     @staticmethod
     def validate_tokenizer(tokenizer):
@@ -606,23 +808,25 @@ class Gemma3InstFormat(ModelPromptFormat):
         The actual multimodal processing will be handled by AutoProcessor in the pipeline.
         """
         prompt = ""
-        
+
         # Add system prompt if provided
         if system_prompt:
             prompt += f"<start_of_turn>system\n{system_prompt}<end_of_turn>\n"
-        
+
         # Add user/assistant message pairs
         for i, user_msg in enumerate(user_messages):
             # Add user message (images will be handled by processor)
             prompt += f"<start_of_turn>user\n{user_msg}<end_of_turn>\n"
-            
+
             # Add assistant response if available
             if i < len(assistant_messages):
-                prompt += f"<start_of_turn>model\n{assistant_messages[i]}<end_of_turn>\n"
-        
+                prompt += (
+                    f"<start_of_turn>model\n{assistant_messages[i]}<end_of_turn>\n"
+                )
+
         # Add final model turn for generation
         prompt += "<start_of_turn>model\n"
-        
+
         return prompt
 
 
@@ -634,4 +838,5 @@ ManualPromptFormat.format_ls = [
     RWKVsFormat,
     QwenVLInstFormat,
     Gemma3InstFormat,
+    DefaultInstFormat,  # Fallback format - should be last
 ]

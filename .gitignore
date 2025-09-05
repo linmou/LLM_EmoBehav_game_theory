@@ -4,12 +4,15 @@ OAI_CONFIG_LIST
 api_configs.py
 results/*
 *.csv
+data
 neuro_manipulation/representation_storage
 .cache/*
 groupchat/agent_groups
+merge_data_samples.py
+*.json
+*.png
 *.mdc
 test_outputs/*
-test_results/*
 test_data/*
 data/*
 data_creation/scenario_creation/langgraph_creation/scenarios/*

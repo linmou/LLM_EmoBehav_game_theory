@@ -55,7 +55,7 @@ if __name__ == "__main__":
     repe_pipeline_registry()
     from transformers import AutoTokenizer, AutoModelForCausalLM
     model_hf = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3.1-8B-Instruct", device_map="auto", torch_dtype=torch.bfloat16)
-    model_vllm = LLM(model="meta-llama/Llama-3.1-8B-Instruct", tensor_parallel_size=2, max_model_len=100, gpu_memory_utilization=0.9)    
+    model_vllm = LLM(model="meta-llama/Llama-3.1-8B-Instruct", tensor_parallel_size=2, max_model_len=40000, gpu_memory_utilization=0.9)    
     tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3.1-8B-Instruct")
     print(get_pipeline("rep-control", model_hf, tokenizer, [0], "decoder_block", "reading_vec")(["Hello, how are you?"]))
     print(get_pipeline("rep-control-vllm", model_vllm, tokenizer, [0], "decoder_block", "reading_vec")(["Hello, how are you?"]))

@@ -1,0 +1,117 @@
+# Memory Experiment Series Configuration
+# For use with emotion_memory_experiments/memory_experiment_series_runner.py
+
+experiment_name: "mtbench101_qwen2.5"
+description: "Emotion effects on mtbench101 benchmarks with Qwen2.5 series models"
+version: "1.0.0"
+
+# Models to test (supports both HuggingFace paths and local paths)
+models:
+  - "Qwen/Qwen2.5-0.5B-Instruct"
+  - "Qwen/Qwen2.5-1.5B-Instruct"
+  - "Qwen/Qwen2.5-3B-Instruct"
+    #- "Qwen/Qwen2.5-7B"
+
+# Benchmarks to test (data_path auto-generated if not specified)
+# Use regex patterns in task_type to automatically discover matching datasets
+base_data_dir: "data/mtbench"
+benchmarks:
+  # Discover all datasets for longbench (regex: match any string)
+  # - name: "longbench"
+  #   task_type: ".*retrieval.*"  # Matches all: narrativeqa, qasper, etc.
+  #   enable_auto_truncation: true
+  #   truncation_strategy: "right"
+  #   preserve_ratio: 0.95
+  - name: "mtbench101"
+    task_type: "TS"
+  - name: "mtbench101"
+    task_type: "CC"
+      #- name: "mtbench101"
+    #task_type: "AR"
+      # - name: "mtbench101"
+      #task_type: "MR"
+    # enable_auto_truncation: true
+    # truncation_strategy: "right"
+    # preserve_ratio: 0.95
+  #   augmentation_config:
+  #     method: "adaptive"
+
+      
+  # - name: "infinitebench"
+  #   task_type: "passkey" 
+  #   sample_limit: 100
+  #   augmentation_config: null
+  #   # Context truncation settings (now in benchmark config)
+  #   enable_auto_truncation: true
+  #   truncation_strategy: "right"
+  #   preserve_ratio: 0.95 
+  # Discover only QA-related tasks in infinitebench 
+  # - name: "infinitebench"
+  #   task_type: ".*qa.*"  # Matches: longbook_qa_eng, etc.
+  #   evaluation_method: "exact_match"
+  #   sample_limit: 50
+
+  # More regex examples (commented out):
+  # - name: "longbench"
+  #   task_type: "narrative.*"  # Matches: narrativeqa
+  # - name: "infinitebench"
+  #   task_type: "pass.*"       # Matches: passkey
+  # - name: "benchmark"
+  #   task_type: "task1|task2"  # Matches: task1 OR task2
+  
+  # You can still specify literal task types (no regex):
+  # - name: "longbench"
+  #   task_type: "narrativeqa"  # Exact match only
+
+# Emotions to actively induce (neutral baseline handled automatically)
+emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
+intensities: [1.5]
+
+# vLLM loading configuration (all fields required after refactoring)
+loading_config:
+  model_path: null  # Will be set by runner for each model
+  gpu_memory_utilization: 0.90
+  tensor_parallel_size: null  # Auto-detect
+  max_model_len: 127768
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 42
+  disable_custom_all_reduce: false
+  # Additional vLLM parameters for extensibility:
+  #additional_vllm_kwargs:
+  #  rope_scaling:
+  #    rope_type: "yarn"
+  #    factor: 4.0
+  #    original_max_position_embeddings: 32768
+
+
+# RepE configuration
+repe_eng_config:
+  direction_method: "pca"
+
+
+# Generation parameters
+generation_config:
+  temperature: 0.1
+  max_new_tokens: 100
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+# Execution settings
+batch_size: 50
+max_evaluation_workers: 2
+pipeline_queue_size: 2
+
+# Output configuration
+output_dir: "results/mtbench101_qwen2.5_series_2"
+
+# Optional: run only sanity checks instead of full experiments
+run_sanity_check: false

@@ -298,7 +298,7 @@ class TestModelLayerDetector(unittest.TestCase):
             llm = LLM(
                 model="meta-llama/Llama-3.1-8B-Instruct",
                 trust_remote_code=True,
-                max_model_len=256,  # Reduce context size for testing
+                max_model_len=40000,
                 tensor_parallel_size=1,
                 gpu_memory_utilization=0.9
             )

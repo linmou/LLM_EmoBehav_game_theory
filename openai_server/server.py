@@ -43,6 +43,17 @@ from neuro_manipulation.repe.rep_control_vllm_hook import (  # noqa: E402
 from neuro_manipulation.utils import load_model_tokenizer  # noqa: E402
 from vllm import LLM  # noqa: E402
 
+# Import new graceful degradation components
+from async_vllm_wrapper import (  # noqa: E402
+    initialize_async_vllm_wrapper,
+    get_async_vllm_wrapper,
+)
+from request_queue_manager import (  # noqa: E402
+    initialize_request_queue_manager,
+    get_request_queue_manager,
+    RequestPriority,
+)
+
 repe_pipeline_registry()
 
 # Configure logging
@@ -106,7 +117,7 @@ class ChatCompletionRequest(BaseModel):
     model: str = Field(..., description="ID of the model to use")
     messages: List[ChatMessage] = Field(..., description="The messages in the conversation")
     max_tokens: Optional[int] = Field(
-        default=100, description="Maximum number of tokens to generate"
+        default=40000, description="Maximum number of tokens to generate"
     )
     temperature: Optional[float] = Field(default=1.0, description="Sampling temperature")
     top_p: Optional[float] = Field(default=1.0, description="Nucleus sampling parameter")
@@ -174,6 +185,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Startup and shutdown event handlers
+@app.on_event("startup")
+async def startup_event():
+    """Initialize queue manager on startup."""
+    queue_manager = get_request_queue_manager()
+    if queue_manager:
+        await queue_manager.start()
+        logger.info("Request queue manager started")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean shutdown of all components."""
+    # Stop queue manager
+    queue_manager = get_request_queue_manager()
+    if queue_manager:
+        await queue_manager.stop()
+        logger.info("Request queue manager stopped")
+    
+    # Shutdown async wrapper
+    async_wrapper = get_async_vllm_wrapper()
+    if async_wrapper:
+        await async_wrapper.shutdown()
+        logger.info("Async vLLM wrapper shutdown")
+
 
 def load_emotion_activation_vectors(model_path: str, emotion: str) -> Dict[int, torch.Tensor]:
     """Load emotion activation vectors for the given emotion."""
@@ -234,6 +269,12 @@ def initialize_model(
     batch_size: int = 8,
     batch_timeout: float = 0.05,
     disable_batching: bool = False,
+    request_timeout: int = 60,
+    max_queue_size: int = 50,
+    max_concurrent_requests: int = 3,
+    queue_rejection_threshold: float = 0.8,
+    reset_interval: int = 300,
+    vllm_rejection_threshold: float = 0.7,
 ):
     """Initialize the vLLM model with RepControlVLLMHook."""
     logger.info(f"Initializing model: {model_path}")
@@ -299,6 +340,7 @@ def initialize_model(
     server_state["control_layers"] = control_layers
     server_state["current_emotion"] = emotion
     server_state["emotion_activations"] = activations
+    server_state["request_timeout"] = request_timeout  # Store timeout for later use
 
     # Initialize batch processor for better throughput (if not disabled)
     if not disable_batching:
@@ -311,6 +353,46 @@ def initialize_model(
     else:
         server_state["batch_processor"] = None
         logger.info("Batch processing disabled")
+
+    # Initialize health monitoring
+    try:
+        from health_monitor import get_health_monitor
+        health_monitor = get_health_monitor()
+        health_monitor.start_monitoring()
+        logger.info("Health monitoring started")
+    except Exception as e:
+        logger.warning(f"Failed to start health monitoring: {e}")
+    
+    # Initialize AsyncVLLMWrapper for timeout protection
+    try:
+        async_wrapper = initialize_async_vllm_wrapper(
+            vllm_hook=rep_control,
+            default_timeout=request_timeout,
+            max_workers=max_concurrent_requests,  # Match queue capacity
+            reset_interval=reset_interval,
+            rejection_start_threshold=vllm_rejection_threshold
+        )
+        logger.info(
+            f"AsyncVLLMWrapper initialized with {request_timeout}s timeout, "
+            f"{max_concurrent_requests} max workers, {reset_interval}s reset interval, "
+            f"{vllm_rejection_threshold} rejection threshold"
+        )
+    except Exception as e:
+        logger.error(f"Failed to initialize AsyncVLLMWrapper: {e}")
+        raise
+    
+    # Initialize RequestQueueManager for load management
+    try:
+        queue_manager = initialize_request_queue_manager(
+            max_queue_size=max_queue_size,
+            max_concurrent_requests=max_concurrent_requests,
+            queue_timeout=300.0,  # Keep 5 minutes for queue timeout
+            rejection_threshold=queue_rejection_threshold
+        )
+        logger.info(f"RequestQueueManager initialized: max_queue={max_queue_size}, max_concurrent={max_concurrent_requests}, rejection_threshold={queue_rejection_threshold}")
+    except Exception as e:
+        logger.error(f"Failed to initialize RequestQueueManager: {e}")
+        raise
 
     logger.info("Model initialization complete")
 
@@ -764,6 +846,11 @@ class BatchProcessor:
     async def _process_batch_items(self, batch):
         """Process a batch of requests together."""
         try:
+            # Get async wrapper
+            async_wrapper = get_async_vllm_wrapper()
+            if not async_wrapper:
+                raise HTTPException(status_code=500, detail="AsyncVLLMWrapper not initialized")
+            
             # Extract prompts and requests
             prompts = []
             requests = []
@@ -784,13 +871,14 @@ class BatchProcessor:
             if len(prompts) > 1:
                 logger.debug(f"Processing batch of {len(prompts)} requests")
 
-                # Use batch processing for multiple requests
-                outputs = server_state["rep_control_hook"](
+                # Use batch processing for multiple requests with timeout protection
+                outputs = await async_wrapper.generate_async(
                     text_inputs=prompts,
                     activations=server_state["emotion_activations"],
-                    max_new_tokens=max(req.max_tokens or 100 for req in requests),
+                    max_new_tokens=max(req.max_tokens or 40000 for req in requests),
                     temperature=requests[0].temperature or 0.0,
                     top_p=requests[0].top_p or 1.0,
+                    timeout=server_state["request_timeout"] * 1.5,  # Slightly longer timeout for batch
                     operator="linear_comb",
                     normalize=False,
                     token_pos=None,
@@ -800,12 +888,13 @@ class BatchProcessor:
                 request = requests[0]
                 prompt = prompts[0]
 
-                outputs = server_state["rep_control_hook"](
+                outputs = await async_wrapper.generate_async(
                     text_inputs=[prompt],
                     activations=server_state["emotion_activations"],
-                    max_new_tokens=request.max_tokens or 100,
+                    max_new_tokens=request.max_tokens or 40000,
                     temperature=request.temperature or 0.0,
                     top_p=request.top_p or 1.0,
+                    timeout=server_state["request_timeout"],  # Use configured timeout
                     operator="linear_comb",
                     normalize=False,
                     token_pos=None,
@@ -889,9 +978,50 @@ async def list_models():
 
 @app.post("/v1/chat/completions")
 async def create_chat_completion(request: ChatCompletionRequest):
-    """Create a chat completion with emotion control."""
+    """Create a chat completion with emotion control and graceful degradation."""
     if server_state["rep_control_hook"] is None:
         raise HTTPException(status_code=503, detail="Model not initialized")
+
+    # Initialize graceful degradation components
+    from circuit_breaker import get_circuit_breaker, CircuitBreakerConfig  
+    from adaptive_processor import get_adaptive_processor
+    from health_monitor import get_health_monitor
+    
+    # Get circuit breaker for chat completions
+    circuit_breaker = get_circuit_breaker(
+        "chat_completions",
+        CircuitBreakerConfig(
+            failure_threshold=3,
+            recovery_timeout=30.0,
+            timeout=float(server_state["request_timeout"]),  # Use configured timeout
+            health_score_threshold=0.4
+        )
+    )
+    
+    # Record request start time for health monitoring
+    request_start_time = time.time()
+    
+    # Process request with adaptive optimization - DISABLED due to ChatMessage type mismatch
+    # TODO: Fix ChatMessage type conversion between OpenAI client objects and Pydantic models
+    # try:
+    #     adaptive_processor = get_adaptive_processor()
+    #     optimized_request, processing_info = adaptive_processor.process_request(request)
+    #     
+    #     # Log optimization details
+    #     if processing_info["optimization_applied"]:
+    #         logger.info(f"Request optimized: {processing_info['strategy_used']} "
+    #                    f"(health: {processing_info['health_score']:.2f})")
+    #     
+    #     # Use optimized request for processing
+    #     request = optimized_request
+    #     
+    # except HTTPException:
+    #     # Re-raise HTTP exceptions (like service unavailable)
+    #     raise
+    # except Exception as e:
+    #     logger.error(f"Request optimization failed: {e}")
+    #     # Continue with original request if optimization fails
+    processing_info = {"optimization_applied": False, "strategy_used": "disabled"}
 
     # Check if batching is enabled and request supports it
     use_batching = (
@@ -900,25 +1030,62 @@ async def create_chat_completion(request: ChatCompletionRequest):
     )
 
     if use_batching:
-        # Use batch processor for better throughput
-        return await server_state["batch_processor"].process_request(request)
+        # Use batch processor with circuit breaker protection
+        async def batch_process():
+            return await server_state["batch_processor"].process_request(request)
+        
+        try:
+            return await circuit_breaker.call_async(batch_process)
+        except Exception as e:
+            # Record request metrics for health monitoring
+            health_monitor = get_health_monitor()
+            health_monitor.record_request(time.time() - request_start_time, False)
+            raise
 
-    # Fallback to individual processing
+    # Fallback to individual processing with circuit breaker protection
+    async def individual_process():
+        return await _process_individual_request(request, processing_info.get("strategy_used", "unknown"))
+    
+    try:
+        result = await circuit_breaker.call_async(individual_process)
+        
+        # Record successful request for health monitoring
+        health_monitor = get_health_monitor()
+        health_monitor.record_request(time.time() - request_start_time, True)
+        
+        return result
+        
+    except Exception as e:
+        # Record failed request for health monitoring
+        health_monitor = get_health_monitor()
+        health_monitor.record_request(time.time() - request_start_time, False)
+        raise
+
+
+async def _process_individual_request(request: ChatCompletionRequest, strategy_used: str = "unknown"):
+    """Process individual request with emotion control."""
     try:
         # Convert messages to prompt (handle LangGraph format)
         prompt = apply_emotion_to_prompt(
             request.messages, server_state["current_emotion"], request.tools
         )
 
-        # Generate with emotion control - optimized call
+        # Generate with emotion control - using async wrapper for timeout protection
         logger.debug(f"Generating with emotion: {server_state['current_emotion']}")
-
-        outputs = server_state["rep_control_hook"](
+        
+        # Get async wrapper
+        async_wrapper = get_async_vllm_wrapper()
+        if not async_wrapper:
+            raise HTTPException(status_code=500, detail="AsyncVLLMWrapper not initialized")
+        
+        # Use async wrapper for timeout protection
+        outputs = await async_wrapper.generate_async(
             text_inputs=[prompt],
             activations=server_state["emotion_activations"],
-            max_new_tokens=request.max_tokens or 100,
+            max_new_tokens=request.max_tokens or 40000,
             temperature=request.temperature or 0.0,
             top_p=request.top_p or 1.0,
+            timeout=server_state["request_timeout"],  # Use configured timeout
             operator="linear_comb",
             normalize=False,
             token_pos=None,
@@ -1027,13 +1194,62 @@ async def create_chat_completion(request: ChatCompletionRequest):
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {
+    """Enhanced health check endpoint with graceful degradation status."""
+    base_health = {
         "status": "healthy",
         "model_loaded": server_state["model"] is not None,
         "current_emotion": server_state["current_emotion"],
         "server_time": datetime.now().isoformat(),
     }
+    
+    # Add graceful degradation status
+    try:
+        # Import adaptive processor with new queue and vllm integration
+        from adaptive_processor import get_adaptive_processor
+        
+        adaptive_processor = get_adaptive_processor()
+        adaptive_stats = adaptive_processor.get_statistics() if adaptive_processor else {}
+        
+        # Get queue manager statistics
+        queue_manager = get_request_queue_manager()
+        queue_stats = queue_manager.get_statistics() if queue_manager else {}
+        
+        # Get vLLM wrapper statistics
+        async_wrapper = get_async_vllm_wrapper()
+        vllm_stats = async_wrapper.get_statistics() if async_wrapper else {}
+        
+        # Get health score from adaptive stats (fallback if health monitor not available)
+        health_score = adaptive_stats.get("current_health_score", 1.0)
+        
+        # Determine overall status based on queue and wrapper state
+        if queue_stats.get("status") == "critical" or vllm_stats.get("thread_capacity_used", 0) > 90:
+            base_health["status"] = "critical"
+        elif queue_stats.get("status") == "high" or vllm_stats.get("timeout_rate", 0) > 30:
+            base_health["status"] = "degraded"
+        elif queue_stats.get("capacity_percent", 0) > 50 or vllm_stats.get("timeout_rate", 0) > 10:
+            base_health["status"] = "stressed"
+        
+        base_health.update({
+            "graceful_degradation": {
+                "health_score": health_score,
+                "current_strategy": adaptive_stats.get("current_strategy", "healthy"),
+                "optimization_rate": adaptive_stats.get("optimization_rate", 0),
+                "rejection_rate": adaptive_stats.get("rejection_rate", 0),
+                "queue_statistics": queue_stats,
+                "vllm_statistics": vllm_stats,
+                "adaptive_processor": {
+                    "total_requests": adaptive_stats.get("total_requests", 0),
+                    "optimized_requests": adaptive_stats.get("optimized_requests", 0),
+                    "rejected_requests": adaptive_stats.get("rejected_requests", 0)
+                }
+            }
+        })
+        
+    except Exception as e:
+        logger.warning(f"Failed to get graceful degradation status: {e}")
+        base_health["graceful_degradation"] = {"error": str(e)}
+    
+    return base_health
 
 
 def main():
@@ -1062,6 +1278,34 @@ def main():
     parser.add_argument(
         "--enable_chunked_prefill", action="store_true", default=True, help="Enable chunked prefill"
     )
+    
+    # Phase 4.1: Graceful degradation configuration arguments
+    parser.add_argument(
+        "--request_timeout", type=int, default=60, 
+        help="Request timeout in seconds for vLLM operations (default: 60)"
+    )
+    parser.add_argument(
+        "--max_queue_size", type=int, default=50,
+        help="Maximum number of requests in queue (default: 50)"
+    )
+    parser.add_argument(
+        "--max_concurrent_requests", type=int, default=3,
+        help="Maximum concurrent processing requests (default: 3)"
+    )
+    parser.add_argument(
+        "--queue_rejection_threshold", type=float, default=0.8,
+        help="Queue fullness threshold for rejection, 0.0-1.0 (default: 0.8)"
+    )
+    
+    # Stage 2 configuration arguments
+    parser.add_argument(
+        "--reset_interval", type=int, default=300,
+        help="Interval in seconds to reset abandoned thread counter (default: 300)"
+    )
+    parser.add_argument(
+        "--vllm_rejection_threshold", type=float, default=0.7,
+        help="Capacity threshold to start probabilistic rejection, 0.0-1.0 (default: 0.7)"
+    )
 
     args = parser.parse_args()
 
@@ -1087,6 +1331,12 @@ def main():
             batch_size=args.batch_size,
             batch_timeout=args.batch_timeout,
             disable_batching=args.disable_batching,
+            request_timeout=args.request_timeout,
+            max_queue_size=args.max_queue_size,
+            max_concurrent_requests=args.max_concurrent_requests,
+            queue_rejection_threshold=args.queue_rejection_threshold,
+            reset_interval=args.reset_interval,
+            vllm_rejection_threshold=args.vllm_rejection_threshold,
         )
     except Exception as e:
         logger.error(f"Failed to initialize model: {e}", exc_info=True)

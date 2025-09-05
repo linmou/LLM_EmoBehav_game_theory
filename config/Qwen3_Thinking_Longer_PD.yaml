@@ -1,0 +1,56 @@
+experiment:
+  name: "Qwen3_Thinking_Longer_PD"
+  
+  # List of games to run experiments with
+  games:
+    - "Prisoners_Dilemma"
+  
+  # List of models to run experiments with
+  models: 
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B-AWQ"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B-AWQ"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-14B-AWQ"
+  
+  game:
+    name: "Prisoners_Dilemma"
+    previous_actions_length: 0
+    
+  data:
+    generate: false
+    num_scenarios: 36
+    batch_size: 4
+  
+  llm:
+    # Qwen3 specific parameters
+    generation_config:
+      temperature: 0.7
+      do_sample: true
+      top_p: 0.95
+      max_new_tokens: 28000
+      # Thinking mode enabled
+      enable_thinking: true
+
+  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
+  
+  repeat: 1
+
+  emotions:
+    - "anger"
+      # - "happiness"
+      #- "sadness"
+      #- "disgust" 
+      #- "fear"
+      # - "surprise"
+
+  intensity:
+    - 1.5
+
+
+  run_sanity_check: false
+
+  output:
+    base_dir: "results/Qwen3_Thinking_Longer_PD_reactivation"
+    save_plots: true
+    plot_format: "png"

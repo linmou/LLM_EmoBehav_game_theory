@@ -88,6 +88,7 @@ class OptionProbabilityExperiment:
         # Get emotion configurations for activation
         self.target_emotion = self.exp_config["experiment"].get("target_emotion", "anger")
         self.activation_intensity = self.exp_config["experiment"].get("activation_intensity", 1.5)
+        self.enable_thinking = self.exp_config["experiment"]["llm"]["generation_config"].get("enable_thinking", False)
         
         # Step 1: Load a temporary non-vLLM model to get layer info and load RepReaders
         self.logger.info("Loading temporary model for RepReader initialization...")
@@ -101,7 +102,7 @@ class OptionProbabilityExperiment:
         # Load RepReaders using the temporary model
         self.logger.info("Loading RepReaders for emotion activations...")
         self.emotion_rep_readers = load_emotion_readers(
-            self.repe_eng_config, temp_model, temp_tokenizer, self.hidden_layers
+            self.repe_eng_config, temp_model, temp_tokenizer, self.hidden_layers, enable_thinking=self.enable_thinking
         )
         self.logger.info(f"Loaded {len(self.emotion_rep_readers)} emotion readers. Using control layers: {self.control_layers}")
 

@@ -15,8 +15,27 @@ from neuro_manipulation.utils import (
 
 
 def setup_model_and_tokenizer(config, from_vllm=False):
+    """
+    Setup model and tokenizer with merged configuration.
+
+    Args:
+        config: Dict with model configuration (can contain model_name_or_path)
+        from_vllm: Whether to load using vLLM
+        loading_config: Optional LoadingConfig object with loading parameters
+
+    Returns:
+        tuple: (model, tokenizer, prompt_format, processor)
+    """
+    try:
+        model_path = config.model_path
+    except:
+        model_path = config.get("model_name_or_path", config.get("model_path"))
+
     model, tokenizer, processor = load_model_tokenizer(
-        config["model_name_or_path"], expand_vocab=False, from_vllm=from_vllm
+        model_path,
+        expand_vocab=False,
+        from_vllm=from_vllm,
+        loading_config=config,
     )
 
     prompt_format = PromptFormat(tokenizer)
@@ -24,7 +43,9 @@ def setup_model_and_tokenizer(config, from_vllm=False):
     return model, tokenizer, prompt_format, processor
 
 
-def load_emotion_readers(config, model, tokenizer, hidden_layers, processor=None):
+def load_emotion_readers(
+    config, model, tokenizer, hidden_layers, processor=None, enable_thinking=False
+):
     """
     Load emotion readers with complete auto-detection for multimodal processing.
 
@@ -99,6 +120,7 @@ def load_emotion_readers(config, model, tokenizer, hidden_layers, processor=None
         config["data_dir"],
         model_name=config["model_name_or_path"],
         tokenizer=tokenizer,
+        enable_thinking=enable_thinking,
         multimodal_intent=(experiment_mode == "multimodal"),
     )
 

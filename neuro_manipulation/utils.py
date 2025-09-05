@@ -174,6 +174,7 @@ def primary_emotions_concept_dataset(
     system_prompt=None,
     seed=0,
     multimodal_intent=False,
+    enable_thinking=False,
 ):
     """
     Create dataset of emotion scenarios using proper model-specific prompt formatting.
@@ -187,7 +188,8 @@ def primary_emotions_concept_dataset(
         tokenizer: Optional tokenizer for more accurate prompt formatting
         system_prompt: Optional system prompt, if None no system prompt will be used
         seed: Random seed for shuffling
-        multimodal_intent: If True, attempt multimodal processing (auto-detected if False)
+        multimodal_intent: Whether to use multimodal intent
+        enable_thinking: Whether to enable thinking mode
 
     Returns:
         Dictionary of formatted emotion datasets
@@ -307,7 +309,9 @@ def primary_emotions_concept_dataset(
                             if system_prompt:
                                 formatted_prompt = f"{user_tag} {system_prompt}\n\n{user_message} {assistant_tag} "
                             else:
-                                formatted_prompt = f"{user_tag} {user_message} {assistant_tag} "
+                                formatted_prompt = (
+                                    f"{user_tag} {user_message} {assistant_tag} "
+                                )
 
                         return {"images": [pil_image], "text": formatted_prompt}
                     else:
@@ -324,7 +328,10 @@ def primary_emotions_concept_dataset(
                 # Format text prompt
                 if prompt_format is not None:
                     formatted_prompt = prompt_format.build(
-                        system_prompt, [user_message], []
+                        system_prompt,
+                        [user_message],
+                        [],
+                        enable_thinking=enable_thinking,
                     )
                 else:
                     if system_prompt:
@@ -340,12 +347,12 @@ def primary_emotions_concept_dataset(
 
         for scenario in data_:
             formatted_data_item = format_scenario(scenario)
-            if formatted_data_item is not None:  # Skip failed image loads
+            if formatted_data_item is not None:
                 emotion_test_data.append(formatted_data_item)
 
         for scenario in data:
             formatted_data_item = format_scenario(scenario)
-            if formatted_data_item is not None:  # Skip failed image loads
+            if formatted_data_item is not None:
                 emotion_train_data.append(formatted_data_item)
 
         formatted_data[emotion] = {
@@ -478,7 +485,7 @@ def detect_multimodal_model(model_name_or_path):
         "GPT-4V",
         "InstructBLIP",
         "gemma-3-4b",
-        "gemma-3-12b", 
+        "gemma-3-12b",
         "gemma-3-27b",
     ]
 
@@ -525,38 +532,47 @@ def auto_load_processor(model_name_or_path, vram_optimized=True):
         processor = AutoProcessor.from_pretrained(
             model_name_or_path, trust_remote_code=True
         )
-        
+
         # Apply VRAM optimizations
-        if vram_optimized and hasattr(processor, 'image_processor'):
+        if vram_optimized and hasattr(processor, "image_processor"):
             # EXTREME VRAM REDUCTION: Reduce to tiny images to prevent 9GB allocation
             # Original: 12,845,056 pixels (~3582x3582)
             # Ultra-tiny: 65,536 pixels (~256x256) - minimal for processing
-            original_max = getattr(processor.image_processor, 'max_pixels', 12845056)
+            original_max = getattr(processor.image_processor, "max_pixels", 12845056)
             optimized_max = 65536  # Extremely small to prevent large allocations
-            
-            if hasattr(processor.image_processor, 'max_pixels'):
+
+            if hasattr(processor.image_processor, "max_pixels"):
                 processor.image_processor.max_pixels = optimized_max
-            
+
             # Force very small image dimensions
-            if hasattr(processor.image_processor, 'size'):
+            if hasattr(processor.image_processor, "size"):
                 if isinstance(processor.image_processor.size, dict):
                     # Force maximum dimensions to be very small
                     processor.image_processor.size = {
-                        'shortest_edge': 224,  # Very small
-                        'longest_edge': 256    # Very small maximum
+                        "shortest_edge": 224,  # Very small
+                        "longest_edge": 256,  # Very small maximum
                     }
-            
+
             # Add image pre-compression if possible
-            if hasattr(processor.image_processor, 'do_resize'):
+            if hasattr(processor.image_processor, "do_resize"):
                 processor.image_processor.do_resize = True
-            if hasattr(processor.image_processor, 'do_rescale'):
+            if hasattr(processor.image_processor, "do_rescale"):
                 processor.image_processor.do_rescale = True
-        
+
         print(f"✓ Auto-loaded AutoProcessor for {model_name_or_path}")
         return processor
     except Exception as e:
         print(f"⚠️  Could not load AutoProcessor for {model_name_or_path}: {e}")
         return None
+
+
+def is_awq_model(model_name_or_path):
+    """
+    Detect if a model is AWQ quantized based on naming conventions.
+    """
+    model_name_upper = str(model_name_or_path).upper()
+    awq_indicators = ["-AWQ", "AWQ-", "/AWQ", "_AWQ"]
+    return any(indicator in model_name_upper for indicator in awq_indicators)
 
 
 def load_model_tokenizer(
@@ -567,6 +583,7 @@ def load_model_tokenizer(
     from_vllm=False,
     auto_load_multimodal=True,
     enable_multi_gpu=True,
+    loading_config: "Optional[VLLMLoadingConfig]" = None,
 ):
     """
     Enhanced model loading with automatic multimodal detection and processor loading.
@@ -578,6 +595,7 @@ def load_model_tokenizer(
         expand_vocab: Whether to expand vocabulary with tags
         from_vllm: Whether to use vLLM for loading
         auto_load_multimodal: Whether to auto-detect and load multimodal processor
+        loading_config: Optional LoadingConfig object or dict with vLLM loading parameters
 
     Returns:
         tuple: (model, tokenizer, processor_or_none)
@@ -587,45 +605,83 @@ def load_model_tokenizer(
     model = None
     if from_vllm:
         try:
-            model = LLM(
-                model=model_name_or_path,
-                tensor_parallel_size=get_optimal_tensor_parallel_size(
-                    model_name_or_path
-                ),
-                max_model_len=1000,
-                trust_remote_code=True,
-                enforce_eager=True,
-            )
+            # Use VLLMLoadingConfig.to_vllm_kwargs() method
+            if loading_config and hasattr(loading_config, "to_vllm_kwargs"):
+                vllm_kwargs = loading_config.to_vllm_kwargs()
+
+                # Auto-detect tensor parallel size if not specified
+                if vllm_kwargs.get("tensor_parallel_size") is None:
+                    vllm_kwargs["tensor_parallel_size"] = (
+                        get_optimal_tensor_parallel_size(model_name_or_path)
+                    )
+                if is_awq_model(model_name_or_path):
+                    vllm_kwargs["quantization"] = "awq"
+            else:
+                # No loading config - use defaults
+                vllm_kwargs = {
+                    "model": model_name_or_path,
+                    "tensor_parallel_size": get_optimal_tensor_parallel_size(
+                        model_name_or_path
+                    ),
+                    "max_model_len": 32768,
+                    "trust_remote_code": True,
+                    "enforce_eager": True,
+                    "gpu_memory_utilization": 0.90,
+                    "dtype": "float16",
+                    "seed": 42,
+                    "disable_custom_all_reduce": False,
+                }
+            model = LLM(**vllm_kwargs)
+
         except Exception as e:
             print(f"vLLM loading failed: {e}")
             pass
 
     if not model:
-        # MULTI-GPU OPTIMIZATION: Distribute model across available GPUs
-        device_map_config = "auto"
-        if enable_multi_gpu and torch.cuda.device_count() > 1:
-            # Use balanced device mapping to distribute layers across GPUs
-            device_map_config = "auto"  # Let transformers handle automatic distribution
-        
-        model = AutoModel.from_pretrained(
-            model_name_or_path,
-            torch_dtype=torch.bfloat16,  # Use bfloat16 for better memory efficiency
-            device_map=device_map_config,
-            token=True,
-            trust_remote_code=True,
-            max_memory={i: "12GiB" for i in range(torch.cuda.device_count())} if torch.cuda.device_count() > 1 else None,
-        ).eval()
+        # Check if this should be a causal LM model based on its config
+        from transformers import AutoConfig, AutoModelForCausalLM
 
-    # Load tokenizer
-    use_fast_tokenizer = False  # "LlamaForCausalLM" not in model.config.architectures
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name_or_path,
-        use_fast=use_fast_tokenizer,
-        padding_side="left",
-        legacy=False,
-        token=True,
-        trust_remote_code=True,
-    )
+        try:
+            config = AutoConfig.from_pretrained(
+                model_name_or_path, token=True, trust_remote_code=True
+            )
+            # Check if the model has architectures that suggest it's a causal LM
+            if hasattr(config, "architectures") and config.architectures:
+                # If any architecture name contains "ForCausalLM", use AutoModelForCausalLM
+                if any("ForCausalLM" in arch for arch in config.architectures):
+                    model = AutoModelForCausalLM.from_pretrained(
+                        model_name_or_path,
+                        torch_dtype=torch.float16,
+                        device_map="auto",
+                        token=True,
+                        trust_remote_code=True,
+                    ).eval()
+                else:
+                    model = AutoModel.from_pretrained(
+                        model_name_or_path,
+                        torch_dtype=torch.float16,
+                        device_map="auto",
+                        token=True,
+                        trust_remote_code=True,
+                    ).eval()
+            else:
+                # Fallback to AutoModel if we can't determine
+                model = AutoModel.from_pretrained(
+                    model_name_or_path,
+                    torch_dtype=torch.float16,
+                    device_map="auto",
+                    token=True,
+                    trust_remote_code=True,
+                ).eval()
+        except:
+            # If config loading fails, fallback to AutoModel
+            model = AutoModel.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
+    try:
+        use_fast_tokenizer = True
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
+    except ValueError as error:
+        use_fast_tokenizer = False #"LlamaForCausalLM" not in model.config.architectures
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = 0
 
