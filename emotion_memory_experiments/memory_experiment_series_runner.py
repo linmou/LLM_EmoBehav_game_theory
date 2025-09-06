@@ -1005,7 +1005,7 @@ class MemoryExperimentSeriesRunner:
                 )
 
                 self.logger.info(
-                    f"  - {exp['benchmark_name']}, {exp['model_name']}{time_info}: {exp.get('error', 'Unknown error')[:100]}..."
+                    f"  - {exp['benchmark_name']}, {exp['model_name']}{time_info}: {exp.get('error', 'Unknown error')}"
                 )
 
 

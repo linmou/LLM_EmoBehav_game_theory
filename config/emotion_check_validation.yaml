@@ -1,0 +1,64 @@
+# Emotion Check Validation Configuration
+# Simple test to verify emotion manipulation is working in memory experiments
+
+experiment_name: "emotion_check_validation"
+description: "Basic emotion validation test using direct questions and one-word responses"
+version: "1.0.0"
+
+# Single model for quick testing - use a small model for speed
+models:
+  - "Qwen/Qwen2.5-1.5B-Instruct"
+
+# Our emotion check benchmark
+benchmarks:
+  - name: "emotion_check"
+    task_type: "basic_validation"
+    base_data_dir: null  # Not needed - programmatic data
+    # No data file needed - questions generated in dataset class
+    sample_limit: 10  # Use all 10 questions
+
+# Test all 6 core emotions plus neutral baseline
+emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
+intensities: [1.0]  # Use full intensity for clear effects
+
+# vLLM loading configuration for lightweight model
+loading_config:
+  model_path: null  # Will be set by runner for each model
+  gpu_memory_utilization: 0.90
+  tensor_parallel_size: null  # Auto-detect
+  max_model_len: 4096  # Short context sufficient for emotion questions
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+# RepE configuration
+repe_eng_config:
+  direction_method: "pca"
+
+# Generation parameters optimized for one-word responses
+generation_config:
+  temperature: 0.1  # More deterministic responses
+  max_new_tokens: 5  # Force very short responses
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+# Execution settings - small batches for quick testing
+batch_size: 10
+max_evaluation_workers: 2
+pipeline_queue_size: 2
+
+# Output configuration
+output_dir: "results/emotion_check_validation"
+
+# Run sanity check mode for quick validation
+run_sanity_check: true

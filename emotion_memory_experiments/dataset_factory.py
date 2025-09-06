@@ -32,6 +32,7 @@ from .data_models import (
 from .datasets.base import BaseBenchmarkDataset
 
 # Import all specialized dataset classes
+from .datasets.emotion_check import EmotionCheckDataset
 from .datasets.infinitebench import InfiniteBenchDataset
 from .datasets.locomo import LoCoMoDataset
 from .datasets.longbench import LongBenchDataset
@@ -41,6 +42,7 @@ from .datasets.truthfulqa import TruthfulQADataset
 # Registry mapping benchmark names to dataset classes
 # This eliminates if-else chains entirely!
 DATASET_REGISTRY: Dict[str, Type[BaseBenchmarkDataset]] = {
+    "emotion_check": EmotionCheckDataset,
     "infinitebench": InfiniteBenchDataset,
     "longbench": LongBenchDataset,
     "locomo": LoCoMoDataset,
