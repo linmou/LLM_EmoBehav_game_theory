@@ -4,7 +4,7 @@ Tests basic emotional state awareness with direct questions and classifies respo
 """
 
 import re
-from typing import Any, List
+from typing import Any, Dict, List
 
 from .base import BaseBenchmarkDataset
 from ..data_models import BenchmarkItem
@@ -28,7 +28,44 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
         "surprise": ["surprised", "amazed", "astonished", "shocked", "startled", "stunned", "bewildered", "astounded", "flabbergasted", "dumbfounded"],
         "neutral": ["neutral", "calm", "peaceful", "fine", "okay", "normal", "relaxed", "stable", "balanced", "composed"]
     }
-    
+     
+    def __getitem__(self, idx: int) -> Dict[str, Any]:
+        """Get item by index with prompt formatting"""
+        item = self.items[idx]
+
+        # Extract options from metadata for multiple choice questions
+        options = None
+        if item.metadata and "options" in item.metadata:
+            options = item.metadata["options"]
+
+        # Create prompt using wrapper or default format
+        if self.prompt_wrapper:
+            prompt = self.prompt_wrapper(
+                context=item.context if item.context else "",
+                question=item.input_text,
+                answer=item.ground_truth,
+                options=options,
+            )
+
+        else:
+            # Default prompt format
+            if item.context:
+                prompt = (
+                    f"Context: {item.context}\nQuestion: {item.input_text}\nAnswer:"
+                )
+            else:
+                prompt = f"{item.input_text}\nAnswer:"
+
+        # Transform ground truth if answer wrapper provided
+        ground_truth = (
+            self.answer_wrapper(item.ground_truth) 
+            if self.answer_wrapper 
+            else item.ground_truth
+        )
+
+        return {"item": item, "prompt": prompt, "ground_truth": ground_truth}
+
+     
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
         """Load emotion check questions from JSONL file"""
         

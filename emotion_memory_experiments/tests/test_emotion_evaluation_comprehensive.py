@@ -89,16 +89,13 @@ class EmotionTestSuite:
             ("The weather is nice today.", "neutral", "off_topic"),
         ]
     
-    def _evaluate_single_case(self, response: str, expected: str, category: str, case_num: int) -> bool:
+    def _evaluate_single_case_sync(self, response: str, expected: str, category: str, case_num: int) -> Dict[str, Any]:
         """
-        Evaluate a single test case.
+        Evaluate a single test case synchronously.
         
         Returns:
-            True if classification is correct, False otherwise
+            Dictionary with evaluation results
         """
-        print(f"{case_num:2d}. [{category:15s}] Testing: '{response[:45]}{'...' if len(response) > 45 else ''}'")
-        print(f"    Expected: {expected}")
-        
         try:
             eval_prompt = self.config.llm_eval_config.get("evaluation_prompt", "")
             query = eval_prompt.format(question=self.question, response=response)
@@ -114,64 +111,135 @@ class EmotionTestSuite:
             
             detected = result.get("emotion", "unknown").lower()
             confidence = result.get("confidence", 0.0)
-            
             is_correct = detected == expected.lower()
             
-            if is_correct:
-                print(f"    Detected: {detected} ✓")
-                return True
-            else:
-                print(f"    Detected: {detected} ✗")
-                self.failed_cases.append({
-                    "case": case_num,
-                    "category": category,
-                    "response": response,
-                    "expected": expected,
-                    "detected": detected,
-                    "confidence": confidence,
-                })
-                return False
+            return {
+                "case": case_num,
+                "category": category,
+                "response": response,
+                "expected": expected,
+                "detected": detected,
+                "confidence": confidence,
+                "correct": is_correct,
+                "error": None
+            }
                 
         except Exception as e:
-            print(f"    ERROR: {str(e)}")
-            self.failed_cases.append({
+            return {
                 "case": case_num,
                 "category": category,
                 "response": response,
                 "expected": expected,
                 "detected": "ERROR",
                 "confidence": 0.0,
-            })
-            return False
-    
-    def run_comprehensive_test(self) -> Tuple[float, List[dict]]:
+                "correct": False,
+                "error": str(e)
+            }
+
+    async def _evaluate_case_async(self, executor: concurrent.futures.ThreadPoolExecutor, 
+                                   response: str, expected: str, category: str, case_num: int) -> Dict[str, Any]:
         """
-        Run the complete test suite.
+        Evaluate a single test case asynchronously.
+        """
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            executor, self._evaluate_single_case_sync, response, expected, category, case_num
+        )
+    
+    async def run_comprehensive_test_async(self) -> Tuple[float, List[dict]]:
+        """
+        Run the complete test suite in parallel for maximum speed.
         
         Returns:
             Tuple of (accuracy_percentage, failed_cases_list)
         """
-        print("🧪 Comprehensive Emotion Evaluation Test Suite")
-        print("=" * 65)
+        print("🧪 Comprehensive Emotion Evaluation Test Suite - PARALLEL")
+        print("=" * 75)
         print(f"Configuration: {self.config.llm_eval_config.get('model')} @ temp={self.config.llm_eval_config.get('temperature')}")
+        print("🚀 Running all evaluations in parallel...")
         print()
         
         test_cases = self._get_test_cases()
         self.total_tests = len(test_cases)
+        
+        start_time = time.time()
+        
+        # Run all evaluations concurrently with controlled concurrency
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            tasks = [
+                self._evaluate_case_async(executor, response, expected, category, i)
+                for i, (response, expected, category) in enumerate(test_cases, 1)
+            ]
+            
+            # Wait for all evaluations to complete with progress tracking
+            print("⏱️  Evaluating all test cases concurrently...")
+            
+            # Use asyncio.as_completed for progress tracking
+            results = []
+            completed = 0
+            for completed_task in asyncio.as_completed(tasks):
+                result = await completed_task
+                results.append(result)
+                completed += 1
+                progress = (completed / len(tasks)) * 100
+                print(f"    Progress: {completed}/{len(tasks)} ({progress:.0f}%) - {result.get('category', 'unknown') if isinstance(result, dict) else 'error'}")
+            
+            # Sort results by case number
+            results = [r for r in results if isinstance(r, dict)]
+        
+        elapsed_time = time.time() - start_time
+        print(f"✅ All evaluations completed in {elapsed_time:.2f} seconds")
+        print()
+        
+        # Process results
         self.passed_tests = 0
         self.failed_cases = []
         
-        # Run all test cases
-        for i, (response, expected, category) in enumerate(test_cases, 1):
-            if self._evaluate_single_case(response, expected, category, i):
+        # Sort results by case number for consistent display
+        results.sort(key=lambda x: x["case"])
+        
+        for result in results:
+            case_num = result["case"]
+            category = result["category"]
+            response = result["response"]
+            expected = result["expected"]
+            detected = result["detected"]
+            is_correct = result["correct"]
+            error = result["error"]
+            
+            # Display result
+            print(f"{case_num:2d}. [{category:15s}] '{response[:45]}{'...' if len(response) > 45 else ''}'")
+            
+            if error:
+                print(f"    ERROR: {error}")
+                self.failed_cases.append(result)
+            elif is_correct:
+                print(f"    Expected: {expected} | Detected: {detected} ✓")
                 self.passed_tests += 1
-            print()  # Spacing between cases
+            else:
+                print(f"    Expected: {expected} | Detected: {detected} ✗")
+                self.failed_cases.append(result)
         
         # Calculate and display results
         accuracy = (self.passed_tests / self.total_tests) * 100
         
+        print("\n" + "=" * 50)
+        print(f"⚡ PARALLEL EXECUTION SUMMARY:")
+        print(f"   Total time: {elapsed_time:.2f}s")
+        print(f"   Avg per test: {elapsed_time/self.total_tests:.2f}s")
+        print(f"   Speedup: ~{19 * 2 / elapsed_time:.1f}x faster than sequential")
+        
         self._display_results(accuracy)
         return accuracy, self.failed_cases
+
+    def run_comprehensive_test(self) -> Tuple[float, List[dict]]:
+        """
+        Run the complete test suite (async wrapper).
+        
+        Returns:
+            Tuple of (accuracy_percentage, failed_cases_list)
+        """
+        return asyncio.run(self.run_comprehensive_test_async())
     
     def _display_results(self, accuracy: float):
         """Display comprehensive test results."""

@@ -42,12 +42,14 @@ class BaseBenchmarkDataset(Dataset, ABC):
         max_context_length: Optional[int] = None,
         tokenizer: Any = None,
         truncation_strategy: str = "right",
+        answer_wrapper: Optional[Callable] = None,
     ):
         self.config = config
         self.prompt_wrapper = prompt_wrapper
         self.max_context_length = max_context_length
         self.tokenizer = tokenizer
         self.truncation_strategy = truncation_strategy
+        self.answer_wrapper = answer_wrapper
         if hasattr(self, "LLM_EVAL_CONFIG"):
             self.llm_eval_config = deepcopy(self.LLM_EVAL_CONFIG)
             if self.config.llm_eval_config:

@@ -29,6 +29,7 @@ from neuro_manipulation.model_utils import (
 )
 from neuro_manipulation.repe.pipelines import get_pipeline
 
+from .answer_wrapper import get_answer_wrapper
 from .benchmark_prompt_wrapper import get_benchmark_prompt_wrapper
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 
@@ -46,7 +47,7 @@ class EmotionExperiment:
     def __init__(self, config: ExperimentConfig, dry_run: bool = False):
         # GPU-independent components first
         self._setup_basic_components(config)
-        
+
         if dry_run:
             # Build real datasets for each emotion
             self.emotion_datasets = self._build_emotion_datasets()
@@ -112,14 +113,16 @@ class EmotionExperiment:
 
         # Load tokenizer using proper utility function (CPU-based, no GPU needed)
         from neuro_manipulation.utils import load_tokenizer_only
+
         self.tokenizer, _ = load_tokenizer_only(
             model_name_or_path=config.model_path,
             expand_vocab=False,
-            auto_load_multimodal=True
+            auto_load_multimodal=True,
         )
 
         # Create prompt format (only needs tokenizer)
         from neuro_manipulation.prompt_formats import PromptFormat
+
         self.prompt_format = PromptFormat(self.tokenizer)
 
         # Setup truncation parameters
@@ -167,7 +170,7 @@ class EmotionExperiment:
             self.config.benchmark.task_type,
             self.prompt_format,
         )
-        
+
         benchmark_prompt_wrapper_partial = partial(
             benchmark_prompt_wrapper.__call__,
             user_messages="Please provide your answer.",
@@ -175,27 +178,39 @@ class EmotionExperiment:
             augmentation_config=self.config.benchmark.augmentation_config,
             emotion=emotion,
         )
-        
+
+        answer_wrapper = get_answer_wrapper(
+            self.config.benchmark.name, self.config.benchmark.task_type
+        )
+
+        answer_wrapper_partial = partial(
+            answer_wrapper.__call__,
+            emotion=emotion,
+            benchmark_name=self.config.benchmark.name,
+            task_type=self.config.benchmark.task_type,
+        )
+
         # Create dataset with all required parameters
         dataset = create_dataset_from_config(
             self.config.benchmark,
             prompt_wrapper=benchmark_prompt_wrapper_partial,
+            answer_wrapper=answer_wrapper_partial,
             max_context_length=self.max_context_length,
             tokenizer=self.tokenizer,
             truncation_strategy=self.truncation_strategy,
         )
-        
+
         return dataset, benchmark_prompt_wrapper_partial
 
     def _build_emotion_datasets(self):
         """Build real datasets for each emotion - this is the actual validation test"""
         emotion_datasets = {}
-        
+
         for emotion in self.config.emotions:
             dataset, _ = self._create_dataset_for_emotion(emotion)
             emotion_datasets[emotion] = dataset
             self.logger.info(f"✓ {emotion}: {len(dataset)} items")
-            
+
         return emotion_datasets
 
     def _set_gpu_components_to_none(self):
@@ -222,10 +237,12 @@ class EmotionExperiment:
         self.model, tokenizer_temp, prompt_format_temp, processor = (
             setup_model_and_tokenizer(self.loading_config, from_vllm=False)
         )
-        
+
         # Assert tokenizers are functionally equivalent (not necessarily identical objects)
-        self._assert_tokenizers_equivalent(self.tokenizer, tokenizer_temp, "basic", "gpu")
-        
+        self._assert_tokenizers_equivalent(
+            self.tokenizer, tokenizer_temp, "basic", "gpu"
+        )
+
         num_hidden_layers = ModelLayerDetector.num_layers(self.model)
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
@@ -244,10 +261,12 @@ class EmotionExperiment:
         self.model, tokenizer_temp, prompt_format_temp, _ = setup_model_and_tokenizer(
             self.loading_config, from_vllm=True
         )
-        
+
         # Assert vLLM tokenizer is functionally equivalent to basic tokenizer
-        self._assert_tokenizers_equivalent(self.tokenizer, tokenizer_temp, "basic", "vllm")
-        
+        self._assert_tokenizers_equivalent(
+            self.tokenizer, tokenizer_temp, "basic", "vllm"
+        )
+
         self.logger.info(f"Model loaded: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)
 
@@ -263,48 +282,58 @@ class EmotionExperiment:
             control_method=self.repe_config["control_method"],
         )
 
-    def _assert_tokenizers_equivalent(self, tokenizer1, tokenizer2, name1: str, name2: str):
+    def _assert_tokenizers_equivalent(
+        self, tokenizer1, tokenizer2, name1: str, name2: str
+    ):
         """
         Assert that two tokenizers are functionally equivalent by comparing key properties.
-        
+
         Args:
             tokenizer1: First tokenizer to compare
-            tokenizer2: Second tokenizer to compare  
+            tokenizer2: Second tokenizer to compare
             name1: Descriptive name for first tokenizer (for error messages)
             name2: Descriptive name for second tokenizer (for error messages)
-            
+
         Raises:
             AssertionError: If tokenizers are not functionally equivalent
         """
         try:
             # Check basic type compatibility
-            assert type(tokenizer1) == type(tokenizer2), \
-                f"Tokenizer types differ: {name1}={type(tokenizer1)} vs {name2}={type(tokenizer2)}"
-            
+            assert type(tokenizer1) == type(
+                tokenizer2
+            ), f"Tokenizer types differ: {name1}={type(tokenizer1)} vs {name2}={type(tokenizer2)}"
+
             # Check vocabulary size (most important property)
-            assert tokenizer1.vocab_size == tokenizer2.vocab_size, \
-                f"Vocab sizes differ: {name1}={tokenizer1.vocab_size} vs {name2}={tokenizer2.vocab_size}"
-            
+            assert (
+                tokenizer1.vocab_size == tokenizer2.vocab_size
+            ), f"Vocab sizes differ: {name1}={tokenizer1.vocab_size} vs {name2}={tokenizer2.vocab_size}"
+
             # Check padding token configuration
-            assert tokenizer1.pad_token_id == tokenizer2.pad_token_id, \
-                f"Pad token IDs differ: {name1}={tokenizer1.pad_token_id} vs {name2}={tokenizer2.pad_token_id}"
-            
+            assert (
+                tokenizer1.pad_token_id == tokenizer2.pad_token_id
+            ), f"Pad token IDs differ: {name1}={tokenizer1.pad_token_id} vs {name2}={tokenizer2.pad_token_id}"
+
             # Check special tokens that affect model behavior
-            assert tokenizer1.eos_token_id == tokenizer2.eos_token_id, \
-                f"EOS token IDs differ: {name1}={tokenizer1.eos_token_id} vs {name2}={tokenizer2.eos_token_id}"
-            
-            assert tokenizer1.bos_token_id == tokenizer2.bos_token_id, \
-                f"BOS token IDs differ: {name1}={tokenizer1.bos_token_id} vs {name2}={tokenizer2.bos_token_id}"
-            
+            assert (
+                tokenizer1.eos_token_id == tokenizer2.eos_token_id
+            ), f"EOS token IDs differ: {name1}={tokenizer1.eos_token_id} vs {name2}={tokenizer2.eos_token_id}"
+
+            assert (
+                tokenizer1.bos_token_id == tokenizer2.bos_token_id
+            ), f"BOS token IDs differ: {name1}={tokenizer1.bos_token_id} vs {name2}={tokenizer2.bos_token_id}"
+
         except AttributeError as e:
             # Handle cases where tokenizers might not have certain attributes
             self.logger.warning(f"Tokenizer attribute missing during comparison: {e}")
             # Fall back to basic type check
-            assert type(tokenizer1) == type(tokenizer2), \
-                f"Tokenizer types differ: {name1}={type(tokenizer1)} vs {name2}={type(tokenizer2)}"
-        
+            assert type(tokenizer1) == type(
+                tokenizer2
+            ), f"Tokenizer types differ: {name1}={type(tokenizer1)} vs {name2}={type(tokenizer2)}"
+
         # Log successful validation with key properties
-        self.logger.info(f"✓ Tokenizer consistency validated: {name1} ≡ {name2} (vocab_size={tokenizer1.vocab_size})")
+        self.logger.info(
+            f"✓ Tokenizer consistency validated: {name1} ≡ {name2} (vocab_size={tokenizer1.vocab_size})"
+        )
 
     def build_dataloader(self, emotion: str) -> DataLoader:
         """
@@ -318,7 +347,9 @@ class EmotionExperiment:
         )
 
         # Use common dataset creation logic
-        self.dataset, self.benchmark_prompt_wrapper_partial = self._create_dataset_for_emotion(emotion)
+        self.dataset, self.benchmark_prompt_wrapper_partial = (
+            self._create_dataset_for_emotion(emotion)
+        )
 
         # Use dataset's specialized collate function - each dataset type
         # has specific collation requirements for different benchmarks

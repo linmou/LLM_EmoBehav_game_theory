@@ -57,6 +57,7 @@ def create_dataset_from_config(
     max_context_length: Optional[int] = None,
     tokenizer: Optional[Any] = None,
     truncation_strategy: str = "right",
+    answer_wrapper: Optional[Callable] = None,
     **kwargs,
 ) -> BaseBenchmarkDataset:
     """
@@ -106,6 +107,7 @@ def create_dataset_from_config(
         max_context_length=max_context_length,
         tokenizer=tokenizer,
         truncation_strategy=truncation_strategy,
+        answer_wrapper=answer_wrapper,
         **kwargs,
     )
 
