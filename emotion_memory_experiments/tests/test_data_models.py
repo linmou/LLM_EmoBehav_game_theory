@@ -54,6 +54,7 @@ class TestDataModels(unittest.TestCase):
             name="infinitebench",
             data_path=Path("test_data.jsonl"),
             task_type="passkey",
+            base_data_dir="data/test_benchmarks",
             sample_limit=10,
             augmentation_config=None,
             enable_auto_truncation=True,
@@ -76,6 +77,7 @@ class TestDataModels(unittest.TestCase):
             name="locomo",
             data_path=Path("locomo.json"),
             task_type="conversational_qa",
+            base_data_dir="data/locomo_data",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -93,6 +95,7 @@ class TestDataModels(unittest.TestCase):
             name="infinitebench",
             data_path=Path("test.jsonl"),
             task_type="passkey",
+            base_data_dir="data/test_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -127,6 +130,7 @@ class TestDataModels(unittest.TestCase):
             name="test",
             data_path=Path("test.jsonl"),
             task_type="test",
+            base_data_dir="data/test_benchmarks",
             sample_limit=None,
             augmentation_config=None,
             enable_auto_truncation=False,
@@ -195,6 +199,76 @@ class TestDataModels(unittest.TestCase):
         self.assertEqual(DEFAULT_GENERATION_CONFIG["temperature"], 0.1)
         self.assertEqual(DEFAULT_GENERATION_CONFIG["max_new_tokens"], 100)
         self.assertFalse(DEFAULT_GENERATION_CONFIG["do_sample"])
+
+    def test_benchmark_config_get_data_path_requires_base_data_dir(self):
+        """Test BenchmarkConfig.get_data_path() properly enforces base_data_dir requirement
+        
+        This test ensures the assert works correctly for code quality by catching
+        misconfigured datasets that don't specify where their data files are located.
+        """
+        # Create BenchmarkConfig with None base_data_dir (misconfiguration)
+        config = BenchmarkConfig(
+            name="some_benchmark",
+            task_type="some_task", 
+            data_path=None,  # Will trigger path generation
+            base_data_dir=None,  # This should cause assertion failure
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
+        
+        # This SHOULD raise an AssertionError to catch misconfiguration
+        with self.assertRaises(AssertionError) as cm:
+            config.get_data_path()
+            
+        self.assertIn("base_data_dir is required", str(cm.exception))
+
+    def test_benchmark_config_get_data_path_with_explicit_path(self):
+        """Test BenchmarkConfig.get_data_path() respects explicitly set data_path"""
+        explicit_path = Path("/custom/path/to/data.jsonl")
+        config = BenchmarkConfig(
+            name="custom",
+            task_type="test",
+            data_path=explicit_path,
+            base_data_dir=None,  # Should be ignored when data_path is set
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
+        
+        # Should return the explicit path, not generate one
+        result_path = config.get_data_path()
+        self.assertEqual(result_path, explicit_path)
+        self.assertEqual(str(result_path), "/custom/path/to/data.jsonl")
+
+    def test_benchmark_config_get_data_path_priority_order(self):
+        """Test get_data_path() parameter priority: provided > self.base_data_dir > default"""
+        config = BenchmarkConfig(
+            name="test",
+            task_type="example",
+            data_path=None,
+            base_data_dir="config_base_dir",
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None
+        )
+        
+        # Test provided parameter takes precedence
+        path_with_param = config.get_data_path("provided_base_dir")
+        self.assertIn("provided_base_dir", str(path_with_param))
+        
+        # Test config base_data_dir is used when no parameter provided
+        path_with_config = config.get_data_path()
+        self.assertIn("config_base_dir", str(path_with_config))
 
 
 if __name__ == '__main__':

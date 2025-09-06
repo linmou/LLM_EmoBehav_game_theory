@@ -13,8 +13,7 @@ models:
 benchmarks:
   - name: "emotion_check"
     task_type: "basic_validation"
-    base_data_dir: null  # Not needed - programmatic data
-    # No data file needed - questions generated in dataset class
+    base_data_dir: "data/emotion_scales"  # Updated data directory location
     sample_limit: 10  # Use all 10 questions
 
 # Test all 6 core emotions plus neutral baseline

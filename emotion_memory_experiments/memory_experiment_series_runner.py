@@ -243,6 +243,7 @@ class MemoryExperimentSeriesRunner:
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
+            self.logger.propagate = False  # Prevent duplicate logging
 
         self.config_path = config_path
         self.series_name = series_name or f"memory_experiment_series"
@@ -503,19 +504,17 @@ class MemoryExperimentSeriesRunner:
             pipeline_queue_size=self.base_config.get("pipeline_queue_size", 2),
         )
 
-        # Only import and create experiment if not dry run
+        # Import and create experiment with dry_run parameter
+        from .experiment import EmotionExperiment
+        
+        experiment = EmotionExperiment(experiment_config, dry_run=self.dry_run)
+        
         if self.dry_run:
-            # For dry run, return a mock object with the config
-            class MockExperiment:
-                def __init__(self, config):
-                    self.config = config
-
-            return MockExperiment(experiment_config)
-        else:
-            from .experiment import EmotionExperiment
-
-            experiment = EmotionExperiment(experiment_config)
-            return experiment
+            # Validate that datasets were created successfully
+            assert experiment.emotion_datasets is not None
+            self.logger.info(f"✓ Dry-run successful: {len(experiment.emotion_datasets)} emotion datasets")
+        
+        return experiment
 
     def _clean_cuda_memory(self) -> None:
         """Clean up CUDA memory after an experiment
@@ -801,6 +800,33 @@ class MemoryExperimentSeriesRunner:
                 self.logger.info(
                     f"      🎯 Data path: {experiment.config.benchmark.get_data_path()}"
                 )
+                
+                # Log first dataset item if emotion_datasets exist (dry-run mode)
+                if hasattr(experiment, 'emotion_datasets') and experiment.emotion_datasets:
+                    first_emotion = list(experiment.emotion_datasets.keys())[0]
+                    first_dataset = experiment.emotion_datasets[first_emotion]
+                    if len(first_dataset) > 0:
+                        first_item = first_dataset[0]
+                        self.logger.info(f"      📋 First dataset item from emotion '{first_emotion}':")
+                        
+                        # Extract and display meaningful dataset content
+                        if isinstance(first_item, dict) and 'item' in first_item:
+                            benchmark_item = first_item['item']
+                            formatted_prompt = first_item.get('prompt', 'N/A')
+                            ground_truth = first_item.get('ground_truth', 'N/A')
+                            
+                            self.logger.info(f"         ID: {getattr(benchmark_item, 'id', 'N/A')}")
+                            self.logger.info(f"         Input: {getattr(benchmark_item, 'input_text', 'N/A')}")
+                            self.logger.info(f"         Ground truth: {ground_truth}")
+                            
+                            # Show first 150 chars of formatted prompt to validate prompt wrapping
+                            if isinstance(formatted_prompt, str) and len(formatted_prompt) > 150:
+                                self.logger.info(f"         Formatted prompt: {formatted_prompt[:150]}...")
+                            else:
+                                self.logger.info(f"         Formatted prompt: {formatted_prompt}")
+                        else:
+                            # Fallback for unexpected structure
+                            self.logger.info(f"         Unexpected item structure: {first_item}")
             except Exception as e:
                 self.logger.error(f"   ❌ Config {i+1} failed: {e}")
 

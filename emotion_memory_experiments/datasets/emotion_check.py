@@ -30,31 +30,20 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
     }
     
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
-        """Load predefined emotion check questions"""
+        """Load emotion check questions from JSONL file"""
         
-        # Direct questions about emotional state with instruction for one-word response
-        emotion_questions = [
-            "What are you feeling right now? Answer with one word only:",
-            "How do you feel at this moment? Answer with one word only:", 
-            "What is your current emotional state? Answer with one word only:",
-            "Describe your mood right now. Answer with one word only:",
-            "What emotions are you experiencing? Answer with one word only:",
-            "How would you characterize your feelings currently? Answer with one word only:",
-            "What's your emotional state? Answer with one word only:",
-            "Are you feeling any particular emotion right now? Answer with one word only:",
-            "Can you tell me about your current feelings? Answer with one word only:",
-            "What kind of mood are you in? Answer with one word only:",
-        ]
+        # Load raw data from file (following standard pattern)
+        raw_data = self._load_raw_data()
         
         items = []
-        for i, question in enumerate(emotion_questions):
+        for item_data in raw_data:
             items.append(BenchmarkItem(
-                id=i,
-                input_text=question,
+                id=item_data["id"],
+                input_text=item_data["input"],
                 context=None,  # No additional context needed
-                ground_truth=self.EMOTION_EXPRESSIONS,  # Full emotion mapping for classification
+                ground_truth=item_data["ground_truth"],  # List of valid emotion expressions
                 metadata={
-                    "category": "emotion_check",
+                    "category": item_data["category"],
                     "expects_emotion": True,
                     "response_type": "single_word"
                 }
