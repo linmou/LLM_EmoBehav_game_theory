@@ -14,7 +14,37 @@ benchmarks:
   - name: "emotion_check"
     task_type: "basic_validation"
     base_data_dir: "data/emotion_scales"  # Updated data directory location
-    sample_limit: 10  # Use all 10 questions
+    llm_eval_config:
+      model: "gpt-4.1-mini"
+      temperature: 0.1
+      evaluation_prompt: |
+        You are evaluating whether a response indicates a specific emotion. 
+        
+        Question: {question}
+        Response: {response}
+        
+        First, check if the response fits clearly into one of these 6 basic emotion categories:
+        - anger (angry, mad, furious, irritated, frustrated)
+        - happiness (happy, joyful, pleased, content, excited)
+        - sadness (sad, depressed, melancholy, down, sorrowful)
+        - fear (afraid, scared, anxious, worried, nervous)
+        - disgust (disgusted, revolted, repulsed, sickened)
+        - surprise (surprised, amazed, astonished, shocked, startled)
+        
+        If the response doesn't fit clearly into any basic emotion, check these:
+        - neutral (calm, peaceful, fine, okay, no strong emotion expressed)
+        - other (mixed emotions, complex emotional states, confusion, or emotions not in the basic 6)
+        
+        IMPORTANT: Use "other" for:
+        - Complex emotions (overwhelmed, stressed, confused, grateful, proud, guilty)
+        - Uncertain emotional states ("not sure how I feel")
+        - Any emotion that doesn't clearly fit the basic 6 categories
+        
+        Return your answer as JSON in this exact format:
+        {{"rationale": "reasoning", "emotion": "category_name", "confidence": 0.95}}
+        
+        Where category_name is one of: anger, happiness, sadness, fear, disgust, surprise, neutral, other
+        And confidence is a number between 0.0 and 1.0.
 
 # Test all 6 core emotions plus neutral baseline
 emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
@@ -38,11 +68,11 @@ loading_config:
 repe_eng_config:
   direction_method: "pca"
 
-# Generation parameters optimized for one-word responses
+# Generation parameters for natural responses
 generation_config:
-  temperature: 0.1  # More deterministic responses
-  max_new_tokens: 5  # Force very short responses
-  do_sample: false
+  temperature: 0.7  # Allow more varied responses
+  max_new_tokens: 100  # Allow fuller emotional descriptions
+  do_sample: true
   top_p: 0.9
   repetition_penalty: 1.0
   top_k: -1

@@ -223,9 +223,8 @@ class EmotionExperiment:
             setup_model_and_tokenizer(self.loading_config, from_vllm=False)
         )
         
-        # Assert tokenizer objects are identical
-        assert self.tokenizer == tokenizer_temp, \
-            f"Tokenizers not identical: basic={type(self.tokenizer)} vs gpu={type(tokenizer_temp)}"
+        # Assert tokenizers are functionally equivalent (not necessarily identical objects)
+        self._assert_tokenizers_equivalent(self.tokenizer, tokenizer_temp, "basic", "gpu")
         
         num_hidden_layers = ModelLayerDetector.num_layers(self.model)
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
@@ -246,9 +245,8 @@ class EmotionExperiment:
             self.loading_config, from_vllm=True
         )
         
-        # Assert vLLM tokenizer is identical to basic tokenizer
-        assert self.tokenizer == tokenizer_temp, \
-            f"vLLM tokenizer not identical: basic={type(self.tokenizer)} vs vllm={type(tokenizer_temp)}"
+        # Assert vLLM tokenizer is functionally equivalent to basic tokenizer
+        self._assert_tokenizers_equivalent(self.tokenizer, tokenizer_temp, "basic", "vllm")
         
         self.logger.info(f"Model loaded: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)
@@ -264,6 +262,49 @@ class EmotionExperiment:
             block_name=self.repe_config["block_name"],
             control_method=self.repe_config["control_method"],
         )
+
+    def _assert_tokenizers_equivalent(self, tokenizer1, tokenizer2, name1: str, name2: str):
+        """
+        Assert that two tokenizers are functionally equivalent by comparing key properties.
+        
+        Args:
+            tokenizer1: First tokenizer to compare
+            tokenizer2: Second tokenizer to compare  
+            name1: Descriptive name for first tokenizer (for error messages)
+            name2: Descriptive name for second tokenizer (for error messages)
+            
+        Raises:
+            AssertionError: If tokenizers are not functionally equivalent
+        """
+        try:
+            # Check basic type compatibility
+            assert type(tokenizer1) == type(tokenizer2), \
+                f"Tokenizer types differ: {name1}={type(tokenizer1)} vs {name2}={type(tokenizer2)}"
+            
+            # Check vocabulary size (most important property)
+            assert tokenizer1.vocab_size == tokenizer2.vocab_size, \
+                f"Vocab sizes differ: {name1}={tokenizer1.vocab_size} vs {name2}={tokenizer2.vocab_size}"
+            
+            # Check padding token configuration
+            assert tokenizer1.pad_token_id == tokenizer2.pad_token_id, \
+                f"Pad token IDs differ: {name1}={tokenizer1.pad_token_id} vs {name2}={tokenizer2.pad_token_id}"
+            
+            # Check special tokens that affect model behavior
+            assert tokenizer1.eos_token_id == tokenizer2.eos_token_id, \
+                f"EOS token IDs differ: {name1}={tokenizer1.eos_token_id} vs {name2}={tokenizer2.eos_token_id}"
+            
+            assert tokenizer1.bos_token_id == tokenizer2.bos_token_id, \
+                f"BOS token IDs differ: {name1}={tokenizer1.bos_token_id} vs {name2}={tokenizer2.bos_token_id}"
+            
+        except AttributeError as e:
+            # Handle cases where tokenizers might not have certain attributes
+            self.logger.warning(f"Tokenizer attribute missing during comparison: {e}")
+            # Fall back to basic type check
+            assert type(tokenizer1) == type(tokenizer2), \
+                f"Tokenizer types differ: {name1}={type(tokenizer1)} vs {name2}={type(tokenizer2)}"
+        
+        # Log successful validation with key properties
+        self.logger.info(f"✓ Tokenizer consistency validated: {name1} ≡ {name2} (vocab_size={tokenizer1.vocab_size})")
 
     def build_dataloader(self, emotion: str) -> DataLoader:
         """

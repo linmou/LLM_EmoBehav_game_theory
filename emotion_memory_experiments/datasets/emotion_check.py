@@ -81,14 +81,48 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
     
     def evaluate_response(self, response: str, ground_truth: Any, task_name: str, prompt: str = "") -> float:
         """
-        Classify response into emotion categories.
+        Use LLM evaluation for emotion classification if configured, otherwise fallback to rule-based.
         
-        Note: This returns a score for compatibility but the main value is in 
-        evaluate_with_detailed_metrics() which returns the classification.
+        Returns score from 0-1 based on emotion classification success.
         """
+        # If LLM evaluation is configured, use GPT-4o-mini for evaluation
+        if hasattr(self, 'llm_eval_config') and self.llm_eval_config is not None:
+            from ..evaluation_utils import llm_evaluate_response
+            
+            # Construct evaluation query with the configured prompt template
+            eval_prompt = self.llm_eval_config.get('evaluation_prompt', '')
+            query = eval_prompt.format(
+                question=prompt,
+                response=response
+            )
+            
+            try:
+                # Call LLM evaluation
+                result = llm_evaluate_response(
+                    system_prompt="You are an expert emotion classifier. Always respond with valid JSON format.",
+                    query=query,
+                    llm_eval_config={
+                        "model": self.llm_eval_config.get("model", "gpt-4o-mini"),
+                        "temperature": self.llm_eval_config.get("temperature", 0.1)
+                    }
+                )
+                
+                # Extract emotion classification from result
+                detected_emotion = result.get("emotion", "neutral").lower()
+                confidence = result.get("confidence", 0.5)
+                
+                # Return confidence as score (0.0-1.0) - higher confidence = higher score
+                # Could also implement emotion-specific scoring logic here
+                return float(confidence)
+                
+            except Exception as e:
+                print(f"LLM evaluation failed: {e}")
+                # Fall back to rule-based on error
+                detected_emotion = self._classify_emotion_response(response)
+                return 1.0 if detected_emotion != "unknown" else 0.0
+            
+        # Fallback to rule-based classification
         detected_emotion = self._classify_emotion_response(response)
-        
-        # For compatibility, return 1.0 if any emotion detected, 0.0 if unknown
         return 1.0 if detected_emotion != "unknown" else 0.0
     
     def evaluate_with_detailed_metrics(
