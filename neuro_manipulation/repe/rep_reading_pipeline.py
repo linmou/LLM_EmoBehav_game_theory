@@ -105,7 +105,7 @@ class RepReadingPipeline(Pipeline):
                 for img in images:
                     if hasattr(img, 'resize'):
                         # Force resize to very small dimensions to prevent large allocations
-                        compressed_img = img.resize((224, 224), Image.Resampling.LANCZOS)
+                        compressed_img = img.resize((1024, 1024), Image.Resampling.LANCZOS)
                         compressed_images.append(compressed_img)
                     else:
                         compressed_images.append(img)

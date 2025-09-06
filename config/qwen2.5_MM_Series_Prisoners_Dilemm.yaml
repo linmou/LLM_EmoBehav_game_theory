@@ -57,6 +57,7 @@ experiment:
 repe_config:
   # Essential for multimodal processing
   multimodal_intent: true
-  data_dir: "data/dalle_gen_images"  # Points to directory with emotion JSON files
+  data_dir: "data/repeng_generated_images"  # Points to directory with emotion JSON files
   emotions: ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
   rebuild: false
+  batch_size: 8
