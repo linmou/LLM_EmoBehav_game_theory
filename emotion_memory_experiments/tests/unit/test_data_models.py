@@ -4,7 +4,7 @@ Unit tests for data models.
 import unittest
 from pathlib import Path
 
-from ..data_models import (
+from ...data_models import (
     ResultRecord, BenchmarkConfig, ExperimentConfig, BenchmarkItem, DEFAULT_GENERATION_CONFIG
 )
 

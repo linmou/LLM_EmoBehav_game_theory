@@ -6,7 +6,7 @@ Ensures dataclasses can be instantiated directly from YAML structures.
 import unittest
 from pathlib import Path
 
-from ..data_models import BenchmarkConfig, VLLMLoadingConfig, ExperimentConfig
+from ...data_models import BenchmarkConfig, VLLMLoadingConfig, ExperimentConfig
 
 
 class TestDirectDataclassLoading(unittest.TestCase):

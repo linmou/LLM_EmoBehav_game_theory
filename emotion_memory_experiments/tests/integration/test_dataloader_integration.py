@@ -9,8 +9,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from ..experiment import EmotionExperiment
-from .test_utils import cleanup_temp_files, create_mock_experiment_config
+from ...experiment import EmotionExperiment
+from ..test_utils import cleanup_temp_files, create_mock_experiment_config
 
 
 class TestDataLoaderIntegration(unittest.TestCase):

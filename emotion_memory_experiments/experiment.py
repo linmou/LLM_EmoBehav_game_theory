@@ -29,12 +29,10 @@ from neuro_manipulation.model_utils import (
 )
 from neuro_manipulation.repe.pipelines import get_pipeline
 
-from .answer_wrapper import get_answer_wrapper
-from .benchmark_prompt_wrapper import get_benchmark_prompt_wrapper
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 
-# NEW: Import directly from the specialized dataset factory
-from .dataset_factory import create_dataset_from_config
+# NEW: Import the registry-based component assembly
+from .benchmark_component_registry import create_benchmark_components
 from .truncation_utils import calculate_max_context_length
 
 
@@ -106,8 +104,13 @@ class EmotionExperiment:
             self.generation_config.get("enable_thinking", False)
         )
 
-        # Simple dataset validation (just check file exists)
-        test_dataset = create_dataset_from_config(config.benchmark)
+        # Simple dataset validation using registry-based approach
+        _, _, test_dataset = create_benchmark_components(
+            benchmark_name=config.benchmark.name,
+            task_type=config.benchmark.task_type,
+            config=config.benchmark,
+            prompt_format=None,  # Will be set later when we have proper tokenizer
+        )
         dataset_size = len(test_dataset)
         self.logger.info(f"Benchmark contains {dataset_size} items")
 
@@ -163,38 +166,18 @@ class EmotionExperiment:
         self.batch_size = config.batch_size
 
     def _create_dataset_for_emotion(self, emotion: str):
-        """Create dataset for a specific emotion using common logic"""
-        # Create partial function for dataset integration
-        benchmark_prompt_wrapper = get_benchmark_prompt_wrapper(
-            self.config.benchmark.name,
-            self.config.benchmark.task_type,
-            self.prompt_format,
-        )
-
-        benchmark_prompt_wrapper_partial = partial(
-            benchmark_prompt_wrapper.__call__,
-            user_messages="Please provide your answer.",
-            enable_thinking=self.enable_thinking,
-            augmentation_config=self.config.benchmark.augmentation_config,
-            emotion=emotion,
-        )
-
-        answer_wrapper = get_answer_wrapper(
-            self.config.benchmark.name, self.config.benchmark.task_type
-        )
-
-        answer_wrapper_partial = partial(
-            answer_wrapper.__call__,
-            emotion=emotion,
+        """Create dataset for a specific emotion using registry-based component assembly"""
+        # Use registry to get all three components in one call
+        benchmark_prompt_wrapper_partial, answer_wrapper_partial, dataset = create_benchmark_components(
             benchmark_name=self.config.benchmark.name,
             task_type=self.config.benchmark.task_type,
-        )
-
-        # Create dataset with all required parameters
-        dataset = create_dataset_from_config(
-            self.config.benchmark,
-            prompt_wrapper=benchmark_prompt_wrapper_partial,
-            answer_wrapper=answer_wrapper_partial,
+            config=self.config.benchmark,
+            prompt_format=self.prompt_format,
+            emotion=emotion,
+            enable_thinking=self.enable_thinking,
+            augmentation_config=self.config.benchmark.augmentation_config,
+            user_messages="Please provide your answer.",
+            # Dataset parameters
             max_context_length=self.max_context_length,
             tokenizer=self.tokenizer,
             truncation_strategy=self.truncation_strategy,
