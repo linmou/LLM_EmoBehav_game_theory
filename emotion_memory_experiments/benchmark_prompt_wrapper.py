@@ -152,7 +152,10 @@ def is_supported_benchmark_task(benchmark_name: str, task_type: str) -> bool:
     benchmark_lower = benchmark_name.lower()
     
     if benchmark_lower in supported:
-        return task_type in supported[benchmark_lower]
+        # Case-insensitive comparison for task types
+        tasks = supported[benchmark_lower]
+        task_lower = task_type.lower()
+        return any(t.lower() == task_lower for t in tasks)
     
     # Always return True for unknown benchmarks (will use default wrapper)
     return True

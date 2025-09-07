@@ -143,29 +143,79 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
         return {"item": item, "prompt": prompt, "ground_truth": ground_truth}
 
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
-        """Load emotion check questions from JSONL file"""
+        """
+        Load emotion check questions from JSON/JSONL file.
 
-        # Load raw data from file (following standard pattern)
+        Supports two schemas:
+        1) Basic validation schema (id, input, ground_truth, category)
+        2) Academic scales schema (emotion, Instructions, question, source)
+        """
+
         raw_data = self._load_raw_data()
 
-        items = []
-        for item_data in raw_data:
+        items: List[BenchmarkItem] = []
+        if not raw_data:
+            return items
+
+        # Detect schema by keys present in the first record
+        first = raw_data[0]
+        basic_schema = all(k in first for k in ("id", "input", "ground_truth"))
+        academic_schema = all(k in first for k in ("emotion", "Instructions", "question"))
+
+        if basic_schema:
+            for item_data in raw_data:
+                items.append(
+                    BenchmarkItem(
+                        id=item_data["id"],
+                        input_text=item_data["input"],
+                        context=None,
+                        ground_truth=item_data["ground_truth"],
+                        metadata={
+                            "category": item_data.get("category", "emotion_check"),
+                            "expects_emotion": True,
+                            "response_type": "single_word",
+                        },
+                    )
+                )
+            return items
+
+        if academic_schema:
+            # Build items by combining Instructions + question; ground truth is the target emotion
+            for idx, item_data in enumerate(raw_data):
+                instruction = item_data.get("Instructions", "").strip()
+                question = item_data.get("question", "").strip()
+                joined = (instruction + " \n" + question).strip() if instruction else question
+                target_emotion = item_data.get("emotion", "neutral").strip().lower()
+
+                items.append(
+                    BenchmarkItem(
+                        id=idx,
+                        input_text=joined,
+                        context=None,
+                        ground_truth=target_emotion,
+                        metadata={
+                            "category": "academic_scale",
+                            "expects_emotion": False,
+                            "response_type": "likert_1_5",
+                            "emotion_dimension": target_emotion,
+                            "scale_source": item_data.get("source"),
+                        },
+                    )
+                )
+            return items
+
+        # Fallback: unknown schema - try to coerce minimal fields
+        for idx, item_data in enumerate(raw_data):
+            text = item_data.get("input") or item_data.get("question") or "Describe your current emotion."
             items.append(
                 BenchmarkItem(
-                    id=item_data["id"],
-                    input_text=item_data["input"],
-                    context=None,  # No additional context needed
-                    ground_truth=item_data[
-                        "ground_truth"
-                    ],  # List of valid emotion expressions
-                    metadata={
-                        "category": item_data["category"],
-                        "expects_emotion": True,
-                        "response_type": "single_word",
-                    },
+                    id=idx,
+                    input_text=text,
+                    context=None,
+                    ground_truth=item_data.get("ground_truth") or item_data.get("emotion") or "neutral",
+                    metadata={"category": item_data.get("category", "emotion_check")},
                 )
             )
-
         return items
 
     def _classify_emotion_response(self, response: str) -> str:

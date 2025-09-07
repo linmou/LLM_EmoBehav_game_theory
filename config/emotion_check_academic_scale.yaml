@@ -1,0 +1,68 @@
+# Emotion Check – Academic Scale Configuration
+# Uses Likert-style items from validated academic scales.
+
+experiment_name: "emotion_check_academic_scale"
+description: "Emotion validation using academic Likert-scale items (PANAS/DASS/AGQ)"
+version: "1.0.0"
+
+# Minimal, editable model placeholder
+models:
+  - "Qwen/Qwen2.5-1.5B-Instruct"
+
+benchmarks:
+  - name: "emotion_check"
+    task_type: "academic_scale"
+    # Explicit data_path because the filename uses plural 'scales'
+    data_path: "data/emotion_scales/emotion_check_academic_scales.jsonl"
+    base_data_dir: "data/emotion_scales"
+    # Optional: limit for quick runs
+    sample_limit: 20
+    # Optional LLM evaluation settings (kept simple/off by default here)
+    # llm_eval_config:
+    #   model: "gpt-4o-mini"
+    #   temperature: 0.1
+    #   evaluation_prompt: |
+    #     Evaluate whether the response reflects the target emotion.
+    #     Return JSON: {"emotion": "anger|happiness|...|neutral|other", "confidence": 0.0-1.0}
+
+# Core emotions (aligns with constants.py primary set)
+emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
+intensities: [1.0]
+
+# Lightweight defaults; edit as needed when running full experiments
+loading_config:
+  model_path: null
+  gpu_memory_utilization: 0.90
+  tensor_parallel_size: null
+  max_model_len: 4096
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+repe_eng_config:
+  direction_method: "pca"
+
+generation_config:
+  temperature: 0.7
+  max_new_tokens: 100
+  do_sample: true
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 10
+max_evaluation_workers: 2
+pipeline_queue_size: 2
+
+output_dir: "results/emotion_check_academic_scale"
+
+# Helpful for quick config validation without running the full pipeline
+run_sanity_check: true
