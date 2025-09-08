@@ -54,6 +54,8 @@ from .datasets.locomo import LoCoMoDataset
 from .datasets.longbench import LongBenchDataset
 from .datasets.mtbench101 import MTBench101Dataset
 from .datasets.truthfulqa import TruthfulQADataset
+from .datasets.fantom import FantomDataset
+from .fantom_prompt_wrapper import FantomPromptWrapper
 
 
 @dataclass
@@ -351,6 +353,23 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=EmotionCheckDataset,
         answer_wrapper_class=EmotionAnswerWrapper,
         prompt_wrapper_class=EmotionCheckPromptWrapper,
+    ),
+    # FANToM – initial easy tasks
+    (
+        "fantom",
+        "short_answerability_binary_inaccessible",
+    ): BenchmarkSpec(
+        dataset_class=FantomDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=FantomPromptWrapper,
+    ),
+    (
+        "fantom",
+        "short_belief_choice_inaccessible",
+    ): BenchmarkSpec(
+        dataset_class=FantomDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=FantomPromptWrapper,
     ),
 }
 

@@ -22,6 +22,7 @@ from .mtbench101_prompt_wrapper import MTBench101PromptWrapper
 
 # Import TruthfulQA wrapper
 from .truthfulqa_prompt_wrapper import TruthfulQAPromptWrapper
+from .fantom_prompt_wrapper import FantomPromptWrapper
 
 
 def get_benchmark_prompt_wrapper(
@@ -61,6 +62,10 @@ def get_benchmark_prompt_wrapper(
     # TruthfulQA - multiple choice tasks
     if benchmark_lower == "truthfulqa":
         return TruthfulQAPromptWrapper(prompt_format, task_type)
+    
+    # Fantom – use common Fantom wrapper
+    if benchmark_lower == "fantom":
+        return FantomPromptWrapper(prompt_format)
     
     # MTBench101 - all tasks use unified wrapper with task-specific configuration
     if benchmark_lower == "mtbench101":
