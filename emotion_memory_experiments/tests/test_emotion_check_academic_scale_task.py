@@ -78,13 +78,59 @@ class TestEmotionCheckAcademicScaleTask(unittest.TestCase):
         # Basic dataset sanity: has items
         self.assertGreater(len(dataset), 0)
 
-        # __getitem__ should return adapted ground_truth == active emotion
+        # __getitem__ should return composite ground_truth for academic_scale
         sample = dataset[0]
         self.assertIn("prompt", sample)
         self.assertIn("ground_truth", sample)
-        self.assertEqual(sample["ground_truth"], "anger")
+        gt = sample["ground_truth"]
+        # Composite dict with active emotion (from wrapper) and target emotion (from item)
+        self.assertIsInstance(gt, dict)
+        self.assertIn("active", gt)
+        self.assertIn("target", gt)
+        # Active should be the activated emotion passed above
+        self.assertEqual(gt["active"], "anger")
+        # Target should equal the item's original ground truth (target emotion from file)
+        self.assertEqual(gt["target"], sample["item"].ground_truth)
+
+    def test_evaluate_response_scoring(self):
+        """Check per-item scoring for academic_scale is directionally correct."""
+        cfg = BenchmarkConfig(
+            name="emotion_check",
+            task_type="academic_scale",
+            data_path=self.data_file,
+            base_data_dir=str(self.data_file.parent),
+            sample_limit=1,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None,
+        )
+
+        prompt_format = DummyPromptFormat()
+        _, _, dataset = create_benchmark_components(
+            benchmark_name=cfg.name,
+            task_type=cfg.task_type,
+            config=cfg,
+            prompt_format=prompt_format,
+            emotion="anger",
+        )
+
+        sample = dataset[0]
+        gt = sample["ground_truth"]  # dict with active/target
+        prompt = sample["prompt"]
+
+        # If target==active and rating is high, score ~ 1; low -> ~ 0
+        s_high = dataset.evaluate_response("5", gt, "academic_scale", prompt)
+        s_low = dataset.evaluate_response("1", gt, "academic_scale", prompt)
+        self.assertGreater(s_high, 0.8)
+        self.assertLess(s_low, 0.2)
+
+        # If we switch active to a different emotion, high rating should reduce score
+        gt_mismatch = {**gt, "active": "happiness" if gt.get("target") != "happiness" else "fear"}
+        s_mismatch = dataset.evaluate_response("5", gt_mismatch, "academic_scale", prompt)
+        self.assertLess(s_mismatch, 0.3)
 
 
 if __name__ == "__main__":
     unittest.main()
-

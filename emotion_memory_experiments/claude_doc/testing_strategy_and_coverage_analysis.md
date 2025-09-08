@@ -215,6 +215,22 @@ tests/
 - **CI/CD Integration**: GitHub workflows and automated quality gates
 - **Performance Tracking**: Test execution time monitoring and performance regression detection
 
+### Test Layout Guard (2025-09-07)
+
+- Enforced rule: no duplicate `test_*.py` filenames at both `tests/` root and any of `tests/unit`, `tests/integration`, `tests/e2e`, `tests/regression`.
+- CI check: `.github/workflows/test_layout_check.yml` runs `python emotion_memory_experiments/tests/utils/check_test_layout.py` on push/PR.
+- Optional pre-commit: `.pre-commit-config.yaml` provides a local hook to run the same check.
+
+Updated test locations reflecting recent migration:
+- Prompt wrapper unit tests → `emotion_memory_experiments/tests/unit/test_memory_prompt_wrapper.py`
+- Memory experiment series runner integration tests → `emotion_memory_experiments/tests/integration/test_memory_experiment_series_runner.py`
+- Root remains reserved for “comprehensive + specialized” suites by design.
+
+Regression command examples by component:
+- If `experiment.py` changes:
+  - `python -m pytest emotion_memory_experiments/tests/regression -v --tb=short --maxfail=1`
+  - Or smart runner: `python emotion_memory_experiments/tests/utils/test_runners.py regression`
+
 ### **Coverage Standards and Quality Gates**
 
 ```python

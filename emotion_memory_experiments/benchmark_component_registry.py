@@ -35,6 +35,15 @@ from neuro_manipulation.prompt_wrapper import PromptWrapper
 
 from .answer_wrapper import AnswerWrapper, EmotionAnswerWrapper, IdentityAnswerWrapper
 from .benchmark_prompt_wrapper import get_benchmark_prompt_wrapper
+from .mtbench101_prompt_wrapper import MTBench101PromptWrapper
+from .truthfulqa_prompt_wrapper import TruthfulQAPromptWrapper
+from .memory_prompt_wrapper import (
+    MemoryPromptWrapper,
+    PasskeyPromptWrapper,
+    ConversationalQAPromptWrapper,
+    LongContextQAPromptWrapper,
+    LongbenchRetrievalPromptWrapper,
+)
 from .data_models import BenchmarkConfig
 from .dataset_factory import create_dataset_from_config
 from .datasets.base import BaseBenchmarkDataset
@@ -139,84 +148,104 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
     ("mtbench101", "CM"): BenchmarkSpec(
         dataset_class=MTBench101Dataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MTBench101PromptWrapper,
     ),
     ("mtbench101", "EX"): BenchmarkSpec(
         dataset_class=MTBench101Dataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MTBench101PromptWrapper,
     ),
     ("mtbench101", "HU"): BenchmarkSpec(
         dataset_class=MTBench101Dataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MTBench101PromptWrapper,
     ),
     ("mtbench101", "RO"): BenchmarkSpec(
         dataset_class=MTBench101Dataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MTBench101PromptWrapper,
     ),
     ("mtbench101", "SI"): BenchmarkSpec(
         dataset_class=MTBench101Dataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MTBench101PromptWrapper,
     ),
     ("mtbench101", "WR"): BenchmarkSpec(
         dataset_class=MTBench101Dataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MTBench101PromptWrapper,
     ),
     # Memory benchmarks - InfiniteBench
     ("infinitebench", "passkey"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=PasskeyPromptWrapper,
     ),
     ("infinitebench", "number_string"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MemoryPromptWrapper,
     ),
     ("infinitebench", "kv_retrieval"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MemoryPromptWrapper,
     ),
     ("infinitebench", "longbook_sum_eng"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MemoryPromptWrapper,
     ),
     ("infinitebench", "longbook_choice_eng"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MemoryPromptWrapper,
     ),
     ("infinitebench", "longbook_qa_eng"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     ("infinitebench", "longbook_qa_chn"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     ("infinitebench", "math_calc"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MemoryPromptWrapper,
     ),
     ("infinitebench", "math_find"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MemoryPromptWrapper,
     ),
     ("infinitebench", "code_run"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MemoryPromptWrapper,
     ),
     ("infinitebench", "code_debug"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MemoryPromptWrapper,
     ),
     # Memory benchmarks - LongBench
     ("longbench", "narrativeqa"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     ("longbench", "qasper"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     ("longbench", "multifieldqa_en"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     ("longbench", "multifieldqa_zh"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
@@ -225,6 +254,7 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
     ("longbench", "hotpotqa"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     ("longbench", "2wikimqa"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
@@ -277,10 +307,12 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
     ("longbench", "passage_retrieval_en"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongbenchRetrievalPromptWrapper,
     ),
     ("longbench", "passage_retrieval_zh"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongbenchRetrievalPromptWrapper,
     ),
     ("longbench", "lcc"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
@@ -294,11 +326,18 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
     ("locomo", "locomo"): BenchmarkSpec(
         dataset_class=LoCoMoDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=ConversationalQAPromptWrapper,
     ),
     # TruthfulQA benchmark
-    ("truthfulqa", "truthfulqa"): BenchmarkSpec(
+    ("truthfulqa", "mc1"): BenchmarkSpec(
         dataset_class=TruthfulQADataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=TruthfulQAPromptWrapper,
+    ),
+    ("truthfulqa", "mc2"): BenchmarkSpec(
+        dataset_class=TruthfulQADataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=TruthfulQAPromptWrapper,
     ),
     # Emotion Check benchmark - special case with EmotionAnswerWrapper
     ("emotion_check", "emotion_check"): BenchmarkSpec(

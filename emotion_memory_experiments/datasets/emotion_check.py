@@ -107,7 +107,11 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
     }
 
     def __getitem__(self, idx: int) -> Dict[str, Any]:
-        """Get item by index with prompt formatting"""
+        """Get item by index with prompt formatting.
+
+        For academic_scale items, returns a composite ground_truth dict:
+        {"active": <activated emotion>, "target": <item target emotion>, "keying": "direct"|"reverse"}
+        """
         item = self.items[idx]
 
         # Extract options from metadata for multiple choice questions
@@ -134,11 +138,24 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
                 prompt = f"{item.input_text}\nAnswer:"
 
         # Transform ground truth if answer wrapper provided
-        ground_truth = (
+        active_emotion = (
             self.answer_wrapper(item.ground_truth)
             if self.answer_wrapper
             else item.ground_truth
         )
+
+        # For academic_scale, provide composite ground truth with active/target/keying
+        if item.metadata and item.metadata.get("category") == "academic_scale":
+            target_emotion = item.ground_truth
+            keying = (item.metadata.get("keying") or "direct").lower()
+            ground_truth: Any = {
+                "active": active_emotion,
+                "target": target_emotion,
+                "keying": "reverse" if keying == "reverse" else "direct",
+            }
+        else:
+            # Default pass-through for non-academic tasks
+            ground_truth = active_emotion
 
         return {"item": item, "prompt": prompt, "ground_truth": ground_truth}
 
@@ -254,10 +271,31 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
         self, response: str, ground_truth: Any, task_name: str, prompt: str = ""
     ) -> float:
         """
-        Use LLM evaluation for emotion classification if configured, otherwise fallback to rule-based.
+        Evaluate single response.
 
-        Returns score from 0-1 based on emotion classification success.
+        - For academic_scale: interpret Likert rating (1-5) and compute alignment with
+          the activated emotion vs the item's target emotion, handling reverse keying.
+        - Else: Use emotion classification (LLM or rule-based) vs ground truth string.
         """
+        # Academic scale per-item scoring
+        if isinstance(ground_truth, dict) and {
+            "active",
+            "target",
+        }.issubset(ground_truth.keys()):
+            try:
+                rating = self._parse_likert_rating(response)
+            except Exception:
+                rating = 3  # neutral fallback
+
+            # Normalize 1..5 to [-1, 1]
+            z = (float(rating) - 3.0) / 2.0
+            keying_sign = -1.0 if ground_truth.get("keying") == "reverse" else 1.0
+            target_sign = 1.0 if ground_truth.get("active") == ground_truth.get("target") else -1.0
+            score = 0.5 * (1.0 + keying_sign * target_sign * z)
+            # Clamp for safety
+            return max(0.0, min(1.0, float(score)))
+
+        # Fallback: emotion word classification
         # If LLM evaluation is configured, use GPT-4o-mini for evaluation
         if hasattr(self, "llm_eval_config") and self.llm_eval_config is not None:
             from ..evaluation_utils import llm_evaluate_response
@@ -311,4 +349,42 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
 
     def get_task_metrics(self, task_name: str) -> List[str]:
         """Available metrics for emotion check"""
+        if task_name == "academic_scale":
+            return ["likert_alignment"]
         return ["emotion_classification", "detection_rate", "response_relevance"]
+
+    # Internal helpers
+    def _parse_likert_rating(self, response: str) -> int:
+        """Extract a Likert rating 1..5 from a response.
+
+        Strategy:
+        - First digit 1..5 wins
+        - Else map common words to numbers
+        - Else return 3 (neutral)
+        """
+        if not response:
+            return 3
+        text = response.strip().lower()
+        # Extract first digit 1..5
+        m = re.search(r"[1-5]", text)
+        if m:
+            try:
+                n = int(m.group(0))
+                if 1 <= n <= 5:
+                    return n
+            except Exception:
+                pass
+        # Word mapping
+        mapping = {
+            "strongly agree": 5,
+            "agree": 4,
+            "neutral": 3,
+            "neither": 3,
+            "undecided": 3,
+            "disagree": 2,
+            "strongly disagree": 1,
+        }
+        for k, v in mapping.items():
+            if k in text:
+                return v
+        return 3
