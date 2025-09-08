@@ -48,7 +48,7 @@ benchmarks:
 
 # Test all 6 core emotions plus neutral baseline
 emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
-intensities: [1.0]  # Use full intensity for clear effects
+intensities: [1.5]  # Use full intensity for clear effects
 
 # vLLM loading configuration for lightweight model
 loading_config:

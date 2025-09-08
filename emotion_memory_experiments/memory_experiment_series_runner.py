@@ -819,9 +819,9 @@ class MemoryExperimentSeriesRunner:
                             self.logger.info(f"         Input: {getattr(benchmark_item, 'input_text', 'N/A')}")
                             self.logger.info(f"         Ground truth: {ground_truth}")
                             
-                            # Show first 150 chars of formatted prompt to validate prompt wrapping
-                            if isinstance(formatted_prompt, str) and len(formatted_prompt) > 150:
-                                self.logger.info(f"         Formatted prompt: {formatted_prompt[:150]}...")
+                            # Show first 1000 chars of formatted prompt to validate prompt wrapping
+                            if isinstance(formatted_prompt, str) and len(formatted_prompt) > 1000:
+                                self.logger.info(f"         Formatted prompt: {formatted_prompt[:1000]}...{formatted_prompt[-200:] if len(formatted_prompt) > 1200 else ''} ")
                             else:
                                 self.logger.info(f"         Formatted prompt: {formatted_prompt}")
                         else:

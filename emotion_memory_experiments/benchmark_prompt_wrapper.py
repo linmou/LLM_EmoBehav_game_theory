@@ -13,7 +13,8 @@ from .memory_prompt_wrapper import (
     PasskeyPromptWrapper, 
     ConversationalQAPromptWrapper, 
     LongContextQAPromptWrapper,
-    LongbenchRetrievalPromptWrapper
+    LongbenchRetrievalPromptWrapper,
+    EmotionCheckPromptWrapper,
 )
 
 # Import new MTBench101 wrapper
@@ -52,7 +53,11 @@ def get_benchmark_prompt_wrapper(
     
     benchmark_lower = benchmark_name.lower()
     task_lower = task_type.lower()
-    
+
+    # Emotion Check – use dedicated wrapper
+    if benchmark_lower == "emotion_check":
+        return EmotionCheckPromptWrapper(prompt_format, task_type)
+
     # TruthfulQA - multiple choice tasks
     if benchmark_lower == "truthfulqa":
         return TruthfulQAPromptWrapper(prompt_format, task_type)

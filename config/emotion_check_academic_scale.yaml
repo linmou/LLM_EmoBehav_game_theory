@@ -16,7 +16,7 @@ benchmarks:
     data_path: "data/emotion_scales/emotion_check_academic_scales.jsonl"
     base_data_dir: "data/emotion_scales"
     # Optional: limit for quick runs
-    sample_limit: 20
+    #sample_limit: 20
     # Optional LLM evaluation settings (kept simple/off by default here)
     # llm_eval_config:
     #   model: "gpt-4o-mini"
@@ -27,7 +27,7 @@ benchmarks:
 
 # Core emotions (aligns with constants.py primary set)
 emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
-intensities: [1.0]
+intensities: [1.5]
 
 # Lightweight defaults; edit as needed when running full experiments
 loading_config:
@@ -58,11 +58,11 @@ generation_config:
   frequency_penalty: 0.0
   enable_thinking: false
 
-batch_size: 10
+batch_size: 100
 max_evaluation_workers: 2
 pipeline_queue_size: 2
 
 output_dir: "results/emotion_check_academic_scale"
 
 # Helpful for quick config validation without running the full pipeline
-run_sanity_check: true
+run_sanity_check: false
