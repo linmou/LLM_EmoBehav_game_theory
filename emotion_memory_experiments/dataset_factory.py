@@ -32,20 +32,26 @@ from .data_models import (
 from .datasets.base import BaseBenchmarkDataset
 
 # Import all specialized dataset classes
+from .datasets.emotion_check import EmotionCheckDataset
 from .datasets.infinitebench import InfiniteBenchDataset
 from .datasets.locomo import LoCoMoDataset
 from .datasets.longbench import LongBenchDataset
 from .datasets.mtbench101 import MTBench101Dataset
 from .datasets.truthfulqa import TruthfulQADataset
+from .datasets.fantom import FantomDataset
+from .datasets.bfcl import BFCLDataset
 
 # Registry mapping benchmark names to dataset classes
 # This eliminates if-else chains entirely!
 DATASET_REGISTRY: Dict[str, Type[BaseBenchmarkDataset]] = {
+    "emotion_check": EmotionCheckDataset,
     "infinitebench": InfiniteBenchDataset,
     "longbench": LongBenchDataset,
     "locomo": LoCoMoDataset,
     "mtbench101": MTBench101Dataset,
     "truthfulqa": TruthfulQADataset,
+    "fantom": FantomDataset,
+    "bfcl": BFCLDataset,
 }
 
 
@@ -55,6 +61,7 @@ def create_dataset_from_config(
     max_context_length: Optional[int] = None,
     tokenizer: Optional[Any] = None,
     truncation_strategy: str = "right",
+    answer_wrapper: Optional[Callable] = None,
     **kwargs,
 ) -> BaseBenchmarkDataset:
     """
@@ -104,6 +111,7 @@ def create_dataset_from_config(
         max_context_length=max_context_length,
         tokenizer=tokenizer,
         truncation_strategy=truncation_strategy,
+        answer_wrapper=answer_wrapper,
         **kwargs,
     )
 

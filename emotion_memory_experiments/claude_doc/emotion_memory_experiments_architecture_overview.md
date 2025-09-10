@@ -1,5 +1,5 @@
 # Emotion Memory Experiments - Architecture Overview
-<!-- Version: 2.1.0 - Updated: 2025-09-02 - MTBench101 Integration -->
+<!-- Version: 2.2.0 - Updated: 2025-09-06 - AnswerWrapper System & EmotionCheck Integration -->
 
 ## Executive Summary
 
@@ -7,7 +7,7 @@ The `emotion_memory_experiments` module is a sophisticated research framework de
 
 ## Key Architectural Achievements
 
-### 1. **Registry-Based Factory Pattern (Recent Refactoring)**
+### 1. **Registry-Based Factory Pattern**
 - **Before**: Monolithic if-else chains in `SmartMemoryBenchmarkDataset`
 - **After**: Clean registry-based factory with specialized dataset classes
 - **Benefit**: Eliminates branching complexity, enables dynamic registration of new benchmarks
@@ -39,9 +39,20 @@ graph TB
     Specialized --> LongBench[LongBenchDataset] 
     Specialized --> LoCoMo[LoCoMoDataset]
     Specialized --> MTBench101[MTBench101Dataset]
+    Specialized --> EmotionCheck[EmotionCheckDataset]
     
+    subgraph "Transformation Pipeline"
+        PromptWrapper[PromptWrapper Factory]
+        AnswerWrapper[AnswerWrapper Factory]
+    end
+    
+    Experiment --> PromptWrapper
+    Experiment --> AnswerWrapper
     Experiment --> RepE[RepE Pipeline]
     Experiment --> DataLoader[PyTorch DataLoader]
+    
+    PromptWrapper --> Specialized
+    AnswerWrapper --> Specialized
     DataLoader --> Evaluation[Evaluation Utils]
     
     Evaluation --> Results[ResultRecord]
@@ -69,6 +80,7 @@ graph TB
       "longbench": LongBenchDataset,
       "locomo": LoCoMoDataset,
       "mtbench101": MTBench101Dataset,
+      "emotion_check": EmotionCheckDataset,
   }
   ```
 - **Benefits**: 
@@ -83,6 +95,7 @@ graph TB
   - **LongBenchDataset**: Multi-language QA with F1 scoring
   - **LoCoMoDataset**: Conversational QA with temporal context
   - **MTBench101Dataset**: Conversational evaluation with judge-based scoring
+  - **EmotionCheckDataset**: Emotion validation with LLM-based classification
 - **Key Features**:
   - PyTorch Dataset interface (`__len__`, `__getitem__`)
   - Automatic context truncation with configurable strategies
@@ -101,6 +114,21 @@ graph TB
   - Handles paraphrasing and alternative valid responses
   - Simplified maintenance (1 function vs 30+ task-specific evaluators)
 
+### 5. **AnswerWrapper System** - Adaptive Ground Truth Transformation
+- **Location**: `emotion_memory_experiments/answer_wrapper.py`
+- **Innovation**: Architectural symmetry with PromptWrapper for complete input/output control
+- **Core Components**:
+  - `AnswerWrapper`: Abstract base class for answer transformation strategies
+  - `EmotionAnswerWrapper`: Transforms ground truth to activated emotion for emotion_check
+  - `IdentityAnswerWrapper`: Pass-through wrapper for benchmarks requiring no transformation
+  - `get_answer_wrapper()`: Factory function for wrapper selection
+- **Key Features**:
+  - **Adaptive Ground Truth**: Ground truth dynamically adjusts to experimental conditions
+  - **Functional Composition**: Partial function integration with experiment pipeline
+  - **Backward Compatibility**: Preserves existing benchmark behavior
+  - **Extensibility**: Framework supports future experimental parameters beyond emotion
+- **Primary Use Case**: EmotionCheck validation where expected answer is the activated emotion
+
 ## Data Flow Architecture
 
 ### 1. **Configuration Stage**
@@ -115,15 +143,21 @@ BenchmarkConfig → DatasetFactory → Registry Lookup → Specialized Dataset
 
 ### 3. **Experiment Execution Stage**
 ```
-EmotionMemoryExperiment → RepE Setup → DataLoader → Batch Processing → Evaluation → Results
+EmotionMemoryExperiment → RepE Setup → PromptWrapper + AnswerWrapper → DataLoader → Batch Processing → Evaluation → Results
 ```
 
-### 4. **Neural Manipulation Pipeline**
+### 4. **Transformation Pipeline (New)**
+```
+Input: PromptWrapper → Context/Question Transformation → Model Input
+Output: AnswerWrapper → Ground Truth Transformation → Expected Answer
+```
+
+### 5. **Neural Manipulation Pipeline**
 ```
 Emotion Readers → Activation Vectors → vLLM Hooks → Model Inference → Response Processing
 ```
 
-## Recent Refactoring Analysis
+## Registry-Based Factory Pattern Architecture
 
 ### **Problem**: Monolithic If-Else Architecture
 The original `SmartMemoryBenchmarkDataset` used extensive if-else chains:
@@ -154,6 +188,71 @@ def create_dataset_from_config(config):
 4. **Performance**: O(1) lookup vs O(n) conditional checking
 5. **Code Clarity**: Specialized classes with focused responsibilities
 
+## AnswerWrapper System & EmotionCheck Integration
+
+### **AnswerWrapper System**: Complete Transformation Control
+
+**Innovation**: The AnswerWrapper system establishes **architectural symmetry** with PromptWrapper, creating complete control over both input and output transformations:
+
+```python
+# Before: Asymmetric transformation
+INPUT:  PromptWrapper → Dynamic context/question adjustment ✅
+OUTPUT: Static ground truth from dataset files            ❌
+
+# After: Symmetric transformation  
+INPUT:  PromptWrapper → Dynamic context/question adjustment ✅
+OUTPUT: AnswerWrapper → Dynamic ground truth adjustment    ✅
+```
+
+**Key Benefits**:
+- **Adaptive Experiments**: Ground truth can change based on experimental conditions
+- **EmotionCheck Validation**: Expected answer becomes the activated emotion
+- **Future Extensibility**: Framework ready for multi-parameter experiments
+- **Backward Compatibility**: Existing benchmarks unaffected
+
+### **EmotionCheck Benchmark**: Emotion Validation Framework
+
+**Research Innovation**: New benchmark type focused on validating emotion manipulation effects:
+
+```python
+# Traditional benchmark: Static QA evaluation
+Question: "What is the capital of France?" 
+Expected: "Paris" (always static)
+
+# EmotionCheck: Dynamic emotion validation
+Question: "How do you feel right now?"
+Expected: "anger" (when anger activated) OR "happiness" (when happiness activated)
+```
+
+**Technical Features**:
+- **LLM-Based Evaluation**: Uses GPT-4.1-mini for semantic emotion classification
+- **Emotion Expression Dictionary**: Comprehensive mapping of emotion keywords
+- **Scale-Based Validation**: Supports emotion intensity measurement
+- **Registry Integration**: Follows established factory pattern
+
+### **Enhanced Test Framework**: Professional Quality Assurance
+
+**Testing Innovation**: Comprehensive pytest configuration with professional CI/CD integration:
+
+```python
+# pytest.ini highlights:
+- 85% minimum coverage requirement
+- Professional marker system (unit, integration, regression, e2e, critical)
+- Timeout configuration (300s max)
+- Comprehensive coverage reporting (HTML, XML, term-missing)
+- CI/CD integration with GitHub workflows
+```
+
+**Test Organization**:
+```
+tests/
+├── priorities/research_critical.py     # Research-critical test priorities
+├── regression/                         # Backward compatibility validation  
+├── utils/                             # Test automation utilities
+├── conftest.py                        # Shared test configuration
+└── test_answer_wrapper_comprehensive.py # 25 comprehensive AnswerWrapper tests
+```
+
 ## Integration Points
 
 ### **With Neural Manipulation Framework**
@@ -174,32 +273,53 @@ def create_dataset_from_config(config):
 - **Statistical Analysis**: Pandas integration for summary statistics
 - **Export Formats**: JSON and CSV output for downstream analysis
 
-## Testing Strategy
+## Testing Framework
 
-### **Comprehensive Test Coverage**
-- **Unit Tests**: Individual component validation
-- **Integration Tests**: End-to-end experiment execution
-- **Behavioral Equivalence**: Refactored vs original behavior validation
-- **Real Data Validation**: Testing against actual benchmark datasets
+### **Professional Testing Standards**
+- **pytest Configuration**: Production-grade testing with 85% minimum coverage requirement
+- **Quality Gates**: Automated enforcement via `--cov-fail-under=85` and strict marker validation  
+- **Timeout Management**: 5-minute timeout per test with `--timeout=300`
+- **Coverage Reporting**: HTML, XML, and terminal coverage reports for comprehensive analysis
 
-### **Test Structure**
+### **Test Organization Architecture**
 ```
 tests/
-├── test_dataset_factory.py      # Factory pattern validation
-├── test_base_dataset_interface.py  # Abstract base class tests
-├── test_infinitebench_dataset.py   # InfiniteBench-specific tests  
-├── test_longbench_dataset.py       # LongBench-specific tests
-├── test_locomo_dataset.py          # LoCoMo-specific tests
-├── test_comprehensive_evaluation.py # End-to-end testing
-├── test_behavioral_equivalence.py  # Refactoring validation
-└── test_realistic_data_validation.py # Real data testing
+├── priorities/research_critical.py     # Research-critical test definitions
+├── regression/
+│   ├── test_api_compatibility.py       # API backward compatibility validation
+│   └── test_behavioral_equivalence.py  # Behavioral consistency testing
+├── utils/
+│   ├── ci_helpers.py                   # CI/CD integration utilities
+│   ├── performance_tracker.py          # Performance monitoring
+│   └── test_runners.py                # Custom test execution logic
+├── conftest.py                         # Shared test configuration
+├── pytest.ini                         # Professional pytest configuration
+├── test_answer_wrapper_comprehensive.py # 25 comprehensive AnswerWrapper tests
+├── test_dataset_factory.py            # Factory pattern validation
+├── test_base_dataset_interface.py     # Abstract base class tests
+├── test_infinitebench_dataset.py      # InfiniteBench-specific tests
+├── test_longbench_dataset.py          # LongBench-specific tests
+├── test_locomo_dataset.py             # LoCoMo-specific tests
+├── test_emotion_check_dataset.py      # EmotionCheck-specific tests
+└── test_realistic_data_validation.py  # Real data testing
 ```
 
-### **TDD Approach**
-- Tests written following Test-Driven Development principles
-- Red-Green-Refactor cycle documentation
-- Regression testing after refactoring
-- Mock data generation for controlled testing
+### **Test-Driven Development Implementation**
+- **Red-Green-Refactor Cycles**: Documented TDD phases with explicit failure-to-success transitions
+- **AnswerWrapper TDD**: 25 comprehensive tests across 6 categories (Basic, Factory, Integration, Dataset, E2E, Regression)
+- **Behavioral Equivalence**: Automated validation that refactored components produce identical results
+- **Research-Critical Priorities**: Separate test category ensuring tests critical to scientific validity never fail
+
+### **Coverage Standards & Quality Enforcement**
+```python
+QUALITY_GATES = {
+    "test_coverage": 85,           # Minimum 85% test coverage
+    "critical_path_coverage": 100, # 100% coverage of research-critical paths  
+    "regression_test_pass": 100,   # All regression tests must pass
+    "answer_wrapper_coverage": 98, # AnswerWrapper system: 98% coverage
+    "emotion_check_coverage": 95   # EmotionCheck dataset: 95% coverage
+}
+```
 
 ## Key Dependencies
 
@@ -271,6 +391,6 @@ tests/
 
 ## Conclusion
 
-The `emotion_memory_experiments` module represents a mature, well-architected research framework that successfully balances scientific rigor with software engineering best practices. The recent refactoring from monolithic if-else chains to a registry-based factory pattern demonstrates thoughtful architectural evolution that improves maintainability without sacrificing functionality.
+The `emotion_memory_experiments` module represents a mature, well-architected research framework that successfully balances scientific rigor with software engineering best practices. The registry-based factory pattern evolution from monolithic if-else chains demonstrates thoughtful architectural design that improves maintainability without sacrificing functionality.
 
 The module's seamless integration with the broader neural manipulation framework, combined with its commitment to using original paper evaluation metrics, positions it as a reliable foundation for advancing research into emotional effects on LLM memory performance.

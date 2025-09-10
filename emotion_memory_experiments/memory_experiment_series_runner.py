@@ -23,9 +23,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
-from transformers import AutoConfig
+try:
+    # Optional: only needed when downloading remote models
+    from transformers import AutoConfig  # type: ignore
+except Exception:
+    AutoConfig = None  # Will be checked before use
 
-from neuro_manipulation.repe.pipelines import repe_pipeline_registry
+# Defer heavy imports (torch/vLLM) to runtime when needed
 
 # Load data_models directly
 _spec = importlib.util.spec_from_file_location(
@@ -243,6 +247,7 @@ class MemoryExperimentSeriesRunner:
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
+            self.logger.propagate = False  # Prevent duplicate logging
 
         self.config_path = config_path
         self.series_name = series_name or f"memory_experiment_series"
@@ -343,14 +348,19 @@ class MemoryExperimentSeriesRunner:
             # Make sure the target directory exists
             os.makedirs(os.path.dirname(alt_model_path), exist_ok=True)
 
-            # First verify the model exists on HuggingFace
-            try:
-                AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-            except Exception as e:
-                self.logger.error(
-                    f"Model {model_name} not found on HuggingFace: {str(e)}"
+            # First verify the model exists on HuggingFace (if transformers available)
+            if AutoConfig is not None:
+                try:
+                    AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+                except Exception as e:
+                    self.logger.error(
+                        f"Model {model_name} not found on HuggingFace: {str(e)}"
+                    )
+                    return False
+            else:
+                self.logger.warning(
+                    "transformers not available; skipping remote existence check"
                 )
-                return False
 
             # Download model using huggingface-cli command
             self.logger.info(
@@ -503,19 +513,17 @@ class MemoryExperimentSeriesRunner:
             pipeline_queue_size=self.base_config.get("pipeline_queue_size", 2),
         )
 
-        # Only import and create experiment if not dry run
+        # Import and create experiment with dry_run parameter
+        from .experiment import EmotionExperiment
+        
+        experiment = EmotionExperiment(experiment_config, dry_run=self.dry_run)
+        
         if self.dry_run:
-            # For dry run, return a mock object with the config
-            class MockExperiment:
-                def __init__(self, config):
-                    self.config = config
-
-            return MockExperiment(experiment_config)
-        else:
-            from .experiment import EmotionExperiment
-
-            experiment = EmotionExperiment(experiment_config)
-            return experiment
+            # Validate that datasets were created successfully
+            assert experiment.emotion_datasets is not None
+            self.logger.info(f"✓ Dry-run successful: {len(experiment.emotion_datasets)} emotion datasets")
+        
+        return experiment
 
     def _clean_cuda_memory(self) -> None:
         """Clean up CUDA memory after an experiment
@@ -801,6 +809,44 @@ class MemoryExperimentSeriesRunner:
                 self.logger.info(
                     f"      🎯 Data path: {experiment.config.benchmark.get_data_path()}"
                 )
+                
+                # Log first dataset item if emotion_datasets exist (dry-run mode)
+                if hasattr(experiment, 'emotion_datasets') and experiment.emotion_datasets:
+                    first_emotion = list(experiment.emotion_datasets.keys())[0]
+                    first_dataset = experiment.emotion_datasets[first_emotion]
+                    if len(first_dataset) > 0:
+                        first_item = first_dataset[0]
+                        self.logger.info(f"      📋 First dataset item from emotion '{first_emotion}':")
+                        
+                        # Extract and display meaningful dataset content
+                        if isinstance(first_item, dict) and 'item' in first_item:
+                            benchmark_item = first_item['item']
+                            formatted_prompt = first_item.get('prompt', 'N/A')
+                            ground_truth = first_item.get('ground_truth', 'N/A')
+                            
+                            self.logger.info(f"         ID: {getattr(benchmark_item, 'id', 'N/A')}")
+                            self.logger.info(f"         Input: {getattr(benchmark_item, 'input_text', 'N/A')}")
+                            self.logger.info(f"         Ground truth: {ground_truth}")
+                            
+                            # Show first 1000 chars of formatted prompt to validate prompt wrapping
+                            if isinstance(formatted_prompt, str):
+                                if len(formatted_prompt) > 1000:
+                                    self.logger.info(f"         Formatted prompt: {formatted_prompt[:1000]}...{formatted_prompt[-200:] if len(formatted_prompt) > 1200 else ''} ")
+                                else:
+                                    self.logger.info(f"         Formatted prompt: {formatted_prompt}")
+
+                                # Additionally, print a focused window around the first user turn
+                                try:
+                                    user_tag = "<|im_start|>user"
+                                    idx = formatted_prompt.find(user_tag)
+                                    if idx != -1:
+                                        preview = formatted_prompt[idx: idx + 300]
+                                        self.logger.info(f"         User segment preview: {preview}")
+                                except Exception:
+                                    pass
+                        else:
+                            # Fallback for unexpected structure
+                            self.logger.info(f"         Unexpected item structure: {first_item}")
             except Exception as e:
                 self.logger.error(f"   ❌ Config {i+1} failed: {e}")
 
@@ -1005,7 +1051,7 @@ class MemoryExperimentSeriesRunner:
                 )
 
                 self.logger.info(
-                    f"  - {exp['benchmark_name']}, {exp['model_name']}{time_info}: {exp.get('error', 'Unknown error')[:100]}..."
+                    f"  - {exp['benchmark_name']}, {exp['model_name']}{time_info}: {exp.get('error', 'Unknown error')}"
                 )
 
 
@@ -1033,7 +1079,10 @@ def main():
 
     args = parser.parse_args()
 
-    repe_pipeline_registry()
+    # Register pipelines only when not dry-run (avoids torch dependency during validation)
+    if not args.dry_run:
+        from neuro_manipulation.repe.pipelines import repe_pipeline_registry
+        repe_pipeline_registry()
     runner = MemoryExperimentSeriesRunner(
         args.config, args.name, args.resume, args.dry_run
     )

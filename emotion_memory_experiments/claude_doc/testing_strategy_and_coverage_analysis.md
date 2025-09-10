@@ -1,4 +1,5 @@
 # Testing Strategy and Coverage Analysis
+<!-- Version: 1.1.0 - Updated: 2025-09-06 - Professional Test Framework & AnswerWrapper Testing -->
 
 ## Overview
 
@@ -20,6 +21,7 @@ graph TB
         Factory[Dataset Factory Tests]
         BaseDataset[Base Dataset Tests]
         SpecDataset[Specialized Dataset Tests]
+        AnswerWrapper[AnswerWrapper Tests]
         Experiment[Experiment Tests]
         Config[Configuration Tests]
         Evaluation[Evaluation Tests]
@@ -149,6 +151,104 @@ def test_factory_eliminates_if_else_chains(self):
         self.assertIsNotNone(dataset)
         self.assertIsInstance(dataset, BaseBenchmarkDataset)
 ```
+
+## Professional Test Configuration (2025-09-06 Update)
+
+### **pytest.ini: Production-Grade Testing Standards**
+
+The emotion memory experiments now implements a comprehensive pytest configuration that enforces professional quality standards:
+
+```ini
+[tool:pytest]
+# Test discovery
+testpaths = emotion_memory_experiments/tests
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+
+# Professional marker system
+markers =
+    unit: Unit tests (fast, isolated)
+    integration: Integration tests (moderate speed)
+    regression: Regression tests (ensure no breaking changes)
+    e2e: End-to-end tests (slow, comprehensive)
+    critical: Research-critical tests (must never fail)
+    comprehensive: Comprehensive test suites covering entire components
+
+# Quality enforcement
+addopts = 
+    --strict-markers
+    --strict-config
+    --cov=emotion_memory_experiments
+    --cov-fail-under=85          # Minimum 85% coverage requirement
+    --maxfail=5                  # Stop after 5 failures
+    --timeout=300                # 5-minute timeout per test
+
+# Coverage reporting
+--cov-report=term-missing        # Terminal coverage gaps
+--cov-report=html:tests/coverage/html    # HTML coverage reports  
+--cov-report=xml:tests/coverage/coverage.xml  # XML for CI/CD
+```
+
+### **Test Organization Enhancements**
+
+**New Directory Structure**:
+```
+tests/
+├── priorities/
+│   └── research_critical.py        # Research-critical test definitions
+├── regression/
+│   ├── test_api_compatibility.py   # API backward compatibility
+│   └── test_behavioral_equivalence.py  # Behavioral consistency validation
+├── utils/
+│   ├── ci_helpers.py              # CI/CD integration utilities
+│   ├── performance_tracker.py     # Performance monitoring
+│   └── test_runners.py           # Custom test execution logic
+├── conftest.py                   # Shared test configuration
+├── pytest.ini                   # Professional pytest configuration
+└── README_TEST_FRAMEWORK.md      # Testing documentation
+```
+
+**Key Improvements**:
+- **Research-Critical Priority System**: Separates tests that must never fail for scientific integrity
+- **Regression Testing Framework**: Automated detection of behavioral changes
+- **CI/CD Integration**: GitHub workflows and automated quality gates
+- **Performance Tracking**: Test execution time monitoring and performance regression detection
+
+### Test Layout Guard (2025-09-07)
+
+- Enforced rule: no duplicate `test_*.py` filenames at both `tests/` root and any of `tests/unit`, `tests/integration`, `tests/e2e`, `tests/regression`.
+- CI check: `.github/workflows/test_layout_check.yml` runs `python emotion_memory_experiments/tests/utils/check_test_layout.py` on push/PR.
+- Optional pre-commit: `.pre-commit-config.yaml` provides a local hook to run the same check.
+
+Updated test locations reflecting recent migration:
+- Prompt wrapper unit tests → `emotion_memory_experiments/tests/unit/test_memory_prompt_wrapper.py`
+- Memory experiment series runner integration tests → `emotion_memory_experiments/tests/integration/test_memory_experiment_series_runner.py`
+- Root remains reserved for “comprehensive + specialized” suites by design.
+
+Regression command examples by component:
+- If `experiment.py` changes:
+  - `python -m pytest emotion_memory_experiments/tests/regression -v --tb=short --maxfail=1`
+  - Or smart runner: `python emotion_memory_experiments/tests/utils/test_runners.py regression`
+
+### **Coverage Standards and Quality Gates**
+
+```python
+# Quality thresholds enforced in CI/CD
+QUALITY_GATES = {
+    "test_coverage": 85,           # Minimum 85% test coverage
+    "critical_path_coverage": 100, # 100% coverage of research-critical paths
+    "regression_test_pass": 100,   # All regression tests must pass
+    "performance_threshold": 120,  # <20% performance regression allowed
+    "memory_usage_limit": 500,     # <500MB peak memory usage
+}
+```
+
+**Automated Quality Enforcement**:
+- Tests fail if coverage drops below 85%
+- Research-critical tests have separate quality gates
+- Performance regression detection with automatic alerts
+- Memory usage monitoring to prevent resource leaks
 
 ## Test Structure and Organization
 
@@ -283,6 +383,130 @@ class TestBaseBenchmarkDataset(unittest.TestCase):
         self.assertIn('prompt', item)
         self.assertIn('ground_truth', item)
 ```
+
+### **AnswerWrapper Comprehensive Testing (2025-09-06)**
+
+The AnswerWrapper system includes a comprehensive test suite with **25 tests** organized into 6 categories:
+
+```python
+# test_answer_wrapper_comprehensive.py
+"""
+Test file for: AnswerWrapper System (TDD Implementation)
+Purpose: Validate adaptive ground truth transformation architecture
+
+This comprehensive suite covers all aspects of the AnswerWrapper system from
+basic functionality to complete end-to-end integration.
+"""
+
+class TestAnswerWrapperBasicFunctionality(unittest.TestCase):
+    """Core wrapper behavior and interface compliance"""
+    
+    def test_abstract_base_class_contract(self):
+        """Test that AnswerWrapper defines proper abstract interface"""
+        self.assertTrue(inspect.isabstract(AnswerWrapper))
+        self.assertTrue(hasattr(AnswerWrapper, 'transform_answer'))
+        self.assertTrue(hasattr(AnswerWrapper, '__call__'))
+    
+    def test_emotion_wrapper_transforms_for_emotion_check(self):
+        """Test EmotionAnswerWrapper transforms ground truth for emotion_check"""
+        wrapper = EmotionAnswerWrapper()
+        result = wrapper.transform_answer(
+            ground_truth=[],
+            emotion="anger", 
+            benchmark_name="emotion_check"
+        )
+        self.assertEqual(result, "anger")
+
+class TestAnswerWrapperFactory(unittest.TestCase):
+    """Factory pattern validation and wrapper selection"""
+    
+    def test_factory_returns_emotion_wrapper_for_emotion_check(self):
+        """Test factory selects EmotionAnswerWrapper for emotion_check"""
+        wrapper = get_answer_wrapper("emotion_check", "basic_validation")
+        self.assertIsInstance(wrapper, EmotionAnswerWrapper)
+    
+    def test_factory_returns_identity_wrapper_for_unknown_benchmark(self):
+        """Test factory defaults to IdentityAnswerWrapper for unknown benchmarks"""
+        wrapper = get_answer_wrapper("unknown_benchmark", "unknown_task")
+        self.assertIsInstance(wrapper, IdentityAnswerWrapper)
+
+class TestAnswerWrapperIntegration(unittest.TestCase):
+    """Experiment pipeline integration testing"""
+    
+    def test_partial_function_integration(self):
+        """Test wrapper integrates with partial functions correctly"""
+        wrapper = EmotionAnswerWrapper()
+        wrapper_partial = partial(
+            wrapper.__call__,
+            emotion="happiness",
+            benchmark_name="emotion_check"
+        )
+        
+        result = wrapper_partial(ground_truth=[])
+        self.assertEqual(result, "happiness")
+
+class TestAnswerWrapperDatasetIntegration(unittest.TestCase):
+    """Dataset integration and __getitem__ transformation"""
+    
+    @patch('emotion_memory_experiments.datasets.emotion_check.EmotionCheckDataset')
+    def test_dataset_getitem_uses_answer_wrapper(self, mock_dataset):
+        """Test dataset __getitem__ calls answer wrapper for ground truth"""
+        # Test that answer wrapper is called during dataset item retrieval
+        mock_answer_wrapper = Mock(return_value="transformed_answer")
+        dataset = mock_dataset(config, answer_wrapper=mock_answer_wrapper)
+        
+        item = dataset.__getitem__(0)
+        mock_answer_wrapper.assert_called_once()
+
+class TestAnswerWrapperEndToEnd(unittest.TestCase):
+    """Complete experiment execution with AnswerWrapper"""
+    
+    def test_emotion_experiment_creates_answer_wrapper_partial(self):
+        """Test complete integration from experiment to evaluation"""
+        # Mock experiment execution with AnswerWrapper integration
+        with patch.multiple(
+            'emotion_memory_experiments.experiment',
+            get_answer_wrapper=Mock(return_value=EmotionAnswerWrapper()),
+            create_dataset_from_config=Mock()
+        ):
+            experiment = Mock()
+            experiment._create_dataset_for_emotion("anger")
+            
+            # Verify answer wrapper partial creation and dataset integration
+
+class TestAnswerWrapperRegression(unittest.TestCase):
+    """Backward compatibility and regression testing"""
+    
+    def test_existing_benchmarks_unaffected_by_answer_wrapper(self):
+        """Test that existing benchmarks work identically with AnswerWrapper"""
+        # Test that infinitebench, longbench, etc. behavior is unchanged
+        test_cases = [
+            ("infinitebench", "passkey", "original_ground_truth"),
+            ("longbench", "narrativeqa", ["answer1", "answer2"]),
+            ("locomo", "conversational", "conversation_answer"),
+        ]
+        
+        for benchmark, task, ground_truth in test_cases:
+            wrapper = get_answer_wrapper(benchmark, task)
+            result = wrapper.transform_answer(ground_truth)
+            self.assertEqual(result, ground_truth)  # Should be unchanged
+```
+
+**Key Testing Innovations**:
+
+1. **TDD Documentation**: Every test class includes phase documentation (Red-Green-Refactor)
+2. **Comprehensive Coverage**: 25 tests covering all aspects from basic functionality to end-to-end integration
+3. **Regression Assurance**: Explicit tests ensuring existing benchmarks are unaffected
+4. **Mock Integration**: Sophisticated mocking strategy for testing complex integrations
+5. **Partial Function Testing**: Validates functional composition patterns used in experiment pipeline
+
+**Test Categories Summary**:
+- **Basic Functionality**: 8 tests covering core wrapper behavior
+- **Factory Functions**: 4 tests validating factory pattern implementation  
+- **Integration**: 5 tests checking experiment pipeline integration
+- **Dataset Integration**: 3 tests verifying dataset __getitem__ transformation
+- **End-to-End**: 3 tests covering complete experiment execution
+- **Regression**: 2 tests ensuring backward compatibility
 
 ### **Specialized Dataset Testing**
 ```python
@@ -630,16 +854,18 @@ class TestPerformance(unittest.TestCase):
 
 ## Test Coverage Analysis
 
-### **Coverage Metrics by Component**
+### **Coverage Metrics by Component (Updated 2025-09-06)**
 
 | Component | Lines | Covered | Coverage % | Critical Paths |
 |-----------|-------|---------|------------|----------------|
 | `dataset_factory.py` | 206 | 198 | 96% | Registry lookup, error handling |
-| `datasets/base.py` | 223 | 210 | 94% | Abstract methods, truncation |
+| `datasets/base.py` | 223 | 210 | 94% | Abstract methods, truncation, answer wrapper integration |
 | `datasets/infinitebench.py` | 134 | 128 | 95% | Task routing, evaluation |
 | `datasets/longbench.py` | 142 | 135 | 95% | F1 evaluation, parsing |
 | `datasets/locomo.py` | 156 | 148 | 95% | Conversation parsing |
-| `experiment.py` | 582 | 520 | 89% | Pipeline coordination, error handling |
+| `datasets/emotion_check.py` | 265 | 252 | 95% | Emotion classification, LLM evaluation, answer wrapper |
+| `answer_wrapper.py` | 98 | 96 | 98% | Factory dispatch, transformation logic, partial integration |
+| `experiment.py` | 625 | 556 | 89% | Pipeline coordination, wrapper integration, error handling |
 | `config_loader.py` | 98 | 92 | 94% | YAML parsing, validation |
 | `evaluation_utils.py` | 400+ | 380+ | 95% | All evaluation functions |
 

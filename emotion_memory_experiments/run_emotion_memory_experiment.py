@@ -24,6 +24,7 @@ from .data_models import (
     ExperimentConfig,
     VLLMLoadingConfig,
 )
+from .dataset_factory import create_dataset_from_config
 
 
 def load_config(config_path: Path) -> Dict[str, Any]:

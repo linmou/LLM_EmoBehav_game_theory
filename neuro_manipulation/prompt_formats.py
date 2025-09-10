@@ -516,10 +516,12 @@ class Qwen3InstFormat(ModelPromptFormat):
         if system_prompt:
             prompt += f"{Qwen3InstFormat.system_tag}\n{system_prompt}{Qwen3InstFormat.end_of_turn}\n"
 
-        # Add thinking mode instruction if enabled (without modifying original list)
+        # Respect existing directives; add '/think' only if enabled and no directive present anywhere
         first_user_message = user_messages[0]
-        if enable_thinking:
-            first_user_message = f"/think\n{first_user_message}"
+        content = str(first_user_message)
+        has_directive = ("/think" in content) or ("/no_think" in content)
+        if enable_thinking and not has_directive:
+            first_user_message = f"{content}\n/think"
 
         prompt += f"{Qwen3InstFormat.user_tag}\n{first_user_message}{Qwen3InstFormat.end_of_turn}\n"
 
@@ -643,36 +645,37 @@ class PromptFormat:
                     f" Images provided but model {self.model_name} doesn't support multimodal. Recheck your data-model compatibility."
                 )
 
+        # Prepare user messages with explicit thinking directives for Qwen3
+        model_lower = (self.model_name or "").lower()
+        is_qwen3 = ("qwen3" in model_lower) or ("qwen-3" in model_lower)
+        adjusted_user_messages = list(user_messages)
+        if is_qwen3 and len(adjusted_user_messages) > 0 and isinstance(adjusted_user_messages[0], str):
+            first_msg = adjusted_user_messages[0]
+            # Avoid double-directive if already present anywhere
+            has_directive = ("/think" in first_msg) or ("/no_think" in first_msg)
+            if not has_directive:
+                if enable_thinking:
+                    adjusted_user_messages[0] = f"{first_msg}\n/think"
+                else:
+                    adjusted_user_messages[0] = f"{first_msg}\n/no_think"
+
         chat = []
 
         # Only add system prompt if it's provided
         if system_prompt:
             chat.append({"role": "system", "content": system_prompt})
 
-        assert len(user_messages), f" user_messages: {user_messages} should not empty"
-        for user_message, assistant_message in zip(user_messages, assistant_messages):
+        assert len(adjusted_user_messages), f" user_messages: {user_messages} should not empty"
+        for user_message, assistant_message in zip(adjusted_user_messages, assistant_messages):
             chat.append({"role": "user", "content": user_message})
             chat.append({"role": "assistant", "content": assistant_message})
 
         # If there are still user messages left (odd number of total messages), add the last one
-        if len(user_messages) > len(assistant_messages):
-            chat.append({"role": "user", "content": user_messages[-1]})
-
-        # For Qwen3 models with thinking mode, use manual format directly
-        if enable_thinking and (
-            "qwen3" in self.model_name.lower()
-            or "qwen-3" in self.model_name.lower()
-            or "Qwen3" in self.model_name
-        ):
-            format_cls = Qwen3InstFormat
-            return format_cls.build(
-                system_prompt,
-                user_messages,
-                assistant_messages,
-                enable_thinking=enable_thinking,
-            )
+        if len(adjusted_user_messages) > len(assistant_messages):
+            chat.append({"role": "user", "content": adjusted_user_messages[-1]})
 
         try:
+            # Always avoid non-standard kwargs; directives already injected above
             prompt_str = self.tokenizer.apply_chat_template(
                 chat,
                 tokenize=False,
@@ -708,39 +711,37 @@ class PromptFormat:
                             )
                             continue
 
-            # Fallback to ManualPromptFormat if all else fails
+            # Fallback path: try manual formats (with thinking support if available)
             print("Falling back to ManualPromptFormat")
-            prompt_str = ManualPromptFormat.build(
-                self.model_name, system_prompt, user_messages, assistant_messages
-            )
-            # For Qwen3, try the manual format with thinking mode support
             for format_cls in PromptFormat.format_ls:
                 if format_cls.name_pattern(self.model_name):
-                    if (
-                        hasattr(format_cls, "build")
-                        and "enable_thinking" in format_cls.build.__code__.co_varnames
-                    ):
-                        prompt_str = format_cls.build(
-                            system_prompt,
-                            user_messages,
-                            assistant_messages,
-                            enable_thinking=enable_thinking,
-                        )
-                    else:
-                        prompt_str = format_cls.build(
-                            system_prompt, user_messages, assistant_messages
-                        )
-                    return prompt_str
+                    try:
+                        if (
+                            hasattr(format_cls, "build")
+                            and "enable_thinking"
+                            in getattr(format_cls.build, "__code__").co_varnames
+                        ):
+                            return format_cls.build(
+                                system_prompt,
+                                adjusted_user_messages,
+                                assistant_messages,
+                                enable_thinking=enable_thinking,
+                            )
+                        else:
+                            return format_cls.build(
+                                system_prompt, adjusted_user_messages, assistant_messages
+                            )
+                    except Exception:
+                        continue
 
-            # Final fallback
-            prompt_str = ManualPromptFormat.build(
+            # Final fallback to generic manual builder
+            return ManualPromptFormat.build(
                 self.model_name,
                 system_prompt,
-                user_messages,
+                adjusted_user_messages,
                 assistant_messages,
                 enable_thinking=enable_thinking,
             )
-            return prompt_str
 
     def _verify_message_order_in_prompt(self, prompt_str, chat):
         """

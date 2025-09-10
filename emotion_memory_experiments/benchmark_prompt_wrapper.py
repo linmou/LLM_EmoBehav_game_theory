@@ -13,7 +13,8 @@ from .memory_prompt_wrapper import (
     PasskeyPromptWrapper, 
     ConversationalQAPromptWrapper, 
     LongContextQAPromptWrapper,
-    LongbenchRetrievalPromptWrapper
+    LongbenchRetrievalPromptWrapper,
+    EmotionCheckPromptWrapper,
 )
 
 # Import new MTBench101 wrapper
@@ -21,6 +22,8 @@ from .mtbench101_prompt_wrapper import MTBench101PromptWrapper
 
 # Import TruthfulQA wrapper
 from .truthfulqa_prompt_wrapper import TruthfulQAPromptWrapper
+from .fantom_prompt_wrapper import FantomPromptWrapper
+from .bfcl_prompt_wrapper import BFCLPromptWrapper
 
 
 def get_benchmark_prompt_wrapper(
@@ -52,14 +55,26 @@ def get_benchmark_prompt_wrapper(
     
     benchmark_lower = benchmark_name.lower()
     task_lower = task_type.lower()
-    
+
+    # Emotion Check – use dedicated wrapper
+    if benchmark_lower == "emotion_check":
+        return EmotionCheckPromptWrapper(prompt_format, task_type)
+
     # TruthfulQA - multiple choice tasks
     if benchmark_lower == "truthfulqa":
         return TruthfulQAPromptWrapper(prompt_format, task_type)
     
+    # Fantom – use common Fantom wrapper
+    if benchmark_lower == "fantom":
+        return FantomPromptWrapper(prompt_format)
+    
     # MTBench101 - all tasks use unified wrapper with task-specific configuration
     if benchmark_lower == "mtbench101":
         return MTBench101PromptWrapper(prompt_format, task_type)
+    
+    # BFCL - function calling tasks
+    if benchmark_lower == "bfcl":
+        return BFCLPromptWrapper(prompt_format, task_type)
     
     # InfiniteBench tasks
     if benchmark_lower == "infinitebench":
@@ -152,7 +167,10 @@ def is_supported_benchmark_task(benchmark_name: str, task_type: str) -> bool:
     benchmark_lower = benchmark_name.lower()
     
     if benchmark_lower in supported:
-        return task_type in supported[benchmark_lower]
+        # Case-insensitive comparison for task types
+        tasks = supported[benchmark_lower]
+        task_lower = task_type.lower()
+        return any(t.lower() == task_lower for t in tasks)
     
     # Always return True for unknown benchmarks (will use default wrapper)
     return True

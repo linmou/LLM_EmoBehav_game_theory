@@ -1,0 +1,26 @@
+name: Test Layout Check
+
+on:
+  push:
+    paths:
+      - 'emotion_memory_experiments/tests/**'
+      - '.github/workflows/test_layout_check.yml'
+  pull_request:
+    paths:
+      - 'emotion_memory_experiments/tests/**'
+
+jobs:
+  layout-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run test layout check
+        run: |
+          python emotion_memory_experiments/tests/utils/check_test_layout.py
+

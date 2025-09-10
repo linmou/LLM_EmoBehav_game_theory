@@ -194,6 +194,112 @@ class MemoryPromptWrapper(PromptWrapper):
         )
 
 
+class EmotionCheckPromptWrapper(MemoryPromptWrapper):
+    """
+    Specialized prompt wrapper for emotion_check benchmark.
+
+    Changes:
+    - Sets persona as an average American in the system prompt
+    - Moves the question content into the user message (not in system)
+    """
+
+    system_prompt_format = (
+        "You are an adult completing a psychological questionnaire. "
+        "Answer in first person as yourself. Do not mention being an AI, do not refuse; "
+        "if unsure, choose the closest option. Output exactly the requested JSON without extra text."
+        # "Please reflect on your current emotion and think about its negative impact on your decision making. Try to get rid of it then answer the question."
+    )
+
+    def __init__(self, prompt_format: PromptFormat, task_type: Optional[str] = None):
+        super().__init__(prompt_format)
+        self.task_type = task_type
+
+    def _format_options_numeric(self, options: Optional[list]) -> str:
+        # For academic_scale, inject standard Likert if options not provided
+        if (not options) and (self.task_type == "academic_scale"):
+            anchors = [
+                "1 = Strongly Disagree",
+                "2 = Disagree",
+                "3 = Neither Agree nor Disagree",
+                "4 = Agree",
+                "5 = Strongly Agree",
+            ]
+            return "\n\nOptions (choose one number):\n" + "\n".join(anchors)
+
+        if not options:
+            return ""
+
+        lines = [f"{i+1}. {opt}" for i, opt in enumerate(options)]
+        return "\n\nOptions (choose one number):\n" + "\n".join(lines)
+
+    def system_prompt(
+        self,
+        context: Optional[str],
+        question: Optional[str],
+        options: Optional[list] = None,
+    ) -> str:
+        # Only include persona and optional context; exclude the question from system
+        if context:
+            return f"{self.system_prompt_format}\n\nContext: {context}"
+        return self.system_prompt_format
+
+    def __call__(
+        self,
+        context: Optional[str] = None,
+        question: Optional[str] = None,
+        user_messages: Union[str, list] = "Please provide your answer.",
+        enable_thinking: bool = False,
+        augmentation_config: Optional[Dict[str, Any]] = None,
+        answer: Optional[str] = None,
+        emotion: Optional[str] = None,
+        options: Optional[list] = None,
+    ) -> str:
+        # Apply context augmentation if configured
+        augmented_context = self.augment_context(
+            context, augmentation_config, answer, emotion
+        )
+
+        # Merge the question into the single user message
+        base_user = self.user_messages(user_messages)
+        if isinstance(base_user, list):
+            base_user_msg = base_user[0] if base_user else ""
+        else:
+            base_user_msg = str(base_user)
+
+        question_part = question or ""
+        options_part = self._format_options_numeric(options)
+
+        # Emotion priming to reduce deflection and bias toward active state
+        is_academic = self.task_type == "academic_scale"
+        # For academic_scale we avoid explicit emotion hint to prevent describing feelings
+        emotion_hint = "" if is_academic else (f"\n\nYou currently feel {emotion}." if emotion else "")
+
+        # JSON response format instruction
+        json_instr = (
+            "\n\nTask: Rate your agreement with the statement below. "
+            "You can say your current emotion but do not just describe your current emotion, also describe its matching of the statement. Do not say you are an AI.\n"
+            "Respond in JSON only, exactly in the form: "
+            "{'rational': 'brief paraphrase of the statement and justification (1–2 sentences)', 'choice': <number>}. "
+            "Return only the JSON, no extra text."
+        )
+
+        user_content = (
+            question_part
+            + ("\n" if question_part else "")
+            + options_part
+            + ("\n\n" if options_part or question_part else "")
+            + base_user_msg.strip()
+            + emotion_hint
+            + json_instr
+        ).strip()
+
+        return self.prompt_format.build(
+            self.system_prompt(augmented_context, question, options),
+            [user_content],
+            enable_thinking=enable_thinking,
+        )
+
+
 class PasskeyPromptWrapper(MemoryPromptWrapper):
     """Specialized prompt wrapper for passkey retrieval tasks"""
 
@@ -357,4 +463,3 @@ class LongbenchRetrievalPromptWrapper(MemoryPromptWrapper):
             augmentation_config, emotion
         )
         return context.replace(answer_paragraph, f"{prefix}{answer_paragraph}{suffix}")
-

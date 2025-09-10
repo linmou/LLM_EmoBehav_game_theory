@@ -17,9 +17,19 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
 
 import pandas as pd
-import torch
-from torch.utils.data import DataLoader
-from vllm import LLM
+try:
+    import torch  # type: ignore
+    from torch.utils.data import DataLoader  # type: ignore
+except Exception:
+    torch = None  # type: ignore
+    class DataLoader:  # type: ignore
+        pass
+try:
+    # Optional for dry-run; real import only needed for execution
+    from vllm import LLM  # type: ignore
+except Exception:
+    class LLM:  # Fallback dummy type to allow isinstance checks
+        pass
 
 from neuro_manipulation.configs.experiment_config import get_repe_eng_config
 from neuro_manipulation.model_layer_detector import ModelLayerDetector
@@ -29,11 +39,10 @@ from neuro_manipulation.model_utils import (
 )
 from neuro_manipulation.repe.pipelines import get_pipeline
 
-from .benchmark_prompt_wrapper import get_benchmark_prompt_wrapper
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 
-# NEW: Import directly from the specialized dataset factory
-from .dataset_factory import create_dataset_from_config
+# NEW: Import the registry-based component assembly
+from .benchmark_component_registry import create_benchmark_components
 from .truncation_utils import calculate_max_context_length
 
 
@@ -43,7 +52,23 @@ class EmotionExperiment:
     Closely follows EmotionGameExperiment pattern but adapted for tasks.
     """
 
-    def __init__(self, config: ExperimentConfig):
+    def __init__(self, config: ExperimentConfig, dry_run: bool = False):
+        # GPU-independent components first
+        self._setup_basic_components(config)
+
+        if dry_run:
+            # Build real datasets for each emotion
+            self.emotion_datasets = self._build_emotion_datasets()
+            # Set GPU-dependent components to None
+            self._set_gpu_components_to_none()
+        else:
+            # Set emotion_datasets to None for regular mode
+            self.emotion_datasets = None
+            # Setup GPU-dependent components
+            self._setup_gpu_components(config)
+
+    def _setup_basic_components(self, config: ExperimentConfig):
+        """Setup GPU-independent components: logging, tokenizer, prompt_format, truncation"""
         self.config = config
         self.generation_config = config.generation_config or DEFAULT_GENERATION_CONFIG
         self.loading_config = config.loading_config  # May be None for defaults
@@ -89,56 +114,47 @@ class EmotionExperiment:
             self.generation_config.get("enable_thinking", False)
         )
 
-        # Validate dataset creation (early validation)
-        test_dataset = create_dataset_from_config(config.benchmark)
+        # Simple dataset validation using registry-based approach
+        _, _, test_dataset = create_benchmark_components(
+            benchmark_name=config.benchmark.name,
+            task_type=config.benchmark.task_type,
+            config=config.benchmark,
+            prompt_format=None,  # Will be set later when we have proper tokenizer
+        )
         dataset_size = len(test_dataset)
         self.logger.info(f"Benchmark contains {dataset_size} items")
 
-        # Setup model and emotion readers (same pattern as emotion_game_experiment)
-        self.repe_config = get_repe_eng_config(
-            config.model_path, yaml_config=config.repe_eng_config
+        # Load tokenizer using proper utility function (CPU-based, no GPU needed)
+        from neuro_manipulation.utils import load_tokenizer_only
+        self.tokenizer, _ = load_tokenizer_only(
+            model_name_or_path=config.model_path,
+            expand_vocab=False,
+            auto_load_multimodal=True,
         )
 
-        # Ensure loading_config has the model path if it exists
-        if self.loading_config and not self.loading_config.model_path:
-            self.loading_config.model_path = config.model_path
+        # Create prompt format (only needs tokenizer)
+        from neuro_manipulation.prompt_formats import PromptFormat
 
-        # First load from HF for emotion readers
-        self.model, self.tokenizer, self.prompt_format, processor = (
-            setup_model_and_tokenizer(self.loading_config, from_vllm=False)
-        )
-        num_hidden_layers = ModelLayerDetector.num_layers(self.model)
-        self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
-        self.logger.info(f"Using hidden layers: {self.hidden_layers}")
+        self.prompt_format = PromptFormat(self.tokenizer)
 
-        self.emotion_rep_readers = load_emotion_readers(
-            self.repe_config,
-            self.model,
-            self.tokenizer,
-            self.hidden_layers,
-            processor,
-            self.enable_thinking,
-        )
-        del self.model  # Save memory
-
-        # Load vLLM model for inference with loading config
-        self.model, self.tokenizer, self.prompt_format, _ = setup_model_and_tokenizer(
-            self.loading_config, from_vllm=True
-        )
-        self.logger.info(f"Model loaded: {type(self.model)}")
-        self.is_vllm = isinstance(self.model, LLM)
-
-        # Setup RepE control pipeline
-        self.rep_control_pipeline = get_pipeline(
-            "rep-control-vllm" if self.is_vllm else "rep-control",
-            model=self.model,
-            tokenizer=self.tokenizer,
-            layers=self.hidden_layers[
-                len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
-            ],
-            block_name=self.repe_config["block_name"],
-            control_method=self.repe_config["control_method"],
-        )
+        # Setup truncation parameters
+        self.max_context_length = None
+        self.truncation_strategy = "right"
+        if config.benchmark.enable_auto_truncation:
+            if self.loading_config is None:
+                raise ValueError(
+                    "Truncation enabled but no loading_config provided for max_model_len"
+                )
+            self.max_context_length = calculate_max_context_length(
+                self.loading_config.max_model_len,
+                config.benchmark.preserve_ratio,
+                prompt_overhead=200,  # Reserve for prompt template
+            )
+            self.truncation_strategy = config.benchmark.truncation_strategy
+            self.logger.info(
+                f"Context truncation enabled: max_length={self.max_context_length}, "
+                f"strategy='{self.truncation_strategy}'"
+            )
 
         # Setup output directory
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -158,25 +174,158 @@ class EmotionExperiment:
         # Batch size for DataLoader
         self.batch_size = config.batch_size
 
-        # Calculate max context length for truncation (now from benchmark config)
-        self.max_context_length = None
-        self.truncation_strategy = "right"
-        if config.benchmark.enable_auto_truncation:
-            if self.loading_config is None:
-                raise ValueError(
-                    "Truncation enabled but no loading_config provided for max_model_len"
-                )
+    def _create_dataset_for_emotion(self, emotion: str):
+        """Create dataset for a specific emotion using registry-based component assembly"""
+        # Use registry to get all three components in one call
+        benchmark_prompt_wrapper_partial, answer_wrapper_partial, dataset = create_benchmark_components(
+            benchmark_name=self.config.benchmark.name,
+            task_type=self.config.benchmark.task_type,
+            config=self.config.benchmark,
+            prompt_format=self.prompt_format,
+            emotion=emotion,
+            enable_thinking=self.enable_thinking,
+            augmentation_config=self.config.benchmark.augmentation_config,
+            user_messages="Please provide your answer.",
+            # Dataset parameters
+            max_context_length=self.max_context_length,
+            tokenizer=self.tokenizer,
+            truncation_strategy=self.truncation_strategy,
+        )
 
-            self.max_context_length = calculate_max_context_length(
-                self.loading_config.max_model_len,
-                config.benchmark.preserve_ratio,
-                prompt_overhead=200,  # Reserve for prompt template
-            )
-            self.truncation_strategy = config.benchmark.truncation_strategy
-            self.logger.info(
-                f"Context truncation enabled: max_length={self.max_context_length}, "
-                f"strategy='{self.truncation_strategy}'"
-            )
+        return dataset, benchmark_prompt_wrapper_partial
+
+    def _build_emotion_datasets(self):
+        """Build real datasets for each emotion - this is the actual validation test"""
+        emotion_datasets = {}
+
+        for emotion in self.config.emotions:
+            dataset, _ = self._create_dataset_for_emotion(emotion)
+            emotion_datasets[emotion] = dataset
+            self.logger.info(f"✓ {emotion}: {len(dataset)} items")
+
+        return emotion_datasets
+
+    def _set_gpu_components_to_none(self):
+        """Set GPU-dependent attributes to None for dry-run"""
+        self.model = None
+        self.emotion_rep_readers = None
+        self.rep_control_pipeline = None
+        self.is_vllm = False
+        self.hidden_layers = []
+        self.repe_config = None
+
+    def _setup_gpu_components(self, config: ExperimentConfig):
+        """Setup GPU-dependent components: models, emotion readers, pipeline"""
+        # Setup model and emotion readers (same pattern as emotion_game_experiment)
+        self.repe_config = get_repe_eng_config(
+            config.model_path, yaml_config=config.repe_eng_config
+        )
+
+        # Ensure loading_config has the model path if it exists
+        if self.loading_config and not self.loading_config.model_path:
+            self.loading_config.model_path = config.model_path
+
+        # First load from HF for emotion readers
+        self.model, tokenizer_temp, prompt_format_temp, processor = (
+            setup_model_and_tokenizer(self.loading_config, from_vllm=False)
+        )
+
+        # Assert tokenizers are functionally equivalent (not necessarily identical objects)
+        self._assert_tokenizers_equivalent(
+            self.tokenizer, tokenizer_temp, "basic", "gpu"
+        )
+
+        num_hidden_layers = ModelLayerDetector.num_layers(self.model)
+        self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
+        self.logger.info(f"Using hidden layers: {self.hidden_layers}")
+
+        self.emotion_rep_readers = load_emotion_readers(
+            self.repe_config,
+            self.model,
+            tokenizer_temp,
+            self.hidden_layers,
+            processor,
+            self.enable_thinking,
+        )
+        del self.model  # Save memory
+
+        # Load vLLM model for inference with loading config
+        self.model, tokenizer_temp, prompt_format_temp, _ = setup_model_and_tokenizer(
+            self.loading_config, from_vllm=True
+        )
+
+        # Assert vLLM tokenizer is functionally equivalent to basic tokenizer
+        self._assert_tokenizers_equivalent(
+            self.tokenizer, tokenizer_temp, "basic", "vllm"
+        )
+
+        self.logger.info(f"Model loaded: {type(self.model)}")
+        self.is_vllm = isinstance(self.model, LLM)
+
+        # Setup RepE control pipeline - using basic tokenizer for consistency
+        self.rep_control_pipeline = get_pipeline(
+            "rep-control-vllm" if self.is_vllm else "rep-control",
+            model=self.model,
+            tokenizer=self.tokenizer,  # Use basic tokenizer instead of tokenizer_temp
+            layers=self.hidden_layers[
+                len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
+            ],
+            block_name=self.repe_config["block_name"],
+            control_method=self.repe_config["control_method"],
+        )
+
+    def _assert_tokenizers_equivalent(
+        self, tokenizer1, tokenizer2, name1: str, name2: str
+    ):
+        """
+        Assert that two tokenizers are functionally equivalent by comparing key properties.
+
+        Args:
+            tokenizer1: First tokenizer to compare
+            tokenizer2: Second tokenizer to compare
+            name1: Descriptive name for first tokenizer (for error messages)
+            name2: Descriptive name for second tokenizer (for error messages)
+
+        Raises:
+            AssertionError: If tokenizers are not functionally equivalent
+        """
+        try:
+            # Check basic type compatibility
+            assert type(tokenizer1) == type(
+                tokenizer2
+            ), f"Tokenizer types differ: {name1}={type(tokenizer1)} vs {name2}={type(tokenizer2)}"
+
+            # Check vocabulary size (most important property)
+            assert (
+                tokenizer1.vocab_size == tokenizer2.vocab_size
+            ), f"Vocab sizes differ: {name1}={tokenizer1.vocab_size} vs {name2}={tokenizer2.vocab_size}"
+
+            # Check padding token configuration
+            assert (
+                tokenizer1.pad_token_id == tokenizer2.pad_token_id
+            ), f"Pad token IDs differ: {name1}={tokenizer1.pad_token_id} vs {name2}={tokenizer2.pad_token_id}"
+
+            # Check special tokens that affect model behavior
+            assert (
+                tokenizer1.eos_token_id == tokenizer2.eos_token_id
+            ), f"EOS token IDs differ: {name1}={tokenizer1.eos_token_id} vs {name2}={tokenizer2.eos_token_id}"
+
+            assert (
+                tokenizer1.bos_token_id == tokenizer2.bos_token_id
+            ), f"BOS token IDs differ: {name1}={tokenizer1.bos_token_id} vs {name2}={tokenizer2.bos_token_id}"
+
+        except AttributeError as e:
+            # Handle cases where tokenizers might not have certain attributes
+            self.logger.warning(f"Tokenizer attribute missing during comparison: {e}")
+            # Fall back to basic type check
+            assert type(tokenizer1) == type(
+                tokenizer2
+            ), f"Tokenizer types differ: {name1}={type(tokenizer1)} vs {name2}={type(tokenizer2)}"
+
+        # Log successful validation with key properties
+        self.logger.info(
+            f"✓ Tokenizer consistency validated: {name1} ≡ {name2} (vocab_size={tokenizer1.vocab_size})"
+        )
 
     def build_dataloader(self, emotion: str) -> DataLoader:
         """
@@ -189,28 +338,9 @@ class EmotionExperiment:
             f"Creating benchmark dataset with sample_num={self.sample_num if self.sample_num is not None else 'all'}"
         )
 
-        # Create partial function for dataset integration
-        benchmark_prompt_wrapper = get_benchmark_prompt_wrapper(
-            self.config.benchmark.name,
-            self.config.benchmark.task_type,
-            self.prompt_format,
-        )
-
-        self.benchmark_prompt_wrapper_partial = partial(
-            benchmark_prompt_wrapper.__call__,
-            user_messages="Please provide your answer.",
-            enable_thinking=self.enable_thinking,
-            augmentation_config=self.config.benchmark.augmentation_config,
-            emotion=emotion,
-        )
-
-        # Create dataset with all required parameters
-        self.dataset = create_dataset_from_config(
-            self.config.benchmark,
-            prompt_wrapper=self.benchmark_prompt_wrapper_partial,
-            max_context_length=self.max_context_length,
-            tokenizer=self.tokenizer,
-            truncation_strategy=self.truncation_strategy,
+        # Use common dataset creation logic
+        self.dataset, self.benchmark_prompt_wrapper_partial = (
+            self._create_dataset_for_emotion(emotion)
         )
 
         # Use dataset's specialized collate function - each dataset type

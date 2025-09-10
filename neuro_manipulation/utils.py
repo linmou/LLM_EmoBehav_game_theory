@@ -575,33 +575,81 @@ def is_awq_model(model_name_or_path):
     return any(indicator in model_name_upper for indicator in awq_indicators)
 
 
-def load_model_tokenizer(
+def load_tokenizer_only(
     model_name_or_path="gpt2",
     user_tag="[INST]",
     assistant_tag="[/INST]",
     expand_vocab=False,
-    from_vllm=False,
     auto_load_multimodal=True,
-    enable_multi_gpu=True,
-    loading_config: "Optional[VLLMLoadingConfig]" = None,
 ):
     """
-    Enhanced model loading with automatic multimodal detection and processor loading.
+    Load only tokenizer and processor (if multimodal) without any model loading.
+    Lightweight function for validation and dry-run scenarios.
 
     Args:
         model_name_or_path: Model name or path
-        user_tag: User tag for conversation format
-        assistant_tag: Assistant tag for conversation format
+        user_tag: User tag for conversation format (for vocab expansion)
+        assistant_tag: Assistant tag for conversation format (for vocab expansion)
         expand_vocab: Whether to expand vocabulary with tags
-        from_vllm: Whether to use vLLM for loading
         auto_load_multimodal: Whether to auto-detect and load multimodal processor
-        loading_config: Optional LoadingConfig object or dict with vLLM loading parameters
 
     Returns:
-        tuple: (model, tokenizer, processor_or_none)
+        tuple: (tokenizer, processor_or_none)
                - processor_or_none: AutoProcessor for multimodal models, None for text-only
     """
-    # Load model
+    # Load tokenizer (same logic as in load_model_tokenizer)
+    use_fast_tokenizer = False
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_name_or_path,
+        use_fast=use_fast_tokenizer,
+        padding_side="left",
+        legacy=False,
+        token=True,
+        trust_remote_code=True,
+    )
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = 0
+
+    # Expand vocabulary if requested (same logic as original)
+    if expand_vocab:
+        special_tokens_dict = {"additional_special_tokens": [user_tag, assistant_tag]}
+        tokenizer.add_special_tokens(special_tokens_dict)
+
+    # Auto-load processor for multimodal models (same logic as original)
+    processor = None
+    if auto_load_multimodal:
+        is_multimodal = detect_multimodal_model(model_name_or_path)
+        if is_multimodal:
+            processor = auto_load_processor(model_name_or_path)
+            if processor:
+                print(f"✓ Detected multimodal model: {model_name_or_path}")
+            else:
+                raise Exception(
+                    f"Multimodal model detected but processor loading failed: {model_name_or_path}"
+                )
+        else:
+            print(f"✓ Detected text-only model: {model_name_or_path}")
+
+    return tokenizer, processor
+
+
+def load_model_only(
+    model_name_or_path="gpt2",
+    from_vllm=False,
+    loading_config: "Optional[VLLMLoadingConfig]" = None,
+):
+    """
+    Load only the model without tokenizer or processor.
+    Used when tokenizer is already available from load_tokenizer_only.
+
+    Args:
+        model_name_or_path: Model name or path
+        from_vllm: Whether to use vLLM for loading
+        loading_config: Optional LoadingConfig object for vLLM parameters
+
+    Returns:
+        model: Loaded model (vLLM LLM or HuggingFace model)
+    """
     model = None
     if from_vllm:
         try:
@@ -675,30 +723,61 @@ def load_model_tokenizer(
                 ).eval()
         except:
             # If config loading fails, fallback to AutoModel
-            model = AutoModel.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
-    try:
-        use_fast_tokenizer = True
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
-    except ValueError as error:
-        use_fast_tokenizer = False #"LlamaForCausalLM" not in model.config.architectures
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
-    if tokenizer.pad_token_id is None:
-        tokenizer.pad_token_id = 0
 
-    # Auto-load processor for multimodal models
-    processor = None
-    if auto_load_multimodal:
-        is_multimodal = detect_multimodal_model(model_name_or_path)
-        if is_multimodal:
-            processor = auto_load_processor(model_name_or_path)
-            if processor:
-                print(f"✓ Detected multimodal model: {model_name_or_path}")
-            else:
-                raise Exception(
-                    f"Multimodal model detected but processor loading failed: {model_name_or_path}"
-                )
-        else:
-            print(f"✓ Detected text-only model: {model_name_or_path}")
+            model = AutoModel.from_pretrained(
+                model_name_or_path,
+                torch_dtype=torch.float16,
+                device_map="auto",
+                token=True,
+                trust_remote_code=True,
+            ).eval()
+
+    return model
+
+
+def load_model_tokenizer(
+    model_name_or_path="gpt2",
+    user_tag="[INST]",
+    assistant_tag="[/INST]",
+    expand_vocab=False,
+    from_vllm=False,
+    auto_load_multimodal=True,
+    enable_multi_gpu=True,
+    loading_config: "Optional[VLLMLoadingConfig]" = None,
+):
+    """
+    Enhanced model loading with automatic multimodal detection and processor loading.
+    BACKWARD COMPATIBLE: Maintains existing API and behavior.
+
+    Args:
+        model_name_or_path: Model name or path
+        user_tag: User tag for conversation format
+        assistant_tag: Assistant tag for conversation format
+        expand_vocab: Whether to expand vocabulary with tags
+        from_vllm: Whether to use vLLM for loading
+        auto_load_multimodal: Whether to auto-detect and load multimodal processor
+        enable_multi_gpu: Legacy parameter (preserved for compatibility)
+        loading_config: Optional LoadingConfig object or dict with vLLM loading parameters
+
+    Returns:
+        tuple: (model, tokenizer, processor_or_none)
+               - processor_or_none: AutoProcessor for multimodal models, None for text-only
+    """
+    # Load tokenizer and processor first (lightweight)
+    tokenizer, processor = load_tokenizer_only(
+        model_name_or_path=model_name_or_path,
+        user_tag=user_tag,
+        assistant_tag=assistant_tag,
+        expand_vocab=expand_vocab,
+        auto_load_multimodal=auto_load_multimodal,
+    )
+
+    # Load model (heavy GPU operation)
+    model = load_model_only(
+        model_name_or_path=model_name_or_path,
+        from_vllm=from_vllm,
+        loading_config=loading_config,
+    )
 
     return model, tokenizer, processor
 
