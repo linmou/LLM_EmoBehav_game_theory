@@ -1,0 +1,68 @@
+################################################################################
+# BFCL benchmark sanity config (live_simple + live_multiple)
+# Use with:
+#   python -m emotion_memory_experiments.memory_experiment_series_runner \
+#       --config config/bfcl_simple_qwen3.yaml 
+
+experiment_name: "bfcl_simple_qwen3"
+description: "Config for BFCL live_* tasks (function calling)"
+version: "1.0.0"
+
+models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B"
+
+benchmarks:
+  # Option A: expand all live_* tasks from data/BFCL automatically
+  - name: "bfcl"
+    task_type: "live_multiple"
+    base_data_dir: "data/BFCL"
+
+  # Option B (explicit):
+  # - name: "bfcl"
+  #   task_type: "live_simple"
+  #   data_path: "data/BFCL/bfcl_live_simple.jsonl"
+  # - name: "bfcl"
+  #   task_type: "live_multiple"
+  #   data_path: "data/BFCL/bfcl_live_multiple.jsonl"
+
+emotions: ["anger", "happiness", "sadness", "surprise", "fear", "disgust"]
+intensities: [1.5]
+
+loading_config:
+  model_path: null
+  gpu_memory_utilization: 0.90
+  tensor_parallel_size: null
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+repe_eng_config:
+  direction_method: "pca"
+
+generation_config:
+  temperature: 0.1
+  max_new_tokens: 128
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 600
+max_evaluation_workers: 1
+pipeline_queue_size: 1
+
+output_dir: "results/bfcl_qwen3"
+
+run_sanity_check: false
+

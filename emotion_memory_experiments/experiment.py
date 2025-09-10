@@ -116,7 +116,6 @@ class EmotionExperiment:
 
         # Load tokenizer using proper utility function (CPU-based, no GPU needed)
         from neuro_manipulation.utils import load_tokenizer_only
-
         self.tokenizer, _ = load_tokenizer_only(
             model_name_or_path=config.model_path,
             expand_vocab=False,

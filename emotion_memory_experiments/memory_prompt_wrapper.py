@@ -204,9 +204,10 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
     """
 
     system_prompt_format = (
-        "You are an average American adult completing a psychological questionnaire. "
+        "You are an adult completing a psychological questionnaire. "
         "Answer in first person as yourself. Do not mention being an AI, do not refuse; "
         "if unsure, choose the closest option. Output exactly the requested JSON without extra text."
+        # "Please reflect on your current emotion and think about its negative impact on your decision making. Try to get rid of it then answer the question."
     )
 
     def __init__(self, prompt_format: PromptFormat, task_type: Optional[str] = None):

@@ -23,6 +23,7 @@ from .mtbench101_prompt_wrapper import MTBench101PromptWrapper
 # Import TruthfulQA wrapper
 from .truthfulqa_prompt_wrapper import TruthfulQAPromptWrapper
 from .fantom_prompt_wrapper import FantomPromptWrapper
+from .bfcl_prompt_wrapper import BFCLPromptWrapper
 
 
 def get_benchmark_prompt_wrapper(
@@ -70,6 +71,10 @@ def get_benchmark_prompt_wrapper(
     # MTBench101 - all tasks use unified wrapper with task-specific configuration
     if benchmark_lower == "mtbench101":
         return MTBench101PromptWrapper(prompt_format, task_type)
+    
+    # BFCL - function calling tasks
+    if benchmark_lower == "bfcl":
+        return BFCLPromptWrapper(prompt_format, task_type)
     
     # InfiniteBench tasks
     if benchmark_lower == "infinitebench":

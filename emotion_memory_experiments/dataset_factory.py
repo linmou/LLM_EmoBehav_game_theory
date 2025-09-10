@@ -39,6 +39,7 @@ from .datasets.longbench import LongBenchDataset
 from .datasets.mtbench101 import MTBench101Dataset
 from .datasets.truthfulqa import TruthfulQADataset
 from .datasets.fantom import FantomDataset
+from .datasets.bfcl import BFCLDataset
 
 # Registry mapping benchmark names to dataset classes
 # This eliminates if-else chains entirely!
@@ -50,6 +51,7 @@ DATASET_REGISTRY: Dict[str, Type[BaseBenchmarkDataset]] = {
     "mtbench101": MTBench101Dataset,
     "truthfulqa": TruthfulQADataset,
     "fantom": FantomDataset,
+    "bfcl": BFCLDataset,
 }
 
 

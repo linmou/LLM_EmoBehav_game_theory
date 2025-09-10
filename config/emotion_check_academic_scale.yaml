@@ -7,7 +7,7 @@ version: "1.0.0"
 
 # Minimal, editable model placeholder
 models:
-  - "Qwen/Qwen2.5-1.5B-Instruct"
+  - "Qwen/Qwen2.5-3B-Instruct"
 
 benchmarks:
   - name: "emotion_check"
@@ -62,7 +62,7 @@ batch_size: 100
 max_evaluation_workers: 2
 pipeline_queue_size: 2
 
-output_dir: "results/emotion_check_academic_scale"
+output_dir: "results/emotion_check_academic_scale/raw/"
 
 # Helpful for quick config validation without running the full pipeline
 run_sanity_check: false

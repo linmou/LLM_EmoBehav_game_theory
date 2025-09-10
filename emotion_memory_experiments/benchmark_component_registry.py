@@ -56,6 +56,8 @@ from .datasets.mtbench101 import MTBench101Dataset
 from .datasets.truthfulqa import TruthfulQADataset
 from .datasets.fantom import FantomDataset
 from .fantom_prompt_wrapper import FantomPromptWrapper
+from .datasets.bfcl import BFCLDataset
+from .bfcl_prompt_wrapper import BFCLPromptWrapper
 
 
 @dataclass
@@ -324,6 +326,17 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
     ("longbench", "repobench-p"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+    ),
+    # BFCL benchmark
+    ("bfcl", "live_simple"): BenchmarkSpec(
+        dataset_class=BFCLDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=BFCLPromptWrapper,
+    ),
+    ("bfcl", "live_multiple"): BenchmarkSpec(
+        dataset_class=BFCLDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=BFCLPromptWrapper,
     ),
     # LoCoMo benchmark
     ("locomo", "locomo"): BenchmarkSpec(

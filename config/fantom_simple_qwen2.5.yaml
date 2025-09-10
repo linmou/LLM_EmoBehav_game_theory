@@ -7,25 +7,25 @@ description: "Config for simple Fantom tasks (binary + 2-choice)"
 version: "1.0.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
-    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
+  #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
 
 benchmarks:
   - name: "fantom"
     task_type: "short_answerability_binary_inaccessible"
     base_data_dir: "data/fantom"
-  - name: "fantom"
-    task_type: "short_belief_choice_inaccessible"
-    base_data_dir: "data/fantom"
+      # - name: "fantom"
+      #task_type: "short_belief_choice_inaccessible"
+      #base_data_dir: "data/fantom"
 
 emotions: ["anger", "happiness", "sadness", "surprise","fear", "disgust"]
 intensities: [1.5]
 
 loading_config:
   model_path: null
-  gpu_memory_utilization: 0.50
+  gpu_memory_utilization: 0.90
   tensor_parallel_size: null
   max_model_len: 4096
   enforce_eager: true
@@ -57,5 +57,5 @@ pipeline_queue_size: 1
 
 output_dir: "results/fantom_qwen2.5"
 
-run_sanity_check: true
+run_sanity_check: false
 
