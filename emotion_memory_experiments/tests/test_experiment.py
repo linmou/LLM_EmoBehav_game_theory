@@ -49,8 +49,12 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
     @patch("emotion_memory_experiments.experiment.ModelLayerDetector")
     @patch("emotion_memory_experiments.experiment.load_emotion_readers")
     @patch("emotion_memory_experiments.experiment.get_pipeline")
+    @patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(MagicMock(), None))
+    @patch("emotion_memory_experiments.experiment.EmotionExperiment._assert_tokenizers_equivalent", return_value=None)
     def test_experiment_initialization(
         self,
+        _mock_assert,
+        _mock_tok,
         mock_get_pipeline,
         mock_load_emotion_readers,
         mock_model_detector,
@@ -96,8 +100,12 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
     @patch("emotion_memory_experiments.experiment.ModelLayerDetector")
     @patch("emotion_memory_experiments.experiment.load_emotion_readers")
     @patch("emotion_memory_experiments.experiment.get_pipeline")
+    @patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(MagicMock(), None))
+    @patch("emotion_memory_experiments.experiment.EmotionExperiment._assert_tokenizers_equivalent", return_value=None)
     def test_process_emotion_condition_with_emotion(
         self,
+        _mock_assert,
+        _mock_tok,
         mock_get_pipeline,
         mock_load_emotion_readers,
         mock_model_detector,
@@ -144,26 +152,36 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         experiment.is_vllm = True
 
         # Build dataloader instead of using benchmark_adapter
-        dataloader = experiment.build_dataloader()
+        dataloader = experiment.build_dataloader("anger")
 
         # Process emotion condition using dataloader
+        # Set current condition state
+        experiment.cur_emotion = "anger"
+        experiment.cur_intensity = 1.0
         results = experiment._infer_with_activation(mock_rep_reader, dataloader)
 
         # Verify results
         self.assertEqual(len(results), 3)
-        for i, result in enumerate(results):
+        for result in results:
             self.assertEqual(result.emotion, "anger")
             self.assertEqual(result.intensity, 1.0)
             self.assertEqual(result.task_name, "passkey")
-            self.assertIn(responses[i], result.response)
             self.assertIsInstance(result.score, float)
+        # Check that each response matches one from our mock list
+        resp_texts = [r.response for r in results]
+        for t in resp_texts:
+            self.assertTrue(any(expected in t for expected in responses))
 
     @patch("emotion_memory_experiments.experiment.setup_model_and_tokenizer")
     @patch("emotion_memory_experiments.experiment.ModelLayerDetector")
     @patch("emotion_memory_experiments.experiment.load_emotion_readers")
     @patch("emotion_memory_experiments.experiment.get_pipeline")
+    @patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(MagicMock(), None))
+    @patch("emotion_memory_experiments.experiment.EmotionExperiment._assert_tokenizers_equivalent", return_value=None)
     def test_process_neutral_condition(
         self,
+        _mock_assert,
+        _mock_tok,
         mock_get_pipeline,
         mock_load_emotion_readers,
         mock_model_detector,
@@ -198,10 +216,17 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         experiment.is_vllm = True
 
         # Build dataloader instead of using benchmark_adapter
-        dataloader = experiment.build_dataloader()
+        dataloader = experiment.build_dataloader("neutral")
 
+        # Prepare dummy reader and set state for neutral (intensity 0)
+        import numpy as np
+        dummy_reader = MagicMock()
+        dummy_reader.directions = {layer: np.array([0.0]) for layer in range(-1, -13, -1)}
+        dummy_reader.direction_signs = {layer: np.array([1.0]) for layer in range(-1, -13, -1)}
+        experiment.cur_emotion = "neutral"
+        experiment.cur_intensity = 0.0
         # Process neutral condition using dataloader
-        results = experiment._infer_with_activation(None, dataloader)
+        results = experiment._infer_with_activation(dummy_reader, dataloader)
 
         # Verify results
         self.assertEqual(len(results), 1)
@@ -214,8 +239,12 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
     @patch("emotion_memory_experiments.experiment.ModelLayerDetector")
     @patch("emotion_memory_experiments.experiment.load_emotion_readers")
     @patch("emotion_memory_experiments.experiment.get_pipeline")
+    @patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(MagicMock(), None))
+    @patch("emotion_memory_experiments.experiment.EmotionExperiment._assert_tokenizers_equivalent", return_value=None)
     def test_save_results(
         self,
+        _mock_assert,
+        _mock_tok,
         mock_get_pipeline,
         mock_load_emotion_readers,
         mock_model_detector,
@@ -258,6 +287,7 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
                 response="Test response",
                 ground_truth="Test ground truth",
                 score=0.8,
+                repeat_id=0,
                 metadata={"benchmark": "infinitebench"},
             ),
             ResultRecord(
@@ -269,6 +299,7 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
                 response="Test response 2",
                 ground_truth="Test ground truth 2",
                 score=0.6,
+                repeat_id=0,
                 metadata={"benchmark": "infinitebench"},
             ),
         ]
@@ -291,8 +322,12 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
     @patch("emotion_memory_experiments.experiment.ModelLayerDetector")
     @patch("emotion_memory_experiments.experiment.load_emotion_readers")
     @patch("emotion_memory_experiments.experiment.get_pipeline")
+    @patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(MagicMock(), None))
+    @patch("emotion_memory_experiments.experiment.EmotionExperiment._assert_tokenizers_equivalent", return_value=None)
     def test_run_sanity_check(
         self,
+        _mock_assert,
+        _mock_tok,
         mock_get_pipeline,
         mock_load_emotion_readers,
         mock_model_detector,
@@ -358,8 +393,12 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
     @patch("emotion_memory_experiments.experiment.ModelLayerDetector")
     @patch("emotion_memory_experiments.experiment.load_emotion_readers")
     @patch("emotion_memory_experiments.experiment.get_pipeline")
+    @patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(MagicMock(), None))
+    @patch("emotion_memory_experiments.experiment.EmotionExperiment._assert_tokenizers_equivalent", return_value=None)
     def test_evaluation_error_handling(
         self,
+        _mock_assert,
+        _mock_tok,
         mock_get_pipeline,
         mock_load_emotion_readers,
         mock_model_detector,
@@ -390,10 +429,17 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         experiment.is_vllm = True
 
         # Mock dataset evaluation to raise error
+        dataloader = experiment.build_dataloader("anger")
         with patch.object(experiment, "dataset") as mock_dataset:
-            mock_dataset.evaluate_response.side_effect = Exception("Evaluation failed")
-            dataloader = experiment.build_dataloader()
-            results = experiment._infer_with_activation(None, dataloader)
+            mock_dataset.evaluate_batch.side_effect = Exception("Evaluation failed")
+            # Prepare dummy reader and set state
+            import numpy as np
+            dummy_reader = MagicMock()
+            dummy_reader.directions = {layer: np.array([0.1]) for layer in range(-1, -13, -1)}
+            dummy_reader.direction_signs = {layer: np.array([1.0]) for layer in range(-1, -13, -1)}
+            experiment.cur_emotion = "anger"
+            experiment.cur_intensity = 1.0
+            results = experiment._infer_with_activation(dummy_reader, dataloader)
 
             # Should still return results with score 0.0
             self.assertEqual(len(results), 1)

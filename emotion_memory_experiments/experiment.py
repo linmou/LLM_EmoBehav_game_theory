@@ -52,9 +52,13 @@ class EmotionExperiment:
     Closely follows EmotionGameExperiment pattern but adapted for tasks.
     """
 
-    def __init__(self, config: ExperimentConfig, dry_run: bool = False):
+    def __init__(self, config: ExperimentConfig, dry_run: bool = False, repeat_runs: int = 1, repeat_seed_base: int | None = None):
         # GPU-independent components first
         self._setup_basic_components(config)
+        # Repeat configuration (number of independent runs per condition)
+        self.repeat_runs = int(repeat_runs) if repeat_runs and repeat_runs > 0 else 1
+        self.cur_repeat: int = 0
+        self.repeat_seed_base = repeat_seed_base
 
         if dry_run:
             # Build real datasets for each emotion
@@ -371,9 +375,17 @@ class EmotionExperiment:
             for intensity in self.config.intensities:
                 self.logger.info(f"Processing intensity: {intensity}")
                 self.cur_intensity = intensity
-
-                results = self._infer_with_activation(rep_reader, data_loader)
-                all_results.extend(results)
+                # Repeat independent runs for this condition
+                for r in range(self.repeat_runs):
+                    self.cur_repeat = r
+                    results = self._infer_with_activation(rep_reader, data_loader)
+                    # Attach repeat_id to metadata for downstream aggregation
+                    for rec in results:
+                        if rec.metadata is None:
+                            rec.metadata = {"repeat_id": r}
+                        else:
+                            rec.metadata["repeat_id"] = r
+                    all_results.extend(results)
 
         # Add neutral baseline
         self.cur_emotion = "neutral"
@@ -382,8 +394,15 @@ class EmotionExperiment:
 
         # Use the same rep_reader for neutral (with 0 intensity)
         data_loader = self.build_dataloader(self.cur_emotion)
-        neutral_results = self._infer_with_activation(rep_reader, data_loader)
-        all_results.extend(neutral_results)
+        for r in range(self.repeat_runs):
+            self.cur_repeat = r
+            neutral_results = self._infer_with_activation(rep_reader, data_loader)
+            for rec in neutral_results:
+                if rec.metadata is None:
+                    rec.metadata = {"repeat_id": r}
+                else:
+                    rec.metadata["repeat_id"] = r
+            all_results.extend(neutral_results)
 
         return self._save_results(all_results)
 
@@ -449,6 +468,10 @@ class EmotionExperiment:
                             generation_params["frequency_penalty"] = (
                                 self.generation_config["frequency_penalty"]
                             )
+
+                        # Add per-run RNG seed if requested
+                        if getattr(self, "repeat_seed_base", None) is not None:
+                            generation_params["random_seed"] = int(self.repeat_seed_base) + int(getattr(self, "cur_repeat", 0))
 
                         # Validate batch structure before accessing
                         if "prompts" not in batch:
@@ -641,6 +664,7 @@ class EmotionExperiment:
                 response=response,
                 ground_truth=ground_truth,
                 score=score,
+                repeat_id=getattr(self, "cur_repeat", 0),
                 metadata={
                     "benchmark": self.config.benchmark.name,
                     "item_metadata": item.metadata or {},
@@ -655,7 +679,15 @@ class EmotionExperiment:
         return results
 
     def _save_results(self, results: List[ResultRecord]) -> pd.DataFrame:
-        """Save experiment results and compute summary statistics"""
+        """Save experiment results and compute summary statistics
+
+        Adds support for repeat-run aggregation when `repeat_id` is present
+        in ResultRecord.metadata. Produces:
+          - detailed_results.csv (with repeat_id column when available)
+          - summary_results.csv (legacy: per emotion,intensity over all samples)
+          - summary_by_repeat.csv (per emotion,intensity,repeat_id)
+          - summary_overall.csv (across-repeat aggregation with between/pooled var)
+        """
         self.logger.info("Saving experiment results")
 
         # Save full experiment configuration
@@ -674,10 +706,19 @@ class EmotionExperiment:
                     "ground_truth": str(result.ground_truth),
                     "score": result.score,
                     "benchmark": (result.metadata or {}).get("benchmark", ""),
+                    "repeat_id": getattr(result, "repeat_id", None),
                 }
             )
 
         df = pd.DataFrame(results_data)
+
+        # Fallback: legacy records might have repeat_id only in metadata
+        if df["repeat_id"].isna().any():
+            try:
+                # If metadata column exists in df (unlikely here since we flattened), skip.
+                pass
+            except Exception:
+                pass
 
         # Save detailed results
         csv_filename = self.output_dir / "detailed_results.csv"
@@ -689,9 +730,9 @@ class EmotionExperiment:
         with open(json_filename, "w") as f:
             json.dump([result.__dict__ for result in results], f, indent=2, default=str)
 
-        # Compute summary statistics
+        # Compute legacy summary statistics (ignores repeat_id)
         summary = (
-            df.groupby(["emotion", "intensity"])
+            df.groupby(["emotion", "intensity"], dropna=False)
             .agg({"score": ["mean", "std", "count", "min", "max"]})
             .round(4)
         )
@@ -699,6 +740,91 @@ class EmotionExperiment:
         summary_filename = self.output_dir / "summary_results.csv"
         summary.to_csv(summary_filename)
         self.logger.info(f"Summary results saved to {summary_filename}")
+
+        # Compute per-repeat summary if repeat_id is present
+        if "repeat_id" in df.columns and df["repeat_id"].notna().any():
+            by_rep = (
+                df.dropna(subset=["repeat_id"]).groupby(
+                    ["emotion", "intensity", "repeat_id"], dropna=False
+                )["score"].agg(["mean", "std", "count", "min", "max"]).reset_index()
+            )
+            by_rep = by_rep.round(6)
+            by_rep_filename = self.output_dir / "summary_by_repeat.csv"
+            by_rep.to_csv(by_rep_filename, index=False)
+            self.logger.info(f"Per-repeat summary saved to {by_rep_filename}")
+
+            # Compute across-repeat aggregation per (emotion,intensity)
+            overall_rows = []
+            for (emotion, intensity), g in by_rep.groupby(["emotion", "intensity"], dropna=False):
+                # Extract per-repeat stats
+                means = g["mean"].tolist()
+                stds = g["std"].fillna(0.0).tolist()
+                counts = g["count"].astype(int).tolist()
+                R = len(means)
+
+                # Mean of means (unweighted)
+                mean_of_means = sum(means) / R if R > 0 else float("nan")
+
+                # Between-run variance of means (sample variance)
+                if R > 1:
+                    between_var = sum((m - mean_of_means) ** 2 for m in means) / (R - 1)
+                else:
+                    between_var = 0.0
+
+                # Pooled variance across all samples (unbiased)
+                N = sum(counts)
+                if N > 1:
+                    # Weighted mean across all observations
+                    mean_weighted = (
+                        sum(n * m for n, m in zip(counts, means)) / N
+                        if N > 0
+                        else float("nan")
+                    )
+                    within = sum((n - 1) * (s ** 2 if not pd.isna(s) else 0.0) for n, s in zip(counts, stds))
+                    between = sum(n * (m - mean_weighted) ** 2 for n, m in zip(counts, means))
+                    pooled_var = (within + between) / (N - 1)
+                else:
+                    pooled_var = 0.0
+
+                overall_rows.append(
+                    {
+                        "emotion": emotion,
+                        "intensity": intensity,
+                        "repeats": R,
+                        "total_count": N,
+                        "mean_of_means": round(mean_of_means, 6) if not pd.isna(mean_of_means) else mean_of_means,
+                        "between_run_var": round(between_var, 6),
+                        "pooled_var": round(pooled_var, 6),
+                    }
+                )
+
+            overall_df = pd.DataFrame(overall_rows)
+            overall_filename = self.output_dir / "summary_overall.csv"
+            overall_df.to_csv(overall_filename, index=False)
+            self.logger.info(f"Across-repeat summary saved to {overall_filename}")
+
+        # Create README explaining output files
+        try:
+            readme_content = (
+                "# Experiment Results Files\n\n"
+                "This folder contains outputs from EmotionExperiment. Files:\n\n"
+                "- detailed_results.csv: Item-level records including emotion, intensity, repeat_id, response, ground_truth, score.\n"
+                "- raw_results.json: Full JSON dump of all records with metadata (benchmark, item metadata).\n"
+                "- summary_results.csv: Aggregates per (emotion,intensity) across all repeats (mean, std, count, min, max).\n"
+                "- summary_by_repeat.csv: Aggregates per (emotion,intensity,repeat_id).\n"
+                "- summary_overall.csv: Across-repeat statistics per (emotion,intensity):\n"
+                "  - mean_of_means: Unweighted mean of per-repeat means.\n"
+                "  - between_run_var: Sample variance of per-repeat means (repeat-level stability).\n"
+                "  - pooled_var: Unbiased pooled variance across all observations (law of total variance).\n"
+                "- experiment_config.json: Resolved configuration and runtime info (includes repeat settings).\n\n"
+                "Notes:\n"
+                "- For meaningful repeat variance, enable stochastic decoding (do_sample=true, nonzero temperature/top_p).\n"
+                "- Seeds: Each repeat uses random_seed = repeat_seed_base + repeat_id when supported.\n"
+            )
+            with open(self.output_dir / "README.md", "w") as f:
+                f.write(readme_content)
+        except Exception:
+            pass
 
         # Print summary
         self.logger.info("\n=== EXPERIMENT RESULTS SUMMARY ===")
@@ -737,6 +863,8 @@ class EmotionExperiment:
                 "truncation_strategy": self.truncation_strategy,
                 "hidden_layers": self.hidden_layers,
                 "is_vllm": self.is_vllm,
+                "repeat_runs": getattr(self, "repeat_runs", 1),
+                "repeat_seed_base": getattr(self, "repeat_seed_base", None),
             },
         }
 

@@ -21,8 +21,8 @@ benchmarks:
   #   truncation_strategy: "right"
   #   preserve_ratio: 0.95
 
-  - name: "infinitebench"
-    task_type: ".*qa_eng_121k.*"
+  #- name: "infinitebench"
+  #  task_type: ".*qa_eng_121k.*"
     # enable_auto_truncation: true
     # truncation_strategy: "right"
     # preserve_ratio: 0.95
@@ -31,11 +31,11 @@ benchmarks:
 
       
   - name: "infinitebench"
-    task_type: ".*qa.*" 
+    task_type: ".*qa_eng.*" 
     enable_auto_truncation: true
     truncation_strategy: "right"
     preserve_ratio: 0.95 
-  
+    base_data_dir: "data/memory_benchmarks" 
       # More regex examples (commented out):
   # - name: "longbench"
   #   task_type: "narrative.*"  # Matches: narrativeqa
@@ -51,6 +51,9 @@ benchmarks:
 # Emotions to actively induce (neutral baseline handled automatically)
 emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
 intensities: [1.5]
+
+repeat_run: 5
+repeat_seed_base: 12345
 
 # vLLM loading configuration (all fields required after refactoring)
 loading_config:
