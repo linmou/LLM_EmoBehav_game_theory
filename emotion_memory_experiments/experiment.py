@@ -4,6 +4,7 @@ Follows the pattern from emotion_game_experiment.py but adapted for otherbenchma
 """
 
 import json
+import re
 import logging
 import os
 import time
@@ -614,11 +615,15 @@ class EmotionExperiment:
                     response = output[0]["generated_text"].replace(prompt, "").strip()
                 responses.append(response)
 
+        # Normalize responses: strip leading empty <think> blocks if present
+        empty_think_prefix = re.compile(r"^\s*<think>\s*</think>\s*", re.IGNORECASE)
+        cleaned_responses = [empty_think_prefix.sub("", r or "") for r in responses]
+
         # Batch evaluation using LLM
         try:
             task_names = [self.config.benchmark.task_type] * len(responses)
             scores = self.dataset.evaluate_batch(
-                responses, batch_ground_truths, task_names, batch_prompts
+                cleaned_responses, batch_ground_truths, task_names, batch_prompts
             )
         except Exception as e:
             self.logger.error(f"Batch evaluation failed: {e}")
@@ -626,7 +631,7 @@ class EmotionExperiment:
 
         # Create result records with batch-computed scores
         for i, (response, score, prompt, item, ground_truth) in enumerate(
-            zip(responses, scores, batch_prompts, batch_items, batch_ground_truths)
+            zip(cleaned_responses, scores, batch_prompts, batch_items, batch_ground_truths)
         ):
             # Create result record (ensure types are not None)
             current_emotion = self.cur_emotion or "unknown"
