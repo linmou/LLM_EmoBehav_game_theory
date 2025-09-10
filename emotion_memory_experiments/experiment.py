@@ -17,9 +17,19 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
 
 import pandas as pd
-import torch
-from torch.utils.data import DataLoader
-from vllm import LLM
+try:
+    import torch  # type: ignore
+    from torch.utils.data import DataLoader  # type: ignore
+except Exception:
+    torch = None  # type: ignore
+    class DataLoader:  # type: ignore
+        pass
+try:
+    # Optional for dry-run; real import only needed for execution
+    from vllm import LLM  # type: ignore
+except Exception:
+    class LLM:  # Fallback dummy type to allow isinstance checks
+        pass
 
 from neuro_manipulation.configs.experiment_config import get_repe_eng_config
 from neuro_manipulation.model_layer_detector import ModelLayerDetector
