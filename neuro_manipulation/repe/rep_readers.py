@@ -6,27 +6,26 @@ from itertools import islice
 import torch
 
 def project_onto_direction(H, direction):
-    """Project matrix H (n, d_1) onto direction vector (d_2,)"""
-    # Calculate the magnitude of the direction vector
-     # Ensure H and direction are on the same device (CPU or GPU)
-    if type(direction) != torch.Tensor:
-        H = torch.Tensor(H).cuda()
-    if type(direction) != torch.Tensor:
-        direction = torch.Tensor(direction)
-        direction = direction.to(H.device)
+    """Project matrix H (n, d_1) onto direction vector (d_2,) in a device-safe way."""
+    if not isinstance(H, torch.Tensor):
+        H = torch.tensor(H)
+    if not isinstance(direction, torch.Tensor):
+        direction = torch.tensor(direction)
+    # Keep computations on the same device as H; avoid forcing CUDA
+    direction = direction.to(device=H.device, dtype=H.dtype)
     mag = torch.norm(direction)
     assert not torch.isinf(mag).any()
-    # Calculate the projection
     projection = H.matmul(direction) / mag
     return projection
 
 def recenter(x, mean=None):
-    x = torch.Tensor(x).cuda()
+    """Center features without forcing CUDA; use the tensor's device if any."""
+    xt = torch.tensor(x) if not isinstance(x, torch.Tensor) else x
     if mean is None:
-        mean = torch.mean(x,axis=0,keepdims=True).cuda()
+        mean_t = torch.mean(xt, dim=0, keepdims=True)
     else:
-        mean = torch.Tensor(mean).cuda()
-    return x - mean
+        mean_t = torch.tensor(mean).to(xt.device) if not isinstance(mean, torch.Tensor) else mean
+    return xt - mean_t
 
 class RepReader(ABC):
     """Class to identify and store concept directions.

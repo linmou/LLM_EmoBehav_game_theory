@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from .rep_readers import DIRECTION_FINDERS, RepReader
 from ..prompt_formats import ManualPromptFormat
+from .vlm_adapters import AdapterRegistry, AdapterContext
 
 class RepReadingPipeline(Pipeline):
 
@@ -65,6 +66,13 @@ class RepReadingPipeline(Pipeline):
         forward_params =  {}
         postprocess_params = {}
 
+        # Allow adapter to provide default rep token when set to 'auto' or None
+        if rep_token in (None, 'auto'):
+            name = getattr(self.tokenizer, 'name_or_path', '')
+            adapter = AdapterRegistry().get(name)
+            if adapter:
+                rep_token = adapter.rep_token_policy()
+
         forward_params['rep_token'] = rep_token
 
         if not isinstance(hidden_layers, list):
@@ -90,7 +98,10 @@ class RepReadingPipeline(Pipeline):
         return False
 
     def _prepare_multimodal_inputs(self, inputs: Union[Dict, List], **tokenizer_kwargs) -> Dict[str, Any]:
-        """Prepare multimodal inputs using the correct Qwen2.5-VL processor format."""
+        """Prepare multimodal inputs using VLM adapters when available.
+
+        Falls back to existing per-model logic if adapter is not matched.
+        """
         
         if isinstance(inputs, dict):
             images = inputs.get('images', inputs.get('image'))
@@ -110,6 +121,16 @@ class RepReadingPipeline(Pipeline):
                     else:
                         compressed_images.append(img)
                 images = compressed_images
+
+            # Try adapter-based processing first
+            try:
+                model_name = getattr(self.tokenizer, 'name_or_path', '')
+                adapter = AdapterRegistry().get(model_name)
+                if adapter is not None:
+                    ctx = AdapterContext(processor=self.image_processor, tokenizer=self.tokenizer, model=self.model)
+                    return adapter.process_multimodal(text=text, images=images, ctx=ctx, **tokenizer_kwargs)
+            except Exception as e:
+                print(f"Adapter processing failed, falling back: {e}")
             
             # Create proper message format for Qwen2.5-VL
             content = []
@@ -495,7 +516,25 @@ class RepReadingPipeline(Pipeline):
                 direction_finder.directions[layer] = direction_finder.directions[layer].astype(np.float32)
 
         if train_labels is not None:
-            direction_finder.direction_signs = direction_finder.get_signs(
-            hidden_states, train_labels, hidden_layers)
+            # Robustly handle empty or ill-formed label lists
+            flat_len = 0
+            try:
+                if isinstance(train_labels, list) and len(train_labels) > 0 and isinstance(train_labels[0], (list, np.ndarray)):
+                    flat_len = len(np.concatenate(train_labels))
+                elif isinstance(train_labels, (list, np.ndarray)):
+                    flat_len = len(train_labels)
+            except ValueError:
+                flat_len = 0
+
+            if flat_len > 0:
+                direction_finder.direction_signs = direction_finder.get_signs(
+                    hidden_states, train_labels, hidden_layers
+                )
+            else:
+                # Default to positive signs when labels are empty
+                n_comp = getattr(direction_finder, 'n_components', 1)
+                direction_finder.direction_signs = {
+                    layer: np.ones(n_comp) for layer in hidden_layers
+                }
         
         return direction_finder

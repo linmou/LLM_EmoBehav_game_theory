@@ -82,8 +82,8 @@ def load_emotion_readers(
 
         processor = auto_load_processor(config["model_name_or_path"])
         if processor is None:
-            print("❌ Multimodal mode selected but processor loading failed")
-            raise ValueError("Cannot load AutoProcessor for multimodal model")
+            print("⚠️  Multimodal mode requested but processor unavailable; falling back to text-only mode")
+            experiment_mode = "text_only"
 
     print(f"✓ Experiment mode: {experiment_mode}")
     for reason in feasibility["reasons"]:
@@ -91,7 +91,7 @@ def load_emotion_readers(
 
     # Build args dict including multimodal parameters
     args = {
-        "emotions": Emotions.get_emotions(),
+        "emotions": config.get("emotions", Emotions.get_emotions()),
         "data_dir": config["data_dir"],
         "model_name_or_path": config["model_name_or_path"],
         "rep_token": config["rep_token"],
@@ -122,6 +122,7 @@ def load_emotion_readers(
         tokenizer=tokenizer,
         enable_thinking=enable_thinking,
         multimodal_intent=(experiment_mode == "multimodal"),
+        emotions=config.get("emotions"),
     )
 
     # Create appropriate pipeline based on experiment mode

@@ -175,6 +175,7 @@ def primary_emotions_concept_dataset(
     seed=0,
     multimodal_intent=False,
     enable_thinking=False,
+    emotions=None,
 ):
     """
     Create dataset of emotion scenarios using proper model-specific prompt formatting.
@@ -225,7 +226,14 @@ def primary_emotions_concept_dataset(
         assistant_tag = ""
         prompt_format = None  # Will use manual formatting
 
-    emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
+    emotions = emotions or [
+        "happiness",
+        "sadness",
+        "anger",
+        "fear",
+        "disgust",
+        "surprise",
+    ]
 
     # Auto-detect data type directly from content in data_dir
     data_status = detect_emotion_data_type(data_dir, emotions)
@@ -276,48 +284,37 @@ def primary_emotions_concept_dataset(
         c_e, o_e = raw_data[emotion], np.concatenate(other_emotions_data)
         random.shuffle(o_e)
 
-        data = [[c, o] for c, o in zip(c_e, o_e)]
+        pairs = [[c, o] for c, o in zip(c_e, o_e)]
         train_labels = []
-        for d in data:
-            true_s = d[0]
-            random.shuffle(d)
-            train_labels.append([s == true_s for s in d])
+        if len(pairs) == 0:
+            # Skip emotion if we can't form any pairs
+            continue
+        for p in pairs:
+            true_s = p[0]
+            random.shuffle(p)
+            train_labels.append([s == true_s for s in p])
 
-        data = np.concatenate(data).tolist()
-        data_ = np.concatenate([[c, o] for c, o in zip(c_e, o_e)]).tolist()
+        try:
+            flat_train = np.concatenate(pairs).tolist()
+            data_ = np.concatenate([[c, o] for c, o in zip(c_e, o_e)]).tolist()
+        except ValueError:
+            # Safeguard for empty concat edge cases
+            continue
 
         # Helper function to format a single scenario
         def format_scenario(scenario):
             if should_use_multimodal and is_multimodal_data:
                 # Scenario is an image path - load the image relative to data_dir
                 try:
-                    # Image paths in JSON are relative to data_dir
                     full_image_path = Path(data_dir) / scenario
-
                     if full_image_path.exists():
                         pil_image = Image.open(full_image_path).convert("RGB")
-
-                        # Use same user_message structure as text mode for consistency
-                        user_message = f"Consider the emotion of the following scenario:\nScenario: [IMAGE]\nAnswer:"
-
-                        # Format text prompt
-                        if prompt_format is not None:
-                            formatted_prompt = prompt_format.build(
-                                system_prompt, [user_message], [], [pil_image]
-                            )
-                        else:
-                            if system_prompt:
-                                formatted_prompt = f"{user_tag} {system_prompt}\n\n{user_message} {assistant_tag} "
-                            else:
-                                formatted_prompt = (
-                                    f"{user_tag} {user_message} {assistant_tag} "
-                                )
-
-                        return {"images": [pil_image], "text": formatted_prompt}
+                        # Keep text simple; adapters will apply the correct chat template
+                        user_message = "Consider the emotion of the following scenario:"
+                        return {"images": [pil_image], "text": user_message}
                     else:
                         print(f"⚠️  Image not found: {full_image_path}")
                         return None
-
                 except Exception as e:
                     print(f"⚠️  Failed to load image {scenario}: {e}")
                     return None
@@ -350,16 +347,26 @@ def primary_emotions_concept_dataset(
             if formatted_data_item is not None:
                 emotion_test_data.append(formatted_data_item)
 
-        for scenario in data:
-            formatted_data_item = format_scenario(scenario)
-            if formatted_data_item is not None:
-                emotion_train_data.append(formatted_data_item)
+        # Format training data in pairs to keep labels aligned and filter invalid items
+        kept_labels = []
+        for idx in range(0, len(flat_train), 2):
+            s0 = format_scenario(flat_train[idx])
+            s1 = format_scenario(flat_train[idx + 1]) if idx + 1 < len(flat_train) else None
+            if s0 is not None and s1 is not None:
+                emotion_train_data.extend([s0, s1])
+                # Each idx//2 corresponds to a pair label
+                kept_labels.append(train_labels[idx // 2])
+
+        if len(emotion_train_data) == 0 or len(kept_labels) == 0:
+            # Skip emotion if nothing valid remains
+            continue
 
         formatted_data[emotion] = {
-            "train": {"data": emotion_train_data, "labels": train_labels},
+            "train": {"data": emotion_train_data, "labels": kept_labels},
             "test": {
                 "data": emotion_test_data,
-                "labels": [[1, 0] * len(emotion_test_data)],
+                # Placeholder labels; not used for PCA fitting
+                "labels": [[1, 0] * (len(emotion_test_data) // 2)],
             },
         }
 
@@ -380,17 +387,60 @@ def test_direction(
     results = {layer: {} for layer in hidden_layers}
     rep_readers_means = {layer: 0 for layer in hidden_layers}
 
+    # Prepare labels for evaluation if provided
+    raw_labels = test_data.get("labels")
+
     for layer in hidden_layers:
-        H_test = [H[layer] for H in H_tests]
-        rep_readers_means[layer] = np.mean(H_test)
-        H_test = [H_test[i : i + 2] for i in range(0, len(H_test), 2)]
+        # Flatten per-sample projections for this layer
+        layer_vals = [H[layer] for H in H_tests]
+        rep_readers_means[layer] = np.mean(layer_vals)
+        # Group into pairs
+        pairs = [layer_vals[i : i + 2] for i in range(0, len(layer_vals), 2)]
 
-        sign = rep_reader.direction_signs[layer]
+        # Resolve sign to scalar (+1 or -1)
+        sign_val = rep_reader.direction_signs.get(layer, 1)
+        try:
+            sign_scalar = float(np.ravel(sign_val)[0])
+        except Exception:
+            sign_scalar = float(sign_val)
 
-        eval_func = min if sign == -1 else max
-        cors = np.mean([eval_func(H) == H[0] for H in H_test])
+        eval_func = min if sign_scalar == -1.0 else max
 
-        results[layer] = cors
+        # Determine true index per pair from labels when available
+        true_indices = []
+        if raw_labels is not None:
+            # Case A: list of pair lists (e.g., [[1,0],[0,1],...])
+            if isinstance(raw_labels, list) and len(raw_labels) > 0 and isinstance(raw_labels[0], (list, np.ndarray)) and len(raw_labels) == len(pairs):
+                for lab in raw_labels:
+                    try:
+                        true_indices.append(int(list(lab).index(1)))
+                    except ValueError:
+                        true_indices.append(0)
+            else:
+                # Case B: flattened labels possibly nested once: [[1,0,1,0,...]] or [1,0,1,0,...]
+                flat = None
+                try:
+                    if isinstance(raw_labels, list) and len(raw_labels) == 1 and isinstance(raw_labels[0], (list, np.ndarray)):
+                        flat = list(raw_labels[0])
+                    elif isinstance(raw_labels, (list, np.ndarray)):
+                        flat = list(raw_labels)
+                except Exception:
+                    flat = None
+                if flat is not None and len(flat) >= 2 * len(pairs):
+                    for i in range(len(pairs)):
+                        sl = flat[2 * i : 2 * i + 2]
+                        try:
+                            true_indices.append(int(list(sl).index(1)))
+                        except ValueError:
+                            true_indices.append(0)
+        # Default when labels unavailable or malformed
+        if not true_indices:
+            true_indices = [0 for _ in pairs]
+
+        correctness = [
+            (eval_func(pair) == pair[idx_true]) for pair, idx_true in zip(pairs, true_indices)
+        ]
+        results[layer] = float(np.mean(correctness)) if correctness else 0.0
 
     return results, rep_readers_means
 
@@ -487,6 +537,7 @@ def detect_multimodal_model(model_name_or_path):
         "gemma-3-4b",
         "gemma-3-12b",
         "gemma-3-27b",
+        "glm-edge",  # GLM Edge VLMs
     ]
 
     model_name_upper = str(model_name_or_path).upper()
@@ -532,6 +583,11 @@ def auto_load_processor(model_name_or_path, vram_optimized=True):
         processor = AutoProcessor.from_pretrained(
             model_name_or_path, trust_remote_code=True
         )
+
+        # Verify processor has image capability; otherwise return None
+        if not (hasattr(processor, "image_processor") or hasattr(processor, "feature_extractor")):
+            print(f"⚠️  Loaded processor lacks image capability for {model_name_or_path}; returning None")
+            return None
 
         # Apply VRAM optimizations
         if vram_optimized and hasattr(processor, "image_processor"):
@@ -623,7 +679,7 @@ def load_model_tokenizer(
                     "tensor_parallel_size": get_optimal_tensor_parallel_size(
                         model_name_or_path
                     ),
-                    "max_model_len": 32768,
+                    "max_model_len": 8192,
                     "trust_remote_code": True,
                     "enforce_eager": True,
                     "gpu_memory_utilization": 0.90,
@@ -631,6 +687,10 @@ def load_model_tokenizer(
                     "seed": 42,
                     "disable_custom_all_reduce": False,
                 }
+            # DTYPE POLICY for vLLM: prefer bfloat16 for Gemma-3
+            name_lower = str(model_name_or_path).lower()
+            if "gemma-3" in name_lower:
+                vllm_kwargs["dtype"] = "bfloat16"
             model = LLM(**vllm_kwargs)
 
         except Exception as e:
@@ -645,22 +705,28 @@ def load_model_tokenizer(
             config = AutoConfig.from_pretrained(
                 model_name_or_path, token=True, trust_remote_code=True
             )
+            # GLM-Edge: prefer single-GPU placement to avoid cross-device image/text tensors
+            name_lower = str(model_name_or_path).lower()
+            single_gpu_map = {"": 0} if ("glm-edge" in name_lower) else "auto"
+
+            # DTYPE POLICY: Prefer bfloat16 for Gemma-3 to avoid NaNs; float16 otherwise
+            preferred_dtype = torch.bfloat16 if ("gemma-3" in name_lower) else torch.float16
             # Check if the model has architectures that suggest it's a causal LM
             if hasattr(config, "architectures") and config.architectures:
                 # If any architecture name contains "ForCausalLM", use AutoModelForCausalLM
                 if any("ForCausalLM" in arch for arch in config.architectures):
                     model = AutoModelForCausalLM.from_pretrained(
                         model_name_or_path,
-                        torch_dtype=torch.float16,
-                        device_map="auto",
+                        torch_dtype=preferred_dtype,
+                        device_map=single_gpu_map,
                         token=True,
                         trust_remote_code=True,
                     ).eval()
                 else:
                     model = AutoModel.from_pretrained(
                         model_name_or_path,
-                        torch_dtype=torch.float16,
-                        device_map="auto",
+                        torch_dtype=preferred_dtype,
+                        device_map=single_gpu_map,
                         token=True,
                         trust_remote_code=True,
                     ).eval()
@@ -668,14 +734,23 @@ def load_model_tokenizer(
                 # Fallback to AutoModel if we can't determine
                 model = AutoModel.from_pretrained(
                     model_name_or_path,
-                    torch_dtype=torch.float16,
-                    device_map="auto",
+                    torch_dtype=preferred_dtype,
+                    device_map=single_gpu_map,
                     token=True,
                     trust_remote_code=True,
                 ).eval()
         except:
             # If config loading fails, fallback to AutoModel
-            model = AutoModel.from_pretrained(model_name_or_path, torch_dtype=torch.float16, device_map="auto", token=True, trust_remote_code=True).eval()
+            name_lower = str(model_name_or_path).lower()
+            single_gpu_map = {"": 0} if ("glm-edge" in name_lower) else "auto"
+            preferred_dtype = torch.bfloat16 if ("gemma-3" in name_lower) else torch.float16
+            model = AutoModel.from_pretrained(
+                model_name_or_path,
+                torch_dtype=preferred_dtype,
+                device_map=single_gpu_map,
+                token=True,
+                trust_remote_code=True,
+            ).eval()
     try:
         use_fast_tokenizer = True
         tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False, token=True, trust_remote_code=True)
@@ -685,18 +760,12 @@ def load_model_tokenizer(
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = 0
 
-    # Auto-load processor for multimodal models
+    # Auto-load processor for multimodal models by attempting processor load first
     processor = None
     if auto_load_multimodal:
-        is_multimodal = detect_multimodal_model(model_name_or_path)
-        if is_multimodal:
-            processor = auto_load_processor(model_name_or_path)
-            if processor:
-                print(f"✓ Detected multimodal model: {model_name_or_path}")
-            else:
-                raise Exception(
-                    f"Multimodal model detected but processor loading failed: {model_name_or_path}"
-                )
+        processor = auto_load_processor(model_name_or_path)
+        if processor is not None:
+            print(f"✓ Detected multimodal model: {model_name_or_path}")
         else:
             print(f"✓ Detected text-only model: {model_name_or_path}")
 
@@ -963,8 +1032,12 @@ def all_emotion_rep_reader(
 
     emotion_rep_readers = {"layer_acc": {}}
     for emotion in tqdm(emotions):
+        if emotion not in data:
+            continue
         train_data = data[emotion]["train"]
         test_data = data[emotion]["test"]
+        if not train_data["data"] or not train_data["labels"]:
+            continue
         rep_reader, layer_acc = get_rep_reader(
             rep_reading_pipeline=rep_reading_pipeline,
             train_data=train_data,

@@ -1,0 +1,48 @@
+experiment:
+  name: "Test_MM_Smoke_Prisoners_GLM"
+
+  games:
+    - "Prisoners_Dilemma"
+
+  models:
+    - "/data/home/jjl7137/huggingface_models/google/gemma-3-4b-it"
+
+  game:
+    name: "Prisoners_Dilemma"
+    previous_actions_length: 0
+
+  data:
+    generate: false
+    num_scenarios: 6
+    batch_size: 2
+
+  llm:
+    model_name: "/data/home/jjl7137/huggingface_models/zai-org/glm-edge-v-2b"
+    generation_config:
+      temperature: 0.7
+      do_sample: true
+      top_p: 0.95
+      max_new_tokens: 64
+
+  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
+  repeat: 1
+
+  emotions:
+    - "happiness"
+    - "sadness"
+    - "anger"
+
+  intensity: [1.0]
+  run_sanity_check: true
+
+  output:
+    base_dir: "results/Test_MM_Smoke_Prisoners_GLM"
+    save_plots: false
+    plot_format: "png"
+
+repe_config:
+  multimodal_intent: true
+  data_dir: "data/repeng_generated_images"
+  emotions: ["happiness", "sadness", "anger", "fear", "surprise", "disgust"]
+  rebuild: true
+  batch_size: 2
