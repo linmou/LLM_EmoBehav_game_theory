@@ -156,7 +156,6 @@ class BaseBenchmarkDataset(Dataset, ABC):
         }
 
 
-
     def _apply_truncation(self, items: List[BenchmarkItem]) -> List[BenchmarkItem]:
         """
         Faster truncation:
@@ -275,6 +274,25 @@ class BaseBenchmarkDataset(Dataset, ABC):
 
         return all_truncated_items
 
+
+    def _load_raw_data(self) -> List[Dict[str, Any]]:
+        """
+        Load raw JSON data from file.
+        Common loading logic used by all benchmark types.
+        """
+        data_path = self.config.get_data_path()
+        if not data_path.exists():
+            raise FileNotFoundError(f"Benchmark data not found: {data_path}")
+
+        # Load based on file extension
+        if data_path.suffix == ".jsonl":
+            with open(data_path, "r", encoding="utf-8") as f:
+                raw_data = [json.loads(line) for line in f if line.strip()]
+        else:
+            with open(data_path, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+
+        return raw_data
 
     def evaluate_batch(
         self,
