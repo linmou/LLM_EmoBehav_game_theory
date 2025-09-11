@@ -31,7 +31,7 @@ benchmarks:
 
       
   - name: "infinitebench"
-    task_type: ".*qa_eng.*" 
+    task_type: "longbook_qa_eng" 
     enable_auto_truncation: true
     truncation_strategy: "right"
     preserve_ratio: 0.95 
@@ -101,4 +101,4 @@ pipeline_queue_size: 2
 output_dir: "results/memory_emotion_docQA_series"
 
 # Optional: run only sanity checks instead of full experiments
-run_sanity_check: true
+run_sanity_check: false
