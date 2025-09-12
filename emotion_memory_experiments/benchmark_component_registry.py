@@ -211,6 +211,11 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
+    ("infinitebench", "longbook_qa_eng_121k"): BenchmarkSpec(
+        dataset_class=InfiniteBenchDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongContextQAPromptWrapper,
+    ),
     ("infinitebench", "longbook_qa_chn"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,

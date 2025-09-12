@@ -31,8 +31,8 @@ benchmarks:
 
       
   - name: "infinitebench"
-    task_type: "longbook_qa_eng" 
-    enable_auto_truncation: true
+    task_type: "longbook_qa_eng_121k" 
+    enable_auto_truncation: false
     truncation_strategy: "right"
     preserve_ratio: 0.95 
     base_data_dir: "data/memory_benchmarks" 

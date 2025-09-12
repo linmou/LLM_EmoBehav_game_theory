@@ -276,10 +276,10 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
 
         # JSON response format instruction
         json_instr = (
-            "\n\nTask: Rate your agreement with the statement below. "
+            "\n\nTask: Rate your agreement with the statement above."
             "You can say your current emotion but do not just describe your current emotion, also describe its matching of the statement. Do not say you are an AI.\n"
-            "Respond in JSON only, exactly in the form: "
-            "{'rational': 'brief paraphrase of the statement and justification (1–2 sentences)', 'choice': <number>}. "
+            "Respond in JSON only, exactly in the form: {'choice': <number> }"
+            # "{'rational': 'brief justification (1–2 sentences)', 'choice': <number>}. "
             "Return only the JSON, no extra text."
         )
 
