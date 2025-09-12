@@ -29,6 +29,11 @@ benchmarks:
 emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
 intensities: [1.5]
 
+# Repeat settings for stability across stochastic decoding
+# These are consumed by memory_experiment_series_runner and EmotionExperiment
+repeat_runs: 5           # number of independent runs per (emotion,intensity)
+repeat_seed_base: 12345  # base RNG seed; each run uses base+repeat_id
+
 # Lightweight defaults; edit as needed when running full experiments
 loading_config:
   model_path: null

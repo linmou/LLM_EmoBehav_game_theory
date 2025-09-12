@@ -723,6 +723,7 @@ def load_model_only(
                 ).eval()
         except:
             # If config loading fails, fallback to AutoModel
+
             model = AutoModel.from_pretrained(
                 model_name_or_path,
                 torch_dtype=torch.float16,

@@ -23,6 +23,7 @@ class TestDataModels(unittest.TestCase):
             response="12345",
             ground_truth="12345",
             score=1.0,
+            repeat_id=0,
             metadata={"test": "data"}
         )
         
@@ -43,7 +44,8 @@ class TestDataModels(unittest.TestCase):
             prompt="test prompt",
             response="test response",
             ground_truth="test ground truth",
-            score=0.5
+            score=0.5,
+            repeat_id=0,
         )
         
         self.assertIsNone(result.metadata)

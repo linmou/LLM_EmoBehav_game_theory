@@ -1,16 +1,19 @@
 experiment:
-  name: "Qwen2.5_MM_Series_Prisoners_Dilemma"
+  name: "Mamba_Series_Prisoners_Dilemma"
   
   # List of games to run experiments with
   games:
     - "Prisoners_Dilemma"
   
   # List of models to run experiments with
-  models: 
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-7B-Instruct"
-    # Add more models as needed
-  
+  models:
+    # - "/data/home/jjl7137/huggingface_models/state-spaces/mamba-370m-hf"
+    - "/data/home/jjl7137/huggingface_models/state-spaces/mamba-790m-hf"
+      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba-1.4b-hf"
+      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba-2.8b-hf"
+      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba2-370m"
+      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba2-780m"
+
   game:
     name: "Prisoners_Dilemma"  # Default game if needed
     # Additional game parameters
@@ -30,6 +33,8 @@ experiment:
       top_p: 0.95
       max_new_tokens: 440
 
+  batch_size: 50
+
   # Template for system message with placeholders
   system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
   
@@ -38,10 +43,10 @@ experiment:
   emotions:
     - "anger"
     - "happiness"
-    - "sadness"
-    - "disgust"
-    - "fear"
-    - "surprise"
+      #- "sadness"
+      #- "disgust"
+      #- "fear"
+      #- "surprise"
 
   intensity:
     - 1.5
@@ -49,14 +54,6 @@ experiment:
   run_sanity_check: false
 
   output:
-    base_dir: "results/Qwen2.5_MM_Series_Prisoners_Dilemma_repeng_images"
+    base_dir: "results/Mamba_Series_Prisoners_Dilemma"
     save_plots: true
-    plot_format: "png"
-
-# New repe_config section for multimodal configuration
-repe_config:
-  # Essential for multimodal processing
-  multimodal_intent: true
-  data_dir: "data/dalle_gen_images"  # Points to directory with emotion JSON files
-  emotions: ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
-  rebuild: false
+    plot_format: "png" 

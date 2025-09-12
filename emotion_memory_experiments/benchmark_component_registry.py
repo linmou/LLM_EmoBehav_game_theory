@@ -211,6 +211,11 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
+    ("infinitebench", "longbook_qa_eng_121k"): BenchmarkSpec(
+        dataset_class=InfiniteBenchDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=LongContextQAPromptWrapper,
+    ),
     ("infinitebench", "longbook_qa_chn"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
@@ -361,7 +366,7 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         answer_wrapper_class=EmotionAnswerWrapper,
         prompt_wrapper_class=EmotionCheckPromptWrapper,
     ),
-    # New academic scale task using the same dataset and wrapper
+    # Professional Academic scale task using the same dataset and wrapper
     ("emotion_check", "academic_scale"): BenchmarkSpec(
         dataset_class=EmotionCheckDataset,
         answer_wrapper_class=EmotionAnswerWrapper,

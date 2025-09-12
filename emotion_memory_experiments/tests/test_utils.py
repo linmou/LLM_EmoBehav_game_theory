@@ -177,11 +177,13 @@ def create_mock_benchmark_config(task_type: str = 'passkey', num_items: int = 10
         name='infinitebench' if task_type != 'locomo' else 'locomo',
         data_path=temp_file,
         task_type=task_type,
+        base_data_dir='test_data',
         sample_limit=num_items,
         augmentation_config=None,
         enable_auto_truncation=False,
         truncation_strategy="right",
-        preserve_ratio=0.8
+        preserve_ratio=0.8,
+        llm_eval_config=None
     )
 
 

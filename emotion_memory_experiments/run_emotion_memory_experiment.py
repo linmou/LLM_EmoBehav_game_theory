@@ -288,7 +288,9 @@ def validate_config(config_dict: Dict[str, Any]) -> bool:
 
 
 def run_experiment(
-    config_path: Path, dry_run: bool = False, debug: bool = False
+    config_path: Path, dry_run: bool = False, debug: bool = False,
+    repeat_runs: int | None = None,
+    repeat_seed_base: int | None = None,
 ) -> bool:
     """Run emotion memory experiment from configuration file"""
 
@@ -308,6 +310,11 @@ def run_experiment(
 
         # Create experiment configuration
         exp_config = create_experiment_config(config_dict)
+
+        # Pull execution overrides from config if not provided via args
+        exec_cfg = normalize_config_format(config_dict).get("execution", {})
+        rr = repeat_runs if repeat_runs is not None else exec_cfg.get("repeat_runs")
+        rsb = repeat_seed_base if repeat_seed_base is not None else exec_cfg.get("repeat_seed_base")
 
         print(f"\n🚀 EMOTION MEMORY EXPERIMENT")
         print(f"Model: {exp_config.model_path}")
@@ -348,7 +355,7 @@ def run_experiment(
 
         repe_pipeline_registry()
         # Create and run experiment
-        experiment = EmotionExperiment(exp_config)
+        experiment = EmotionExperiment(exp_config, repeat_runs=rr or 1, repeat_seed_base=rsb)
         logger.info(f"Starting emotion memory experiment")
 
         # Run the experiment
@@ -501,6 +508,15 @@ Examples:
         help="Create a sample configuration file",
     )
 
+    parser.add_argument(
+        "--repeat-runs", type=int, default=None,
+        help="Number of independent repeats per condition",
+    )
+    parser.add_argument(
+        "--repeat-seed-base", type=int, default=None,
+        help="Base random seed added to repeat index for stochastic decoding",
+    )
+
     args = parser.parse_args()
 
     # Handle sample config creation
@@ -513,7 +529,13 @@ Examples:
         parser.error("Config file required (or use --create-sample)")
 
     # Run experiment
-    success = run_experiment(args.config, dry_run=args.dry_run, debug=args.debug)
+    success = run_experiment(
+        args.config,
+        dry_run=args.dry_run,
+        debug=args.debug,
+        repeat_runs=args.repeat_runs,
+        repeat_seed_base=args.repeat_seed_base,
+    )
     return 0 if success else 1
 
 

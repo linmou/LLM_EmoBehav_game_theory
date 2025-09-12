@@ -8,6 +8,8 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
+from copy import deepcopy
+from typing import List
 
 from torch.utils.data import Dataset
 
@@ -153,91 +155,125 @@ class BaseBenchmarkDataset(Dataset, ABC):
             "ground_truths": [item["ground_truth"] for item in batch_items],
         }
 
+
     def _apply_truncation(self, items: List[BenchmarkItem]) -> List[BenchmarkItem]:
         """
-        Apply truncation to contexts that exceed max_context_length, processing
-        in batches to manage memory usage.
+        Faster truncation:
+        - Uses return_offsets_mapping to slice the original string (no batch_decode).
+        - Only constructs truncated strings for items that actually exceed the limit.
+        - Falls back to batch_decode if the tokenizer isn't "fast".
         """
-        # Define a batch size. This should ideally be an attribute of your class,
-        # e.g., self.batch_size, configured during initialization.
-        batch_size = 32  # You can adjust this value based on your available memory.
+        batch_size = getattr(self, "batch_size", 32)
+        self.tokenizer.truncation_side = self.truncation_strategy  # "left" or "right"
+        max_len = self.max_context_length
+        use_fast = getattr(self.tokenizer, "is_fast", False)
 
-        all_truncated_items = []
-        self.tokenizer.truncation_side = self.truncation_strategy
+        all_truncated_items: List[BenchmarkItem] = []
 
-        # Process the items in batches
         for i in range(0, len(items), batch_size):
-            # Create a slice of the list for the current batch
             batch_items = items[i : i + batch_size]
 
-            # Separate items with None contexts from those that need processing
-            items_to_process = []
-            contexts_to_tokenize = []
-            original_indices = []
+            # Collect contexts to process (preserve indices to rebuild)
+            idxs, contexts = [], []
+            for j, it in enumerate(batch_items):
+                if it.context is not None:
+                    idxs.append(j)
+                    contexts.append(it.context or "")
 
+            truncated_texts = []
+            if contexts:
+                if use_fast:
+                    # Single pass: get full offsets; decide slice by strategy
+                    enc = self.tokenizer(
+                        contexts,
+                        add_special_tokens=False,
+                        padding=False,
+                        truncation=False,  # get full tokenization (no trunc yet)
+                        return_offsets_mapping=True,
+                        return_attention_mask=False,
+                        return_token_type_ids=False,
+                    )
+                    offsets_batch = enc["offset_mapping"]
+
+                    if self.truncation_strategy == "right":
+                        for text, offsets in zip(contexts, offsets_batch):
+                            if len(offsets) <= max_len:
+                                truncated_texts.append(text)
+                                continue
+                            # first max_len tokens
+                            window = offsets[:max_len]
+                            # find the furthest valid end char
+                            end_char = 0
+                            for s, e in window:
+                                if e and e > end_char:
+                                    end_char = e
+                            truncated_texts.append(text[:end_char])
+                    else:  # "left"
+                        for text, offsets in zip(contexts, offsets_batch):
+                            if len(offsets) <= max_len:
+                                truncated_texts.append(text)
+                                continue
+                            # last max_len tokens
+                            window = offsets[-max_len:]
+                            # find the earliest valid start char in the kept window
+                            start_char = None
+                            for s, e in window:
+                                if s is not None and (start_char is None or s < start_char):
+                                    start_char = s
+                            truncated_texts.append(text[start_char:] if start_char else text)
+                else:
+                    # Fallback for slow tokenizers (no offsets available)
+                    enc = self.tokenizer(
+                        contexts,
+                        add_special_tokens=False,
+                        truncation=True,
+                        max_length=max_len,
+                        return_tensors=None,
+                        padding=False,
+                    )
+                    truncated_texts = self.tokenizer.batch_decode(
+                        enc["input_ids"], skip_special_tokens=True
+                    )
+
+            # Rebuild results for this batch
+            k = 0
             for j, item in enumerate(batch_items):
-                if item.context is not None:
-                    items_to_process.append(item)
-                    contexts_to_tokenize.append(item.context or "")
-                    original_indices.append(j)
+                if item.context is None:
+                    all_truncated_items.append(
+                        BenchmarkItem(
+                            id=item.id,
+                            context=None,
+                            input_text=item.input_text,
+                            ground_truth=item.ground_truth,
+                            metadata=deepcopy(item.metadata) if item.metadata else None,
+                        )
+                    )
+                    continue
 
-            # Process contexts that are not None
-            if contexts_to_tokenize:
-                # Tokenize the batch of contexts
-                tokenized_result = self.tokenizer(
-                    contexts_to_tokenize,
-                    add_special_tokens=False,
-                    truncation=True,
-                    max_length=self.max_context_length,
-                    return_tensors=None,  # Return lists, not tensors
-                    padding=False,  # No padding needed
-                )
+                original_context = item.context or ""
+                truncated_context = truncated_texts[k]
+                k += 1
 
-                # Decode the batch of tokenized inputs back to text
-                truncated_contexts = self.tokenizer.batch_decode(
-                    tokenized_result["input_ids"], skip_special_tokens=True
-                )
-            else:
-                truncated_contexts = []
+                md = deepcopy(item.metadata) if item.metadata else {}
+                md["truncation_info"] = {
+                    "original_length": len(original_context),
+                    "truncated_length": len(truncated_context),
+                    "strategy": self.truncation_strategy,
+                    "was_truncated": len(truncated_context) < len(original_context),
+                }
 
-            # Create new BenchmarkItem objects for the processed batch
-            processed_idx = 0
-            for j, item in enumerate(batch_items):
-                if item.context is not None:
-                    # Process items that had contexts
-                    original_context = item.context or ""
-                    truncated_context = truncated_contexts[processed_idx]
-                    processed_idx += 1
-
-                    # Always add truncation_info for processed contexts
-                    metadata = deepcopy(item.metadata) if item.metadata else {}
-                    metadata["truncation_info"] = {
-                        "original_length": len(original_context),
-                        "truncated_length": len(truncated_context),
-                        "strategy": self.truncation_strategy,
-                        "was_truncated": len(truncated_context) < len(original_context),
-                    }
-
-                    truncated_item = BenchmarkItem(
+                all_truncated_items.append(
+                    BenchmarkItem(
                         id=item.id,
                         context=truncated_context,
                         input_text=item.input_text,
                         ground_truth=item.ground_truth,
-                        metadata=metadata,
+                        metadata=md,
                     )
-                else:
-                    # Preserve None contexts as-is
-                    truncated_item = BenchmarkItem(
-                        id=item.id,
-                        context=None,
-                        input_text=item.input_text,
-                        ground_truth=item.ground_truth,
-                        metadata=deepcopy(item.metadata) if item.metadata else None,
-                    )
-
-                all_truncated_items.append(truncated_item)
+                )
 
         return all_truncated_items
+
 
     def _load_raw_data(self) -> List[Dict[str, Any]]:
         """

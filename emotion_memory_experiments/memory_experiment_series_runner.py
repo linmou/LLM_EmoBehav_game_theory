@@ -515,8 +515,21 @@ class MemoryExperimentSeriesRunner:
 
         # Import and create experiment with dry_run parameter
         from .experiment import EmotionExperiment
-        
-        experiment = EmotionExperiment(experiment_config, dry_run=self.dry_run)
+
+        # Allow configuring repeat runs and seed base from config. Support both
+        # top-level keys and nested under an optional 'execution' section.
+        exec_cfg = self.base_config.get("execution", {})
+        repeat_runs = self.base_config.get("repeat_runs", exec_cfg.get("repeat_runs"))
+        repeat_seed_base = self.base_config.get(
+            "repeat_seed_base", exec_cfg.get("repeat_seed_base")
+        )
+
+        experiment = EmotionExperiment(
+            experiment_config,
+            dry_run=self.dry_run,
+            repeat_runs=repeat_runs or 1,
+            repeat_seed_base=repeat_seed_base,
+        )
         
         if self.dry_run:
             # Validate that datasets were created successfully
