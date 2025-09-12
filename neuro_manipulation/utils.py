@@ -182,8 +182,8 @@ def primary_emotions_concept_dataset(
 
     Args:
         data_dir: Directory containing emotion JSON files (anger.json, happiness.json, etc.)
-                 - For text mode: data_dir = "data/text/" containing text scenarios in JSONs
-                 - For image mode: data_dir = "data/image/" containing image paths in JSONs
+                 - For text mode: data_dir = "data/stimulus/text/" containing text scenarios in JSONs
+                 - For image mode: data_dir = "data/stimulus/image/" containing image paths in JSONs
         model_name: Name of the model to format prompts for
         tokenizer: Optional tokenizer for more accurate prompt formatting
         system_prompt: Optional system prompt, if None no system prompt will be used
