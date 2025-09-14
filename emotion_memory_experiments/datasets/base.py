@@ -303,9 +303,14 @@ class BaseBenchmarkDataset(Dataset, ABC):
     ) -> List[float]:
         """
         ThreadPoolExecutor-based batch evaluation using individual evaluate_response calls.
+
+        Captures per-item errors and exposes them via `self._last_eval_errors` so callers
+        can persist error details alongside scores.
         """
         from concurrent.futures import ThreadPoolExecutor
 
+        self._last_eval_errors = [None] * len(responses)  # type: ignore[attr-defined]
+        scores: List[float] = []
         with ThreadPoolExecutor(max_workers=min(8, len(responses))) as executor:
             futures = [
                 executor.submit(self.evaluate_response, resp, gt, task, prompt)
@@ -313,7 +318,13 @@ class BaseBenchmarkDataset(Dataset, ABC):
                     responses, ground_truths, task_names, prompts
                 )
             ]
-            return [future.result() for future in futures]
+            for i, future in enumerate(futures):
+                try:
+                    scores.append(future.result())
+                except Exception as e:  # Capture per-item error and continue
+                    self._last_eval_errors[i] = str(e)  # type: ignore[index]
+                    scores.append(float("nan"))
+        return scores
 
     def evaluate_with_detailed_metrics(
         self, response: str, ground_truth: Any, task_name: str

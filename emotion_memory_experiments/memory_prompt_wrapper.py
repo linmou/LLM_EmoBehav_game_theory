@@ -206,7 +206,7 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
     system_prompt_format = (
         "You are an adult completing a psychological questionnaire. "
         "Answer in first person as yourself. Do not mention being an AI, do not refuse; "
-        "if unsure, choose the closest option. Output exactly the requested JSON without extra text."
+        "Please choose one of the following options to answer, if unsure, choose the closest option. Output exactly the requested JSON without extra text."
         # "Please reflect on your current emotion and think about its negative impact on your decision making. Try to get rid of it then answer the question."
     )
 
@@ -224,13 +224,17 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
                 "4 = Agree",
                 "5 = Strongly Agree",
             ]
-            return "\n\nOptions (choose one number):\n" + "\n".join(anchors)
+            return "\n\nOptions :\n" + "\n".join(anchors)
 
         if not options:
             return ""
 
-        lines = [f"{i+1}. {opt}" for i, opt in enumerate(options)]
-        return "\n\nOptions (choose one number):\n" + "\n".join(lines)
+        # For academic_scale, options often already include numbering; print as-is
+        if self.task_type == "academic_scale":
+            lines = [str(opt) for opt in options]
+        else:
+            lines = [f"{i+1}. {opt}" for i, opt in enumerate(options)]
+        return "\n\nOptions :\n" + "\n".join(lines)
 
     def system_prompt(
         self,
@@ -266,7 +270,7 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
         else:
             base_user_msg = str(base_user)
 
-        question_part = question or ""
+        question_part = question
         options_part = self._format_options_numeric(options)
 
         # Emotion priming to reduce deflection and bias toward active state
@@ -276,11 +280,10 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
 
         # JSON response format instruction
         json_instr = (
-            "\n\nTask: Rate your agreement with the statement above."
-            "You can say your current emotion but do not just describe your current emotion, also describe its matching of the statement. Do not say you are an AI.\n"
-            "Respond in JSON only, exactly in the form: {'choice': <number> }"
-            # "{'rational': 'brief justification (1–2 sentences)', 'choice': <number>}. "
-            "Return only the JSON, no extra text."
+            "\n\nTask: Answer using one of the listed options."
+            " Respond in JSON only, exactly in the form: {'response': '<copy the chosen option text exactly>' }"
+            " Do not output a number or letter label; return the option text itself."
+            " Return only the JSON, no extra text."
         )
 
         user_content = (

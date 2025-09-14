@@ -21,9 +21,10 @@ class ResultRecord:
     prompt: str
     response: str
     ground_truth: Any
-    score: float
+    score: Optional[float]
     repeat_id: int
     metadata: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
 
 
 @dataclass

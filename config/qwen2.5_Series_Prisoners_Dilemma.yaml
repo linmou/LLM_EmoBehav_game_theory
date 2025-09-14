@@ -10,9 +10,9 @@ experiment:
     - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
     - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
     - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-14B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-32B-Instruct"
+      #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
+      #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-14B-Instruct"
+      #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-32B-Instruct"
     # Add more models as needed
   
   game:
@@ -55,6 +55,6 @@ experiment:
   run_sanity_check: false
 
   output:
-    base_dir: "results/Qwen2.5_Series_Prisoners_Dilemma_dataFrom4.1"
+    base_dir: "results/Qwen2.5_Series_Prisoners_Dilemma"
     save_plots: true
     plot_format: "png" 

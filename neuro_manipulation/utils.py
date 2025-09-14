@@ -801,13 +801,7 @@ def detect_emotion_data_type(data_dir, emotions=None):
     if emotions is None:
         emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
 
-    if not data_dir or not Path(data_dir).exists():
-        return {
-            "data_type": "none",
-            "available_emotions": [],
-            "total_samples": {},
-            "is_multimodal_data": False,
-        }
+    assert data_dir and Path(data_dir).exists(), f"The {data_dir} does not exist."
 
     available_emotions = []
     total_samples = {}

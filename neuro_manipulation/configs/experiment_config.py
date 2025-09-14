@@ -20,34 +20,17 @@ def update_repe_config_from_yaml(base_repe_config, yaml_config):
     """
     updated_config = base_repe_config.copy()
     
-    # 1. Direct repe_config section updates (highest priority)
-    if 'repe_config' in yaml_config:
+    if 'repe_config' in yaml_config: 
+        # back compatability for experiments in neuro_manipulation 
         repe_section = yaml_config['repe_config']
-        for key, value in repe_section.items():
-            updated_config[key] = value
-            print(f"✓ Updated repe_config.{key} = {value}")
-    
-    # 2. Experiment-level mappings (if not overridden above)
-    if 'experiment' in yaml_config:
-        experiment = yaml_config['experiment']
+    else:
+        # Direct repe_config section updates
+        repe_section = yaml_config
         
-        # Map emotions
-        if 'emotions' in experiment and 'emotions' not in yaml_config.get('repe_config', {}):
-            updated_config['emotions'] = experiment['emotions']
-            print(f"✓ Updated emotions from experiment.emotions = {experiment['emotions']}")
+    for key, value in repe_section.items():
+        updated_config[key] = value
+        print(f"✓ Updated repe_config.{key} = {value}")
         
-        # Map data directory
-        if 'data' in experiment and 'data_dir' in experiment['data']:
-            if 'data_dir' not in yaml_config.get('repe_config', {}):
-                updated_config['data_dir'] = experiment['data']['data_dir']
-                print(f"✓ Updated data_dir from experiment.data.data_dir = {experiment['data']['data_dir']}")
-        
-        # Map model name (fallback if not set in repe_config)
-        if 'llm' in experiment and 'model_name' in experiment['llm']:
-            if 'model_name_or_path' not in yaml_config.get('repe_config', {}):
-                updated_config['model_name_or_path'] = experiment['llm']['model_name']
-                print(f"✓ Updated model_name_or_path from experiment.llm.model_name = {experiment['llm']['model_name']}")
-    
     return updated_config
 
 def get_repe_eng_config(model_name, yaml_config_path=None, yaml_config=None):
