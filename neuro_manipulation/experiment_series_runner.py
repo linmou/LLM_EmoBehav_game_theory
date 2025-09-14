@@ -344,7 +344,7 @@ class ExperimentSeriesRunner:
             exp_config['experiment']['game'] = {}
         
         game_name = GameNames.from_string(game_name_str)
-        repe_eng_config = get_repe_eng_config(model_name, yaml_config=exp_config)
+        repe_eng_config = get_repe_eng_config(model_name, yaml_config=exp_config['experiment'])
         game_config = get_game_config(game_name)
         
         # Apply game-specific configurations if available
