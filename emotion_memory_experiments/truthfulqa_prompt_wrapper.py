@@ -9,10 +9,12 @@ Interface Compatibility:
   various parameters to all prompt wrappers uniformly
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, TYPE_CHECKING
 
-from neuro_manipulation.prompt_formats import PromptFormat
 from neuro_manipulation.prompt_wrapper import PromptWrapper
+
+if TYPE_CHECKING:
+    from neuro_manipulation.prompt_formats import PromptFormat
 
 
 class TruthfulQAPromptWrapper(PromptWrapper):
@@ -23,7 +25,7 @@ class TruthfulQAPromptWrapper(PromptWrapper):
     for both MC1 and MC2 variants.
     """
 
-    def __init__(self, prompt_format: PromptFormat, task_type: str = "mc1"):
+    def __init__(self, prompt_format: "PromptFormat", task_type: str = "mc1"):
         """
         Initialize TruthfulQA prompt wrapper.
 

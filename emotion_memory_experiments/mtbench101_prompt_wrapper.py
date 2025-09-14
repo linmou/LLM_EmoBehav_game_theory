@@ -3,10 +3,12 @@ MTBench101 Prompt Wrapper for conversational evaluation tasks.
 Unified wrapper for all 13 MTBench101 task types with task-specific system prompts.
 """
 
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
-from neuro_manipulation.prompt_formats import PromptFormat
 from neuro_manipulation.prompt_wrapper import PromptWrapper
+
+if TYPE_CHECKING:
+    from neuro_manipulation.prompt_formats import PromptFormat
 
 
 class MTBench101PromptWrapper(PromptWrapper):
@@ -52,7 +54,7 @@ class MTBench101PromptWrapper(PromptWrapper):
         "default": "You are a helpful AI assistant engaged in a conversation. Respond naturally to continue the dialogue."
     }
 
-    def __init__(self, prompt_format: PromptFormat, task_type: Optional[str] = None):
+    def __init__(self, prompt_format: "PromptFormat", task_type: Optional[str] = None):
         """
         Initialize MTBench101 prompt wrapper.
 
