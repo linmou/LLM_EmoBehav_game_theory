@@ -145,7 +145,14 @@ class BaseBenchmarkDataset(Dataset, ABC):
             else:
                 prompt = f"{item.input_text}\nAnswer:"
 
-        return {"item": item, "prompt": prompt, "ground_truth": item.ground_truth}
+        # Apply answer wrapper if provided to adapt ground truth
+        adapted_ground_truth = (
+            self.answer_wrapper(item.ground_truth)
+            if self.answer_wrapper is not None
+            else item.ground_truth
+        )
+
+        return {"item": item, "prompt": prompt, "ground_truth": adapted_ground_truth}
 
     def collate_fn(self, batch_items: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Collate function for DataLoader"""
