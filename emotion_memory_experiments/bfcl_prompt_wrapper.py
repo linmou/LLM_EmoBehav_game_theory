@@ -8,14 +8,16 @@ tool schema included in the system prompt. Supports:
 """
 
 import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
-from neuro_manipulation.prompt_formats import PromptFormat
 from neuro_manipulation.prompt_wrapper import PromptWrapper
+
+if TYPE_CHECKING:
+    from neuro_manipulation.prompt_formats import PromptFormat
 
 
 class BFCLPromptWrapper(PromptWrapper):
-    def __init__(self, prompt_format: PromptFormat, task_type: str) -> None:
+    def __init__(self, prompt_format: "PromptFormat", task_type: str) -> None:
         super().__init__(prompt_format)
         self.task_type = task_type
 

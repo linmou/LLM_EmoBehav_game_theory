@@ -10,10 +10,12 @@ Notes:
 - The key name "reational" follows the user’s explicit specification.
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, TYPE_CHECKING
 
-from neuro_manipulation.prompt_formats import PromptFormat
 from neuro_manipulation.prompt_wrapper import PromptWrapper
+
+if TYPE_CHECKING:
+    from neuro_manipulation.prompt_formats import PromptFormat
 
 
 class FantomPromptWrapper(PromptWrapper):
@@ -26,7 +28,7 @@ class FantomPromptWrapper(PromptWrapper):
         "Return only the JSON object, no extra text."
     )
 
-    def __init__(self, prompt_format: PromptFormat):
+    def __init__(self, prompt_format: "PromptFormat"):
         super().__init__(prompt_format)
 
     def _format_options(self, options: Optional[List[str]]) -> str:

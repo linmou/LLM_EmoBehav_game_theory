@@ -29,7 +29,7 @@ Example Usage:
 
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TYPE_CHECKING
 
 from neuro_manipulation.prompt_wrapper import PromptWrapper
 
@@ -46,17 +46,20 @@ from .memory_prompt_wrapper import (
     EmotionCheckPromptWrapper,
 )
 from .data_models import BenchmarkConfig
-from .dataset_factory import create_dataset_from_config
-from .datasets.base import BaseBenchmarkDataset
-from .datasets.emotion_check import EmotionCheckDataset
-from .datasets.infinitebench import InfiniteBenchDataset
-from .datasets.locomo import LoCoMoDataset
-from .datasets.longbench import LongBenchDataset
 from .datasets.mtbench101 import MTBench101Dataset
+from .datasets.infinitebench import InfiniteBenchDataset
+from .datasets.longbench import LongBenchDataset
+from .datasets.bfcl import BFCLDataset
+from .datasets.locomo import LoCoMoDataset
 from .datasets.truthfulqa import TruthfulQADataset
 from .datasets.fantom import FantomDataset
+from .datasets.emotion_check import EmotionCheckDataset
+def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
+    from .dataset_factory import create_dataset_from_config as _real_create
+    return _real_create(*args, **kwargs)
+if TYPE_CHECKING:
+    from .datasets.base import BaseBenchmarkDataset
 from .fantom_prompt_wrapper import FantomPromptWrapper
-from .datasets.bfcl import BFCLDataset
 from .bfcl_prompt_wrapper import BFCLPromptWrapper
 
 
@@ -69,7 +72,7 @@ class BenchmarkSpec:
     and dataset class should be used together for a given benchmark and task.
     """
 
-    dataset_class: Type[BaseBenchmarkDataset]
+    dataset_class: "Type[BaseBenchmarkDataset]"
     answer_wrapper_class: Type[AnswerWrapper]
 
     prompt_wrapper_class: Optional[Type[PromptWrapper]] = None
@@ -83,7 +86,7 @@ class BenchmarkSpec:
         augmentation_config: Optional[Dict] = None,
         user_messages: str = "Please provide your answer.",
         **dataset_kwargs,
-    ) -> Tuple[Callable, Callable, BaseBenchmarkDataset]:
+    ) -> Tuple[Callable, Callable, Any]:
         """
         Create all three components using this specification.
 
@@ -149,62 +152,24 @@ class BenchmarkSpec:
 # Registry mapping (benchmark_name, task_type) to component specifications
 # This is the single source of truth for component relationships
 BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
-    # MTBench101 tasks - use uppercase task types as per the actual dataset
-    ("mtbench101", "CM"): BenchmarkSpec(
-        dataset_class=MTBench101Dataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MTBench101PromptWrapper,
-    ),
-    ("mtbench101", "EX"): BenchmarkSpec(
-        dataset_class=MTBench101Dataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MTBench101PromptWrapper,
-    ),
-    ("mtbench101", "HU"): BenchmarkSpec(
-        dataset_class=MTBench101Dataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MTBench101PromptWrapper,
-    ),
-    ("mtbench101", "RO"): BenchmarkSpec(
-        dataset_class=MTBench101Dataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MTBench101PromptWrapper,
-    ),
-    ("mtbench101", "SI"): BenchmarkSpec(
-        dataset_class=MTBench101Dataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MTBench101PromptWrapper,
-    ),
-    ("mtbench101", "WR"): BenchmarkSpec(
+    # MTBench101: all tasks share the same spec
+    ("mtbench101", "*"): BenchmarkSpec(
         dataset_class=MTBench101Dataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=MTBench101PromptWrapper,
     ),
     # Memory benchmarks - InfiniteBench
+    # Default for most tasks
+    ("infinitebench", "*"): BenchmarkSpec(
+        dataset_class=InfiniteBenchDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MemoryPromptWrapper,
+    ),
+    # Overrides
     ("infinitebench", "passkey"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=PasskeyPromptWrapper,
-    ),
-    ("infinitebench", "number_string"): BenchmarkSpec(
-        dataset_class=InfiniteBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MemoryPromptWrapper,
-    ),
-    ("infinitebench", "kv_retrieval"): BenchmarkSpec(
-        dataset_class=InfiniteBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MemoryPromptWrapper,
-    ),
-    ("infinitebench", "longbook_sum_eng"): BenchmarkSpec(
-        dataset_class=InfiniteBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MemoryPromptWrapper,
-    ),
-    ("infinitebench", "longbook_choice_eng"): BenchmarkSpec(
-        dataset_class=InfiniteBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MemoryPromptWrapper,
     ),
     ("infinitebench", "longbook_qa_eng"): BenchmarkSpec(
         dataset_class=InfiniteBenchDataset,
@@ -221,98 +186,11 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
-    ("infinitebench", "math_calc"): BenchmarkSpec(
-        dataset_class=InfiniteBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MemoryPromptWrapper,
-    ),
-    ("infinitebench", "math_find"): BenchmarkSpec(
-        dataset_class=InfiniteBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MemoryPromptWrapper,
-    ),
-    ("infinitebench", "code_run"): BenchmarkSpec(
-        dataset_class=InfiniteBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MemoryPromptWrapper,
-    ),
-    ("infinitebench", "code_debug"): BenchmarkSpec(
-        dataset_class=InfiniteBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MemoryPromptWrapper,
-    ),
     # Memory benchmarks - LongBench
-    ("longbench", "narrativeqa"): BenchmarkSpec(
+    ("longbench", "*"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongContextQAPromptWrapper,
-    ),
-    ("longbench", "qasper"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=LongContextQAPromptWrapper,
-    ),
-    ("longbench", "multifieldqa_en"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=LongContextQAPromptWrapper,
-    ),
-    ("longbench", "multifieldqa_zh"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "hotpotqa"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=LongContextQAPromptWrapper,
-    ),
-    ("longbench", "2wikimqa"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "musique"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "dureader"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "gov_report"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "qmsum"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "multi_news"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "vcsum"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "trec"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "triviaqa"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "samsum"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "lsht"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "passage_count"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
     ),
     ("longbench", "passage_retrieval_en"): BenchmarkSpec(
         dataset_class=LongBenchDataset,
@@ -323,14 +201,6 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongbenchRetrievalPromptWrapper,
-    ),
-    ("longbench", "lcc"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-    ),
-    ("longbench", "repobench-p"): BenchmarkSpec(
-        dataset_class=LongBenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
     ),
     # BFCL benchmark
     ("bfcl", "live_simple"): BenchmarkSpec(
@@ -360,31 +230,14 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=TruthfulQAPromptWrapper,
     ),
-    # Emotion Check benchmark - special case with EmotionAnswerWrapper
-    ("emotion_check", "emotion_check"): BenchmarkSpec(
+    # Emotion Check benchmark - all tasks use the same wrapper
+    ("emotion_check", "*"): BenchmarkSpec(
         dataset_class=EmotionCheckDataset,
         answer_wrapper_class=EmotionAnswerWrapper,
         prompt_wrapper_class=EmotionCheckPromptWrapper,
     ),
-    # Professional Academic scale task using the same dataset and wrapper
-    ("emotion_check", "academic_scale"): BenchmarkSpec(
-        dataset_class=EmotionCheckDataset,
-        answer_wrapper_class=EmotionAnswerWrapper,
-        prompt_wrapper_class=EmotionCheckPromptWrapper,
-    ),
-    # FANToM – initial easy tasks
-    (
-        "fantom",
-        "short_answerability_binary_inaccessible",
-    ): BenchmarkSpec(
-        dataset_class=FantomDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=FantomPromptWrapper,
-    ),
-    (
-        "fantom",
-        "short_belief_choice_inaccessible",
-    ): BenchmarkSpec(
+    # FANToM – allow wildcard for shared wrapper
+    ("fantom", "*"): BenchmarkSpec(
         dataset_class=FantomDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=FantomPromptWrapper,
@@ -402,7 +255,7 @@ def create_benchmark_components(
     augmentation_config: Optional[Dict] = None,
     user_messages: str = "Please provide your answer.",
     **dataset_kwargs,
-) -> Tuple[Callable, Callable, BaseBenchmarkDataset]:
+) -> Tuple[Callable, Callable, Any]:
     """
     Factory function to create all benchmark processing components from registry.
 
@@ -439,15 +292,17 @@ def create_benchmark_components(
     # Normalize benchmark name for consistent lookup, but preserve task_type case
     benchmark_key = (benchmark_name.lower(), task_type)
 
-    if benchmark_key not in BENCHMARK_SPECS:
-        # Provide helpful error message with available options
+    spec: Optional[BenchmarkSpec] = BENCHMARK_SPECS.get(benchmark_key)
+    if spec is None:
+        # Fallback to wildcard default like (name, "*") to reduce duplication
+        wildcard_key = (benchmark_name.lower(), "*")
+        spec = BENCHMARK_SPECS.get(wildcard_key)
+    if spec is None:
         available_combinations = list(BENCHMARK_SPECS.keys())
         raise KeyError(
             f"Unknown benchmark combination: ({benchmark_name}, {task_type}). "
             f"Available combinations: {available_combinations}"
         )
-
-    spec = BENCHMARK_SPECS[benchmark_key]
 
     return spec.create_components(
         config=config,

@@ -4,10 +4,12 @@ Integrates with neuro_manipulation.prompt_wrapper.PromptWrapper for proper model
 """
 
 import re
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
-from neuro_manipulation.prompt_formats import PromptFormat
 from neuro_manipulation.prompt_wrapper import PromptWrapper
+
+if TYPE_CHECKING:
+    from neuro_manipulation.prompt_formats import PromptFormat
 
 
 class MemoryPromptWrapper(PromptWrapper):
@@ -47,7 +49,7 @@ class MemoryPromptWrapper(PromptWrapper):
         "neutral": {"prefix": " ", "suffix": " I remember this feeling."},
     }
 
-    def __init__(self, prompt_format: PromptFormat):
+    def __init__(self, prompt_format: "PromptFormat"):
         super().__init__(prompt_format)
 
     def _format_options(self, options: Optional[list]) -> str:
@@ -210,7 +212,7 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
         # "Please reflect on your current emotion and think about its negative impact on your decision making. Try to get rid of it then answer the question."
     )
 
-    def __init__(self, prompt_format: PromptFormat, task_type: Optional[str] = None):
+    def __init__(self, prompt_format: "PromptFormat", task_type: Optional[str] = None):
         super().__init__(prompt_format)
         self.task_type = task_type
 

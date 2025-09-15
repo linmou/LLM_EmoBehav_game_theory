@@ -3,9 +3,11 @@ Universal benchmark prompt wrapper factory.
 Clean design for extensible benchmark integration.
 """
 
-from typing import Union
-from neuro_manipulation.prompt_formats import PromptFormat
+from typing import Union, TYPE_CHECKING
 from neuro_manipulation.prompt_wrapper import PromptWrapper
+
+if TYPE_CHECKING:
+    from neuro_manipulation.prompt_formats import PromptFormat
 
 # Import existing memory benchmark wrappers
 from .memory_prompt_wrapper import (
@@ -29,7 +31,7 @@ from .bfcl_prompt_wrapper import BFCLPromptWrapper
 def get_benchmark_prompt_wrapper(
     benchmark_name: str, 
     task_type: str, 
-    prompt_format: PromptFormat
+    prompt_format: "PromptFormat"
 ) -> PromptWrapper:
     """
     Universal factory for all benchmark prompt wrappers.

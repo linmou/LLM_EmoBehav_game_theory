@@ -288,40 +288,52 @@ class MTBench101Dataset(BaseBenchmarkDataset):
     def _parse_conversations(
         self, conversations: List[Dict[str, Any]]
     ) -> List[BenchmarkItem]:
-        """Parse conversation format into BenchmarkItem objects"""
-        items = []
+        """Parse conversations into per-round BenchmarkItem objects.
+
+        For each conversation with N rounds, produce N items (one per round).
+        If the task is in SKIP_FIRST_TASKS, skip round 1.
+        """
+        items: List[BenchmarkItem] = []
 
         for conversation in conversations:
-            # Extract conversation components
             task = conversation["task"]
             conv_id = conversation["id"]
             history = conversation["history"]
 
-            # Parse user and assistant messages
-            user_messages = [turn["user"] for turn in history]
-            assistant_messages = [turn["bot"] for turn in history]
+            # Extract full lists once
+            all_user = [turn["user"] for turn in history]
+            all_assistant = [turn["bot"] for turn in history]
 
-            # Last assistant message is ground truth for evaluation
-            ground_truth = assistant_messages[-1] if assistant_messages else ""
+            # Determine start index based on skip-first policy
+            start_round = 1 if task in self.SKIP_FIRST_TASKS else 0
 
-            # Create BenchmarkItem
-            item = BenchmarkItem(
-                id=f"{task}_{conv_id}",
-                input_text=(user_messages, assistant_messages),  # Store as tuple
-                context=None,  # Not used for MTBench101
-                ground_truth=ground_truth,
-                metadata={
-                    "task": task,
-                    "conversation_id": conv_id,
-                    "user_messages": user_messages,
-                    "assistant_messages": assistant_messages[
-                        :-1
-                    ],  # All but last for context
-                    "full_conversation": conversation,  # Preserve original
-                },
-            )
+            for r in range(start_round, len(history)):
+                # Per-round slices include turns up to round r (inclusive)
+                user_messages = all_user[: r + 1]
+                assistant_messages = all_assistant[: r + 1]
 
-            items.append(item)
+                ground_truth = assistant_messages[-1] if assistant_messages else ""
+
+                # Round-aware id, keep a compact suffix
+                item_id = f"{task}_{conv_id}_r{r+1}"
+
+                items.append(
+                    BenchmarkItem(
+                        id=item_id,
+                        input_text=(user_messages, assistant_messages),
+                        context=None,
+                        ground_truth=ground_truth,
+                        metadata={
+                            "task": task,
+                            "conversation_id": conv_id,
+                            # Context assistant messages exclude the current round
+                            "user_messages": user_messages,
+                            "assistant_messages": assistant_messages[:-1],
+                            "full_conversation": conversation,
+                            "round_index": r + 1,
+                        },
+                    )
+                )
 
         return items
 

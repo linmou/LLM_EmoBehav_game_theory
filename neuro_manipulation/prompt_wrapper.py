@@ -1,11 +1,14 @@
-from neuro_manipulation.prompt_formats import PromptFormat
-from games.game import GameDecision
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from neuro_manipulation.prompt_formats import PromptFormat
+    from games.game import GameDecision
 
 
 class PromptWrapper:
     system_prompt_format = 'You are an average American.' 
     
-    def __init__(self, prompt_format: PromptFormat):
+    def __init__(self, prompt_format: "PromptFormat"):
         self.prompt_format = prompt_format
         
     def system_prompt(self, event, options):
@@ -26,7 +29,7 @@ class ReactionPromptWrapper(PromptWrapper):
 class GameReactPromptWrapper(PromptWrapper):
     system_prompt_format = "You are Alice. You are in the following situation: {event}. "
     
-    def __init__(self, prompt_format: PromptFormat, response_format: GameDecision):
+    def __init__(self, prompt_format: "PromptFormat", response_format: "GameDecision"):
         super().__init__(prompt_format)
         self.response_format = response_format
         assert hasattr(response_format, 'example') and callable(getattr(response_format, 'example')), f"response_format should have an example method"
@@ -37,7 +40,7 @@ class GameReactPromptWrapper(PromptWrapper):
     "\n" + self.format_instruction()
     
     def format_instruction(self):
-        return f"response in json format, with the following structure: {self.response_format.example()}"
+        return f"You must choose one option to response. Don't write your own choice or modified choice. Response in json format, with the following structure: {self.response_format.example()}"
     
     def __call__(self, event, options, user_messages, enable_thinking=False):
         return self.prompt_format.build(self.system_prompt(event, options), self.user_messages(user_messages), enable_thinking=enable_thinking)
