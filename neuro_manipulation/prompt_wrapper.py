@@ -40,7 +40,7 @@ class GameReactPromptWrapper(PromptWrapper):
     "\n" + self.format_instruction()
     
     def format_instruction(self):
-        return f"response in json format, with the following structure: {self.response_format.example()}"
+        return f"You must choose one option to response. Don't write your own choice or modified choice. Response in json format, with the following structure: {self.response_format.example()}"
     
     def __call__(self, event, options, user_messages, enable_thinking=False):
         return self.prompt_format.build(self.system_prompt(event, options), self.user_messages(user_messages), enable_thinking=enable_thinking)
