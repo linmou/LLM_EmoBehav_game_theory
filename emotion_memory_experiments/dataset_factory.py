@@ -31,28 +31,30 @@ from .data_models import (
 )
 from .datasets.base import BaseBenchmarkDataset
 
-# Import all specialized dataset classes
-from .datasets.emotion_check import EmotionCheckDataset
-from .datasets.infinitebench import InfiniteBenchDataset
-from .datasets.locomo import LoCoMoDataset
-from .datasets.longbench import LongBenchDataset
-from .datasets.mtbench101 import MTBench101Dataset
-from .datasets.truthfulqa import TruthfulQADataset
-from .datasets.fantom import FantomDataset
-from .datasets.bfcl import BFCLDataset
+# Note: The authoritative mapping now lives in BENCHMARK_SPECS
+# We derive the name -> dataset class map from it to avoid duplication.
+_OVERRIDES: Dict[str, Type[BaseBenchmarkDataset]] = {}
 
-# Registry mapping benchmark names to dataset classes
-# This eliminates if-else chains entirely!
-DATASET_REGISTRY: Dict[str, Type[BaseBenchmarkDataset]] = {
-    "emotion_check": EmotionCheckDataset,
-    "infinitebench": InfiniteBenchDataset,
-    "longbench": LongBenchDataset,
-    "locomo": LoCoMoDataset,
-    "mtbench101": MTBench101Dataset,
-    "truthfulqa": TruthfulQADataset,
-    "fantom": FantomDataset,
-    "bfcl": BFCLDataset,
-}
+
+def _derive_registry_from_specs() -> Dict[str, Type[BaseBenchmarkDataset]]:
+    from .benchmark_component_registry import BENCHMARK_SPECS
+
+    derived: Dict[str, Type[BaseBenchmarkDataset]] = {}
+    for (name, _task), spec in BENCHMARK_SPECS.items():
+        key = name.lower().strip()
+        cls = spec.dataset_class
+        if key in derived and derived[key] is not cls:
+            raise ValueError(
+                f"Conflicting dataset classes for benchmark '{name}': "
+                f"{derived[key].__name__} vs {cls.__name__}"
+            )
+        derived[key] = cls
+    return derived
+
+
+# Back-compat export for tests and users; this is a view, not a hand-maintained registry
+DATASET_REGISTRY: Dict[str, Type[BaseBenchmarkDataset]] = _derive_registry_from_specs()
+DATASET_REGISTRY.update(_OVERRIDES)
 
 
 def create_dataset_from_config(
@@ -94,7 +96,7 @@ def create_dataset_from_config(
     # Normalize benchmark name for case-insensitive lookup
     benchmark_name = config.name.lower().strip()
 
-    # Registry lookup (no if-else chains!)
+    # Registry lookup derived from BENCHMARK_SPECS (no if-else chains!)
     dataset_class = DATASET_REGISTRY.get(benchmark_name)
 
     if dataset_class is None:
@@ -150,6 +152,7 @@ def register_dataset_class(
 
     # Normalize name for consistent lookup
     normalized_name = benchmark_name.lower().strip()
+    _OVERRIDES[normalized_name] = dataset_class
     DATASET_REGISTRY[normalized_name] = dataset_class
 
 
@@ -188,7 +191,13 @@ def unregister_dataset_class(benchmark_name: str) -> bool:
         False
     """
     normalized_name = benchmark_name.lower().strip()
-    return DATASET_REGISTRY.pop(normalized_name, None) is not None
+    removed_override = _OVERRIDES.pop(normalized_name, None)
+    # Recompute the exported registry view
+    base = _derive_registry_from_specs()
+    base.update(_OVERRIDES)
+    DATASET_REGISTRY.clear()
+    DATASET_REGISTRY.update(base)
+    return removed_override is not None
 
 
 def get_dataset_class(benchmark_name: str) -> Optional[Type[BaseBenchmarkDataset]]:

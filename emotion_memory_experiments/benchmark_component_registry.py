@@ -46,6 +46,14 @@ from .memory_prompt_wrapper import (
     EmotionCheckPromptWrapper,
 )
 from .data_models import BenchmarkConfig
+from .datasets.mtbench101 import MTBench101Dataset
+from .datasets.infinitebench import InfiniteBenchDataset
+from .datasets.longbench import LongBenchDataset
+from .datasets.bfcl import BFCLDataset
+from .datasets.locomo import LoCoMoDataset
+from .datasets.truthfulqa import TruthfulQADataset
+from .datasets.fantom import FantomDataset
+from .datasets.emotion_check import EmotionCheckDataset
 def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
     from .dataset_factory import create_dataset_from_config as _real_create
     return _real_create(*args, **kwargs)
@@ -64,7 +72,7 @@ class BenchmarkSpec:
     and dataset class should be used together for a given benchmark and task.
     """
 
-    dataset_class: str
+    dataset_class: "Type[BaseBenchmarkDataset]"
     answer_wrapper_class: Type[AnswerWrapper]
 
     prompt_wrapper_class: Optional[Type[PromptWrapper]] = None
@@ -146,91 +154,91 @@ class BenchmarkSpec:
 BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
     # MTBench101: all tasks share the same spec
     ("mtbench101", "*"): BenchmarkSpec(
-        dataset_class="mtbench101",
+        dataset_class=MTBench101Dataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=MTBench101PromptWrapper,
     ),
     # Memory benchmarks - InfiniteBench
     # Default for most tasks
     ("infinitebench", "*"): BenchmarkSpec(
-        dataset_class="infinitebench",
+        dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=MemoryPromptWrapper,
     ),
     # Overrides
     ("infinitebench", "passkey"): BenchmarkSpec(
-        dataset_class="infinitebench",
+        dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=PasskeyPromptWrapper,
     ),
     ("infinitebench", "longbook_qa_eng"): BenchmarkSpec(
-        dataset_class="infinitebench",
+        dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     ("infinitebench", "longbook_qa_eng_121k"): BenchmarkSpec(
-        dataset_class="infinitebench",
+        dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     ("infinitebench", "longbook_qa_chn"): BenchmarkSpec(
-        dataset_class="infinitebench",
+        dataset_class=InfiniteBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     # Memory benchmarks - LongBench
     ("longbench", "*"): BenchmarkSpec(
-        dataset_class="longbench",
+        dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongContextQAPromptWrapper,
     ),
     ("longbench", "passage_retrieval_en"): BenchmarkSpec(
-        dataset_class="longbench",
+        dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongbenchRetrievalPromptWrapper,
     ),
     ("longbench", "passage_retrieval_zh"): BenchmarkSpec(
-        dataset_class="longbench",
+        dataset_class=LongBenchDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=LongbenchRetrievalPromptWrapper,
     ),
     # BFCL benchmark
     ("bfcl", "live_simple"): BenchmarkSpec(
-        dataset_class="bfcl",
+        dataset_class=BFCLDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=BFCLPromptWrapper,
     ),
     ("bfcl", "live_multiple"): BenchmarkSpec(
-        dataset_class="bfcl",
+        dataset_class=BFCLDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=BFCLPromptWrapper,
     ),
     # LoCoMo benchmark
     ("locomo", "locomo"): BenchmarkSpec(
-        dataset_class="locomo",
+        dataset_class=LoCoMoDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=ConversationalQAPromptWrapper,
     ),
     # TruthfulQA benchmark
     ("truthfulqa", "mc1"): BenchmarkSpec(
-        dataset_class="truthfulqa",
+        dataset_class=TruthfulQADataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=TruthfulQAPromptWrapper,
     ),
     ("truthfulqa", "mc2"): BenchmarkSpec(
-        dataset_class="truthfulqa",
+        dataset_class=TruthfulQADataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=TruthfulQAPromptWrapper,
     ),
     # Emotion Check benchmark - all tasks use the same wrapper
     ("emotion_check", "*"): BenchmarkSpec(
-        dataset_class="emotion_check",
+        dataset_class=EmotionCheckDataset,
         answer_wrapper_class=EmotionAnswerWrapper,
         prompt_wrapper_class=EmotionCheckPromptWrapper,
     ),
     # FANToM – allow wildcard for shared wrapper
     ("fantom", "*"): BenchmarkSpec(
-        dataset_class="fantom",
+        dataset_class=FantomDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=FantomPromptWrapper,
     ),
