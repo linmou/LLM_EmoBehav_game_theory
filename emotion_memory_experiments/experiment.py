@@ -652,6 +652,12 @@ class EmotionExperiment:
             self.logger.error(f"Batch evaluation failed: {e}")
             scores = [0.0] * len(responses)
 
+        # Retrieve per-item evaluation errors if the dataset exposed them
+        eval_errors = getattr(self.dataset, "_last_eval_errors", None)
+        if not eval_errors or len(eval_errors) != len(scores):
+            # Normalize to a list of Nones when not available or size-mismatched
+            eval_errors = [None] * len(scores)
+
         # Create result records with batch-computed scores
         for i, (response, score, prompt, item, ground_truth) in enumerate(
             zip(cleaned_responses, scores, batch_prompts, batch_items, batch_ground_truths)
@@ -674,6 +680,7 @@ class EmotionExperiment:
                     "benchmark": self.config.benchmark.name,
                     "item_metadata": item.metadata or {},
                 },
+                error=eval_errors[i],
             )
             results.append(result)
 
@@ -712,6 +719,7 @@ class EmotionExperiment:
                     "score": result.score,
                     "benchmark": (result.metadata or {}).get("benchmark", ""),
                     "repeat_id": getattr(result, "repeat_id", None),
+                    "error": getattr(result, "error", None),
                 }
             )
 
