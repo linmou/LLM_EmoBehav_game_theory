@@ -78,8 +78,9 @@ def transform_item(category: str, prompt_item: Dict[str, Any], gt_item: Dict[str
         "question": prompt_item.get("question"),
     }
 
-    # Copy function schema
-    # Copy function schema (handle schemas that always use 'functions')
+    # Copy function schema (handle schemas that always use 'functions').
+    # For multi_turn style categories there may be no explicit function schema; in that
+    # case we simply pass through without adding function/functions keys.
     funcs = prompt_item.get("functions")
     func = prompt_item.get("function")
     if funcs is not None:
@@ -99,7 +100,10 @@ def transform_item(category: str, prompt_item: Dict[str, Any], gt_item: Dict[str
         else:
             raise ValueError(f"Expected 'function' to be object or list, got: {type(func)}")
     else:
-        raise ValueError("Missing 'function'/'functions' in prompt item")
+        # Multi-turn or non-tool categories: keep other fields as-is
+        for k in ("initial_config", "path", "involved_classes"):
+            if k in prompt_item:
+                out[k] = prompt_item[k]
 
     # Ground truth list passthrough
     gt_list = gt_item.get("ground_truth")
@@ -135,7 +139,12 @@ def transform(category: str, prompts_path: Path, gt_path: Path, output_path: Pat
 
 def main():
     parser = argparse.ArgumentParser(description="Transform BFCL JSON to JSONL for this repo")
-    parser.add_argument("--category", required=True, choices=["live_simple", "live_multiple"], help="BFCL task category")
+    # Accept any category string; keep known ones for convention but don't restrict
+    parser.add_argument(
+        "--category",
+        required=True,
+        help="BFCL task category (e.g., live_simple, live_multiple, live_irrelevance, multi_turn_base, ...)",
+    )
     parser.add_argument("--input", required=True, type=Path, help="Path to BFCL prompts JSON (category file)")
     parser.add_argument("--ground_truth", required=True, type=Path, help="Path to BFCL ground truth JSON (possible_answer)")
     parser.add_argument("--output", type=Path, default=None, help="Output JSONL path (default: data/BFCL/bfcl_<category>.jsonl)")

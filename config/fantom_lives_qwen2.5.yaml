@@ -2,19 +2,19 @@
 # Use with: python -m emotion_memory_experiments.memory_experiment_series_runner \
 #             --config config/fantom_memory_sanity.yaml --dry-run
 
-experiment_name: "fantom_simple_qwen2.5"
-description: "Config for simple Fantom tasks (binary + 2-choice)"
+experiment_name: "fantom_all_qwen2.5"
+description: "Config for all  Fantom tasks"
 version: "1.0.0"
 
 models:
-  #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
-    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  # - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
 
 benchmarks:
   - name: "fantom"
-    task_type: "short_answerability_binary_inaccessible"
+    task_type: ".*"
     base_data_dir: "data/fantom"
       # - name: "fantom"
       #task_type: "short_belief_choice_inaccessible"
@@ -22,6 +22,9 @@ benchmarks:
 
 emotions: ["anger", "happiness", "sadness", "surprise","fear", "disgust"]
 intensities: [1.5]
+
+repeat_runs: 5
+repeat_seed_base: 1231
 
 loading_config:
   model_path: null
@@ -55,7 +58,7 @@ batch_size: 600
 max_evaluation_workers: 1
 pipeline_queue_size: 1
 
-output_dir: "results/fantom_qwen2.5"
+output_dir: "results/fantom_qwen2.5/all"
 
 run_sanity_check: false
 

@@ -89,7 +89,11 @@ class BenchmarkConfig:
         # Extract task types and filter by regex pattern
         task_types = []
         try:
-            regex_pattern = re.compile(self.task_type)
+            pattern = self.task_type
+            # Normalize a bare '*' (glob) into a valid regex '.*'
+            if pattern.strip() == "*":
+                pattern = ".*"
+            regex_pattern = re.compile(pattern)
 
             for file_path in all_files:
                 filename = Path(file_path).stem  # Remove .jsonl extension

@@ -4,20 +4,20 @@
 #   python -m emotion_memory_experiments.memory_experiment_series_runner \
 #       --config config/bfcl_simple_qwen3.yaml 
 
-experiment_name: "bfcl_simple_qwen3"
+experiment_name: "bfcl_live_qwen3"
 description: "Config for BFCL live_* tasks (function calling)"
 version: "1.0.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+  #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
   - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
   - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B"
+    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B"
 
 benchmarks:
   # Option A: expand all live_* tasks from data/BFCL automatically
   - name: "bfcl"
-    task_type: "live_multiple"
+    task_type: "live_*"
     base_data_dir: "data/BFCL"
 
   # Option B (explicit):
@@ -30,6 +30,9 @@ benchmarks:
 
 emotions: ["anger", "happiness", "sadness", "surprise", "fear", "disgust"]
 intensities: [1.5]
+
+repeat_runs: 5
+repeat_seed_base: 42
 
 loading_config:
   model_path: null
@@ -62,6 +65,6 @@ batch_size: 600
 max_evaluation_workers: 1
 pipeline_queue_size: 1
 
-output_dir: "results/bfcl_qwen3"
+output_dir: "results/bfcl_qwen3/live"
 
 run_sanity_check: false

@@ -49,8 +49,9 @@ class BFCLPromptWrapper(PromptWrapper):
         options: Optional[list] = None,
     ) -> str:
         tools_block = self._format_tools_block(context)
+        task_lower = (self.task_type or "").lower()
 
-        if (self.task_type or "").lower() == "live_multiple":
+        if task_lower == "live_multiple":
             format_rule = (
                 "Return only a JSON array of function calls in execution order. "
                 "Each element must be an object like {\"<function_name>\": {<param>: <value>, ...}}. "

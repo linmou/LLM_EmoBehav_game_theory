@@ -122,7 +122,8 @@ class TestBFCLEvaluation(unittest.TestCase):
         score_wrong = dataset.evaluate_response(resp_wrong_order, gt, cfg.task_type, batch["prompt"])
         self.assertEqual(score_wrong, 0.0)
 
+    # Multi-turn is not supported in this repo's dataset/evaluator.
+
 
 if __name__ == "__main__":
     unittest.main()
-

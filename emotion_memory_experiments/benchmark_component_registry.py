@@ -203,12 +203,7 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         prompt_wrapper_class=LongbenchRetrievalPromptWrapper,
     ),
     # BFCL benchmark
-    ("bfcl", "live_simple"): BenchmarkSpec(
-        dataset_class=BFCLDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=BFCLPromptWrapper,
-    ),
-    ("bfcl", "live_multiple"): BenchmarkSpec(
+    ("bfcl", "*"): BenchmarkSpec(
         dataset_class=BFCLDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=BFCLPromptWrapper,
