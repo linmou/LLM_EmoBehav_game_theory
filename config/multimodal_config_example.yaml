@@ -52,7 +52,7 @@ experiment:
 repe_config:
   # Essential for multimodal processing
   multimodal_intent: true
-  data_dir: "data/image"  # Points directly to image emotion JSONs
+  data_dir: "data/stimulus/image"  # Points directly to image emotion JSONs
   
   # Optional: Override other repe parameters
   emotions: ["anger", "happiness", "sadness", "fear"]  # Subset of emotions

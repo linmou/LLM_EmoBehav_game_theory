@@ -182,8 +182,8 @@ def primary_emotions_concept_dataset(
 
     Args:
         data_dir: Directory containing emotion JSON files (anger.json, happiness.json, etc.)
-                 - For text mode: data_dir = "data/text/" containing text scenarios in JSONs
-                 - For image mode: data_dir = "data/image/" containing image paths in JSONs
+                 - For text mode: data_dir = "data/stimulus/text/" containing text scenarios in JSONs
+                 - For image mode: data_dir = "data/stimulus/image/" containing image paths in JSONs
         model_name: Name of the model to format prompts for
         tokenizer: Optional tokenizer for more accurate prompt formatting
         system_prompt: Optional system prompt, if None no system prompt will be used
@@ -801,13 +801,7 @@ def detect_emotion_data_type(data_dir, emotions=None):
     if emotions is None:
         emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
 
-    if not data_dir or not Path(data_dir).exists():
-        return {
-            "data_type": "none",
-            "available_emotions": [],
-            "total_samples": {},
-            "is_multimodal_data": False,
-        }
+    assert data_dir and Path(data_dir).exists(), f"The {data_dir} does not exist."
 
     available_emotions = []
     total_samples = {}

@@ -218,7 +218,7 @@ class TestExperimentFeasibilityValidation:
         """Base configuration for testing."""
         return {
             "model_name_or_path": "Qwen/Qwen2.5-VL-3B-Instruct",
-            "data_dir": "data/image",
+            "data_dir": "data/stimulus/image",
             "rep_token": -1,
             "emotions": ["anger", "happiness", "sadness"],
         }
@@ -450,7 +450,7 @@ class TestEnhancedDatasetGeneration:
     def test_direct_data_dir_image_mode(self):
         """Test function: data_dir points directly to image JSONs with actual images."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Create actual images in temp_dir (simulating data/image/ directory)
+            # Create actual images in temp_dir (simulating data/stimulus/image/ directory)
             emotions = ["anger", "happiness"]
             for emotion in emotions:
                 # Create test image
