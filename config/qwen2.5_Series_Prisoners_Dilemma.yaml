@@ -39,7 +39,10 @@ experiment:
   # Template for system message with placeholders
   system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
   
-  repeat: 1
+  repeat: 5
+
+  repe_config:
+    data_dir: "data/stimulus/crowd-enVent-transformed"
 
   emotions:
     - "anger"
@@ -55,6 +58,6 @@ experiment:
   run_sanity_check: false
 
   output:
-    base_dir: "results/Qwen2.5_Series_Prisoners_Dilemma"
+    base_dir: "results/Qwen2.5_Series_Prisoners_Dilemma/crowd-enVnet-transformed"
     save_plots: true
     plot_format: "png" 

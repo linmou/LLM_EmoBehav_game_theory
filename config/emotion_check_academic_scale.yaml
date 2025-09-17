@@ -26,7 +26,7 @@ benchmarks:
     #     Return JSON: {"emotion": "anger|happiness|...|neutral|other", "confidence": 0.0-1.0}
 
 # Core emotions (aligns with constants.py primary set)
-emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
+emotions: ["anger", "fear"]
 intensities: [1.5]
 
 # Repeat settings for stability across stochastic decoding
@@ -50,7 +50,7 @@ loading_config:
 
 repe_eng_config:
   direction_method: "pca"
-  data_dir: "data/stimulus/crowd-enVent"
+  data_dir: "data/stimulus/crowd-enVent-transformed"
 
 generation_config:
   temperature: 0.7
@@ -68,7 +68,7 @@ batch_size: 100
 max_evaluation_workers: 2
 pipeline_queue_size: 2
 
-output_dir: "results/emotion_check_academic_scale/crowd-enVent/"
+output_dir: "results/emotion_check_academic_scale/crowd-enVent-transformed/"
 
 # Helpful for quick config validation without running the full pipeline
 run_sanity_check: false

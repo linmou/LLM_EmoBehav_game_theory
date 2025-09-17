@@ -174,7 +174,7 @@ class UltimatumGameResponderScenario(UltimatumGameScenario):
             for participant in self.participants
         ]
 
-    @property
+    # Keep API consistent with base class: previous_actions() is a method.
     def previous_actions(self) -> list:
         if self.previous_offer_level == 0:
             return [(self.proposer_name, self.proposer_behavior_choices.offer_low)]
