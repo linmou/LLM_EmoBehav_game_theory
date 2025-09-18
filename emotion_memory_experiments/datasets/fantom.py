@@ -20,6 +20,8 @@ or A/B/C... letter choices produced by MemoryPromptWrapper.
 import json
 import ast
 from typing import Any, Dict, List, Optional, Tuple, Set
+from collections import OrderedDict
+import threading
 
 from .base import BaseBenchmarkDataset
 from ..data_models import BenchmarkItem
@@ -57,6 +59,139 @@ class FantomDataset(BaseBenchmarkDataset):
         raise ValueError(
             f"Unsupported FANToM task: {task}."
         )
+
+    # ------------------------------------------------------------------
+    # Embedding cache (LRU) to avoid re-encoding duplicate strings.
+    # ------------------------------------------------------------------
+    _EMBED_CACHE_CAPACITY = 2048  # small but effective; keep it simple
+
+    def _ensure_embed_cache(self) -> None:
+        if not hasattr(self, "_embed_cache"):
+            self._embed_cache = OrderedDict()  # type: ignore[attr-defined]
+            self._embed_cache_lock = threading.Lock()  # type: ignore[attr-defined]
+
+    def _encode_texts_cached(self, embedder, texts: List[str], normalize_embeddings: bool = True):
+        """Encode texts with an LRU cache to deduplicate repeated strings.
+
+        - Order is preserved.
+        - Cache key is the exact text string.
+        - Evicts least-recently used items when capacity is exceeded.
+        """
+        # Opportunistically warm the cache from precomputed on-disk files once per dataset.
+        # This follows the convention:
+        #   <data_jsonl_stem>_emb_keys.json and <data_jsonl_stem>_emb_vecs.npy
+        # sitting next to the source JSONL file. If present, load and prime the cache.
+        self._try_load_precomputed_embeddings()
+        self._ensure_embed_cache()
+
+        # Fast path: empty input
+        if not texts:
+            import numpy as _np  # local import to avoid top-level dependency
+            return _np.zeros((0, 1), dtype=_np.float32)
+
+        # First pass: find which strings are missing
+        missing: List[str] = []
+        unique_missing: List[str] = []
+        with self._embed_cache_lock:  # type: ignore[attr-defined]
+            for t in texts:
+                key = t if isinstance(t, str) else str(t)
+                if key in self._embed_cache:  # type: ignore[attr-defined]
+                    # mark as recently used
+                    val = self._embed_cache.pop(key)  # type: ignore[attr-defined]
+                    self._embed_cache[key] = val  # type: ignore[attr-defined]
+                else:
+                    missing.append(key)
+
+            # Deduplicate missing while preserving order
+            seen = set()
+            for k in missing:
+                if k not in seen:
+                    unique_missing.append(k)
+                    seen.add(k)
+
+        # Encode only missing unique strings
+        if unique_missing:
+            encoded = embedder.encode(unique_missing, normalize_embeddings=normalize_embeddings)
+            # Store in cache with eviction
+            with self._embed_cache_lock:  # type: ignore[attr-defined]
+                for k, vec in zip(unique_missing, encoded):
+                    self._embed_cache[k] = vec  # type: ignore[attr-defined]
+                    # Evict oldest if over capacity
+                    while len(self._embed_cache) > self._EMBED_CACHE_CAPACITY:  # type: ignore[attr-defined]
+                        self._embed_cache.popitem(last=False)  # type: ignore[attr-defined]
+
+        # Build output in original order
+        import numpy as _np
+        out = []
+        with self._embed_cache_lock:  # type: ignore[attr-defined]
+            for t in texts:
+                key = t if isinstance(t, str) else str(t)
+                vec = self._embed_cache[key]  # type: ignore[attr-defined]
+                # Touch to mark as recently used
+                val = self._embed_cache.pop(key)  # type: ignore[attr-defined]
+                self._embed_cache[key] = val  # type: ignore[attr-defined]
+                out.append(vec)
+        return _np.stack(out, axis=0)
+
+    def _try_load_precomputed_embeddings(self) -> None:
+        """Warm the in-memory cache from sibling disk files if they exist.
+
+        KISS: No fancy index. We simply load two files placed by the caching scripts:
+          - <stem>_emb_keys.json (list[str])
+          - <stem>_emb_vecs.npy  (ndarray [N, D], float32, preferably L2-normalized)
+
+        Behavior:
+          - Loads once per dataset instance (guarded by a flag).
+          - If counts mismatch or files missing, no-op.
+          - Ensures embeddings are L2-normalized before insertion.
+          - Bumps the LRU capacity to at least len(precomputed)+512 to avoid instant eviction.
+        """
+        if getattr(self, "_precomputed_loaded", False):  # type: ignore[attr-defined]
+            return
+        try:
+            from pathlib import Path as _Path
+            import numpy as _np
+            dp = getattr(self.config, "data_path", None)
+            if not dp:
+                self._precomputed_loaded = True  # type: ignore[attr-defined]
+                return
+            p = _Path(dp)
+            keys_fp = p.with_name(p.stem + "_emb_keys.json")
+            vecs_fp = p.with_name(p.stem + "_emb_vecs.npy")
+            if not (keys_fp.exists() and vecs_fp.exists()):
+                self._precomputed_loaded = True  # type: ignore[attr-defined]
+                return
+            with open(keys_fp, "r", encoding="utf-8") as f:
+                keys = json.load(f)
+            vecs = _np.load(vecs_fp)
+            if not isinstance(keys, list) or vecs.ndim != 2 or len(keys) != vecs.shape[0]:
+                # Bad files – skip warm start
+                self._precomputed_loaded = True  # type: ignore[attr-defined]
+                return
+            # Normalize to unit length to keep cosine via dot-product consistent
+            norms = _np.linalg.norm(vecs, axis=1, keepdims=True)
+            norms[norms == 0] = 1.0
+            vecs = (vecs / norms).astype(_np.float32)
+
+            self._ensure_embed_cache()
+            # Increase capacity to hold precomputed keys without thrashing
+            try:
+                current_cap = int(getattr(self, "_EMBED_CACHE_CAPACITY"))
+            except Exception:
+                current_cap = 2048
+            desired_cap = max(current_cap, len(keys) + 512)
+            # Instance-level capacity override to avoid mutating class default globally
+            self._EMBED_CACHE_CAPACITY = desired_cap  # type: ignore[attr-defined]
+
+            with self._embed_cache_lock:  # type: ignore[attr-defined]
+                for k, v in zip(keys, vecs):
+                    kk = k if isinstance(k, str) else str(k)
+                    # Insert in LRU order
+                    self._embed_cache[kk] = v  # type: ignore[attr-defined]
+            self._precomputed_loaded = True  # type: ignore[attr-defined]
+        except Exception:
+            # Never fail dataset construction due to warm-start issues
+            self._precomputed_loaded = True  # type: ignore[attr-defined]
 
     def _load_binary(self, raw: List[Dict[str, Any]]) -> List[BenchmarkItem]:
         items: List[BenchmarkItem] = []
@@ -483,6 +618,12 @@ class FantomDataset(BaseBenchmarkDataset):
         return 1.0 if ok else 0.0
 
     def _get_embedder(self):
+        """Return a sentence-transformers embedder or raise if unavailable.
+
+        Rationale: We remove fuzzy fallbacks for belief-gen with wrong_answer.
+        If embeddings are required but unavailable, we surface a hard error so
+        the experiment logs it and the user fixes the environment.
+        """
         # Thread-safe lazy init: multiple worker threads may call this concurrently
         if not hasattr(self, "_embedder_lock"):
             import threading as _threading
@@ -493,9 +634,15 @@ class FantomDataset(BaseBenchmarkDataset):
                     from sentence_transformers import SentenceTransformer
                     import torch
                     device = "cuda" if torch.cuda.is_available() else "cpu"
-                    self._embedder = SentenceTransformer('sentence-transformers/all-roberta-large-v1').to(device)
-                except Exception:
-                    self._embedder = None
+                    self._embedder = SentenceTransformer(
+                        'sentence-transformers/all-roberta-large-v1'
+                    ).to(device)
+                except Exception as e:
+                    # No silent fallback – this task requires embeddings
+                    raise RuntimeError(
+                        "FANToM text evaluation requires 'sentence-transformers'. "
+                        "Please install it (pip install sentence-transformers) and retry."
+                    ) from e
             return self._embedder
 
     def _eval_text(self, response_norm: str, ground_truth: Any, prompt: str, task: Optional[str] = None) -> float:
@@ -508,25 +655,20 @@ class FantomDataset(BaseBenchmarkDataset):
         meta = self._get_meta_for_prompt(prompt) if prompt else {}
         wrong = meta.get("wrong_answer") if isinstance(meta, dict) else None
         if wrong:
+            # Hard requirement: embeddings must be available for belief-gen with wrong_answer
             embedder = self._get_embedder()
-            if embedder is not None:
-                try:
-                    from sklearn.metrics.pairwise import cosine_similarity
-                    wa = wrong
-                    ca = ground_truth
-                    mr = response_norm
-                    wa_emb = embedder.encode(wa)
-                    ca_emb = embedder.encode(ca)
-                    mr_emb = embedder.encode(mr)
-                    sim_wrong = cosine_similarity(mr_emb.reshape(1, -1), wa_emb.reshape(1, -1))[0][0]
-                    sim_correct = cosine_similarity(mr_emb.reshape(1, -1), ca_emb.reshape(1, -1))[0][0]
-                    return 1.0 if sim_correct > sim_wrong else 0.0
-                except Exception:
-                    pass
-            # Fallback: compare token F1 overlaps
-            f1_wrong = self._token_f1(response_norm.lower(), str(wrong).lower())
-            f1_correct = self._token_f1(response_norm.lower(), ground_truth.lower())
-            return 1.0 if f1_correct >= f1_wrong else 0.0
+            try:
+                # Use cache to reduce redundant encodes across items
+                mr_emb = self._encode_texts_cached(embedder, [response_norm], True)[0]
+                ca_emb = self._encode_texts_cached(embedder, [ground_truth], True)[0]
+                wa_emb = self._encode_texts_cached(embedder, [str(wrong)], True)[0]
+            except Exception as e:
+                raise RuntimeError("FANToM embedding evaluation failed during encoding") from e
+
+            # Cosine similarity on normalized vectors equals dot product
+            sim_correct = float((mr_emb * ca_emb).sum())
+            sim_wrong = float((mr_emb * wa_emb).sum())
+            return 1.0 if sim_correct > sim_wrong else 0.0
         # No wrong answer: fallback to F1
         return self._token_f1(response_norm.strip().lower(), ground_truth.strip().lower())
 
@@ -555,6 +697,9 @@ class FantomDataset(BaseBenchmarkDataset):
                     return fn(response_norm, ground_truth, prompt, task)
                 return fn(response_norm, ground_truth, prompt)
 
+        # If no dispatch matched, raise explicit error
+        raise ValueError(f"Unsupported task for evaluation: {task_name}.")
+
     def collate_fn(self, batch_items: List[Dict[str, Any]]) -> Dict[str, Any]:
         batch = super().collate_fn(batch_items)
         # Build mapping from prompt to item metadata for later evaluation use
@@ -564,7 +709,70 @@ class FantomDataset(BaseBenchmarkDataset):
         for p, it in zip(prompts, items):
             self._last_prompt_meta[p] = it.metadata or {}
         return batch
-        raise ValueError(f"Unsupported task for evaluation: {task_name}.")
+
+    def evaluate_batch(
+        self,
+        responses: List[str],
+        ground_truths: List[Any],
+        task_names: List[str],
+        prompts: List[str],
+    ) -> List[float]:
+        """Batched evaluation with a vectorized embedding path for belief-gen.
+
+        - For tasks containing 'gen' and with a per-item 'wrong_answer' in metadata,
+          we compute embeddings in 3 batch calls (responses, corrects, wrongs) and
+          compare cosine similarity via dot products on normalized vectors.
+        - All other cases fall back to per-item evaluation.
+        """
+        # Quick sanity checks
+        if not (len(responses) == len(ground_truths) == len(task_names) == len(prompts)):
+            raise ValueError("Mismatched batch lengths for evaluate_batch")
+
+        # Partition indices
+        gen_idxs: List[int] = []
+        other_idxs: List[int] = []
+        wrongs: List[str] = []
+        for i, (task, prompt) in enumerate(zip(task_names, prompts)):
+            if task and ("gen" in task.lower()):
+                meta = self._get_meta_for_prompt(prompt) if prompt else {}
+                wrong = meta.get("wrong_answer") if isinstance(meta, dict) else None
+                if isinstance(wrong, str) and wrong.strip():
+                    gen_idxs.append(i)
+                    wrongs.append(wrong)
+                    continue
+            other_idxs.append(i)
+
+        scores: List[Optional[float]] = [None] * len(responses)
+
+        # Vectorized embedding path for gen_idxs
+        if gen_idxs:
+            embedder = self._get_embedder()  # may raise if unavailable
+            # Prepare aligned lists
+            resp_list = [responses[i] or "" for i in gen_idxs]
+            corr_list = [str(ground_truths[i]) for i in gen_idxs]
+            wrong_list = [wrongs[k] for k in range(len(gen_idxs))]
+
+            try:
+                # Cached encodes – deduplicate both within and across lists
+                R = self._encode_texts_cached(embedder, resp_list, True)
+                C = self._encode_texts_cached(embedder, corr_list, True)
+                W = self._encode_texts_cached(embedder, wrong_list, True)
+            except Exception as e:
+                raise RuntimeError("FANToM batched embedding evaluation failed during encoding") from e
+
+            # Compute cosine similarity via dot products
+            sim_c = (R * C).sum(axis=1)
+            sim_w = (R * W).sum(axis=1)
+            for j, i in enumerate(gen_idxs):
+                scores[i] = 1.0 if float(sim_c[j]) > float(sim_w[j]) else 0.0
+
+        # Fallback to per-item logic for other indices (no embeddings required)
+        for i in other_idxs:
+            scores[i] = self.evaluate_response(
+                responses[i], ground_truths[i], task_names[i], prompts[i]
+            )
+
+        return [float(s) for s in scores]
 
     def get_task_metrics(self, task_name: str) -> List[str]:
         if task_name not in self.SUPPORTED_TASKS:

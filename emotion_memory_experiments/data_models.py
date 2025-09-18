@@ -90,11 +90,27 @@ class BenchmarkConfig:
         # Extract task types and filter by regex pattern
         task_types = []
         try:
-            pattern = self.task_type
-            # Normalize a bare '*' (glob) into a valid regex '.*'
-            if pattern.strip() == "*":
-                pattern = ".*"
-            regex_pattern = re.compile(pattern)
+            pattern = self.task_type.strip()
+
+            # Allow shell-style globs in configs (e.g., "*gen*") by translating
+            # to a proper regex. Only do this when the pattern looks like a glob
+            # and not an explicit regex (heuristic keeps behavior predictable).
+            def _looks_like_glob(p: str) -> bool:
+                has_glob = ("*" in p) or ("?" in p)
+                has_regex_syntax = any(ch in p for ch in [".", "^", "$", "(", ")", "[", "]", "|", "+", "\\"])
+                return has_glob and not has_regex_syntax
+
+            if pattern == "*":
+                # Fast-path: match everything
+                regex_pattern = re.compile(r".*")
+            elif _looks_like_glob(pattern):
+                import fnmatch
+
+                # fnmatch.translate returns a regex string with \Z anchors; compile directly
+                regex_pattern = re.compile(fnmatch.translate(pattern))
+            else:
+                # Treat as explicit regex or literal token
+                regex_pattern = re.compile(pattern)
 
             for file_path in all_files:
                 filename = Path(file_path).stem  # Remove .jsonl extension

@@ -1,22 +1,29 @@
-"""
-Merged FANToM dataset evaluation tests.
+"""Merged FANToM dataset evaluation tests.
 
-This consolidates:
-- emotion_memory_experiments/tests/unit/datasets/test_fantom_eval_dispatch.py
-- emotion_memory_experiments/tests/unit/test_fantom_all_tasks.py
+This consolidates legacy suites:
+- test_fantom_eval_dispatch.py
+- test_fantom_all_tasks.py
+- test_fantom_batch_eval.py
 
 Responsible files under test:
 - emotion_memory_experiments/datasets/fantom.py
-- scripts/convert_fantom.py (data conversion for all FANToM tasks)
+- scripts/convert_fantom.py (data conversion for FANToM tasks)
 
 Purpose:
 - Cover evaluation dispatch and behavior for binary, choice, list, fact/gen tasks
-- Ensure loading from data/fantom and basic evaluation semantics
+- Ensure embedding-dependent batch evaluation raises/falls back correctly
+- Confirm the embedding cache deduplicates across batched inputs
 """
 
-import unittest
+import json
 import sys
+import tempfile
 import types
+import unittest
+from pathlib import Path
+from typing import List
+
+import numpy as np
 
 # Lightweight stubs to avoid heavy deps during import collection
 dummy_torch = types.ModuleType("torch")
@@ -59,6 +66,7 @@ from emotion_memory_experiments.benchmark_component_registry import (
     create_benchmark_components,
 )
 from emotion_memory_experiments.data_models import BenchmarkConfig
+from emotion_memory_experiments.datasets.fantom import FantomDataset
 
 
 # ---- From former test_fantom_eval_dispatch.py ----
@@ -295,6 +303,160 @@ class TestFantomAllTasks(unittest.TestCase):
         gt = ex["ground_truth"]
         self.assertIsInstance(gt, str)
         self.assertEqual(ds.evaluate_response(gt, gt, "short_fact", ex["prompt"]), 1.0)
+
+
+def _make_temp_fantom_file(samples: List[dict]) -> Path:
+    tmp = Path(tempfile.mktemp(suffix=".jsonl"))
+    with tmp.open("w", encoding="utf-8") as fh:
+        for sample in samples:
+            fh.write(json.dumps(sample) + "\n")
+    return tmp
+
+
+class _DummyEmbedder:
+    """Tiny deterministic sentence-transformers-like stub with normalize support."""
+
+    def __init__(self):
+        self._vocab = {
+            "apple": np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32),
+            "banana": np.array([0.0, 1.0, 0.0, 0.0], dtype=np.float32),
+            "car": np.array([0.0, 0.0, 1.0, 0.0], dtype=np.float32),
+            "bike": np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float32),
+        }
+
+    def encode(self, texts: List[str], normalize_embeddings: bool = True):  # type: ignore[override]
+        rows = []
+        for text in texts:
+            key = (text or "").strip().lower()
+            vec = self._vocab.get(key, np.zeros(4, dtype=np.float32))
+            if normalize_embeddings:
+                norm = float(np.linalg.norm(vec))
+                if norm:
+                    vec = vec / norm
+            rows.append(vec)
+        return np.stack(rows, axis=0)
+
+
+class _CountingEmbedder(_DummyEmbedder):
+    """Embedder stub that counts how many strings were actually encoded."""
+
+    def __init__(self):
+        super().__init__()
+        self.total_encoded = 0
+
+    def encode(self, texts: List[str], normalize_embeddings: bool = True):  # type: ignore[override]
+        self.total_encoded += len(texts)
+        return super().encode(texts, normalize_embeddings)
+
+
+class TestFantomBatchEval(unittest.TestCase):
+    def _make_cfg(self, tmp: Path) -> BenchmarkConfig:
+        return BenchmarkConfig(
+            name="fantom",
+            task_type="short_belief_gen_inaccessible",
+            data_path=tmp,
+            base_data_dir=None,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=1.0,
+            llm_eval_config=None,
+        )
+
+    def test_eval_batch_raises_without_embedder(self):
+        tmp = _make_temp_fantom_file(
+            [
+                {
+                    "context": "ctx",
+                    "question": "q1",
+                    "correct_answer": "apple",
+                    "wrong_answer": "banana",
+                }
+            ]
+        )
+
+        cfg = self._make_cfg(tmp)
+        ds = FantomDataset(cfg, prompt_wrapper=None)
+        batch = ds.collate_fn([ds[0]])
+        prompts = batch["prompts"]
+        gts = batch["ground_truths"]
+        tasks = [cfg.task_type]
+
+        def _boom():
+            raise RuntimeError("embedder unavailable")
+
+        ds._get_embedder = _boom  # type: ignore[attr-defined]
+
+        with self.assertRaisesRegex(RuntimeError, "embedder"):
+            ds.evaluate_batch(["dummy"], gts, tasks, prompts)
+
+    def test_vectorized_batch_scoring(self):
+        tmp = _make_temp_fantom_file(
+            [
+                {
+                    "context": "ctx1",
+                    "question": "q1",
+                    "correct_answer": "apple",
+                    "wrong_answer": "banana",
+                },
+                {
+                    "context": "ctx2",
+                    "question": "q2",
+                    "correct_answer": "car",
+                    "wrong_answer": "bike",
+                },
+            ]
+        )
+
+        cfg = self._make_cfg(tmp)
+        ds = FantomDataset(cfg, prompt_wrapper=None)
+        batch = ds.collate_fn([ds[0], ds[1]])
+        prompts = batch["prompts"]
+        gts = batch["ground_truths"]
+        tasks = [cfg.task_type, cfg.task_type]
+
+        ds._get_embedder = lambda: _DummyEmbedder()  # type: ignore[attr-defined]
+
+        scores = ds.evaluate_batch(["apple", "bike"], gts, tasks, prompts)
+        self.assertEqual(scores, [1.0, 0.0])
+
+    def test_embedding_cache_deduplicates(self):
+        samples = [
+            {
+                "context": "ctx1",
+                "question": "q1",
+                "correct_answer": "apple",
+                "wrong_answer": "banana",
+            },
+            {
+                "context": "ctx2",
+                "question": "q2",
+                "correct_answer": "apple",
+                "wrong_answer": "banana",
+            },
+            {
+                "context": "ctx3",
+                "question": "q3",
+                "correct_answer": "apple",
+                "wrong_answer": "banana",
+            },
+        ]
+        tmp = _make_temp_fantom_file(samples)
+
+        cfg = self._make_cfg(tmp)
+        ds = FantomDataset(cfg, prompt_wrapper=None)
+        batch = ds.collate_fn([ds[0], ds[1], ds[2]])
+        prompts = batch["prompts"]
+        gts = batch["ground_truths"]
+        tasks = [cfg.task_type] * 3
+
+        embedder = _CountingEmbedder()
+        ds._get_embedder = lambda: embedder  # type: ignore[attr-defined]
+
+        ds.evaluate_batch(["apple", "apple", "apple"], gts, tasks, prompts)
+
+        self.assertEqual(embedder.total_encoded, 2)
 
 
 if __name__ == "__main__":

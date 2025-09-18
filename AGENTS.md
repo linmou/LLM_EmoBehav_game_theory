@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Important**: Always activate the conda environment before running Python commands:
 ```bash
-conda activate llm_behav
+conda activate llm_fresh
 ```
 
 **Memory**:
@@ -268,7 +268,7 @@ Red-Green-Refactor Cycle: You will strictly follow this cycle for every piece of
 
 Red: You will create a single, small, failing test that clearly defines a new piece of desired functionality or behavior and confirm it fails for the expected reason. Please also analyse if new feature is conflict with previous test, so that you need to locate then refactor someexisting tests.
 
-Green: You will write the absolute minimum amount of production code necessary to make the failing test pass. No overdesign, like meaningless help functions, keep the code clean. don't consider backward compatibility. 
+Green: You will write the absolute minimum amount of production code necessary to make the failing test pass. No overdesign, like meaningless help functions, keep the code clean. don't consider backward compatibility. In common sense , don't build fallback logics, throw the errors for debug. 
 
 Refactor: Once the test is passing, and only then, you will refactor the code to improve its structure, readability, and performance without changing its external behavior. 0.Please keep the code as breif as possible, check if there is anything overdesigned. 1. Go Deeper, Not Wider: Fix at the root cause not symptoms 2. Convention > Configuration: Smart defaults beat flexible options 90% of the time, stop to ask if you can not decide.  3.Build smart infrastructure that "just works" instead of flexible applications that require configuration.
 

@@ -11,7 +11,13 @@ from typing import Any, Callable, Dict, List, Optional
 from copy import deepcopy
 from typing import List
 
-from torch.utils.data import Dataset
+try:
+    # Prefer real torch Dataset when available
+    from torch.utils.data import Dataset  # type: ignore
+except Exception:
+    # Minimal stub to allow running in environments without torch
+    class Dataset:  # type: ignore
+        pass
 
 from ..data_models import BenchmarkConfig, BenchmarkItem
 

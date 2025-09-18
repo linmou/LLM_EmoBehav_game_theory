@@ -14,7 +14,7 @@ models:
 
 benchmarks:
   - name: "fantom"
-    task_type: ".*"
+    task_type: "*gen*"
     base_data_dir: "data/fantom"
       # - name: "fantom"
       #task_type: "short_belief_choice_inaccessible"
@@ -60,5 +60,5 @@ pipeline_queue_size: 1
 
 output_dir: "results/fantom_qwen2.5/all"
 
-run_sanity_check: false
+run_sanity_check: true
 
