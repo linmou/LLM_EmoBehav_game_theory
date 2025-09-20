@@ -39,7 +39,7 @@ Phase 1: Registry & Scaffolds [DONE]
 - Refactor: none.
 - Acceptance: registry tests pass.
 
-Phase 2: Ethics (first vertical) [IN PROGRESS]
+Phase 2: Ethics (first vertical) [DONE]
 - Data: data/TrustLLM/dataset/ethics/{explicit_moralchoice.json, implicit_ETHICS.json, implicit_SocialChemistry101.json}.
 - Red:
   - loader tests: parse TrustLLM JSON schema, preserve fields.
@@ -50,6 +50,10 @@ Phase 2: Ethics (first vertical) [IN PROGRESS]
   - compute_split_metrics aggregates per TrustLLM definitions.
 - Refactor: prompt helpers shared in evaluation_utils to avoid duplication.
 - Acceptance: all ethics tests pass; regression green.
+
+Runtime Notes [DONE]
+- Enabled sanity_check in configs `config/trustllm_ethics_dryrun.yaml` and `config/trustllm_ethics_implicit_dryrun.yaml` [DONE]
+- Fixed a sanity_check failure when `batch_size=1` causing `ThreadPoolExecutor` to be created with `max_workers=0`. Now clamped to at least 1 worker in `emotion_memory_experiments/experiment.py` [DONE]
 
 Phase 3: Fairness
 - Data: data/TrustLLM/dataset/fairness/*.

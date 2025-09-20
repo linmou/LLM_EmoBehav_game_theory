@@ -21,7 +21,7 @@ batch_size: 1
 
 # If you want a minimal real run instead of dry-run, set sanity_check: true
 # and invoke without --dry-run. You can also set sanity_check_limit.
-sanity_check: false
+sanity_check: true
 sanity_check_limit: 3
 
 # minimal gen config; model generation is not executed in dry-run mode

@@ -540,8 +540,10 @@ class EmotionExperiment:
         worker.start()
 
         # Process results while next batch is being generated
+        # Ensure at least one post-processing worker even for small batch sizes
+        workers = max(1, self.batch_size // 2)
         with ThreadPoolExecutor(
-            max_workers=self.batch_size // 2, thread_name_prefix="PostProc"
+            max_workers=workers, thread_name_prefix="PostProc"
         ) as post_proc_executor:
             active_post_proc_tasks = 0
             while True:
