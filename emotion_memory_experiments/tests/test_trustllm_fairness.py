@@ -465,6 +465,86 @@ def test_repo_parity_preference_with_stubbed_longformer(monkeypatch):
 
 
 # --------------------
+# Loader parity checks vs TrustLLM (data construction)
+# --------------------
+
+
+def test_loader_parity_recognition_counts(tmp_path):
+    # Create a minimal TrustLLM-like JSON for stereotype_recognition
+    rows = [
+        {"prompt": "x1", "label": "stereotype"},
+        {"prompt": "x2", "label": "anti-stereotype"},
+        {"prompt": "x3", "label": "unrelated"},
+        {"prompt": "x4", "label": "stereotype"},
+    ]
+    p = tmp_path / "stereotype_recognition.json"
+    p.write_text(json.dumps(rows), encoding="utf-8")
+
+    # TrustLLM loader
+    sys.path.insert(0, str(Path("/data/home/jjl7137/TrustLLM/trustllm_pkg")))
+    import trustllm.utils.file_process as fproc  # type: ignore
+    trust_items = fproc.load_json(str(p))
+
+    # Our loader
+    ds = TrustLLMFairnessDataset(config=_make_cfg("stereotype_recognition", str(p)), prompt_wrapper=None)
+    assert len(ds) == len(trust_items)
+
+    # Compare label distributions
+    def dist(rows):
+        d = {}
+        for r in rows:
+            lab = r["label"] if isinstance(r, dict) else getattr(r, "ground_truth", None)
+            d[lab] = d.get(lab, 0) + 1
+        return d
+    assert dist(trust_items) == dist([ds[i]["item"] for i in range(len(ds))])
+
+
+def test_loader_parity_preference_types(tmp_path):
+    rows = [
+        {"type": "plain", "prompt": "p1", "label": "NA"},
+        {"type": "plain", "prompt": "p2", "label": "NA"},
+        {"type": "force", "prompt": "f1", "label": "NA"},
+    ]
+    p = tmp_path / "preference.json"
+    p.write_text(json.dumps(rows), encoding="utf-8")
+
+    sys.path.insert(0, str(Path("/data/home/jjl7137/TrustLLM/trustllm_pkg")))
+    import trustllm.utils.file_process as fproc  # type: ignore
+    trust_items = fproc.load_json(str(p))
+
+    ds = TrustLLMFairnessDataset(config=_make_cfg("preference", str(p)), prompt_wrapper=None)
+    assert len(ds) == len(trust_items)
+    # Ensure metadata carries 'type'
+    types_ds = [ds[i]["item"].metadata.get("type") for i in range(len(ds))]
+    types_trust = [el.get("type") for el in trust_items]
+    assert sorted(types_ds) == sorted(types_trust)
+
+
+def test_loader_parity_disparagement_groups(tmp_path):
+    rows = [
+        {"sex": "M", "race": "R1", "prompt": "m1", "label": "NA"},
+        {"sex": "M", "race": "R1", "prompt": "m2", "label": "NA"},
+        {"sex": "F", "race": "R2", "prompt": "f1", "label": "NA"},
+    ]
+    p = tmp_path / "disparagement.json"
+    p.write_text(json.dumps(rows), encoding="utf-8")
+
+    sys.path.insert(0, str(Path("/data/home/jjl7137/TrustLLM/trustllm_pkg")))
+    import trustllm.utils.file_process as fproc  # type: ignore
+    trust_items = fproc.load_json(str(p))
+
+    ds = TrustLLMFairnessDataset(config=_make_cfg("disparagement", str(p)), prompt_wrapper=None)
+    assert len(ds) == len(trust_items)
+    # Group distributions preserved in metadata
+    def groups(rows):
+        return sorted((r["sex"], r["race"]) for r in rows)
+    def groups_ds(ds_):
+        items = [ds_[i]["item"] for i in range(len(ds_))]
+        return sorted((it.metadata.get("sex"), it.metadata.get("race")) for it in items)
+    assert groups(trust_items) == groups_ds(ds)
+
+
+# --------------------
 # Repo-import parity vs TrustLLM (excluding model forwarding)
 # --------------------
 
