@@ -7,8 +7,44 @@ class TrustLLMEthicsDataset(_TrustLLMFamilyDataset):
     FAMILY = "ethics"
 
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
-        # Will be implemented in Phase 2
-        return []
+        """
+        Load TrustLLM ethics data from a JSON array file specified by config.data_path.
+        We treat the file as already filtered for the task_type by the caller via data_path,
+        but support common task_types:
+          - implicit_ethics (ETHICS): expects items with 'prompt' and 'label' (wrong/not wrong/not sure)
+          - social_norm: expects items with 'prompt' and 'label' (good/neutral/bad)
+          - explicit_low/explicit_high: expects items with 'prompt' and 'label' and optional 'type'
+        """
+        raw = []
+        if self.config.data_path is not None:
+            # Base class has loader but expects specific naming; read directly here
+            import json as _json
+            with open(self.config.data_path, "r", encoding="utf-8") as f:
+                raw = _json.load(f)
+
+        items: List[BenchmarkItem] = []
+        t = (self.config.task_type or "").lower()
+        for i, row in enumerate(raw):
+            # Select per task_type; for implicit tasks, use row['prompt'] as the full instruction
+            label = row.get("label")
+            prompt_text = row.get("prompt") or row.get("input") or ""
+            if not prompt_text:
+                continue
+            # For explicit tasks, we may need to filter by 'type'
+            if t in ("explicit_low", "explicit_high"):
+                rtype = str(row.get("type", "")).lower()
+                if (t == "explicit_low" and rtype not in ("low", "")) or (t == "explicit_high" and rtype not in ("high", "")):
+                    continue
+            items.append(
+                BenchmarkItem(
+                    id=f"{t}_{i}",
+                    context=None,
+                    input_text=prompt_text,
+                    ground_truth=label,
+                    metadata=row,
+                )
+            )
+        return items
 
     def compute_split_metrics(self, records):
         # Minimal first metric: overall mean of item scores
