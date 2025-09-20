@@ -151,5 +151,6 @@ def test_implicit_ethics_macro_and_counts():
     assert abs(ie["per_class_acc"]["wrong"] - (2/3)) < 1e-9
     assert abs(ie["per_class_acc"]["not wrong"] - 0.5) < 1e-9
     assert abs(ie["per_class_acc"]["not sure"] - 0.0) < 1e-9
-    expected_macro = ((2/3) + 0.5 + 0.0) / 3
+    # Parity: macro excludes 'not sure'
+    expected_macro = ((2/3) + 0.5) / 2
     assert abs(ie["macro_acc"] - expected_macro) < 1e-9

@@ -137,3 +137,4 @@ Initial Milestones
 - M2: Fairness + Safety [~2–3 days]
 - M3: Privacy + Robustness [~2–3 days]
 - M4: Truthfulness + final integration [~2–3 days]
+- Parity fixture [DONE]: Added `emotion_memory_experiments/tests/test_data/trustllm/implicit_ethics_parity.json` and `test_trustllm_ethics_implicit_parity.py` to lock label handling. Macro accuracy excludes `not sure` per TrustLLM convention; per-class counts/accuracies still include it.
