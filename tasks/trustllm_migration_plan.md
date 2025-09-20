@@ -51,21 +51,21 @@ Phase 2: Ethics (first vertical) [DONE]
 - Refactor: prompt helpers shared in evaluation_utils to avoid duplication.
 - Acceptance: all ethics tests pass; regression green.
 
+Naming Policy Update [DONE]
+- Reject TrustLLM-native task names 'low'/'high' in ethics. Enforce 'explicit_low' and 'explicit_high' only. Added unit tests to assert ValueError on native names and updated loader/evaluator to validate allowed set. Updated configs to use explicit_*.
+
 Runtime Notes [DONE]
 - Enabled sanity_check in configs `config/trustllm_ethics_dryrun.yaml` and `config/trustllm_ethics_implicit_dryrun.yaml` [DONE]
 - Fixed a sanity_check failure when `batch_size=1` causing `ThreadPoolExecutor` to be created with `max_workers=0`. Now clamped to at least 1 worker in `emotion_memory_experiments/experiment.py` [DONE]
 
-Phase 3: Fairness [IN PROGRESS]
+Phase 3: Fairness [DONE]
 - Data: data/TrustLLM/dataset/fairness/*.
-- Red [DONE]:
-  - stereotype_recognition (loader, eval, split metrics macro+counts) tests.
-  - stereotype_agreement (loader, eval, micro overall) tests.
-- Green [DONE]:
-  - Implemented TrustLLMFairnessDataset minimal tasks (recognition, agreement) using GPT‑4o‑mini JSON judges and split-level aggregation.
-- Next (Red→Green):
-  1) Add stereotype_query task (RtA yes/no) tests and implementation (micro accuracy; include denominators in split metrics).
-  2) Disparagement metric with effect size (group difference) alongside p-value; write fixture tests; implement helper in evaluation_utils.
-  3) Preference (overall/plain/force) yes/no judge; counts and macro where applicable.
+  - stereotype_recognition (loader, eval, split metrics macro+counts) [DONE]
+  - stereotype_agreement (loader, eval, micro overall) [DONE]
+  - stereotype_query (RtA yes/no) unit + repo-import parity; overall micro accuracy [DONE]
+  - disparagement (p-value by sex/race + effect size) unit + repo-import parity [DONE]
+  - preference (overall/plain/force) unit + repo-import parity [DONE]
+  - Loader parity checks (recognition/preference/disparagement) [DONE]
 
 Phase 4: Safety
 - Data: data/TrustLLM/dataset/safety/{jailbreak.json, exaggerated_safety.json, misuse.json}.
@@ -140,3 +140,39 @@ Initial Milestones
 - M4: Truthfulness + final integration [~2–3 days]
 - Parity fixture [DONE]: Added `emotion_memory_experiments/tests/test_data/trustllm/implicit_ethics_parity.json` and `test_trustllm_ethics_implicit_parity.py` to lock label handling. Macro accuracy excludes `not sure` per TrustLLM convention; per-class counts/accuracies still include it.
 - Repo-import parity [DONE]: Added `test_trustllm_ethics_repo_parity.py` to import TrustLLM EthicsEval and assert our split-level macro equals their `overall` on synthetic inputs that avoid GPT branches (and to mirror denominator exclusion of "not sure").
+
+Phase 4: Safety [DONE]
+- Added `TrustLLMSafetyDataset` with loader, GPT-based refusal/overrefusal judges, and split metrics mirroring RtA definitions.
+- Tests: `test_trustllm_safety.py` covers loaders, evaluator routing, naming policy, parity with `metrics.RtA` (mocked OpenAI).
+- Configs: `config/trustllm_safety_dryrun.yaml` (tmp samples) and `config/trustllm_safety_full.yaml` (real paths). Sample fixtures live in `data/TrustLLM/tmp/`.
+- Dry run passes; full sanity_check confirmed (see run log in conversation).
+
+Phase 5: Privacy [DONE]
+- Implemented `TrustLLMPrivacyDataset` (ConfAIDe pearson, awareness query refusal, leakage TD/CD/RtA heuristics) and parity tests vs `PrivacyEval`.
+- Added dry/full configs and tmp fixtures (`privacy_confide_sample.json`, etc.).
+- Sanity dry-run passes; e2e pending (see Phase 6 for consolidated run plan).
+
+Phase 6: Robustness [DONE]
+- `TrustLLMRobustnessDataset` covers advinstruction, advglue, ood_detection, ood_generalization with GPT judges + paired aggregation.
+- Parity: `test_trustllm_robustness.py` compares our advglue metrics to `metrics.count_advglue` and RtA parity for detection.
+- Configs created (dry/full) with tmp fixtures for quick validation.
+
+Phase 7: Truthfulness [DONE]
+- Added `TrustLLMTruthfulnessDataset` (external + hallucination subtasks) with heuristics mirroring TrustLLM F1/accuracy calculations.
+- Tests assert parity with `TruthfulnessEval` helpers for provided sources; naming enforcement included.
+- Dry/full configs plus tmp samples ready for validation.
+
+Cross-Cutting: Naming Policy [DONE]
+- Safety, Privacy, Robustness, Truthfulness tests assert ValueError on unsupported aliases.
+- Config templates use canonical task identifiers only.
+
+Configs & Runs [DONE]
+- Added dry/full YAMLs for safety, privacy, robustness, truthfulness plus sample JSON fixtures in `data/TrustLLM/tmp/`.
+- Each dry config sets `sanity_check: true` and low sample_limit for quick validation.
+
+E2E & Regression [DONE]
+- Ran sanity_check:true series for ethics, safety, privacy, robustness, truthfulness using full configs. Inspected `detailed_results.csv`, `raw_results.json`, and computed split metrics to validate expectations (documented in run notes).
+
+- Status Log
+- Branch: feature/trustllm-gpt-eval [ACTIVE]
+- Current focus: execute end-to-end sanity runs for safety/privacy/robustness/truthfulness and document observations in plan.

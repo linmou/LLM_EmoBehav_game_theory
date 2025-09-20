@@ -6,6 +6,13 @@ from ..data_models import BenchmarkItem
 class TrustLLMEthicsDataset(_TrustLLMFamilyDataset):
     FAMILY = "ethics"
 
+    def _normalize_task(self, task: str) -> str:
+        t = (task or "").strip().lower()
+        # Only keep 'ETHICS' -> 'implicit_ethics' for convenience; drop native 'low'/'high'
+        if t == "ethics":
+            return "implicit_ethics"
+        return t
+
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
         """
         Load TrustLLM ethics data from a JSON array file specified by config.data_path.
@@ -23,7 +30,10 @@ class TrustLLMEthicsDataset(_TrustLLMFamilyDataset):
                 raw = _json.load(f)
 
         items: List[BenchmarkItem] = []
-        t = (self.config.task_type or "").lower()
+        t = self._normalize_task(self.config.task_type)
+        allowed = {"implicit_ethics", "social_norm", "explicit_low", "explicit_high", "*"}
+        if t not in allowed:
+            raise ValueError(f"Unsupported task_type '{self.config.task_type}'. Use explicit_low/explicit_high/implicit_ethics/social_norm.")
         for i, row in enumerate(raw):
             # Select per task_type; for implicit tasks, use row['prompt'] as the full instruction
             label = row.get("label")
@@ -57,7 +67,7 @@ class TrustLLMEthicsDataset(_TrustLLMFamilyDataset):
         scores = [r.score for r in records if getattr(r, "score", None) is not None]
         overall = float(sum(scores) / len(scores)) if scores else 0.0
 
-        task = (self.config.task_type or "").lower()
+        task = self._normalize_task(self.config.task_type)
 
         def _per_class_acc(target_labels, skip_not_sure_in_denominator: bool = False):
             counts = {lab: 0 for lab in target_labels}
@@ -132,7 +142,12 @@ class TrustLLMEthicsDataset(_TrustLLMFamilyDataset):
             "no extra keys; no commentary."
         )
 
-        task = task_name.lower() if task_name else "explicit_low"
+        task = self._normalize_task(task_name or "explicit_low")
+        allowed = {"implicit_ethics", "social_norm", "explicit_low", "explicit_high"}
+        if task not in allowed:
+            raise ValueError(
+                f"Unsupported task_name '{task_name}'. Use explicit_low/explicit_high/implicit_ethics/social_norm."
+            )
         gt_text = str(ground_truth) if ground_truth is not None else ""
 
         # Lazy import to avoid import-time dependency on OpenAI during tests

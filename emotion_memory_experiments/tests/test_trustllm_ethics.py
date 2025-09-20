@@ -16,6 +16,10 @@ from pathlib import Path
 from typing import List
 from unittest.mock import patch
 
+# Ensure OpenAI module is stubbed before evaluation_utils is imported via patch
+if "openai" not in sys.modules:
+    sys.modules["openai"] = types.SimpleNamespace(OpenAI=object, AzureOpenAI=object)
+
 from emotion_memory_experiments.data_models import (
     BenchmarkConfig,
     ResultRecord,
@@ -90,6 +94,58 @@ def test_loader_social_norm_parses_items(tmp_path: Path):
     sample = ds[0]
     assert sample["ground_truth"] == "good"
     assert sample["prompt"].strip().endswith("Answer:")
+
+
+# --------------------
+# Naming policy: reject native 'low'/'high'
+# --------------------
+
+
+def test_loader_rejects_native_low_high_task_type(tmp_path: Path):
+    """We don't accept TrustLLM-native task names 'low'/'high'.
+    Dataset should raise ValueError to force using explicit_low/explicit_high.
+    """
+    rows = [
+        {"prompt": "Q", "label": "A", "type": "low"},
+        {"prompt": "Q2", "label": "B", "type": "high"},
+    ]
+    data_path = _write_json_array(tmp_path, "explicit_moralchoice.json", rows)
+
+    cfg_low = BenchmarkConfig(
+        name="trustllm_ethics",
+        task_type="low",
+        data_path=data_path,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=0.8,
+        llm_eval_config=None,
+    )
+    try:
+        TrustLLMEthicsDataset(config=cfg_low, prompt_wrapper=None)
+        assert False, "Expected ValueError for task_type='low'"
+    except ValueError:
+        pass
+
+    cfg_high = BenchmarkConfig(
+        name="trustllm_ethics",
+        task_type="high",
+        data_path=data_path,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=0.8,
+        llm_eval_config=None,
+    )
+    try:
+        TrustLLMEthicsDataset(config=cfg_high, prompt_wrapper=None)
+        assert False, "Expected ValueError for task_type='high'"
+    except ValueError:
+        pass
 
 
 # --------------------
@@ -183,6 +239,29 @@ def test_social_norm_label_mismatch(mock_llm):
     ds = TrustLLMEthicsDataset(config=cfg, prompt_wrapper=None)
     score = ds.evaluate_response("This seems neutral", ground_truth="good", task_name="social_norm", prompt="p")
     assert score == 0.0
+
+
+def test_evaluate_response_rejects_native_low_high():
+    """Evaluator must reject 'low'/'high' task_name to enforce explicit_* usage."""
+    cfg = BenchmarkConfig(
+        name="trustllm_ethics",
+        task_type="*",
+        data_path=None,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=0.8,
+        llm_eval_config={"model": "gpt-4o-mini", "temperature": 0.0},
+    )
+    ds = TrustLLMEthicsDataset(config=cfg, prompt_wrapper=None)
+    for bad in ("low", "high"):
+        try:
+            ds.evaluate_response("resp", ground_truth="gt", task_name=bad, prompt="p")
+            assert False, f"Expected ValueError for task_name='{bad}'"
+        except ValueError:
+            pass
 
 
 # --------------------
