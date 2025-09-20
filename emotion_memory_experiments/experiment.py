@@ -754,6 +754,20 @@ class EmotionExperiment:
         summary.to_csv(summary_filename)
         self.logger.info(f"Summary results saved to {summary_filename}")
 
+        # Compute and persist split-level metrics if the dataset exposes the hook
+        try:
+            dataset_obj = getattr(self, "dataset", None)
+            if dataset_obj is not None and hasattr(dataset_obj, "compute_split_metrics"):
+                split_metrics = dataset_obj.compute_split_metrics(results)
+                if isinstance(split_metrics, dict):
+                    sm_path = self.output_dir / "split_metrics.json"
+                    with open(sm_path, "w") as f:
+                        json.dump(split_metrics, f, indent=2)
+                    self.logger.info(f"Split-level metrics saved to {sm_path}")
+        except Exception as e:
+            # Do not fail the whole save path on aggregation issues
+            self.logger.error(f"Failed to compute split-level metrics: {e}")
+
         # Compute per-repeat summary if repeat_id is present
         if "repeat_id" in df.columns and df["repeat_id"].notna().any():
             by_rep = (

@@ -118,6 +118,23 @@ class BaseBenchmarkDataset(Dataset, ABC):
         """
         pass
 
+    # Split-level aggregation hook (optional)
+    def compute_split_metrics(self, records: List["ResultRecord"]) -> Dict[str, float]:
+        """
+        Compute dataset-scope (split-level) metrics from item-level results.
+
+        Default implementation returns an empty mapping so existing benchmarks
+        are unaffected. Concrete TrustLLM datasets will override this to produce
+        section-specific aggregates (e.g., RtA, Pearson, macro-F1).
+
+        Args:
+            records: List of ResultRecord objects produced by the experiment
+
+        Returns:
+            Mapping of metric_name -> value (floats preferred)
+        """
+        return {}
+
     # Common functionality implementation
 
     def __len__(self) -> int:
