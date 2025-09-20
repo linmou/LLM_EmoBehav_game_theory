@@ -102,3 +102,54 @@ def test_social_norm_macro_and_counts():
     # macro = average of class accuracies
     expected_macro = ((2/3) + 0.5 + 0.0) / 3
     assert abs(sn["macro_acc"] - expected_macro) < 1e-9
+
+
+def _make_ethics_record(gt: str, correct: bool) -> ResultRecord:
+    return ResultRecord(
+        emotion="anger",
+        intensity=1.0,
+        item_id=f"{gt}",
+        task_name="implicit_ethics",
+        prompt="p",
+        response="r",
+        ground_truth=gt,
+        score=1.0 if correct else 0.0,
+        repeat_id=0,
+    )
+
+
+def test_implicit_ethics_macro_and_counts():
+    cfg = BenchmarkConfig(
+        name="trustllm_ethics",
+        task_type="implicit_ethics",
+        data_path=None,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=0.8,
+        llm_eval_config=None,
+    )
+    ds = TrustLLMEthicsDataset(config=cfg, prompt_wrapper=None)
+
+    # Build: wrong (2/3 correct), not wrong (1/2 correct), not sure (0/1 correct)
+    recs = [
+        _make_ethics_record("wrong", True),
+        _make_ethics_record("wrong", True),
+        _make_ethics_record("wrong", False),
+        _make_ethics_record("not wrong", True),
+        _make_ethics_record("not wrong", False),
+        _make_ethics_record("not sure", False),
+    ]
+    m = ds.compute_split_metrics(recs)
+    assert "implicit_ethics" in m
+    ie = m["implicit_ethics"]
+    assert ie["counts"]["wrong"] == 3
+    assert ie["counts"]["not wrong"] == 2
+    assert ie["counts"]["not sure"] == 1
+    assert abs(ie["per_class_acc"]["wrong"] - (2/3)) < 1e-9
+    assert abs(ie["per_class_acc"]["not wrong"] - 0.5) < 1e-9
+    assert abs(ie["per_class_acc"]["not sure"] - 0.0) < 1e-9
+    expected_macro = ((2/3) + 0.5 + 0.0) / 3
+    assert abs(ie["macro_acc"] - expected_macro) < 1e-9

@@ -532,9 +532,24 @@ class MemoryExperimentSeriesRunner:
         )
         
         if self.dry_run:
-            # Validate that datasets were created successfully
+            # Validate that datasets were created successfully and have samples
             assert experiment.emotion_datasets is not None
-            self.logger.info(f"✓ Dry-run successful: {len(experiment.emotion_datasets)} emotion datasets")
+            ok = True
+            for emo, ds in experiment.emotion_datasets.items():
+                try:
+                    n = len(ds)
+                    self.logger.info(f"  - Emotion '{emo}': {n} items")
+                    if n == 0:
+                        ok = False
+                        continue
+                    sample = ds[0]
+                    if "prompt" not in sample or "ground_truth" not in sample:
+                        ok = False
+                except Exception as e:
+                    ok = False
+                    self.logger.error(f"Dry-run dataset validation failed for '{emo}': {e}")
+            assert ok, "Dry-run dataset construction failed validation"
+            self.logger.info(f"✓ Dry-run successful: {len(experiment.emotion_datasets)} emotion datasets validated")
         
         return experiment
 
@@ -614,8 +629,9 @@ class MemoryExperimentSeriesRunner:
             self.report.update_experiment(exp_id, output_dir=output_dir)
 
             # Run the experiment
-            if self.base_config.get("run_sanity_check", False):
-                experiment.run_sanity_check()
+            if self.base_config.get("run_sanity_check", False) or self.base_config.get("sanity_check", False):
+                limit = int(self.base_config.get("sanity_check_limit", 5))
+                experiment.run_sanity_check(sample_limit=limit)
             else:
                 experiment.run_experiment()
 

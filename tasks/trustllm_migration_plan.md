@@ -39,7 +39,7 @@ Phase 1: Registry & Scaffolds [DONE]
 - Refactor: none.
 - Acceptance: registry tests pass.
 
-Phase 2: Ethics (first vertical)
+Phase 2: Ethics (first vertical) [IN PROGRESS]
 - Data: data/TrustLLM/dataset/ethics/{explicit_moralchoice.json, implicit_ETHICS.json, implicit_SocialChemistry101.json}.
 - Red:
   - loader tests: parse TrustLLM JSON schema, preserve fields.
