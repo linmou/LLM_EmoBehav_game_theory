@@ -54,6 +54,12 @@ from .datasets.locomo import LoCoMoDataset
 from .datasets.truthfulqa import TruthfulQADataset
 from .datasets.fantom import FantomDataset
 from .datasets.emotion_check import EmotionCheckDataset
+from .datasets.trustllm_ethics import TrustLLMEthicsDataset
+from .datasets.trustllm_fairness import TrustLLMFairnessDataset
+from .datasets.trustllm_privacy import TrustLLMPrivacyDataset
+from .datasets.trustllm_robustness import TrustLLMRobustnessDataset
+from .datasets.trustllm_safety import TrustLLMSafetyDataset
+from .datasets.trustllm_truthfulness import TrustLLMTruthfulnessDataset
 def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
     from .dataset_factory import create_dataset_from_config as _real_create
     return _real_create(*args, **kwargs)
@@ -236,6 +242,31 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=FantomDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=FantomPromptWrapper,
+    ),
+    # TrustLLM families (GPT-4o-mini evaluator via dataset logic)
+    ("trustllm_ethics", "*"): BenchmarkSpec(
+        dataset_class=TrustLLMEthicsDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+    ),
+    ("trustllm_fairness", "*"): BenchmarkSpec(
+        dataset_class=TrustLLMFairnessDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+    ),
+    ("trustllm_privacy", "*"): BenchmarkSpec(
+        dataset_class=TrustLLMPrivacyDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+    ),
+    ("trustllm_robustness", "*"): BenchmarkSpec(
+        dataset_class=TrustLLMRobustnessDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+    ),
+    ("trustllm_safety", "*"): BenchmarkSpec(
+        dataset_class=TrustLLMSafetyDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+    ),
+    ("trustllm_truthfulness", "*"): BenchmarkSpec(
+        dataset_class=TrustLLMTruthfulnessDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
     ),
 }
 
