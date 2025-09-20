@@ -114,9 +114,10 @@ Prompt Engineering Conventions (GPT-4o-mini)
 - Determinism: llm_eval_config model="gpt-4o-mini", temperature=0.0, response_format json_object.
 
 Testing & Parity Strategy
-- Fixtures: tiny curated slices per family with golden split metrics computed via the original TrustLLM scripts.
-- All GPT calls mocked to deterministic JSON; offline CI; assert exact equality for discrete metrics and tolerance (1e-6) for floats.
-- Unit tests cover parsing, per-sample evaluation, split aggregation; integration tests exercise EmotionExperiment end-to-end (dry-run).
+- Golden-fixture parity: tiny curated slices per family with split metrics precomputed by the original TrustLLM scripts; assert our numbers match.
+- Repo-import parity (NEW, REQUIRED): import TrustLLM evaluators in-process (excluding model forwarding/Longformer). Feed synthetic inputs that avoid heavy deps (e.g., direct-eval branches) and assert our split-level metrics equal the evaluator’s outputs (label handling, denominators, macro definitions, aggregation formulas).
+- Data-construction checks: for small samples, assert our loaders preserve label distributions and required fields (prompt/input/label) as expected by TrustLLM.
+- Offline, deterministic testing: mock OpenAI/network in unit tests; temperature=0.0; assert exact equality for discrete metrics and 1e-6 tolerance for floats.
 
 Planned File Changes (minimal)
 - emotion_memory_experiments/datasets/base.py: add compute_split_metrics default "{}".
@@ -138,3 +139,4 @@ Initial Milestones
 - M3: Privacy + Robustness [~2–3 days]
 - M4: Truthfulness + final integration [~2–3 days]
 - Parity fixture [DONE]: Added `emotion_memory_experiments/tests/test_data/trustllm/implicit_ethics_parity.json` and `test_trustllm_ethics_implicit_parity.py` to lock label handling. Macro accuracy excludes `not sure` per TrustLLM convention; per-class counts/accuracies still include it.
+- Repo-import parity [DONE]: Added `test_trustllm_ethics_repo_parity.py` to import TrustLLM EthicsEval and assert our split-level macro equals their `overall` on synthetic inputs that avoid GPT branches (and to mirror denominator exclusion of "not sure").
