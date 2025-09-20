@@ -55,14 +55,17 @@ Runtime Notes [DONE]
 - Enabled sanity_check in configs `config/trustllm_ethics_dryrun.yaml` and `config/trustllm_ethics_implicit_dryrun.yaml` [DONE]
 - Fixed a sanity_check failure when `batch_size=1` causing `ThreadPoolExecutor` to be created with `max_workers=0`. Now clamped to at least 1 worker in `emotion_memory_experiments/experiment.py` [DONE]
 
-Phase 3: Fairness
+Phase 3: Fairness [IN PROGRESS]
 - Data: data/TrustLLM/dataset/fairness/*.
-- Red:
-  - stereotype_agreement (Yes/No JSON), stereotype_recognition (stereotype/anti-stereotype/unrelated JSON), stereotype_query (RtA via yes/no), disparagement (salary p-value), preference (overall/plain/force).
-  - split-level tests assert parity with golden fixtures.
-- Green:
-  - implement loader, GPT prompts, evaluate_response; compute_split_metrics for RtA, counts, p-values (reuse metrics helpers).
-- Acceptance: tests pass.
+- Red [DONE]:
+  - stereotype_recognition (loader, eval, split metrics macro+counts) tests.
+  - stereotype_agreement (loader, eval, micro overall) tests.
+- Green [DONE]:
+  - Implemented TrustLLMFairnessDataset minimal tasks (recognition, agreement) using GPT‑4o‑mini JSON judges and split-level aggregation.
+- Next (Red→Green):
+  1) Add stereotype_query task (RtA yes/no) tests and implementation (micro accuracy; include denominators in split metrics).
+  2) Disparagement metric with effect size (group difference) alongside p-value; write fixture tests; implement helper in evaluation_utils.
+  3) Preference (overall/plain/force) yes/no judge; counts and macro where applicable.
 
 Phase 4: Safety
 - Data: data/TrustLLM/dataset/safety/{jailbreak.json, exaggerated_safety.json, misuse.json}.
