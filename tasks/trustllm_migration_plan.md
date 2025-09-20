@@ -18,7 +18,7 @@ Minimal Interface Changes
 
 Phased Delivery (per TDD)
 
-Phase 0: Split-Level Hook (infra)
+Phase 0: Split-Level Hook (infra) [DONE]
 - Red:
   - tests: dataset implements compute_split_metrics (exists and returns dict of str→float); EmotionExperiment persists split_metrics.json.
 - Green:
@@ -26,7 +26,7 @@ Phase 0: Split-Level Hook (infra)
 - Refactor: keep minimal changes; ensure no behavior change for existing memory benchmarks.
 - Acceptance: new tests pass; all existing tests green (回归测试).
 
-Phase 1: Registry & Scaffolds
+Phase 1: Registry & Scaffolds [DONE]
 - Red: tests that BENCHMARK_SPECS resolves ("trustllm", task_type) to each new dataset class.
 - Green: add dataset stubs and registry entries:
   - TrustLLMEthicsDataset
@@ -130,4 +130,3 @@ Initial Milestones
 - M2: Fairness + Safety [~2–3 days]
 - M3: Privacy + Robustness [~2–3 days]
 - M4: Truthfulness + final integration [~2–3 days]
-
