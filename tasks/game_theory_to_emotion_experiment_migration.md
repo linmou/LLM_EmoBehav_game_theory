@@ -1,7 +1,7 @@
 ## Game Theory → EmotionExperiment Migration Plan (TDD)
 
 Purpose
-- Unify game theory experiments under `EmotionExperiment` so all emotion experiments run via `python -m emotion_experiment_engine.memory_experiment_series_runner --config`.
+- Unify game theory experiments under `EmotionExperiment` so all emotion experiments run via `python -m emotion_experiment_engine.emotion_experiment_series_runner --config`.
 - Keep the `emotion_experiment_engine` config design unchanged.
 - Start with Prisoners_Dilemma only; add others later.
 - For games, `evaluate_response` returns the chosen option number (1-based), not correctness; provide split evaluation (ratio of options).
@@ -22,7 +22,7 @@ Scope Summary (minimal surface area)
 - [x] Green implementation of game adapter, dataset, and benchmark registry entry.
 - [x] Split choice ratio aggregation wired into result saving.
 - [x] Regression pytest and mypy invoked (blocked by pre-existing repo issues; see run logs).
-- [x] Sanity check runner executed via `python -m emotion_experiment_engine.memory_experiment_series_runner --config config/game_theory_prisoners_dilemma.yaml`.
+- [x] Sanity check runner executed via `python -m emotion_experiment_engine.emotion_experiment_series_runner --config config/game_theory_prisoners_dilemma.yaml`.
 
 Deliverables
 - New benchmark registry entry for games.
@@ -97,7 +97,7 @@ Test-Driven Development Plan
 - mypy type-check modified files.
 
 Acceptance Criteria
-- Able to run: `python -m emotion_experiment_engine.memory_experiment_series_runner --config <yaml>` where yaml includes `{name: game_theory, task_type: Prisoners_Dilemma}`.
+- Able to run: `python -m emotion_experiment_engine.emotion_experiment_series_runner --config <yaml>` where yaml includes `{name: game_theory, task_type: Prisoners_Dilemma}`.
 - Dry-run works; real run generates outputs under the same result structure as memory tasks.
 - For games, `score` column holds the chosen option number (float), not correctness.
 - `summary_choice_ratio.csv` exists with per-option ratios; ratios per group sum to 1.

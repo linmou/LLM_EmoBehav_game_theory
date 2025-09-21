@@ -3,9 +3,13 @@ description: "new game theory config for new benchmark infra"
 version: "1.0.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+
+#  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+#  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+#  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
 
 emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
 intensities:
@@ -28,7 +32,7 @@ benchmarks:
     #   previous_trust_level: 0
 
 loading_config:
-  gpu_memory_utilization: 0.5
+  gpu_memory_utilization: 0.9
   enforce_eager: true
   quantization: null
   trust_remote_code: true
@@ -37,6 +41,7 @@ loading_config:
   disable_custom_all_reduce: false
   additional_vllm_kwargs: {}
 
+repeat_runs: 3
 
 generation_config:
   temperature: 0.1
@@ -53,4 +58,4 @@ generation_config:
 batch_size: 600
 
 output_dir: "results/new_game_theory"
-sanity_check: true
+sanity_check: false

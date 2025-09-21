@@ -18,12 +18,12 @@ from pathlib import Path
 class TestImportCoverage(unittest.TestCase):
     """Test that all Python files in the project can be imported without errors"""
     
-    def test_memory_experiment_series_runner_import(self):
-        """Test that memory_experiment_series_runner can be imported"""
-        # Note: Full test coverage for memory_experiment_series_runner is now in 
-        # test_memory_experiment_series_runner.py - this is just basic import test
+    def test_emotion_experiment_series_runner_import(self):
+        """Test that emotion_experiment_series_runner can be imported"""
+        # Note: Full test coverage for emotion_experiment_series_runner is now in 
+        # test_emotion_experiment_series_runner.py - this is just basic import test
         try:
-            import emotion_experiment_engine.memory_experiment_series_runner
+            import emotion_experiment_engine.emotion_experiment_series_runner
             self.assertTrue(True, "Import should succeed after fix")
         except AttributeError as e:
             if "LoadingConfig" in str(e):

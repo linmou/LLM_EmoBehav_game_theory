@@ -55,7 +55,7 @@ class TestMigrator:
                 "test_end_to_end_integration.py", # ✅ Working - Full pipeline
                 "test_experiment.py",             # Experiment orchestration
                 "test_run_emotion_memory_experiment.py", # Full experiment execution
-                "test_memory_experiment_series_runner.py", # Series execution
+                "test_emotion_experiment_series_runner.py", # Series execution
             ],
             "comprehensive": [
                 "test_answer_wrapper_comprehensive.py",      # ✅ Working - Your comprehensive test  

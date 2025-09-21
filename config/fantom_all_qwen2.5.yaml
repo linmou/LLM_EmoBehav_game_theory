@@ -1,5 +1,5 @@
 # Fantom memory benchmark sanity config
-# Use with: python -m emotion_experiment_engine.memory_experiment_series_runner \
+# Use with: python -m emotion_experiment_engine.emotion_experiment_series_runner \
 #             --config config/fantom_memory_sanity.yaml --dry-run
 
 experiment_name: "fantom_all_qwen2.5"

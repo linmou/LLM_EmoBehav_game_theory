@@ -30,7 +30,7 @@ emotions: ["anger", "fear"]
 intensities: [1.5]
 
 # Repeat settings for stability across stochastic decoding
-# These are consumed by memory_experiment_series_runner and EmotionExperiment
+# These are consumed by emotion_experiment_series_runner and EmotionExperiment
 repeat_runs: 5           # number of independent runs per (emotion,intensity)
 repeat_seed_base: 12345  # base RNG seed; each run uses base+repeat_id
 

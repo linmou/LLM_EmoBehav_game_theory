@@ -223,7 +223,7 @@ tests/
 
 Updated test locations reflecting recent migration:
 - Prompt wrapper unit tests → `emotion_experiment_engine/tests/unit/test_memory_prompt_wrapper.py`
-- Memory experiment series runner integration tests → `emotion_experiment_engine/tests/integration/test_memory_experiment_series_runner.py`
+- Memory experiment series runner integration tests → `emotion_experiment_engine/tests/integration/test_emotion_experiment_series_runner.py`
 - Root remains reserved for “comprehensive + specialized” suites by design.
 
 Regression command examples by component:

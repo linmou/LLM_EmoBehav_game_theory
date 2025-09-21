@@ -1,7 +1,7 @@
 ################################################################################
 # BFCL benchmark sanity config (live_simple + live_multiple)
 # Use with:
-#   python -m emotion_experiment_engine.memory_experiment_series_runner \
+#   python -m emotion_experiment_engine.emotion_experiment_series_runner \
 #       --config config/bfcl_simple_qwen3.yaml 
 
 experiment_name: "bfcl_live_qwen3"

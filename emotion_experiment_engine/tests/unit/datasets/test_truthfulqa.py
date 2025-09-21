@@ -410,7 +410,7 @@ class TestTruthfulQADataset(unittest.TestCase):
         """Test dataset can handle None data_path and auto-generate it using get_data_path().
         
         CRITICAL REGRESSION TEST: This test reproduces the real-world bug where 
-        memory_experiment_series_runner creates BenchmarkConfig with data_path=None,
+        emotion_experiment_series_runner creates BenchmarkConfig with data_path=None,
         expecting datasets to call get_data_path() method for auto-generation.
         
         Without this test, we missed that TruthfulQA was directly accessing data_path
@@ -420,7 +420,7 @@ class TestTruthfulQADataset(unittest.TestCase):
         config = BenchmarkConfig(
             name="truthfulqa",  # Lowercase to match config file
             task_type="mc1", 
-            data_path=None,  # This is what memory_experiment_series_runner sets!
+            data_path=None,  # This is what emotion_experiment_series_runner sets!
             base_data_dir="data/TruthfulQA",
             sample_limit=None,
             augmentation_config=None,

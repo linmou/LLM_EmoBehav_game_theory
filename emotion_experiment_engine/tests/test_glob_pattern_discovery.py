@@ -17,7 +17,7 @@ import unittest
 from pathlib import Path
 
 from ..data_models import BenchmarkConfig
-from ..memory_experiment_series_runner import MemoryExperimentSeriesRunner
+from ..emotion_experiment_series_runner import MemoryExperimentSeriesRunner
 
 
 class TestGlobPatternDiscovery(unittest.TestCase):

@@ -10,6 +10,8 @@ from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
+import numpy as np
+from scipy import stats
 
 from games.game import SequentialGameScenario
 from games.game_configs import get_game_config
@@ -253,6 +255,11 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             "overall": overall_rows,
             "by_repeat": repeat_rows,
         }
+
+        # Add statistical analysis over categorical choices
+        stats_payload = self._compute_stats(records)
+        if stats_payload:
+            metrics["stats"] = stats_payload
         return metrics
 
     # ------------------------------------------------------------------
@@ -443,6 +450,111 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             logger.warning("Unable to initialise LLM client: %s", exc)
             self._llm_client = None
         return self._llm_client
+
+    # --------------------------
+    # Statistical analysis utils
+    # --------------------------
+    def _compute_stats(self, records: List[ResultRecord]) -> Dict[str, Any]:
+        # Build counts per (emotion, intensity) over option IDs
+        counts_by_ei: Dict[Tuple[str, float], Dict[int, int]] = defaultdict(lambda: defaultdict(int))
+        category_ids: set[int] = set()
+
+        for r in records:
+            if r.score is None:
+                continue
+            try:
+                val = float(r.score)
+            except (TypeError, ValueError):
+                continue
+            if math.isnan(val):
+                continue
+            oid = int(val)
+            counts_by_ei[(r.emotion, float(r.intensity))][oid] += 1
+            category_ids.add(oid)
+
+        if not counts_by_ei or not category_ids:
+            return {}
+
+        cats = sorted(category_ids)
+
+        # Emotion effect: aggregate counts across intensities per emotion
+        counts_by_emotion: Dict[str, Dict[int, int]] = defaultdict(lambda: {c: 0 for c in cats})
+        for (emotion, _intensity), counts in counts_by_ei.items():
+            for c in cats:
+                counts_by_emotion[emotion][c] = counts_by_emotion[emotion].get(c, 0) + counts.get(c, 0)
+
+        emotion_effect = self._contingency_stats(counts_by_emotion, cats)
+
+        # Intensity effect: for each emotion with >=2 intensities
+        intensity_effect: Dict[str, Any] = {}
+        intensities_by_emotion: Dict[str, set[float]] = defaultdict(set)
+        for (emotion, intensity) in counts_by_ei.keys():
+            intensities_by_emotion[emotion].add(float(intensity))
+
+        for emotion, intens in intensities_by_emotion.items():
+            if len(intens) < 2:
+                continue
+            counts_by_intensity: Dict[str, Dict[int, int]] = {}
+            for i in sorted(intens):
+                key = (emotion, float(i))
+                counts = counts_by_ei.get(key, {})
+                counts_by_intensity[str(i)] = {c: counts.get(c, 0) for c in cats}
+            intensity_effect[emotion] = self._contingency_stats(counts_by_intensity, cats)
+
+        payload: Dict[str, Any] = {
+            "category_ids": cats,
+            "emotion_effect": emotion_effect,
+        }
+        if intensity_effect:
+            payload["intensity_effect"] = intensity_effect
+        return payload
+
+    def _contingency_stats(self, counts_by_condition: Dict[str, Dict[int, int]], cats: List[int]) -> Dict[str, Any]:
+        # Build table rows in stable condition order
+        conditions = sorted(counts_by_condition.keys(), key=lambda x: str(x))
+        table = np.array([[counts_by_condition[cond].get(c, 0) for c in cats] for cond in conditions], dtype=float)
+
+        chi2, p_value = self._chi_or_fisher(table)
+        result: Dict[str, Any] = {
+            "conditions": conditions,
+            "chi_square": float(chi2),
+            "p_value": float(p_value),
+            "significant": bool(p_value < 0.05),
+            "pairwise": {},
+        }
+
+        # Pairwise comparisons
+        for i in range(len(conditions)):
+            for j in range(i + 1, len(conditions)):
+                a = table[i, :]
+                b = table[j, :]
+                sub = np.vstack([a, b])
+                chi2_pw, p_pw = self._chi_or_fisher(sub)
+                key = f"{conditions[i]}_vs_{conditions[j]}"
+                result["pairwise"][key] = {
+                    "chi_square": float(chi2_pw),
+                    "p_value": float(p_pw),
+                    "significant": bool(p_pw < 0.05),
+                }
+
+        return result
+
+    @staticmethod
+    def _chi_or_fisher(table: np.ndarray) -> Tuple[float, float]:
+        # Use Fisher's exact test only for 2x2 tables with any small cell (<5)
+        if table.shape == (2, 2) and (table < 5).any():
+            try:
+                _, p = stats.fisher_exact(table)
+                # Map to a chi-square-like statistic for reporting (optional)
+                # We compute chi2 from p-value and dof=1 with an approximate inverse if desired; keep chi2 as NaN
+                return float("nan"), float(p)
+            except Exception:
+                pass
+        try:
+            chi2, p, _, _ = stats.chi2_contingency(table)
+            return float(chi2), float(p)
+        except Exception:
+            return 0.0, 1.0
 
 
 __all__ = ["GameTheoryDataset"]

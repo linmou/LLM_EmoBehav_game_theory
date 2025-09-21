@@ -4,7 +4,7 @@ Consolidated tests for repeat support + CLI/series integration + README output.
 Responsible files:
 - emotion_experiment_engine/experiment.py
 - emotion_experiment_engine/run_emotion_memory_experiment.py
-- emotion_experiment_engine/memory_experiment_series_runner.py
+- emotion_experiment_engine/emotion_experiment_series_runner.py
 """
 
 import tempfile
@@ -270,7 +270,7 @@ def test_series_runner_passes_repeat_and_seed(tmp_path: Path):
             return None
 
     with patch("emotion_experiment_engine.experiment.EmotionExperiment", DummyExp):
-        from emotion_experiment_engine.memory_experiment_series_runner import (
+        from emotion_experiment_engine.emotion_experiment_series_runner import (
             MemoryExperimentSeriesRunner,
         )
 

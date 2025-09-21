@@ -32,7 +32,7 @@ Ensure consistency between test architecture and documentation by recording the 
 - Pre-commit: `.pre-commit-config.yaml` adds the same layout check locally
 - Test relocations:
   - `tests/unit/test_memory_prompt_wrapper.py` (moved from root)
-  - `tests/integration/test_memory_experiment_series_runner.py` (moved from root)
+  - `tests/integration/test_emotion_experiment_series_runner.py` (moved from root)
 
 ## Regression Commands
 - `python -m pytest emotion_experiment_engine/tests/regression -v --tb=short --maxfail=1`

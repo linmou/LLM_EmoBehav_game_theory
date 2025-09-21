@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive test suite for memory_experiment_series_runner.py
+Comprehensive test suite for emotion_experiment_series_runner.py
 
 Covers:
 - BenchmarkConfig creation and pattern expansion behavior
@@ -23,7 +23,7 @@ import yaml
 from emotion_experiment_engine.data_models import BenchmarkConfig
 
 try:
-    from emotion_experiment_engine.memory_experiment_series_runner import (
+    from emotion_experiment_engine.emotion_experiment_series_runner import (
         MemoryExperimentSeriesRunner,
     )
     RUNNER_AVAILABLE = True
@@ -106,9 +106,9 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
 
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
-    def test_memory_experiment_series_runner_import(self):
+    def test_emotion_experiment_series_runner_import(self):
         try:
-            import emotion_experiment_engine.memory_experiment_series_runner  # noqa: F401
+            import emotion_experiment_engine.emotion_experiment_series_runner  # noqa: F401
             self.assertTrue(True)
         except ImportError as e:
             if "vllm" in str(e).lower():
@@ -171,9 +171,9 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
     @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
     def test_experiment_series_continues_after_failure(self):
         with patch(
-            "emotion_experiment_engine.memory_experiment_series_runner.MemoryExperimentSeriesRunner._check_model_existence"
+            "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner._check_model_existence"
         ) as mock_check_model, patch(
-            "emotion_experiment_engine.memory_experiment_series_runner.MemoryExperimentSeriesRunner.run_single_experiment"
+            "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner.run_single_experiment"
         ) as mock_run_single:
             mock_check_model.return_value = True
             attempted, failed, succeeded = [], [], []
@@ -202,7 +202,7 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
 
     @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
     def test_dry_run_errors_bubble_up(self):
-        # Test for emotion_experiment_engine.memory_experiment_series_runner.dry_run_series error propagation when setup fails.
+        # Test for emotion_experiment_engine.emotion_experiment_series_runner.dry_run_series error propagation when setup fails.
         runner = MemoryExperimentSeriesRunner(str(self.config_file), dry_run=True)
 
         with patch.object(runner, "setup_experiment", side_effect=RuntimeError("boom")):

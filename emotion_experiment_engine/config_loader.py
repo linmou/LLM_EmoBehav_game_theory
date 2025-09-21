@@ -3,7 +3,7 @@ YAML configuration loader for emotion memory experiments.
 Allows users to define experiment configurations in YAML format.
 
 DEPRECATED: This module is deprecated and only used for tests.
-Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.
+Production code uses direct yaml.safe_load() in emotion_experiment_series_runner.py.
 """
 import warnings
 import yaml
@@ -16,7 +16,7 @@ class EmotionMemoryConfigLoader:
     """Loads emotion memory experiment configurations from YAML files.
     
     DEPRECATED: This class is deprecated and only used for tests.
-    Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.
+    Production code uses direct yaml.safe_load() in emotion_experiment_series_runner.py.
     """
     
     @staticmethod
@@ -27,7 +27,7 @@ class EmotionMemoryConfigLoader:
         """
         warnings.warn(
             "EmotionMemoryConfigLoader.load_from_yaml is deprecated and only used for tests. "
-            "Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.",
+            "Production code uses direct yaml.safe_load() in emotion_experiment_series_runner.py.",
             DeprecationWarning,
             stacklevel=2
         )
@@ -161,11 +161,11 @@ def load_emotion_memory_config(config_path: Union[str, Path]) -> ExperimentConfi
     """Convenience function to load emotion memory experiment config from YAML.
     
     DEPRECATED: This function is deprecated and only used for tests.
-    Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.
+    Production code uses direct yaml.safe_load() in emotion_experiment_series_runner.py.
     """
     warnings.warn(
         "load_emotion_memory_config is deprecated and only used for tests. "
-        "Production code uses direct yaml.safe_load() in memory_experiment_series_runner.py.",
+        "Production code uses direct yaml.safe_load() in emotion_experiment_series_runner.py.",
         DeprecationWarning,
         stacklevel=2
     )
