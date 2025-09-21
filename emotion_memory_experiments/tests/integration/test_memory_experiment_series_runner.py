@@ -200,7 +200,15 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
             self.assertEqual(summary["failed"], 1)
             self.assertEqual(summary["completed"], expected_total - 1)
 
+    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
+    def test_dry_run_errors_bubble_up(self):
+        # Test for emotion_memory_experiments.memory_experiment_series_runner.dry_run_series error propagation when setup fails.
+        runner = MemoryExperimentSeriesRunner(str(self.config_file), dry_run=True)
+
+        with patch.object(runner, "setup_experiment", side_effect=RuntimeError("boom")):
+            with self.assertRaisesRegex(RuntimeError, "Config 1 failed"):
+                runner.dry_run_series()
+
 
 if __name__ == "__main__":
     unittest.main()
-

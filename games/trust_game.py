@@ -1,7 +1,7 @@
 import random
-from typing import Any, ClassVar, Dict, Optional, Union
+from typing import Any, ClassVar, Dict, Optional, Union, cast
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from games.game import (
     BehaviorChoices,
@@ -75,7 +75,7 @@ class TrustGameScenario(SequentialGameScenario):
         return self.participants
 
     def get_payoff_matrix(self) -> Dict[str, Any]:
-        return self.payoff_matrix
+        return cast(Dict[str, Any], self.payoff_matrix)
 
     def find_behavior_from_decision(self, decision: str) -> str:
         for attr, value in self.get_behavior_choices().__dict__.items():
@@ -83,7 +83,34 @@ class TrustGameScenario(SequentialGameScenario):
                 return attr
         raise ValueError(f"Invalid decision: {decision}")
 
-    def previous_actions(self) -> list:
+    @model_validator(mode="after")
+    def _validate_participants(self) -> "TrustGameScenario":
+        if not isinstance(self.participants, list) or not self.participants:
+            raise ValueError("Participants must be a non-empty list")
+
+        role_map: Dict[str, dict] = {}
+        for participant in self.participants:
+            if not isinstance(participant, dict):
+                continue
+            role = participant.get("role")
+            if role:
+                role_map.setdefault(role, participant)
+
+        missing_roles = [role for role in ("Trustor", "Trustee") if role not in role_map]
+        if missing_roles:
+            raise ValueError(
+                "Missing participant role(s): " + ", ".join(sorted(missing_roles))
+            )
+
+        for role in ("Trustor", "Trustee"):
+            participant = role_map.get(role, {})
+            name = participant.get("name")
+            if not name:
+                raise ValueError(f"Participant role '{role}' missing required 'name'")
+
+        return self
+
+    def previous_actions(self) -> list:  # type: ignore[override]
         assert (
             self.previous_actions_length == 0
         ), "Currently trust game does not have previous actions"
@@ -158,7 +185,7 @@ class TrustGameTrustorScenario(TrustGameScenario):
     def get_behavior_choices(self) -> TGTrustorChoices:
         return self.trustor_behavior_choices
 
-    def get_participants(self) -> list[str]:
+    def get_participants(self) -> list[Any]:  # type: ignore[override]
         return [
             (
                 ("You", participant["profile"])
@@ -181,7 +208,7 @@ class TrustGameTrusteeScenario(TrustGameScenario):
     def get_behavior_choices(self) -> TGTrusteeChoices:
         return self.trustee_behavior_choices
 
-    def get_participants(self) -> list[str]:
+    def get_participants(self) -> list[Any]:  # type: ignore[override]
         return [
             (
                 ("You", participant["profile"])
@@ -192,7 +219,7 @@ class TrustGameTrusteeScenario(TrustGameScenario):
         ]
 
     @property
-    def previous_actions(self) -> list:
+    def previous_actions(self) -> list:  # type: ignore[override]
         if self.previous_trust_level == 0:
             return [(self.trustor_name, self.trustor_behavior_choices.trust_low)]
         elif self.previous_trust_level == 1:

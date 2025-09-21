@@ -29,8 +29,7 @@ try:
     # Optional for dry-run; real import only needed for execution
     from vllm import LLM  # type: ignore
 except Exception:
-    class LLM:  # Fallback dummy type to allow isinstance checks
-        pass
+    LLM = object  # type: ignore[assignment]
 
 from neuro_manipulation.configs.experiment_config import get_repe_eng_config
 from neuro_manipulation.model_layer_detector import ModelLayerDetector
@@ -756,12 +755,17 @@ class EmotionExperiment:
         summary.to_csv(summary_filename)
         self.logger.info(f"Summary results saved to {summary_filename}")
 
+        choice_ratio_payload: Optional[Dict[str, Any]] = None
         # Compute and persist split-level metrics if the dataset exposes the hook
         try:
             dataset_obj = getattr(self, "dataset", None)
             if dataset_obj is not None and hasattr(dataset_obj, "compute_split_metrics"):
                 split_metrics = dataset_obj.compute_split_metrics(results)
                 if isinstance(split_metrics, dict):
+                    if "choice_ratio" in split_metrics:
+                        payload = split_metrics["choice_ratio"]
+                        if isinstance(payload, dict):
+                            choice_ratio_payload = payload
                     sm_path = self.output_dir / "split_metrics.json"
                     with open(sm_path, "w") as f:
                         json.dump(split_metrics, f, indent=2)
@@ -781,6 +785,25 @@ class EmotionExperiment:
             by_rep_filename = self.output_dir / "summary_by_repeat.csv"
             by_rep.to_csv(by_rep_filename, index=False)
             self.logger.info(f"Per-repeat summary saved to {by_rep_filename}")
+
+            ratio_by_repeat_rows: List[Dict[str, Any]] = []
+            if choice_ratio_payload:
+                maybe_rows = choice_ratio_payload.get("by_repeat")
+                if isinstance(maybe_rows, list):
+                    ratio_by_repeat_rows = maybe_rows
+
+            if ratio_by_repeat_rows:
+                ratio_by_repeat_df = pd.DataFrame(ratio_by_repeat_rows)
+                if not ratio_by_repeat_df.empty:
+                    ratio_by_repeat_filename = (
+                        self.output_dir / "summary_choice_ratio_by_repeat.csv"
+                    )
+                    ratio_by_repeat_df.to_csv(
+                        ratio_by_repeat_filename, index=False
+                    )
+                    self.logger.info(
+                        f"Choice ratios per repeat saved to {ratio_by_repeat_filename}"
+                    )
 
             # Compute across-repeat aggregation per (emotion,intensity)
             overall_rows = []
@@ -832,6 +855,21 @@ class EmotionExperiment:
             overall_df.to_csv(overall_filename, index=False)
             self.logger.info(f"Across-repeat summary saved to {overall_filename}")
 
+        overall_rows_payload: List[Dict[str, Any]] = []
+        if choice_ratio_payload:
+            maybe_overall = choice_ratio_payload.get("overall")
+            if isinstance(maybe_overall, list):
+                overall_rows_payload = maybe_overall
+
+        if overall_rows_payload:
+            overall_df = pd.DataFrame(overall_rows_payload)
+            if not overall_df.empty:
+                ratio_overall_filename = self.output_dir / "summary_choice_ratio.csv"
+                overall_df.to_csv(ratio_overall_filename, index=False)
+                self.logger.info(
+                    f"Choice ratios saved to {ratio_overall_filename}"
+                )
+
         # Create README explaining output files
         try:
             readme_content = (
@@ -845,6 +883,8 @@ class EmotionExperiment:
                 "  - mean_of_means: Unweighted mean of per-repeat means.\n"
                 "  - between_run_var: Sample variance of per-repeat means (repeat-level stability).\n"
                 "  - pooled_var: Unbiased pooled variance across all observations (law of total variance).\n"
+                "- summary_choice_ratio.csv: Per-option selection ratios grouped by emotion and intensity (present when dataset supplies choice ratios).\n"
+                "- summary_choice_ratio_by_repeat.csv: Per-option selection ratios grouped by emotion, intensity, and repeat (requires dataset-supplied choice ratios and repeat runs).\n"
                 "- experiment_config.json: Resolved configuration and runtime info (includes repeat settings).\n\n"
                 "Notes:\n"
                 "- For meaningful repeat variance, enable stochastic decoding (do_sample=true, nonzero temperature/top_p).\n"

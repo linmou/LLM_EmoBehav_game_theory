@@ -60,6 +60,7 @@ from .datasets.trustllm_privacy import TrustLLMPrivacyDataset
 from .datasets.trustllm_robustness import TrustLLMRobustnessDataset
 from .datasets.trustllm_safety import TrustLLMSafetyDataset
 from .datasets.trustllm_truthfulness import TrustLLMTruthfulnessDataset
+from .datasets.games import GameTheoryDataset
 def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
     from .dataset_factory import create_dataset_from_config as _real_create
     return _real_create(*args, **kwargs)
@@ -67,6 +68,7 @@ if TYPE_CHECKING:
     from .datasets.base import BaseBenchmarkDataset
 from .fantom_prompt_wrapper import FantomPromptWrapper
 from .bfcl_prompt_wrapper import BFCLPromptWrapper
+from .game_prompt_wrapper import GameBenchmarkPromptWrapper
 
 
 @dataclass
@@ -267,6 +269,11 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
     ("trustllm_truthfulness", "*"): BenchmarkSpec(
         dataset_class=TrustLLMTruthfulnessDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+    ),
+    ("game_theory", "*"): BenchmarkSpec(
+        dataset_class=GameTheoryDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=GameBenchmarkPromptWrapper,
     ),
 }
 

@@ -1,0 +1,56 @@
+experiment_name: "game_theory"
+description: "new game theory config for new benchmark infra"
+version: "1.0.0"
+
+models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+
+emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
+intensities:
+  - 1.5
+
+benchmarks:
+  - name: "game_theory"
+    task_type: "Trust_Game_Trustee"
+    augmentation_config:
+      previous_actions_length: 1
+      previous_trust_level: 1
+    enable_auto_truncation: false
+    truncation_strategy: "right"
+    preserve_ratio: 1.0
+    llm_eval_config:
+      model: "gpt-4o-mini"
+      temperature: 0.0
+    # extra_dataset_params:
+    #   previous_actions_length: 2
+    #   previous_trust_level: 0
+
+loading_config:
+  gpu_memory_utilization: 0.5
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 1
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+
+generation_config:
+  temperature: 0.1
+  max_new_tokens: 1000
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 600
+
+output_dir: "results/new_game_theory"
+sanity_check: true

@@ -1,7 +1,7 @@
 import random
-from typing import Any, ClassVar, Dict, Optional, Union
+from typing import Any, ClassVar, Dict, Optional, Union, cast
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from games.game import (
     BehaviorChoices,
@@ -73,7 +73,7 @@ class UltimatumGameScenario(SequentialGameScenario):
         return self.participants
 
     def get_payoff_matrix(self) -> Dict[str, Any]:
-        return self.payoff_matrix
+        return cast(Dict[str, Any], self.payoff_matrix)
 
     def get_participant_names(self) -> list[str]:
         return [participant["name"] for participant in self.participants]
@@ -86,6 +86,34 @@ class UltimatumGameScenario(SequentialGameScenario):
             if value == decision:
                 return attr
         raise ValueError(f"Invalid decision: {decision}")
+
+    @model_validator(mode="after")
+    def _validate_participants(self) -> "UltimatumGameScenario":
+        if not isinstance(self.participants, list) or not self.participants:
+            raise ValueError("Participants must be a non-empty list")
+
+        role_map: Dict[str, dict] = {}
+        for participant in self.participants:
+            if not isinstance(participant, dict):
+                continue
+            role = participant.get("role")
+            if role:
+                role_map.setdefault(role, participant)
+
+        expected_roles = ("Proposer", "Responder")
+        missing_roles = [role for role in expected_roles if role not in role_map]
+        if missing_roles:
+            raise ValueError(
+                "Missing participant role(s): " + ", ".join(sorted(missing_roles))
+            )
+
+        for role in expected_roles:
+            participant = role_map.get(role, {})
+            name = participant.get("name")
+            if not name:
+                raise ValueError(f"Participant role '{role}' missing required 'name'")
+
+        return self
 
     def previous_actions(self) -> list:
         assert (

@@ -461,14 +461,20 @@ class MemoryExperimentSeriesRunner:
         """Set up a single memory experiment with the given benchmark and model"""
 
         # Create BenchmarkConfig directly from dictionary with all required fields
+        data_path_raw = benchmark_config.get("data_path")
+        if isinstance(data_path_raw, Path):
+            data_path = data_path_raw
+        elif isinstance(data_path_raw, (str, os.PathLike)):
+            data_path = Path(data_path_raw)
+        elif data_path_raw is None:
+            data_path = None
+        else:
+            data_path = Path(str(data_path_raw))
+
         benchmark = BenchmarkConfig(
             name=benchmark_config["name"],
             task_type=benchmark_config["task_type"],
-            data_path=(
-                Path(benchmark_config.get("data_path"))
-                if benchmark_config.get("data_path")
-                else None
-            ),
+            data_path=data_path,
             base_data_dir=benchmark_config.get("base_data_dir"),
             sample_limit=benchmark_config.get("sample_limit"),
             augmentation_config=benchmark_config.get("augmentation_config"),
@@ -826,6 +832,8 @@ class MemoryExperimentSeriesRunner:
         self.logger.info("\n🔬 Testing experiment configuration creation...")
         test_count = min(3, len(benchmarks), len(models))  # Test first 3 combinations
 
+        errors: List[Tuple[int, str]] = []
+
         for i, (benchmark_config, model_name) in enumerate(
             zip(benchmarks[:test_count], models[:test_count])
         ):
@@ -860,7 +868,7 @@ class MemoryExperimentSeriesRunner:
                             # Show first 1000 chars of formatted prompt to validate prompt wrapping
                             if isinstance(formatted_prompt, str):
                                 if len(formatted_prompt) > 1000:
-                                    self.logger.info(f"         Formatted prompt: {formatted_prompt[:1000]}...{formatted_prompt[-200:] if len(formatted_prompt) > 1200 else ''} ")
+                                    self.logger.info(f"         Formatted prompt: {formatted_prompt[:1500]}...{formatted_prompt[-200:] if len(formatted_prompt) > 1200 else ''} ")
                                 else:
                                     self.logger.info(f"         Formatted prompt: {formatted_prompt}")
 
@@ -878,6 +886,16 @@ class MemoryExperimentSeriesRunner:
                             self.logger.info(f"         Unexpected item structure: {first_item}")
             except Exception as e:
                 self.logger.error(f"   ❌ Config {i+1} failed: {e}")
+                errors.append((i + 1, str(e)))
+
+        if errors:
+            failure_summary = "; ".join(
+                f"Config {idx} failed: {message}" for idx, message in errors
+            )
+            self.logger.error(
+                "Dry run aborted with %d configuration error(s)", len(errors)
+            )
+            raise RuntimeError(failure_summary)
 
         self.logger.info("\n🎉 DRY RUN COMPLETED SUCCESSFULLY!")
         self.logger.info("✅ Configuration is valid and ready for execution")
