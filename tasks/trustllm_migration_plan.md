@@ -1,7 +1,7 @@
 # TrustLLM Migration Plan (GPT-4o-mini only)
 
 Objective
-- Reproduce TrustLLM benchmarks (ethics, fairness, privacy, robustness, safety, truthfulness) inside emotion_memory_experiments using only GPT-4o-mini as evaluator, IdentityAnswerWrapper, and current infra. No Longformer/Perspective, no extra logging/cost tracking. All scoring must be provably equivalent to the original implementation on curated fixtures via TDD.
+- Reproduce TrustLLM benchmarks (ethics, fairness, privacy, robustness, safety, truthfulness) inside emotion_experiment_engine using only GPT-4o-mini as evaluator, IdentityAnswerWrapper, and current infra. No Longformer/Perspective, no extra logging/cost tracking. All scoring must be provably equivalent to the original implementation on curated fixtures via TDD.
 
 Scope & Constraints
 - Use existing infra: dataset + prompt wrapper + answer wrapper (IdentityAnswerWrapper) + EmotionExperiment orchestration.
@@ -56,7 +56,7 @@ Naming Policy Update [DONE]
 
 Runtime Notes [DONE]
 - Enabled sanity_check in configs `config/trustllm_ethics_dryrun.yaml` and `config/trustllm_ethics_implicit_dryrun.yaml` [DONE]
-- Fixed a sanity_check failure when `batch_size=1` causing `ThreadPoolExecutor` to be created with `max_workers=0`. Now clamped to at least 1 worker in `emotion_memory_experiments/experiment.py` [DONE]
+- Fixed a sanity_check failure when `batch_size=1` causing `ThreadPoolExecutor` to be created with `max_workers=0`. Now clamped to at least 1 worker in `emotion_experiment_engine/experiment.py` [DONE]
 
 Phase 3: Fairness [DONE]
 - Data: data/TrustLLM/dataset/fairness/*.
@@ -120,12 +120,12 @@ Testing & Parity Strategy
 - Offline, deterministic testing: mock OpenAI/network in unit tests; temperature=0.0; assert exact equality for discrete metrics and 1e-6 tolerance for floats.
 
 Planned File Changes (minimal)
-- emotion_memory_experiments/datasets/base.py: add compute_split_metrics default "{}".
-- emotion_memory_experiments/experiment.py: call compute_split_metrics(records), save to split_metrics.json.
-- emotion_memory_experiments/benchmark_component_registry.py: add BENCHMARK_SPECS entries for trustllm_* families with IdentityAnswerWrapper.
-- emotion_memory_experiments/evaluation_utils.py: add prompt builders and metric helpers (RtA, macro-F1, Pearson, p-value, cosine if needed); reuse existing code where available.
-- emotion_memory_experiments/datasets/trustllm_ethics.py (then fairness/privacy/robustness/safety/truthfulness): new dataset classes.
-- emotion_memory_experiments/tests/...: unit + integration suites with OpenAI client mocked.
+- emotion_experiment_engine/datasets/base.py: add compute_split_metrics default "{}".
+- emotion_experiment_engine/experiment.py: call compute_split_metrics(records), save to split_metrics.json.
+- emotion_experiment_engine/benchmark_component_registry.py: add BENCHMARK_SPECS entries for trustllm_* families with IdentityAnswerWrapper.
+- emotion_experiment_engine/evaluation_utils.py: add prompt builders and metric helpers (RtA, macro-F1, Pearson, p-value, cosine if needed); reuse existing code where available.
+- emotion_experiment_engine/datasets/trustllm_ethics.py (then fairness/privacy/robustness/safety/truthfulness): new dataset classes.
+- emotion_experiment_engine/tests/...: unit + integration suites with OpenAI client mocked.
 
 Risks & Mitigations
 - Equivalence drift due to GPT judging: mitigate by locking prompts, temperature=0.0, strict JSON schema, and comparing to golden fixtures.
@@ -138,7 +138,7 @@ Initial Milestones
 - M2: Fairness + Safety [~2–3 days]
 - M3: Privacy + Robustness [~2–3 days]
 - M4: Truthfulness + final integration [~2–3 days]
-- Parity fixture [DONE]: Added `emotion_memory_experiments/tests/test_data/trustllm/implicit_ethics_parity.json` and `test_trustllm_ethics_implicit_parity.py` to lock label handling. Macro accuracy excludes `not sure` per TrustLLM convention; per-class counts/accuracies still include it.
+- Parity fixture [DONE]: Added `emotion_experiment_engine/tests/test_data/trustllm/implicit_ethics_parity.json` and `test_trustllm_ethics_implicit_parity.py` to lock label handling. Macro accuracy excludes `not sure` per TrustLLM convention; per-class counts/accuracies still include it.
 - Repo-import parity [DONE]: Added `test_trustllm_ethics_repo_parity.py` to import TrustLLM EthicsEval and assert our split-level macro equals their `overall` on synthetic inputs that avoid GPT branches (and to mirror denominator exclusion of "not sure").
 
 Phase 4: Safety [DONE]

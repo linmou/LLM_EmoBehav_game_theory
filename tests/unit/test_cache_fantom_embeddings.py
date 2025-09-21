@@ -55,7 +55,7 @@ def test_cache_single_file(monkeypatch, tmp_path):
     )
 
     monkeypatch.setattr(
-        "emotion_memory_experiments.datasets.fantom.FantomDataset._get_embedder",
+        "emotion_experiment_engine.datasets.fantom.FantomDataset._get_embedder",
         lambda self: DummyEmbedder(),
     )
 
@@ -87,7 +87,7 @@ def test_cache_directory(monkeypatch, tmp_path):
         (tmp_path / f"{stem}.jsonl").write_text(content)
 
     monkeypatch.setattr(
-        "emotion_memory_experiments.datasets.fantom.FantomDataset._get_embedder",
+        "emotion_experiment_engine.datasets.fantom.FantomDataset._get_embedder",
         lambda self: DummyEmbedder(),
     )
 

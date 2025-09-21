@@ -11,8 +11,8 @@ from typing import List, Optional, Sequence, Tuple
 
 import numpy as np
 
-from emotion_memory_experiments.data_models import BenchmarkConfig
-from emotion_memory_experiments.datasets.fantom import FantomDataset
+from emotion_experiment_engine.data_models import BenchmarkConfig
+from emotion_experiment_engine.datasets.fantom import FantomDataset
 
 
 @dataclass

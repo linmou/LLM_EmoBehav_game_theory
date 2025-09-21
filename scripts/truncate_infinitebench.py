@@ -15,8 +15,8 @@ from transformers import AutoTokenizer
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from emotion_memory_experiments.data_models import BenchmarkItem
-from emotion_memory_experiments.datasets.base import BaseBenchmarkDataset
+from emotion_experiment_engine.data_models import BenchmarkItem
+from emotion_experiment_engine.datasets.base import BaseBenchmarkDataset
 
 
 class InfiniteBenchTruncator(BaseBenchmarkDataset):
