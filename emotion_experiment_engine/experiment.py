@@ -980,6 +980,40 @@ class EmotionExperiment:
         """Release GPU-backed objects so subsequent experiments can load cleanly"""
         self.logger.info("Closing emotion experiment resources")
 
+        def _get_timeout() -> float:
+            try:
+                return float(os.environ.get("EMO_SHUTDOWN_TIMEOUT_SEC", "10"))
+            except Exception:
+                return 10.0
+
+        def _call_with_timeout(fn, desc: str) -> None:
+            timeout = _get_timeout()
+            if timeout <= 0:
+                # No timeout requested
+                try:
+                    fn()
+                except Exception as e:  # pragma: no cover - defensive
+                    self.logger.warning(f"{desc} raised: {e}")
+                return
+
+            import threading
+
+            done = {"exc": None}
+
+            def _runner():
+                try:
+                    fn()
+                except Exception as e:
+                    done["exc"] = e
+
+            t = threading.Thread(target=_runner, daemon=True)
+            t.start()
+            t.join(timeout)
+            if t.is_alive():
+                self.logger.warning(f"Timed out while waiting for {desc}")
+            elif done["exc"] is not None:
+                self.logger.warning(f"{desc} raised: {done['exc']}")
+
         pipeline = getattr(self, "rep_control_pipeline", None)
         if pipeline is not None:
             close_fn = getattr(pipeline, "close", None)
@@ -998,30 +1032,18 @@ class EmotionExperiment:
                 llm_engine = model.llm_engine
                 shutdown_fn = getattr(llm_engine, "shutdown", None)
                 if callable(shutdown_fn):
-                    try:
-                        shutdown_fn()
-                    except Exception as engine_error:  # pragma: no cover - defensive
-                        self.logger.warning(
-                            f"Failed to shutdown vLLM engine: {engine_error}"
-                        )
+                    _call_with_timeout(shutdown_fn, "vLLM engine shutdown()")
                 executor = getattr(llm_engine, "engine_executor", None)
                 executor_shutdown = getattr(executor, "shutdown", None)
                 if callable(executor_shutdown):
-                    try:
-                        executor_shutdown()
-                    except Exception as executor_error:  # pragma: no cover - defensive
-                        self.logger.warning(
-                            f"Failed to shutdown vLLM executor: {executor_error}"
-                        )
+                    _call_with_timeout(
+                        lambda: executor_shutdown(wait=False),
+                        "vLLM engine executor.shutdown(wait=False)",
+                    )
 
             shutdown_fn = getattr(model, "shutdown", None)
             if callable(shutdown_fn):
-                try:
-                    shutdown_fn()
-                except Exception as shutdown_error:  # pragma: no cover - defensive
-                    self.logger.warning(
-                        f"Model shutdown raised an error: {shutdown_error}"
-                    )
+                _call_with_timeout(shutdown_fn, "model.shutdown()")
 
             self.model = None
 

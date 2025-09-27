@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
+import os
 
 import pandas as pd
 
@@ -509,8 +510,54 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
 
         experiment.close()
 
-        engine_executor.shutdown.assert_called_once()
+        engine_executor.shutdown.assert_called_once_with(wait=False)
         model.shutdown.assert_called_once()
+
+    def test_close_llm_engine_shutdown_times_out_but_does_not_block(self):
+        """Close should not block indefinitely when engine shutdown hangs"""
+
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+        experiment.is_vllm = True
+
+        # Force very short timeout for this test
+        os.environ["EMO_SHUTDOWN_TIMEOUT_SEC"] = "0.01"
+
+        # Simulate a hanging llm_engine.shutdown by waiting on an Event that never sets
+        import threading
+
+        hang_event = threading.Event()
+
+        def hang_shutdown():
+            hang_event.wait(timeout=60.0)  # would block without timeout wrapper
+
+        llm_engine = MagicMock()
+        llm_engine.shutdown = hang_shutdown
+        engine_executor = MagicMock()
+        engine_executor.shutdown = MagicMock()
+        llm_engine.engine_executor = engine_executor
+
+        model = MagicMock()
+        model.llm_engine = llm_engine
+        model.shutdown = MagicMock()
+        experiment.model = model
+
+        experiment.rep_control_pipeline = None
+        experiment.emotion_rep_readers = None
+        experiment.dataset = None
+        experiment.benchmark_prompt_wrapper_partial = None
+        experiment.emotion_datasets = None
+
+        # Should return quickly despite hanging shutdown
+        experiment.close()
+
+        # Executor shutdown should have been called non-blocking
+        engine_executor.shutdown.assert_called_once_with(wait=False)
+        # Model shutdown still called
+        model.shutdown.assert_called_once()
+
+        # Cleanup env var
+        del os.environ["EMO_SHUTDOWN_TIMEOUT_SEC"]
 
 
 if __name__ == "__main__":
