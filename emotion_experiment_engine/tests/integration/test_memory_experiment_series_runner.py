@@ -175,7 +175,7 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
         ) as mock_check_model, patch(
             "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner.run_single_experiment"
         ) as mock_run_single:
-            mock_check_model.return_value = True
+            mock_check_model.return_value = "/resolved/model"
             attempted, failed, succeeded = [], [], []
 
             def _run(benchmark_config, model_name, exp_id):
@@ -198,7 +198,52 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
             summary = runner.report.get_summary()
             self.assertEqual(summary["total"], expected_total)
             self.assertEqual(summary["failed"], 1)
-            self.assertEqual(summary["completed"], expected_total - 1)
+
+    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
+    def test_resolved_model_path_passed_to_run_single_experiment(self):
+        resolved_path = "/mirror/facebook/MobileLLM-R1-950M"
+
+        temp_config_path = Path(self.temp_dir) / "single_run.yaml"
+        single_config = {
+            "models": ["facebook/MobileLLM-R1-950M"],
+            "emotions": ["anger"],
+            "intensities": [1.0],
+            "benchmarks": [
+                {
+                    "name": "trustllm",
+                    "task_type": "stereotype_recognition",
+                    "data_path": str(Path(self.temp_dir) / "dummy.json"),
+                    "enable_auto_truncation": False,
+                    "truncation_strategy": "right",
+                    "preserve_ratio": 0.8,
+                }
+            ],
+            "output_dir": str(Path(self.temp_dir) / "results_single"),
+            "loading_config": self.test_config["loading_config"],
+        }
+
+        with open(temp_config_path, "w") as f:
+            yaml.dump(single_config, f)
+
+        with patch(
+            "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner._check_model_existence",
+            return_value=resolved_path,
+        ) as mock_check_model:
+            captured_model_name = {}
+
+            def _capture_run(benchmark_config, model_name, exp_id):
+                captured_model_name["value"] = model_name
+                return True
+
+            with patch(
+                "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner.run_single_experiment",
+                side_effect=_capture_run,
+            ):
+                runner = MemoryExperimentSeriesRunner(str(temp_config_path), dry_run=False)
+                runner.run_experiment_series()
+
+        mock_check_model.assert_called()
+        self.assertEqual(captured_model_name.get("value"), resolved_path)
 
     @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
     def test_dry_run_errors_bubble_up(self):

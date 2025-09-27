@@ -1,14 +1,14 @@
-# EmotionMemoryExperiment - Core Orchestrator Class
+# EmotionExperiment - Core Orchestrator Class
 
 ## Overview
 
-The `EmotionMemoryExperiment` class serves as the central orchestrator for emotion-memory research experiments. Located in `emotion_experiment_engine/experiment.py`, this class follows the established pattern from `emotion_game_experiment.py` but adapts it specifically for long-context memory benchmark evaluation.
+The `EmotionExperiment` class serves as the central orchestrator for emotion research experiments. Located in `emotion_experiment_engine/experiment.py`, this class follows the established pattern from `emotion_game_experiment.py`
 
 ## Class Architecture
 
 ### **Inheritance and Composition**
 ```python
-class EmotionMemoryExperiment:
+class EmotionExperiment:
     def __init__(self, config: ExperimentConfig)
     
     # Core Components

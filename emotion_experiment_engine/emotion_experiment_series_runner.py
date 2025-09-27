@@ -77,6 +77,7 @@ class MemoryExperimentReport:
         benchmark_name: str,
         model_name: str,
         exp_id: str,
+        resolved_model_path: Optional[str] = None,
         status: str = ExperimentStatus.PENDING,
     ) -> None:
         """Add a new memory experiment to the report"""
@@ -84,6 +85,7 @@ class MemoryExperimentReport:
             self.experiments[exp_id] = {
                 "benchmark_name": benchmark_name,
                 "model_name": model_name,
+                "resolved_model_path": resolved_model_path,
                 "status": status,
                 "start_time": None,
                 "end_time": None,
@@ -291,7 +293,7 @@ class MemoryExperimentSeriesRunner:
         if "intensities" not in self.base_config:
             raise ValueError("Configuration must include 'intensities' section")
 
-    def _check_model_existence(self, model_name: str) -> bool:
+    def _check_model_existence(self, model_name: str) -> Optional[str]:
         """
         Check if the model exists in either ~/.cache/huggingface/hub/ or ../huggingface.
         If not, download it to ../huggingface.
@@ -300,12 +302,13 @@ class MemoryExperimentSeriesRunner:
             model_name: The name of the model to check
 
         Returns:
-            bool: True if model exists or was successfully downloaded, False otherwise
+            Optional[str]: Resolved local path (or repo id for cache hits) if the
+            model can be used, otherwise None
         """
         # Skip for local paths (starting with /)
         if model_name.startswith("/"):
             self.logger.info(f"Skipping model check for local path: {model_name}")
-            return True
+            return model_name
 
         # Define paths to check
         home_dir = os.path.expanduser("~")
@@ -336,9 +339,13 @@ class MemoryExperimentSeriesRunner:
         self.logger.info(f"Checking alternative path: {alt_model_path}")
 
         # Check if model exists in either location
-        if os.path.exists(cache_model_path) or os.path.exists(alt_model_path):
-            self.logger.info(f"Model {model_name} found.")
-            return True
+        if os.path.exists(alt_model_path):
+            self.logger.info(f"Model {model_name} found at {alt_model_path}.")
+            return alt_model_path
+
+        if os.path.exists(cache_model_path):
+            self.logger.info(f"Model {model_name} found in Hugging Face cache.")
+            return model_name
 
         # If model doesn't exist, download it to ../huggingface_models
         self.logger.info(
@@ -356,7 +363,7 @@ class MemoryExperimentSeriesRunner:
                     self.logger.error(
                         f"Model {model_name} not found on HuggingFace: {str(e)}"
                     )
-                    return False
+                    return None
             else:
                 self.logger.warning(
                     "transformers not available; skipping remote existence check"
@@ -405,16 +412,16 @@ class MemoryExperimentSeriesRunner:
                 self.logger.error(
                     f"Download failed with return code {return_code}: {stderr}"
                 )
-                return False
+                return None
 
             self.logger.info(
                 f"Model {model_name} successfully downloaded to {alt_model_path}"
             )
-            return True
+            return alt_model_path
 
         except Exception as e:
             self.logger.error(f"Failed to download model {model_name}: {str(e)}")
-            return False
+            return None
 
     def _handle_shutdown(self, sig, frame):
         """Handle SIGINT (Ctrl+C)"""
@@ -935,10 +942,11 @@ class MemoryExperimentSeriesRunner:
 
         # Pre-check and download models if needed
         self.logger.info("Checking model availability...")
+        resolved_models: Dict[str, Optional[str]] = {}
         for model_name in models:
-            # For model checking and downloading, use the original model name
-            model_exists = self._check_model_existence(model_name)
-            if not model_exists:
+            resolved_path = self._check_model_existence(model_name)
+            resolved_models[model_name] = resolved_path
+            if not resolved_path:
                 self.logger.warning(
                     f"Model {model_name} could not be verified or downloaded. Experiments with this model may fail."
                 )
@@ -959,7 +967,10 @@ class MemoryExperimentSeriesRunner:
                         # Only add if not resuming or not already in report
                         if not self.resume or exp_id not in self.report.experiments:
                             self.report.add_experiment(
-                                f"{benchmark_name}_{task_type}", model_name, exp_id
+                                f"{benchmark_name}_{task_type}",
+                                model_name,
+                                exp_id,
+                                resolved_model_path=resolved_models.get(model_name),
                             )
                     except Exception as e:
                         self.logger.error(
@@ -984,14 +995,23 @@ class MemoryExperimentSeriesRunner:
                 self.logger.info("Shutdown requested. Stopping experiment series.")
                 break
 
+            resolved_model_path = exp.get("resolved_model_path")
+            model_name = exp["model_name"]
+            if not resolved_model_path:
+                resolved_model_path = resolved_models.get(model_name)
+                if not resolved_model_path:
+                    resolved_model_path = self._check_model_existence(model_name)
+                    if resolved_model_path:
+                        self.report.update_experiment(
+                            exp["exp_id"], resolved_model_path=resolved_model_path
+                        )
+
             self.logger.info(
-                f"Running experiment {i+1}/{total_experiments}: {exp['benchmark_name']}, {exp['model_name']}"
+                f"Running experiment {i+1}/{total_experiments}: {exp['benchmark_name']}, {model_name}"
             )
 
             try:
-                # Verify model exists before running the experiment
-                model_name = exp["model_name"]
-                if not self._check_model_existence(model_name):
+                if not resolved_model_path:
                     self.logger.error(
                         f"Skipping experiment with {exp['benchmark_name']} and {model_name} due to missing model."
                     )
@@ -1024,12 +1044,12 @@ class MemoryExperimentSeriesRunner:
 
                 # Run the individual experiment (this has its own error handling)
                 success = self.run_single_experiment(
-                    found_benchmark_config, exp["model_name"], exp["exp_id"]
+                    found_benchmark_config, resolved_model_path, exp["exp_id"]
                 )
 
                 if success:
                     self.logger.info(
-                        f"✅ Experiment completed successfully: {exp['benchmark_name']}, {exp['model_name']}"
+                        f"✅ Experiment completed successfully: {exp['benchmark_name']}, {model_name}"
                     )
                 else:
                     self.logger.info(

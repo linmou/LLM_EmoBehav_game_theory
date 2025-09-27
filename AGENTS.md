@@ -300,7 +300,8 @@ Iteration: You will continue this cycle for each new piece of functionality, ens
 - Every time you build a new test, write in the beginning comment that which file and purpose it is responsible for.
 - everytime you refactor some code, mypy test for your modification
 
-- dont forget to use mypy for type check after each modification
 - don't set default value in the definition of dataclass. it is not safe because we may miss setting some fields in production. The setting of default value should happen each time when instantialise a dataclass
 - in most case , just implement the feature itself, don't consider backward backward compatibility.
 
+# Keep documents updated
+Every time you are going to commit a change, review the document markdown or claude_doc folder closest to the modified files. To see if the docs needs to be updated. For a single readme markdown. Besides updating the contents, also updating the beginning doc string with updating date and the commit ID. For complex doc folder like claude_doc folder, besides modify the doc contents, please create a seperate file  /claude_doc/doc_update_record/documentation_update_record_v....md to record the change. Also with date inside.

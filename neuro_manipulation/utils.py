@@ -689,6 +689,24 @@ def load_model_only(
         # Check if this should be a causal LM model based on its config
         from transformers import AutoConfig, AutoModelForCausalLM
 
+        # Determine HF torch dtype, defaulting to float16 when unspecified
+        hf_torch_dtype = torch.float16
+        if loading_config is not None:
+            if isinstance(loading_config, dict):
+                dtype_value = loading_config.get("dtype")
+            else:
+                dtype_value = getattr(loading_config, "dtype", None)
+
+            if isinstance(dtype_value, torch.dtype):
+                hf_torch_dtype = dtype_value
+            elif isinstance(dtype_value, str):
+                dtype_key = dtype_value.lower()
+                if dtype_key in {"bfloat16", "bf16"}:
+                    hf_torch_dtype = torch.bfloat16
+                elif dtype_key in {"float32", "fp32"}:
+                    hf_torch_dtype = torch.float32
+                elif dtype_key in {"float16", "fp16"}:
+                    hf_torch_dtype = torch.float16
         try:
             config = AutoConfig.from_pretrained(
                 model_name_or_path, token=True, trust_remote_code=True
@@ -699,7 +717,7 @@ def load_model_only(
                 if any("ForCausalLM" in arch for arch in config.architectures):
                     model = AutoModelForCausalLM.from_pretrained(
                         model_name_or_path,
-                        torch_dtype=torch.float16,
+                        torch_dtype=hf_torch_dtype,
                         device_map="auto",
                         token=True,
                         trust_remote_code=True,
@@ -707,7 +725,7 @@ def load_model_only(
                 else:
                     model = AutoModel.from_pretrained(
                         model_name_or_path,
-                        torch_dtype=torch.float16,
+                        torch_dtype=hf_torch_dtype,
                         device_map="auto",
                         token=True,
                         trust_remote_code=True,
@@ -716,7 +734,7 @@ def load_model_only(
                 # Fallback to AutoModel if we can't determine
                 model = AutoModel.from_pretrained(
                     model_name_or_path,
-                    torch_dtype=torch.float16,
+                    torch_dtype=hf_torch_dtype,
                     device_map="auto",
                     token=True,
                     trust_remote_code=True,
@@ -726,7 +744,7 @@ def load_model_only(
 
             model = AutoModel.from_pretrained(
                 model_name_or_path,
-                torch_dtype=torch.float16,
+                torch_dtype=hf_torch_dtype,
                 device_map="auto",
                 token=True,
                 trust_remote_code=True,

@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 from neuro_manipulation.experiment_series_runner import ExperimentSeriesRunner
+import neuro_manipulation.experiment_series_runner as experiment_series_module
 
 class TestModelCheck(unittest.TestCase):
     """Tests for the model checking functionality in ExperimentSeriesRunner"""
@@ -61,11 +62,39 @@ class TestModelCheck(unittest.TestCase):
         # Test with a local path
         result = runner._check_model_existence("/data/home/models/my_model")
         
-        # Assert that the result is True and no download was attempted
-        self.assertTrue(result)
+        # Assert that the resolved path is returned and no download was attempted
+        self.assertEqual(result, "/data/home/models/my_model")
         mock_config.assert_not_called()
         mock_popen.assert_not_called()
     
+    @patch('neuro_manipulation.experiment_series_runner.get_exp_config')
+    @patch('neuro_manipulation.experiment_series_runner.os.path.expanduser')
+    @patch('neuro_manipulation.experiment_series_runner.os.path.exists')
+    def test_model_exists_in_alt_path_returns_local_dir(self, mock_exists, mock_expanduser, mock_get_config):
+        """Return the local alt directory when the mirror already exists"""
+        mock_get_config.return_value = self.mock_config
+        mock_expanduser.return_value = str(self.home_dir)
+
+        module_parent_dir = os.path.abspath(
+            os.path.join(os.path.dirname(experiment_series_module.__file__), "..", "..")
+        )
+        alt_model_path = os.path.join(
+            module_parent_dir, "huggingface_models", "facebook", "MobileLLM-R1-950M"
+        )
+
+        def exists_side_effect(path):
+            if os.path.normpath(path) == os.path.normpath(alt_model_path):
+                return True
+            return False
+
+        mock_exists.side_effect = exists_side_effect
+
+        runner = ExperimentSeriesRunner("dummy_path")
+
+        result = runner._check_model_existence("facebook/MobileLLM-R1-950M")
+
+        self.assertEqual(result, alt_model_path)
+
     @patch('neuro_manipulation.experiment_series_runner.get_exp_config')
     @patch('neuro_manipulation.experiment_series_runner.os.path.expanduser')
     @patch('neuro_manipulation.experiment_series_runner.os.path.exists')
@@ -89,8 +118,8 @@ class TestModelCheck(unittest.TestCase):
         # Test with a model that "exists" in cache
         result = runner._check_model_existence("meta-llama/Llama-3.1-8B-Instruct")
         
-        # Assert that the result is True
-        self.assertTrue(result)
+        # Assert that we keep the repo id when relying on HF cache
+        self.assertEqual(result, "meta-llama/Llama-3.1-8B-Instruct")
     
     @patch('neuro_manipulation.experiment_series_runner.get_exp_config')
     @patch('neuro_manipulation.experiment_series_runner.os.path.expanduser')
@@ -126,8 +155,14 @@ class TestModelCheck(unittest.TestCase):
         # Test with a model that doesn't exist
         result = runner._check_model_existence("meta-llama/Llama-3.1-8B-Instruct")
         
-        # Assert that the download was attempted and result is True
-        self.assertTrue(result)
+        # Assert that the download was attempted and alt path returned
+        module_parent_dir = os.path.abspath(
+            os.path.join(os.path.dirname(experiment_series_module.__file__), "..", "..")
+        )
+        expected_alt = os.path.join(
+            module_parent_dir, "huggingface_models", "meta-llama", "Llama-3.1-8B-Instruct"
+        )
+        self.assertEqual(result, expected_alt)
         mock_config.assert_called_once()
         mock_popen.assert_called_once()
         
@@ -160,8 +195,8 @@ class TestModelCheck(unittest.TestCase):
         # Test with a model that will fail to verify
         result = runner._check_model_existence("nonexistent-model/not-real")
         
-        # Assert that the result is False
-        self.assertFalse(result)
+        # Assert that the result is None
+        self.assertIsNone(result)
         mock_config.assert_called_once()
     
     @patch('neuro_manipulation.experiment_series_runner.get_exp_config')
@@ -198,8 +233,8 @@ class TestModelCheck(unittest.TestCase):
         # Test with a model that will fail to download
         result = runner._check_model_existence("meta-llama/Llama-3.1-8B-Instruct")
         
-        # Assert that the result is False
-        self.assertFalse(result)
+        # Assert that the result is None
+        self.assertIsNone(result)
         mock_config.assert_called_once()
         mock_popen.assert_called_once()
 

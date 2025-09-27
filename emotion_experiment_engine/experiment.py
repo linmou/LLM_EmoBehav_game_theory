@@ -347,6 +347,8 @@ class EmotionExperiment:
             self._create_dataset_for_emotion(emotion)
         )
 
+        setattr(self.dataset, "eval_workers", int(self.max_evaluation_workers))
+
         # Use dataset's specialized collate function - each dataset type
         # has specific collation requirements for different benchmarks
         dataloader = DataLoader(

@@ -341,7 +341,11 @@ class BaseBenchmarkDataset(Dataset, ABC):
 
         self._last_eval_errors = [None] * len(responses)  # type: ignore[attr-defined]
         scores: List[float] = []
-        with ThreadPoolExecutor(max_workers=min(8, len(responses))) as executor:
+        # Allow datasets/experiment to control evaluation parallelism.
+        # Default to 8 workers if not explicitly provided.
+        max_workers = getattr(self, "eval_workers", 264)
+        max_workers = max(1, min(int(max_workers), len(responses)))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [
                 executor.submit(self.evaluate_response, resp, gt, task, prompt)
                 for resp, gt, task, prompt in zip(

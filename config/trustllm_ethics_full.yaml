@@ -6,7 +6,9 @@
 #   explicit_moralchoice.json
 
 models:
-  - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
+  - /data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B
+  - /data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B
+  - /data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B
 
 benchmarks:
   - name: trustllm_ethics
@@ -52,19 +54,22 @@ benchmarks:
 emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
 intensities: [1.5]
 
-output_dir: results/TrustLLM_ethics
+repeat_runs: 3
+repeat_seed_base: 123
+
+output_dir: results/TrustLLM_ethics/thinking
 batch_size: 800
 
-sanity_check: true
+sanity_check: false
 
 generation_config:
   temperature: 0.0
-  max_new_tokens: 128
+  max_new_tokens: 3000
   do_sample: false
+  enable_thinking: true
 
 loading_config:
   gpu_memory_utilization: 0.90
-  tensor_parallel_size: 1
   max_model_len: 8192
   enforce_eager: true
   trust_remote_code: true

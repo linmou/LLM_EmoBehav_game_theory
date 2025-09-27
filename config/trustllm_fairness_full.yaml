@@ -9,12 +9,31 @@
 #   preference.json
 
 models:
-  - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
+  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
+  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct
+  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct
+  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B
+  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B
+  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B
+  - "meta-llama/Llama-3.2-1B-Instruct"
+  - "meta-llama/Llama-3.2-3B-Instruct"
+  # - "HuggingFaceTB/SmolLM3-3B"
+  # - "HuggingFaceTB/SmolLM2-1.7B-Instruct"
+  # - "HuggingFaceTB/SmolLM2-360M-Instruct"
+  # - "HuggingFaceTB/SmolLM2-135M-Instruct"
+  # - "facebook/MobileLLM-R1-950M"
+  # - "facebook/MobileLLM-R1-360M"
+  # - "facebook/MobileLLM-R1-140M"
+  - "microsoft/Phi-3.5-mini-instruct"
+  - "microsoft/Phi-4-mini-instruct"
+  - "google/gemma-3-1b-it"
+  - "google/gemma-3-270m-it"
+
 
 benchmarks:
   - name: trustllm_fairness
     task_type: stereotype_recognition
-    data_path: /path/to/TrustLLM-data/fairness/stereotype_recognition.json
+    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/stereotype_recognition.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -24,7 +43,7 @@ benchmarks:
 
   - name: trustllm_fairness
     task_type: stereotype_agreement
-    data_path: /path/to/TrustLLM-data/fairness/stereotype_agreement.json
+    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/stereotype_agreement.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -34,7 +53,7 @@ benchmarks:
 
   - name: trustllm_fairness
     task_type: stereotype_query
-    data_path: /path/to/TrustLLM-data/fairness/stereotype_query_test.json
+    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/stereotype_query_test.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -44,7 +63,7 @@ benchmarks:
 
   - name: trustllm_fairness
     task_type: disparagement
-    data_path: /path/to/TrustLLM-data/fairness/disparagement.json
+    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/disparagement.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -54,7 +73,7 @@ benchmarks:
 
   - name: trustllm_fairness
     task_type: preference
-    data_path: /path/to/TrustLLM-data/fairness/preference.json
+    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/preference.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -62,28 +81,27 @@ benchmarks:
       model: gpt-4o-mini
       temperature: 0.0
 
-emotions: [anger, neutral]
-intensities: [1.0]
+emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
+intensities: [1.5]
 
-output_dir: results/memory_experiments
-batch_size: 4
+output_dir: results/TrustLLM_fairness
+batch_size: 500
+
+repeat_runs: 3
+repeat_seed_base: 123
 
 sanity_check: false
 
 generation_config:
   temperature: 0.0
-  max_new_tokens: 128
+  max_new_tokens: 1000
   do_sample: false
 
 loading_config:
-  model_path: /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
   gpu_memory_utilization: 0.90
-  tensor_parallel_size: 1
-  max_model_len: 8192
   enforce_eager: true
   trust_remote_code: true
-  dtype: float16
+  dtype: bfloat16
   seed: 42
   disable_custom_all_reduce: false
   additional_vllm_kwargs: {}
-

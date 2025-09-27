@@ -53,12 +53,20 @@ class ExperimentReport:
         self.series_start_time = datetime.now()
         self._save_report()
         
-    def add_experiment(self, game_name: str, model_name: str, exp_id: str, status: str = ExperimentStatus.PENDING) -> None:
+    def add_experiment(
+        self,
+        game_name: str,
+        model_name: str,
+        exp_id: str,
+        resolved_model_path: Optional[str] = None,
+        status: str = ExperimentStatus.PENDING,
+    ) -> None:
         """Add a new experiment to the report"""
         with self.lock:
             self.experiments[exp_id] = {
                 "game_name": game_name,
                 "model_name": model_name,
+                "resolved_model_path": resolved_model_path,
                 "status": status,
                 "start_time": None,
                 "end_time": None,
@@ -190,21 +198,22 @@ class ExperimentSeriesRunner:
             else:
                 self.logger.info(f"Resumed experiment series. Status: {self.report.get_summary()}")
     
-    def _check_model_existence(self, model_name: str) -> bool:
+    def _check_model_existence(self, model_name: str) -> Optional[str]:
         """
         Check if the model exists in either ~/.cache/huggingface/hub/ or ../huggingface.
         If not, download it to ../huggingface.
-        
+
         Args:
             model_name: The name of the model to check
-            
+
         Returns:
-            bool: True if model exists or was successfully downloaded, False otherwise
+            Optional[str]: Resolved local path (or repo id for cache hits) if the
+            model can be used, otherwise None
         """
         # Skip for local paths (starting with /)
         if model_name.startswith('/'):
             self.logger.info(f"Skipping model check for local path: {model_name}")
-            return True
+            return model_name
             
         # Define paths to check
         home_dir = os.path.expanduser("~")
@@ -230,9 +239,13 @@ class ExperimentSeriesRunner:
         self.logger.info(f"Checking alternative path: {alt_model_path}")
         
         # Check if model exists in either location
-        if os.path.exists(cache_model_path) or os.path.exists(alt_model_path):
-            self.logger.info(f"Model {model_name} found.")
-            return True
+        if os.path.exists(alt_model_path):
+            self.logger.info(f"Model {model_name} found at {alt_model_path}.")
+            return alt_model_path
+
+        if os.path.exists(cache_model_path):
+            self.logger.info(f"Model {model_name} found in Hugging Face cache.")
+            return model_name
         
         # If model doesn't exist, download it to ../huggingface_models
         self.logger.info(f"Model {model_name} not found. Downloading to {alt_model_path}...")
@@ -245,7 +258,7 @@ class ExperimentSeriesRunner:
                 AutoConfig.from_pretrained(model_name, trust_remote_code=True)
             except Exception as e:
                 self.logger.error(f"Model {model_name} not found on HuggingFace: {str(e)}")
-                return False
+                return None
             
             # Download model using huggingface-cli command
             self.logger.info(f"Starting download of model {model_name} to {alt_model_path} using huggingface-cli...")
@@ -281,14 +294,14 @@ class ExperimentSeriesRunner:
             
             if return_code != 0:
                 self.logger.error(f"Download failed with return code {return_code}: {stderr}")
-                return False
-            
+                return None
+
             self.logger.info(f"Model {model_name} successfully downloaded to {alt_model_path}")
-            return True
-            
+            return alt_model_path
+
         except Exception as e:
             self.logger.error(f"Failed to download model {model_name}: {str(e)}")
-            return False
+            return None
     
     def _handle_shutdown(self, sig, frame):
         """Handle SIGINT (Ctrl+C)"""
@@ -518,12 +531,15 @@ class ExperimentSeriesRunner:
         
         # Pre-check and download models if needed
         self.logger.info("Checking model availability...")
+        resolved_models: Dict[str, Optional[str]] = {}
         for model_name in models:
-            # For model checking and downloading, use the original model name
-            model_exists = self._check_model_existence(model_name)
-            if not model_exists:
-                self.logger.warning(f"Model {model_name} could not be verified or downloaded. Experiments with this model may fail.")
-        
+            resolved_path = self._check_model_existence(model_name)
+            resolved_models[model_name] = resolved_path
+            if not resolved_path:
+                self.logger.warning(
+                    f"Model {model_name} could not be verified or downloaded. Experiments with this model may fail."
+                )
+
         # Generate experiment IDs and initialize report
         for game_name in games:
             for model_name in models:
@@ -533,8 +549,13 @@ class ExperimentSeriesRunner:
                 
                 # Only add if not resuming or not already in report
                 if not self.resume or exp_id not in self.report.experiments:
-                    self.report.add_experiment(game_name, model_name, exp_id)
-        
+                    self.report.add_experiment(
+                        game_name,
+                        model_name,
+                        exp_id,
+                        resolved_model_path=resolved_models.get(model_name),
+                    )
+
         # Get pending experiments
         pending_experiments = self.report.get_pending_experiments()
         total_experiments = len(pending_experiments)
@@ -546,12 +567,25 @@ class ExperimentSeriesRunner:
                 self.logger.info("Shutdown requested. Stopping experiment series.")
                 break
             
-            self.logger.info(f"Running experiment {i+1}/{total_experiments}: {exp['game_name']}, {exp['model_name']}")
-            
-            # Verify model exists before running the experiment
-            model_name = exp['model_name']
-            if not self._check_model_existence(model_name):
-                self.logger.error(f"Skipping experiment with {exp['game_name']} and {model_name} due to missing model.")
+            resolved_model_path = exp.get("resolved_model_path")
+            model_name = exp["model_name"]
+            if not resolved_model_path:
+                resolved_model_path = resolved_models.get(model_name)
+                if not resolved_model_path:
+                    resolved_model_path = self._check_model_existence(model_name)
+                    if resolved_model_path:
+                        self.report.update_experiment(
+                            exp["exp_id"], resolved_model_path=resolved_model_path
+                        )
+
+            self.logger.info(
+                f"Running experiment {i+1}/{total_experiments}: {exp['game_name']}, {model_name}"
+            )
+
+            if not resolved_model_path:
+                self.logger.error(
+                    f"Skipping experiment with {exp['game_name']} and {model_name} due to missing model."
+                )
                 self.report.update_experiment(
                     exp['exp_id'],
                     status=ExperimentStatus.FAILED,
@@ -559,7 +593,7 @@ class ExperimentSeriesRunner:
                 )
                 continue
                 
-            self.run_single_experiment(exp['game_name'], exp['model_name'], exp['exp_id'])
+            self.run_single_experiment(exp['game_name'], resolved_model_path, exp['exp_id'])
             
             # Print summary after each experiment
             summary = self.report.get_summary()
