@@ -254,6 +254,41 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Config 1 failed"):
                 runner.dry_run_series()
 
+    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
+    def test_check_model_existence_abs_path_nonexistent(self):
+        # Ensure a non-existent absolute path returns None (clear failure)
+        bogus = os.path.join(self.temp_dir, "this_path_should_not_exist_123456")
+        if os.path.exists(bogus):
+            # Extremely unlikely, but ensure non-existence
+            import shutil
+            shutil.rmtree(bogus, ignore_errors=True)
+        self.assertFalse(os.path.exists(bogus))
+        resolved = self.runner._check_model_existence(bogus)
+        self.assertIsNone(resolved)
+
+    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
+    def test_check_model_existence_abs_path_existing_dir(self):
+        # Existing absolute path should resolve to its realpath and be returned
+        existing = os.path.join(self.temp_dir, "local_model_dir")
+        os.makedirs(existing, exist_ok=True)
+        # Minimal HF folder requirement
+        with open(os.path.join(existing, "config.json"), "w") as f:
+            f.write("{}")
+        resolved = self.runner._check_model_existence(existing)
+        self.assertEqual(resolved, os.path.realpath(existing))
+
+    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
+    def test_check_model_existence_abs_path_existing_dir_without_config(self):
+        # Existing absolute path without config.json should be rejected
+        existing = os.path.join(self.temp_dir, "bad_local_model_dir")
+        os.makedirs(existing, exist_ok=True)
+        # Ensure config.json does not exist
+        cfg = os.path.join(existing, "config.json")
+        if os.path.exists(cfg):
+            os.remove(cfg)
+        resolved = self.runner._check_model_existence(existing)
+        self.assertIsNone(resolved)
+
 
 if __name__ == "__main__":
     unittest.main()

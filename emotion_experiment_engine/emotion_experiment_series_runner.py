@@ -305,10 +305,24 @@ class MemoryExperimentSeriesRunner:
             Optional[str]: Resolved local path (or repo id for cache hits) if the
             model can be used, otherwise None
         """
-        # Skip for local paths (starting with /)
-        if model_name.startswith("/"):
-            self.logger.info(f"Skipping model check for local path: {model_name}")
-            return model_name
+        # Fast path for absolute local paths: validate directory existence first
+        # KISS: do not attempt autocorrection; fail fast with a clear log.
+        if os.path.isabs(model_name):
+            resolved = os.path.realpath(model_name)
+            if not os.path.isdir(resolved):
+                self.logger.error(
+                    f"Local model path not found or not a directory: {resolved}")
+                return None
+
+            # Minimal HF folder validation: require config.json at root
+            cfg = os.path.join(resolved, "config.json")
+            if not os.path.isfile(cfg):
+                self.logger.error(
+                    f"Local model path exists but missing config.json: {resolved}")
+                return None
+
+            self.logger.info(f"Using existing local model path: {resolved}")
+            return resolved
 
         # Define paths to check
         home_dir = os.path.expanduser("~")
