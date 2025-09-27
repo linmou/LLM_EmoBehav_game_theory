@@ -25,6 +25,7 @@ from emotion_experiment_engine.data_models import BenchmarkConfig
 try:
     from emotion_experiment_engine.emotion_experiment_series_runner import (
         MemoryExperimentSeriesRunner,
+        ExperimentStatus,
     )
     RUNNER_AVAILABLE = True
 except Exception as e:
@@ -134,18 +135,20 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
                 "name": "test_bench",
                 "task_type": ".*test.*",
                 "sample_limit": 100,
+                "base_data_dir": self.temp_dir,
                 "augmentation_config": None,
                 "enable_auto_truncation": False,
                 "truncation_strategy": "right",
                 "preserve_ratio": 0.8,
             }
         ]
-        with patch.object(BenchmarkConfig, "discover_datasets_by_pattern") as mock_discover:
-            mock_discover.return_value = ["test_task1", "test_task2"]
-            expanded = self.runner.expand_benchmark_configs(benchmarks)
-            self.assertEqual(len(expanded), 2)
-            self.assertEqual(expanded[0]["task_type"], "test_task1")
-            self.assertEqual(expanded[1]["task_type"], "test_task2")
+        for task in ["test_task1", "test_task2"]:
+            (Path(self.temp_dir) / f"test_bench_{task}.jsonl").write_text("{}\n")
+
+        expanded = self.runner.expand_benchmark_configs(benchmarks)
+        self.assertEqual(len(expanded), 2)
+        self.assertEqual(expanded[0]["task_type"], "test_task1")
+        self.assertEqual(expanded[1]["task_type"], "test_task2")
 
     @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
     def test_is_pattern_task_type_detection(self):
@@ -159,16 +162,6 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
         self.assertFalse(self.runner._is_pattern_task_type(""))
 
     @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
-    def test_create_temporary_benchmark_for_discovery(self):
-        benchmark_config = {"name": "test_bench", "task_type": ".*test.*", "sample_limit": 100}
-        temp_benchmark = self.runner._create_temporary_benchmark_for_discovery(
-            benchmark_config, ".*test.*"
-        )
-        self.assertEqual(temp_benchmark.name, "test_bench")
-        self.assertEqual(temp_benchmark.task_type, ".*test.*")
-        self.assertEqual(temp_benchmark.sample_limit, 100)
-
-    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
     def test_experiment_series_continues_after_failure(self):
         with patch(
             "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner._check_model_existence"
@@ -180,12 +173,17 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
 
             def _run(benchmark_config, model_name, exp_id):
                 attempted.append(exp_id)
+                status = ExperimentStatus.COMPLETED
                 if exp_id == "test_benchmark_1_test_task_test_model_1":
                     failed.append(exp_id)
-                    return False
+                    status = ExperimentStatus.FAILED
+                    result = False
                 else:
                     succeeded.append(exp_id)
-                    return True
+                    result = True
+
+                runner.report.update_experiment(exp_id, status=status)
+                return result
 
             mock_run_single.side_effect = _run
             runner = MemoryExperimentSeriesRunner(str(self.config_file), dry_run=False)
@@ -253,6 +251,50 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
         with patch.object(runner, "setup_experiment", side_effect=RuntimeError("boom")):
             with self.assertRaisesRegex(RuntimeError, "Config 1 failed"):
                 runner.dry_run_series()
+
+    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
+    def test_run_single_experiment_releases_resources_on_success(self):
+        runner = MemoryExperimentSeriesRunner(str(self.config_file), dry_run=False)
+        benchmark = self.test_config["benchmarks"][0]
+
+        with patch(
+            "emotion_experiment_engine.experiment.EmotionExperiment",
+            create=True,
+        ) as mock_experiment_cls, patch.object(
+            runner, "_clean_cuda_memory"
+        ) as mock_clean_cuda:
+            mock_experiment = mock_experiment_cls.return_value
+            mock_experiment.run_experiment.return_value = None
+            mock_experiment.close = MagicMock(name="close")
+
+            result = runner.run_single_experiment(benchmark, "/fake/model", "exp-success")
+
+            self.assertTrue(result)
+            mock_experiment.run_experiment.assert_called_once()
+            mock_experiment.close.assert_called_once()
+            mock_clean_cuda.assert_called_once()
+
+    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
+    def test_run_single_experiment_releases_resources_on_failure(self):
+        runner = MemoryExperimentSeriesRunner(str(self.config_file), dry_run=False)
+        benchmark = self.test_config["benchmarks"][0]
+
+        with patch(
+            "emotion_experiment_engine.experiment.EmotionExperiment",
+            create=True,
+        ) as mock_experiment_cls, patch.object(
+            runner, "_clean_cuda_memory"
+        ) as mock_clean_cuda:
+            mock_experiment = mock_experiment_cls.return_value
+            mock_experiment.run_experiment.side_effect = RuntimeError("boom")
+            mock_experiment.close = MagicMock(name="close")
+
+            result = runner.run_single_experiment(benchmark, "/fake/model", "exp-fail")
+
+            self.assertFalse(result)
+            mock_experiment.run_experiment.assert_called_once()
+            mock_experiment.close.assert_called_once()
+            mock_clean_cuda.assert_called_once()
 
 
 if __name__ == "__main__":

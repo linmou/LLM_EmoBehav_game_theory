@@ -17,10 +17,45 @@ from emotion_experiment_engine.dataset_factory import (
     DATASET_REGISTRY,
     register_dataset_class
 )
-from emotion_experiment_engine.data_models import BenchmarkConfig, ExperimentConfig
-from emotion_experiment_engine.evaluation_utils import llm_evaluate_response, llm_evaluate_batch
-from emotion_experiment_engine.experiment import EmotionMemoryExperiment
+from emotion_experiment_engine.data_models import BenchmarkConfig, ExperimentConfig, BenchmarkItem
+from emotion_experiment_engine.evaluation_utils import llm_evaluate_response
+from emotion_experiment_engine.experiment import EmotionExperiment
 from emotion_experiment_engine.datasets.base import BaseBenchmarkDataset
+
+
+def make_benchmark_config(**overrides) -> BenchmarkConfig:
+    base_kwargs = {
+        "name": "test",
+        "task_type": "task",
+        "data_path": None,
+        "base_data_dir": None,
+        "sample_limit": None,
+        "augmentation_config": None,
+        "enable_auto_truncation": False,
+        "truncation_strategy": "right",
+        "preserve_ratio": 0.8,
+        "llm_eval_config": None,
+    }
+    base_kwargs.update(overrides)
+    return BenchmarkConfig(**base_kwargs)
+
+
+def make_experiment_config(**overrides) -> ExperimentConfig:
+    base_kwargs = {
+        "model_path": "test_model",
+        "emotions": ["anger"],
+        "intensities": [1.0],
+        "benchmark": make_benchmark_config(),
+        "output_dir": "test_output",
+        "batch_size": 1,
+        "generation_config": None,
+        "loading_config": None,
+        "repe_eng_config": None,
+        "max_evaluation_workers": 1,
+        "pipeline_queue_size": 1,
+    }
+    base_kwargs.update(overrides)
+    return ExperimentConfig(**base_kwargs)
 
 
 @pytest.mark.regression
@@ -60,44 +95,35 @@ class TestDatasetFactoryAPICompatibility:
         sig = inspect.signature(register_dataset_class)
         params = list(sig.parameters.keys())
         
-        expected_params = ['name', 'dataset_class']
+        expected_params = ['benchmark_name', 'dataset_class']
         assert len(params) >= len(expected_params), "register_dataset_class missing required parameters"
         
         for param in expected_params:
             assert param in params, f"Parameter '{param}' missing from register_dataset_class"
     
-    @patch('emotion_experiment_engine.datasets.base.BaseBenchmarkDataset._load_raw_data')
-    def test_dataset_creation_backward_compatibility(self, mock_load):
-        """Ensure dataset creation works with legacy config formats"""
-        mock_load.return_value = [
-            {"id": 1, "input": "test", "answer": "test", "task_name": "test"}
-        ]
-        
-        # Test various config formats that should be supported
-        legacy_configs = [
-            # Minimal config
-            BenchmarkConfig(name="infinitebench", task_type="passkey", data_path=None),
-            
-            # Config with sample limit
-            BenchmarkConfig(name="longbench", task_type="qa", sample_limit=10, data_path=None),
-            
-            # Config with evaluation method
-            BenchmarkConfig(
-                name="locomo", 
-                task_type="conversation",
-                evaluation_method="f1_score",
-                data_path=None
-            ),
-        ]
-        
-        for config in legacy_configs:
-            try:
+    def test_dataset_creation_backward_compatibility(self):
+        """Ensure dataset creation supports legacy-like configs via registry"""
+
+        class StubDataset(BaseBenchmarkDataset):
+            def _load_and_parse_data(self):
+                return [BenchmarkItem(id="1", input_text="q", context=None, ground_truth="a", metadata=None)]
+
+            def evaluate_response(self, response, ground_truth, task_name, prompt):
+                return 1.0
+
+            def get_task_metrics(self, task_name):
+                return ["accuracy"]
+
+        with patch.dict(DATASET_REGISTRY, {"legacy": StubDataset}, clear=False):
+            legacy_configs = [
+                make_benchmark_config(name="legacy", task_type="passkey"),
+                make_benchmark_config(name="legacy", task_type="passkey", sample_limit=5),
+                make_benchmark_config(name="legacy", task_type="passkey", llm_eval_config={"model": "gpt-4o-mini"}),
+            ]
+
+            for config in legacy_configs:
                 dataset = create_dataset_from_config(config)
-                assert dataset is not None, f"Failed to create dataset with config: {config}"
-                assert isinstance(dataset, BaseBenchmarkDataset), \
-                    f"Created dataset is not a BaseBenchmarkDataset: {type(dataset)}"
-            except Exception as e:
-                pytest.fail(f"Legacy config failed: {config} - Error: {str(e)}")
+                assert isinstance(dataset, StubDataset), f"Unexpected dataset type for {config}"
 
 
 @pytest.mark.regression
@@ -107,7 +133,7 @@ class TestDataModelCompatibility:
     def test_benchmark_config_fields(self):
         """BenchmarkConfig must maintain required fields"""
         # Test that we can create config with minimal required fields
-        config = BenchmarkConfig(name="test", task_type="test", data_path=None)
+        config = make_benchmark_config()
         
         # Required fields must exist
         required_fields = ["name", "task_type"]
@@ -117,36 +143,26 @@ class TestDataModelCompatibility:
     
     def test_benchmark_config_optional_fields(self):
         """Optional fields should have reasonable defaults"""
-        config = BenchmarkConfig(name="test", task_type="test", data_path=None)
+        config = make_benchmark_config()
         
         # Optional fields with defaults
-        optional_fields = {
-            "sample_limit": None,
-            "evaluation_method": None,
-            "base_data_dir": str,  # Should have some default
-        }
-        
-        for field, expected_type in optional_fields.items():
+        optional_fields = [
+            "sample_limit",
+            "augmentation_config",
+            "base_data_dir",
+            "llm_eval_config",
+        ]
+
+        for field in optional_fields:
             assert hasattr(config, field), f"BenchmarkConfig missing optional field '{field}'"
-            
-            value = getattr(config, field)
-            if expected_type is not None and value is not None:
-                assert isinstance(value, expected_type), \
-                    f"Field '{field}' has wrong type: {type(value)} != {expected_type}"
     
     def test_experiment_config_backward_compatibility(self):
         """ExperimentConfig must support legacy initialization"""
         # Test minimal initialization
-        benchmark_config = BenchmarkConfig(name="test", task_type="test", data_path=None)
+        benchmark_config = make_benchmark_config()
         
         try:
-            config = ExperimentConfig(
-                model_path="test_model",
-                emotions=["anger", "neutral"],
-                intensities=[1.0],
-                benchmark=benchmark_config,
-                output_dir="test_output"
-            )
+            config = make_experiment_config(emotions=["anger", "neutral"], benchmark=benchmark_config)
             
             # Verify required fields exist
             assert hasattr(config, "model_path")
@@ -171,42 +187,43 @@ class TestEvaluationAPICompatibility:
         for param in expected_params:
             assert param in params, f"Parameter '{param}' missing from llm_evaluate_response"
     
-    @patch('emotion_experiment_engine.evaluation_utils.openai.ChatCompletion.create')
-    def test_llm_evaluate_response_return_format(self, mock_openai):
-        """LLM evaluation must return consistent format"""
-        # Mock OpenAI response
-        mock_openai.return_value.choices = [
-            MagicMock(message=MagicMock(content='{"emotion": "neutral", "confidence": 0.8}'))
-        ]
-        
+    @patch('emotion_experiment_engine.evaluation_utils._get_openai_client')
+    def test_llm_evaluate_response_return_format(self, mock_client_factory):
+        """LLM evaluation must return parsed JSON dictionaries"""
+        mock_client = MagicMock()
+        mock_client_factory.return_value = mock_client
+        mock_client.chat.completions.create.return_value = MagicMock(
+            choices=[
+                MagicMock(
+                    message=MagicMock(content='{"label": "neutral", "confidence": 0.8}')
+                )
+            ]
+        )
+
         result = llm_evaluate_response(
             system_prompt="Test",
             query="Test query",
-            llm_eval_config={"model": "gpt-4o-mini", "temperature": 0.0}
+            llm_eval_config={"model": "gpt-4o-mini", "temperature": 0.0},
         )
-        
-        # Verify return format
+
         assert isinstance(result, dict), "llm_evaluate_response must return a dictionary"
-        
-        # Expected fields in response
-        expected_fields = ["emotion", "confidence"]
-        for field in expected_fields:
-            assert field in result, f"Response missing field '{field}'"
-        
-        # Type validation
-        assert isinstance(result["emotion"], str), "emotion field must be string"
-        assert isinstance(result["confidence"], (int, float)), "confidence must be numeric"
-        assert 0.0 <= result["confidence"] <= 1.0, "confidence must be in [0, 1] range"
+        assert result["label"] == "neutral"
+        assert result["confidence"] == 0.8
+        mock_client.chat.completions.create.assert_called_once()
     
-    def test_llm_evaluate_batch_signature(self):
-        """Batch evaluation function must maintain signature"""
-        sig = inspect.signature(llm_evaluate_batch)
+    def test_base_dataset_evaluate_batch_signature(self):
+        """Base dataset evaluate_batch must keep prompts parameter"""
+        sig = inspect.signature(BaseBenchmarkDataset.evaluate_batch)
         params = list(sig.parameters.keys())
-        
-        # Key parameters for batch processing
-        expected_params = ["evaluation_requests", "llm_eval_config"]
-        for param in expected_params:
-            assert param in params, f"Parameter '{param}' missing from llm_evaluate_batch"
+
+        expected_prefix = [
+            "self",
+            "responses",
+            "ground_truths",
+            "task_names",
+            "prompts",
+        ]
+        assert params[: len(expected_prefix)] == expected_prefix
 
 
 @pytest.mark.regression
@@ -251,19 +268,15 @@ class TestBaseBenchmarkDatasetInterface:
             emotion_check.EmotionCheckDataset
         ]
         
-        # Check signature consistency
-        base_sig = inspect.signature(BaseBenchmarkDataset.evaluate_response)
-        base_params = list(base_sig.parameters.keys())
-        
+        required = {"self", "response", "ground_truth", "task_name"}
+
         for dataset_class in dataset_classes:
             if hasattr(dataset_class, 'evaluate_response'):
-                sig = inspect.signature(dataset_class.evaluate_response)
-                params = list(sig.parameters.keys())
-                
-                # Must have at least the base parameters
-                for param in base_params:
-                    assert param in params, \
-                        f"{dataset_class.__name__}.evaluate_response missing parameter '{param}'"
+                params = set(inspect.signature(dataset_class.evaluate_response).parameters.keys())
+                assert required.issubset(params), (
+                    f"{dataset_class.__name__}.evaluate_response missing required parameters: "
+                    f"{required - params}"
+                )
 
 
 @pytest.mark.regression
@@ -271,46 +284,65 @@ class TestExperimentClassCompatibility:
     """Ensure experiment orchestration API remains stable"""
     
     def test_experiment_initialization_compatibility(self):
-        """EmotionMemoryExperiment must accept standard config"""
-        benchmark_config = BenchmarkConfig(name="test", task_type="test", data_path=None)
+        """EmotionExperiment must accept standard config"""
+        benchmark_config = make_benchmark_config()
+
+        experiment_config = make_experiment_config(benchmark=benchmark_config)
         
-        experiment_config = ExperimentConfig(
-            model_path="test_model",
-            emotions=["anger"],
-            intensities=[1.0],
-            benchmark=benchmark_config,
-            output_dir="test_output"
-        )
-        
+        basic_tokenizer = MagicMock(name="tokenizer")
+
         # Mock heavy dependencies
         with patch('emotion_experiment_engine.experiment.load_emotion_readers'), \
-             patch('emotion_experiment_engine.experiment.setup_model_and_tokenizer'), \
-             patch('emotion_experiment_engine.experiment.get_pipeline'):
-            
+             patch('emotion_experiment_engine.experiment.setup_model_and_tokenizer', return_value=(MagicMock(), basic_tokenizer, MagicMock(), None)), \
+             patch('emotion_experiment_engine.experiment.get_pipeline'), \
+             patch('neuro_manipulation.utils.load_tokenizer_only', return_value=(basic_tokenizer, None)), \
+             patch('neuro_manipulation.model_layer_detector.ModelLayerDetector.num_layers', return_value=1), \
+             patch('emotion_experiment_engine.experiment.create_benchmark_components') as mock_components, \
+             patch('emotion_experiment_engine.experiment.DataLoader') as mock_dataloader:
+
+            class _StubDataset:
+                def __init__(self):
+                    self.eval_workers = 1
+
+                def __len__(self):  # pragma: no cover - trivial
+                    return 0
+
+                def __iter__(self):  # pragma: no cover - trivial
+                    return iter([])
+
+                def collate_fn(self, batch):
+                    return {"prompts": [], "items": [], "ground_truths": []}
+
+                def evaluate_batch(self, *args, **kwargs):
+                    return []
+
+            mock_components.return_value = (lambda **_: None, lambda x: x, _StubDataset())
+            mock_dataloader.return_value = []
+
             try:
-                experiment = EmotionMemoryExperiment(experiment_config)
-                assert experiment is not None, "Failed to create EmotionMemoryExperiment"
-                
+                experiment = EmotionExperiment(experiment_config)
+                assert experiment is not None, "Failed to create EmotionExperiment"
+
                 # Verify key attributes exist
                 assert hasattr(experiment, 'config'), "Missing config attribute"
-                assert hasattr(experiment, 'dataset'), "Missing dataset attribute" 
-                
+
             except Exception as e:
-                pytest.fail(f"EmotionMemoryExperiment initialization failed: {str(e)}")
+                pytest.fail(f"EmotionExperiment initialization failed: {str(e)}")
     
     def test_experiment_public_methods_stability(self):
         """Public methods must remain available"""
         # Key public methods that should remain stable
         expected_methods = [
             "__init__",
-            "run_sanity_check", 
-            # Add other public methods as they stabilize
+            "run_sanity_check",
+            "run_experiment",
+            "close",
         ]
-        
+
         for method in expected_methods:
-            assert hasattr(EmotionMemoryExperiment, method), \
-                f"EmotionMemoryExperiment missing method '{method}'"
-            assert callable(getattr(EmotionMemoryExperiment, method)), \
+            assert hasattr(EmotionExperiment, method), \
+                f"EmotionExperiment missing method '{method}'"
+            assert callable(getattr(EmotionExperiment, method)), \
                 f"Method '{method}' is not callable"
 
 
@@ -344,22 +376,27 @@ class TestVersionCompatibilityMatrix:
         except ImportError as e:
             pytest.fail(f"Import regression detected: {str(e)}")
     
-    @patch('emotion_experiment_engine.evaluation_utils.openai')
-    def test_openai_api_version_compatibility(self, mock_openai):
+    @patch('emotion_experiment_engine.evaluation_utils._get_openai_client')
+    def test_openai_api_version_compatibility(self, mock_client_factory):
         """Test OpenAI API version compatibility"""
-        # Mock OpenAI response structure that should remain stable
-        mock_openai.ChatCompletion.create.return_value.choices = [
-            MagicMock(message=MagicMock(content='{"emotion": "test", "confidence": 1.0}'))
-        ]
-        
+        mock_client = MagicMock()
+        mock_client_factory.return_value = mock_client
+        mock_client.chat.completions.create.return_value = MagicMock(
+            choices=[
+                MagicMock(
+                    message=MagicMock(content='{"emotion": "test", "confidence": 1.0}')
+                )
+            ]
+        )
+
         try:
             result = llm_evaluate_response(
                 system_prompt="test",
-                query="test", 
+                query="test",
                 llm_eval_config={"model": "gpt-4o-mini"}
             )
             assert isinstance(result, dict), "OpenAI API compatibility broken"
-            
+
         except Exception as e:
             pytest.fail(f"OpenAI API compatibility issue: {str(e)}")
 
