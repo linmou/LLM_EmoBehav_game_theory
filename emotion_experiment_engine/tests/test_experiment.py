@@ -445,6 +445,43 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
             self.assertEqual(len(results), 1)
             self.assertEqual(results[0].score, 0.0)
 
+    def test_close_releases_pipeline_and_model_resources(self):
+        """Test file: experiment.py | Purpose: ensure close() frees resources"""
+
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+        experiment.is_vllm = True
+
+        pipeline = MagicMock()
+        pipeline.close = MagicMock()
+        experiment.rep_control_pipeline = pipeline
+
+        llm_engine = MagicMock()
+        llm_engine.shutdown = MagicMock()
+
+        model = MagicMock()
+        model.llm_engine = llm_engine
+        model.shutdown = MagicMock()
+        experiment.model = model
+
+        experiment.emotion_rep_readers = {"anger": MagicMock()}
+        experiment.dataset = MagicMock()
+        experiment.benchmark_prompt_wrapper_partial = MagicMock()
+        experiment.emotion_datasets = {"anger": [MagicMock()]}
+
+        experiment.close()
+
+        pipeline.close.assert_called_once()
+        llm_engine.shutdown.assert_called_once()
+        model.shutdown.assert_called_once()
+
+        self.assertIsNone(experiment.rep_control_pipeline)
+        self.assertIsNone(experiment.model)
+        self.assertIsNone(experiment.emotion_rep_readers)
+        self.assertIsNone(experiment.dataset)
+        self.assertIsNone(experiment.benchmark_prompt_wrapper_partial)
+        self.assertIsNone(experiment.emotion_datasets)
+
 
 if __name__ == "__main__":
     unittest.main()

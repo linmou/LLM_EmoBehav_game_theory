@@ -3,6 +3,7 @@ Main emotion experiment class.
 Follows the pattern from emotion_game_experiment.py but adapted for otherbenchmarks.
 """
 
+import gc
 import json
 import re
 import logging
@@ -974,6 +975,57 @@ class EmotionExperiment:
             "truncation_strategy": self.config.benchmark.truncation_strategy,
             "preserve_ratio": self.config.benchmark.preserve_ratio,
         }
+
+    def close(self) -> None:
+        """Release GPU-backed objects so subsequent experiments can load cleanly"""
+        self.logger.info("Closing emotion experiment resources")
+
+        pipeline = getattr(self, "rep_control_pipeline", None)
+        if pipeline is not None:
+            close_fn = getattr(pipeline, "close", None)
+            if callable(close_fn):
+                try:
+                    close_fn()
+                except Exception as pipeline_error:  # pragma: no cover - defensive
+                    self.logger.warning(
+                        f"Failed to close RepE pipeline: {pipeline_error}"
+                    )
+            self.rep_control_pipeline = None
+
+        model = getattr(self, "model", None)
+        if model is not None:
+            if self.is_vllm and hasattr(model, "llm_engine"):
+                try:
+                    model.llm_engine.shutdown()
+                except Exception as engine_error:  # pragma: no cover - defensive
+                    self.logger.warning(
+                        f"Failed to shutdown vLLM engine: {engine_error}"
+                    )
+
+            shutdown_fn = getattr(model, "shutdown", None)
+            if callable(shutdown_fn):
+                try:
+                    shutdown_fn()
+                except Exception as shutdown_error:  # pragma: no cover - defensive
+                    self.logger.warning(
+                        f"Model shutdown raised an error: {shutdown_error}"
+                    )
+
+            self.model = None
+
+        # Drop large references and trigger GC so CUDA memory can be reclaimed
+        self.emotion_rep_readers = None
+        self.dataset = None
+        self.benchmark_prompt_wrapper_partial = None
+        self.emotion_datasets = None
+
+        gc.collect()
+
+        try:
+            if "torch" in globals() and torch is not None and torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:  # pragma: no cover - defensive
+            pass
 
     def run_sanity_check(self, sample_limit: int = 5) -> pd.DataFrame:
         """Run a quick sanity check with limited samples"""
