@@ -74,6 +74,7 @@ class EmotionExperiment:
     def _setup_basic_components(self, config: ExperimentConfig):
         """Setup GPU-independent components: logging, tokenizer, prompt_format, truncation"""
         self.config = config
+        self.neutral_only = len(config.emotions) == 0
         self.generation_config = config.generation_config or DEFAULT_GENERATION_CONFIG
         self.loading_config = config.loading_config  # May be None for defaults
 
@@ -243,14 +244,17 @@ class EmotionExperiment:
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
 
-        self.emotion_rep_readers = load_emotion_readers(
-            self.repe_config,
-            self.model,
-            tokenizer_temp,
-            self.hidden_layers,
-            processor,
-            self.enable_thinking,
-        )
+        if self.neutral_only:
+            self.emotion_rep_readers = {}
+        else:
+            self.emotion_rep_readers = load_emotion_readers(
+                self.repe_config,
+                self.model,
+                tokenizer_temp,
+                self.hidden_layers,
+                processor,
+                self.enable_thinking,
+            )
         del self.model  # Save memory
 
         # Load vLLM model for inference with loading config
@@ -364,12 +368,14 @@ class EmotionExperiment:
         """Run the complete emotion experiment"""
         self.logger.info("Starting emotion experiment")
         all_results = []
+        neutral_rep_reader = None
 
         # Test each emotion with each intensity
         for emotion in self.config.emotions:
             self.logger.info(f"Processing emotion: {emotion}")
             rep_reader = self.emotion_rep_readers[emotion]
             self.cur_emotion = emotion
+            neutral_rep_reader = rep_reader
 
             # Build DataLoader for this emotion (fresh dataset each time)
             data_loader = self.build_dataloader(self.cur_emotion)
@@ -398,7 +404,7 @@ class EmotionExperiment:
         data_loader = self.build_dataloader(self.cur_emotion)
         for r in range(self.repeat_runs):
             self.cur_repeat = r
-            neutral_results = self._infer_with_activation(rep_reader, data_loader)
+            neutral_results = self._infer_with_activation(neutral_rep_reader, data_loader)
             for rec in neutral_results:
                 if rec.metadata is None:
                     rec.metadata = {"repeat_id": r}
@@ -416,21 +422,24 @@ class EmotionExperiment:
 
         # For vLLM models, use cpu device
         device = torch.device("cpu") if self.is_vllm else self.model.device
-        activations = {
-            layer: torch.tensor(
-                self.cur_intensity
-                * rep_reader.directions[layer]
-                * rep_reader.direction_signs[layer]
-            )
-            .to(device)
-            .half()
-            for layer in self.hidden_layers
-        }
+        if rep_reader is None:
+            activations = None
+        else:
+            activations = {
+                layer: torch.tensor(
+                    self.cur_intensity
+                    * rep_reader.directions[layer]
+                    * rep_reader.direction_signs[layer]
+                )
+                .to(device)
+                .half()
+                for layer in self.hidden_layers
+            }
 
         # Process batches using DataLoader (matches EmotionGameExperiment._forward_dataloader pattern)
         return self._forward_dataloader(data_loader, activations)
 
-    def _forward_dataloader(self, data_loader, activations: Dict) -> List[ResultRecord]:
+    def _forward_dataloader(self, data_loader, activations: Dict[str, Any] | None) -> List[ResultRecord]:
         """Forward pass using DataLoader"""
         batch_results = []
         pipeline_queue: "Queue[Any]" = Queue(maxsize=2)  # Control memory usage

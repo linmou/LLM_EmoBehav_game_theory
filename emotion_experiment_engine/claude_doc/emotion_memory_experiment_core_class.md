@@ -70,6 +70,8 @@ self.model, self.tokenizer, self.prompt_format, _ = (
 )
 ```
 
+> **Neutral-only mode:** When the configuration provides an empty `emotions` list the constructor flags the run as neutral-only, skips `load_emotion_readers`, and still rebuilds the vLLM pipeline. Downstream inference passes `activations=None`, so the experiment executes a pure baseline sweep without loading any emotion vectors.
+
 #### **3. RepE Control Pipeline Initialization**
 ```python
 # Setup representation control pipeline
