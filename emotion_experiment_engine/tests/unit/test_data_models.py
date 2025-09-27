@@ -117,7 +117,8 @@ class TestDataModels(unittest.TestCase):
             loading_config=None,
             repe_eng_config=None,
             max_evaluation_workers=2,
-            pipeline_queue_size=1
+            pipeline_queue_size=1,
+            defer_evaluation=False,
         )
         
         self.assertEqual(config.model_path, "/path/to/model")
@@ -152,7 +153,8 @@ class TestDataModels(unittest.TestCase):
             loading_config=None,
             repe_eng_config=None,
             max_evaluation_workers=4,
-            pipeline_queue_size=2
+            pipeline_queue_size=2,
+            defer_evaluation=False,
         )
         
         self.assertEqual(config.batch_size, 4)

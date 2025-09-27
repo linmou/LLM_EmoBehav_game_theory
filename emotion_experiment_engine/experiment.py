@@ -3,6 +3,8 @@ Main emotion experiment class.
 Follows the pattern from emotion_game_experiment.py but adapted for otherbenchmarks.
 """
 
+from __future__ import annotations
+
 import json
 import re
 import logging
@@ -177,6 +179,11 @@ class EmotionExperiment:
 
         # Batch size for DataLoader
         self.batch_size = config.batch_size
+
+        # Evaluation control flags
+        self.defer_evaluation = bool(config.defer_evaluation)
+        self._force_evaluate = False
+        self._defer_logged = False
 
     def _create_dataset_for_emotion(self, emotion: str):
         """Create dataset for a specific emotion using registry-based component assembly"""
@@ -406,6 +413,8 @@ class EmotionExperiment:
                     rec.metadata["repeat_id"] = r
             all_results.extend(neutral_results)
 
+        if self.defer_evaluation and not self._force_evaluate:
+            return self._save_deferred_results(all_results)
         return self._save_results(all_results)
 
     def _infer_with_activation(self, rep_reader, data_loader) -> List[ResultRecord]:
@@ -645,21 +654,33 @@ class EmotionExperiment:
         empty_think_prefix = re.compile(r"^\s*<think>\s*</think>\s*", re.IGNORECASE)
         cleaned_responses = [empty_think_prefix.sub("", r or "") for r in responses]
 
-        # Batch evaluation using LLM
-        try:
-            task_names = [self.config.benchmark.task_type] * len(responses)
-            scores = self.dataset.evaluate_batch(
-                cleaned_responses, batch_ground_truths, task_names, batch_prompts
-            )
-        except Exception as e:
-            self.logger.error(f"Batch evaluation failed: {e}")
-            scores = [0.0] * len(responses)
+        force_eval = getattr(self, "_force_evaluate", False)
+        if self.defer_evaluation and not force_eval:
+            if not self._defer_logged:
+                self.logger.info(
+                    "Deferred evaluation enabled; skipping inline scoring and storing raw responses."
+                )
+                self._defer_logged = True
+            scores = [None] * len(responses)
+            eval_errors = [None] * len(responses)
+            if hasattr(self.dataset, "_last_eval_errors"):
+                try:
+                    self.dataset._last_eval_errors = eval_errors  # type: ignore[attr-defined]
+                except Exception:
+                    pass
+        else:
+            try:
+                task_names = [self.config.benchmark.task_type] * len(responses)
+                scores = self.dataset.evaluate_batch(
+                    cleaned_responses, batch_ground_truths, task_names, batch_prompts
+                )
+            except Exception as e:
+                self.logger.error(f"Batch evaluation failed: {e}")
+                scores = [0.0] * len(responses)
 
-        # Retrieve per-item evaluation errors if the dataset exposed them
-        eval_errors = getattr(self.dataset, "_last_eval_errors", None)
-        if not eval_errors or len(eval_errors) != len(scores):
-            # Normalize to a list of Nones when not available or size-mismatched
-            eval_errors = [None] * len(scores)
+            eval_errors = getattr(self.dataset, "_last_eval_errors", None)
+            if not eval_errors or len(eval_errors) != len(scores):
+                eval_errors = [None] * len(scores)
 
         # Create result records with batch-computed scores
         for i, (response, score, prompt, item, ground_truth) in enumerate(
@@ -692,6 +713,49 @@ class EmotionExperiment:
             f"{log_prefix} PostProc: Finished for batch {batch_idx} ({end_time - start_time:.2f}s). Returning {len(results)} results."
         )
         return results
+
+    def _save_deferred_results(self, results: List[ResultRecord]) -> pd.DataFrame:
+        """Persist raw responses when scoring is deferred."""
+
+        self.logger.info(
+            "Deferred evaluation enabled; writing raw_results.json for offline scoring."
+        )
+
+        self._save_experiment_config()
+
+        raw_path = self.output_dir / "raw_results.json"
+        with open(raw_path, "w") as f:
+            json.dump([result.__dict__ for result in results], f, indent=2, default=str)
+
+        df = pd.DataFrame(
+            [
+                {
+                    "emotion": result.emotion,
+                    "intensity": result.intensity,
+                    "item_id": result.item_id,
+                    "task_name": result.task_name,
+                    "prompt": result.prompt,
+                    "response": result.response,
+                    "ground_truth": result.ground_truth,
+                    "score": result.score,
+                    "repeat_id": getattr(result, "repeat_id", None),
+                    "error": getattr(result, "error", None),
+                }
+                for result in results
+            ]
+        )
+
+        readme_path = self.output_dir / "README.md"
+        readme_path.write_text(
+            "# Evaluation Deferred\n\n"
+            "Inline scoring was skipped because `defer_evaluation` is true. "
+            "Raw responses are stored in `raw_results.json`.\n\n"
+            "To complete scoring, run `python -m emotion_experiment_engine.evaluate_saved --input "
+            f"{self.output_dir}` after configuring judge concurrency.\n",
+            encoding="utf-8",
+        )
+
+        return df
 
     def _save_results(self, results: List[ResultRecord]) -> pd.DataFrame:
         """Save experiment results and compute summary statistics
@@ -917,6 +981,12 @@ class EmotionExperiment:
                 "data_path": str(self.config.benchmark.get_data_path()),
                 "task_type": self.config.benchmark.task_type,
                 "sample_limit": self.config.benchmark.sample_limit,
+                "base_data_dir": self.config.benchmark.base_data_dir,
+                "augmentation_config": self.config.benchmark.augmentation_config,
+                "enable_auto_truncation": self.config.benchmark.enable_auto_truncation,
+                "truncation_strategy": self.config.benchmark.truncation_strategy,
+                "preserve_ratio": self.config.benchmark.preserve_ratio,
+                "llm_eval_config": self.config.benchmark.llm_eval_config,
             },
             "output_dir": self.config.output_dir,
             "batch_size": self.config.batch_size,
@@ -925,6 +995,7 @@ class EmotionExperiment:
             "repe_eng_config": self.repe_config,
             "max_evaluation_workers": self.config.max_evaluation_workers,
             "pipeline_queue_size": self.config.pipeline_queue_size,
+            "defer_evaluation": self.defer_evaluation,
             # Runtime information
             "runtime_info": {
                 "timestamp": datetime.now().isoformat(),
@@ -976,8 +1047,21 @@ class EmotionExperiment:
         self.output_dir = self.output_dir.parent / "sanity_check" / self.output_dir.name
         os.makedirs(self.output_dir, exist_ok=True)
 
+        previous_force = getattr(self, "_force_evaluate", False)
+        previous_logged = getattr(self, "_defer_logged", False)
+        forced = False
+        if self.defer_evaluation and not previous_force:
+            self.logger.info(
+                "Forcing inline evaluation during sanity check despite deferred_evaluation flag."
+            )
+            self._force_evaluate = True
+            forced = True
+
         try:
             return self.run_experiment()
         finally:
             # Restore original config
             self.config.benchmark.sample_limit = original_sample_limit
+            if forced:
+                self._force_evaluate = previous_force
+                self._defer_logged = previous_logged

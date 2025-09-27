@@ -193,6 +193,7 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
         pipeline_queue_size=config.get(
             "pipeline_queue_size", config.get("execution", {}).get("batch_size", 4) * 2
         ),
+        defer_evaluation=bool(config.get("defer_evaluation", False)),
     )
 
     return exp_config

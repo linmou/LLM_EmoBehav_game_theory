@@ -83,6 +83,12 @@ class TestIntegration(unittest.TestCase):
             benchmark=benchmark_config,
             output_dir=str(temp_dir),
             batch_size=2,
+            generation_config=None,
+            loading_config=None,
+            repe_eng_config=None,
+            max_evaluation_workers=1,
+            pipeline_queue_size=1,
+            defer_evaluation=False,
         )
 
         # Setup mocks
@@ -217,6 +223,12 @@ class TestIntegration(unittest.TestCase):
             benchmark=benchmark_config,
             output_dir=str(temp_dir),
             batch_size=5,
+            generation_config=None,
+            loading_config=None,
+            repe_eng_config=None,
+            max_evaluation_workers=1,
+            pipeline_queue_size=1,
+            defer_evaluation=False,
         )
 
         # Setup mocks
@@ -296,6 +308,12 @@ class TestIntegration(unittest.TestCase):
             benchmark=benchmark_config,
             output_dir=str(temp_dir),
             batch_size=3,  # Smaller than data size
+            generation_config=None,
+            loading_config=None,
+            repe_eng_config=None,
+            max_evaluation_workers=1,
+            pipeline_queue_size=1,
+            defer_evaluation=False,
         )
 
         # Setup mocks

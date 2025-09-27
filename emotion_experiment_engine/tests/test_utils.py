@@ -187,7 +187,12 @@ def create_mock_benchmark_config(task_type: str = 'passkey', num_items: int = 10
     )
 
 
-def create_mock_experiment_config(task_type: str = 'passkey', num_items: int = 5) -> ExperimentConfig:
+def create_mock_experiment_config(
+    task_type: str = 'passkey',
+    num_items: int = 5,
+    *,
+    defer_evaluation: bool = False,
+) -> ExperimentConfig:
     """Create a mock experiment config for testing"""
     benchmark_config = create_mock_benchmark_config(task_type, num_items)
     
@@ -207,7 +212,8 @@ def create_mock_experiment_config(task_type: str = 'passkey', num_items: int = 5
         loading_config=None,
         repe_eng_config=None,
         max_evaluation_workers=2,
-        pipeline_queue_size=1
+        pipeline_queue_size=1,
+        defer_evaluation=defer_evaluation,
     )
 
 

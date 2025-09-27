@@ -511,6 +511,8 @@ class MemoryExperimentSeriesRunner:
             additional_vllm_kwargs=loading_cfg.get("additional_vllm_kwargs", {}),
         )
 
+        defer_eval_flag = bool(self.base_config.get("defer_evaluation", False))
+
         # Create ExperimentConfig
         experiment_config = ExperimentConfig(
             model_path=model_name,
@@ -524,6 +526,7 @@ class MemoryExperimentSeriesRunner:
             repe_eng_config=self.base_config.get("repe_eng_config"),
             max_evaluation_workers=self.base_config.get("max_evaluation_workers", 2),
             pipeline_queue_size=self.base_config.get("pipeline_queue_size", 2),
+            defer_evaluation=defer_eval_flag,
         )
 
         # Import and create experiment with dry_run parameter

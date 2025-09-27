@@ -73,6 +73,7 @@ def test_repeat_aggregation_and_readme():
             repe_eng_config=None,
             max_evaluation_workers=1,
             pipeline_queue_size=1,
+            defer_evaluation=False,
         )
 
         with patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(_make_dummy_tokenizer(), None)), \
@@ -190,6 +191,7 @@ def test_per_run_seed_passed_in_generation_kwargs(tmp_path: Path):
         repe_eng_config=None,
         max_evaluation_workers=1,
         pipeline_queue_size=1,
+        defer_evaluation=False,
     )
 
     with patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(_make_dummy_tokenizer(), None)), \
@@ -280,4 +282,3 @@ def test_series_runner_passes_repeat_and_seed(tmp_path: Path):
 
     assert captured["repeat_runs"] == 4
     assert captured["repeat_seed_base"] == 777
-

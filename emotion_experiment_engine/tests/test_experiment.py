@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 
 from ..data_models import BenchmarkConfig, ExperimentConfig
+from ..datasets.base import BaseBenchmarkDataset
 from ..experiment import EmotionExperiment
 from .test_utils import (
     MockOutput,
@@ -199,7 +200,10 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
             mock_processor,
         )
         mock_model_detector.num_layers.return_value = 12
-        mock_load_emotion_readers.return_value = {"anger": MagicMock()}
+        mock_load_emotion_readers.return_value = {
+            "anger": MagicMock(),
+            "happiness": MagicMock(),
+        }
 
         responses = ["neutral_response"]
         mock_pipeline = MockRepControlPipeline(responses)
@@ -261,7 +265,10 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
             MagicMock(),
         )
         mock_model_detector.num_layers.return_value = 12
-        mock_load_emotion_readers.return_value = {"anger": MagicMock()}
+        mock_load_emotion_readers.return_value = {
+            "anger": MagicMock(),
+            "happiness": MagicMock(),
+        }
         mock_get_pipeline.return_value = MockRepControlPipeline(["test"])
 
         # Create test config with temp output dir
@@ -415,7 +422,10 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
             MagicMock(),
         )
         mock_model_detector.num_layers.return_value = 12
-        mock_load_emotion_readers.return_value = {"anger": MagicMock()}
+        mock_load_emotion_readers.return_value = {
+            "anger": MagicMock(),
+            "happiness": MagicMock(),
+        }
         mock_get_pipeline.return_value = MockRepControlPipeline(["test"])
 
         # Create test config
@@ -444,6 +454,129 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
             # Should still return results with score 0.0
             self.assertEqual(len(results), 1)
             self.assertEqual(results[0].score, 0.0)
+
+    @patch("emotion_experiment_engine.experiment.setup_model_and_tokenizer")
+    @patch("emotion_experiment_engine.experiment.ModelLayerDetector")
+    @patch("emotion_experiment_engine.experiment.load_emotion_readers")
+    @patch("emotion_experiment_engine.experiment.get_pipeline")
+    @patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(MagicMock(), None))
+    @patch("emotion_experiment_engine.experiment.EmotionExperiment._assert_tokenizers_equivalent", return_value=None)
+    def test_run_experiment_defer_evaluation_skips_inline_judging(
+        self,
+        _mock_assert,
+        _mock_tok,
+        mock_get_pipeline,
+        mock_load_emotion_readers,
+        mock_model_detector,
+        mock_setup_model,
+    ):
+        """Deferred evaluation should skip inline scoring and emit log hints."""
+
+        mock_model = MagicMock()
+        mock_tokenizer = MagicMock()
+        mock_setup_model.return_value = (
+            mock_model,
+            mock_tokenizer,
+            "chat",
+            MagicMock(),
+        )
+        mock_model_detector.num_layers.return_value = 12
+        mock_load_emotion_readers.return_value = {
+            "anger": MagicMock(),
+            "happiness": MagicMock(),
+        }
+        mock_get_pipeline.return_value = MockRepControlPipeline(["test"])
+
+        config = create_mock_experiment_config("passkey", 1, defer_evaluation=True)
+        temp_dir = Path(tempfile.mkdtemp())
+        config.output_dir = str(temp_dir)
+        self.temp_dirs.append(temp_dir)
+        self.configs.append(config.benchmark)
+
+        experiment = EmotionExperiment(config)
+        experiment.is_vllm = True
+
+        with patch.object(
+            BaseBenchmarkDataset,
+            "evaluate_batch",
+            side_effect=AssertionError("evaluate_batch should not run when deferred"),
+        ):
+            with patch.object(experiment.logger, "info") as mock_info:
+                df = experiment.run_experiment()
+
+        raw_path = experiment.output_dir / "raw_results.json"
+        detailed_path = experiment.output_dir / "detailed_results.csv"
+        self.assertTrue(raw_path.exists())
+        self.assertFalse(detailed_path.exists())
+
+        logged_messages = [str(call.args[0]) for call in mock_info.call_args_list if call.args]
+        self.assertTrue(
+            any("deferred evaluation" in message.lower() for message in logged_messages),
+            "Expected deferred evaluation log message",
+        )
+
+        self.assertIn("score", df.columns)
+        self.assertTrue(df["score"].isna().all())
+
+    @patch("emotion_experiment_engine.experiment.setup_model_and_tokenizer")
+    @patch("emotion_experiment_engine.experiment.ModelLayerDetector")
+    @patch("emotion_experiment_engine.experiment.load_emotion_readers")
+    @patch("emotion_experiment_engine.experiment.get_pipeline")
+    @patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(MagicMock(), None))
+    @patch("emotion_experiment_engine.experiment.EmotionExperiment._assert_tokenizers_equivalent", return_value=None)
+    def test_run_sanity_check_forces_inline_evaluation_even_when_deferred(
+        self,
+        _mock_assert,
+        _mock_tok,
+        mock_get_pipeline,
+        mock_load_emotion_readers,
+        mock_model_detector,
+        mock_setup_model,
+    ):
+        """Sanity checks override deferred mode to keep quick feedback."""
+
+        mock_model = MagicMock()
+        mock_tokenizer = MagicMock()
+        mock_setup_model.return_value = (
+            mock_model,
+            mock_tokenizer,
+            "chat",
+            MagicMock(),
+        )
+        mock_model_detector.num_layers.return_value = 12
+        mock_load_emotion_readers.return_value = {
+            "anger": MagicMock(),
+            "happiness": MagicMock(),
+        }
+        mock_get_pipeline.return_value = MockRepControlPipeline(["test"])
+
+        config = create_mock_experiment_config("passkey", 2, defer_evaluation=True)
+        temp_dir = Path(tempfile.mkdtemp())
+        config.output_dir = str(temp_dir)
+        self.temp_dirs.append(temp_dir)
+        self.configs.append(config.benchmark)
+
+        experiment = EmotionExperiment(config)
+        experiment.is_vllm = True
+
+        eval_calls: list[int] = []
+
+        def _fake_eval(self, responses, ground_truths, task_names, prompts):
+            eval_calls.append(len(responses))
+            return [1.0] * len(responses)
+
+        with patch.object(BaseBenchmarkDataset, "evaluate_batch", _fake_eval):
+            with patch.object(experiment.logger, "info") as mock_info:
+                df = experiment.run_sanity_check(sample_limit=1)
+
+        self.assertTrue(eval_calls, "Sanity check should evaluate inline")
+        self.assertFalse(df["score"].isna().any())
+        logged_messages = [str(call.args[0]) for call in mock_info.call_args_list if call.args]
+        self.assertTrue(
+            any("forcing inline evaluation" in message.lower() for message in logged_messages),
+            "Expected sanity-check override log message",
+        )
+
 
 
 if __name__ == "__main__":

@@ -139,7 +139,8 @@ class TestDirectDataclassLoading(unittest.TestCase):
             loading_config=loading_config,
             repe_eng_config={"direction_method": "pca"},
             max_evaluation_workers=2,
-            pipeline_queue_size=2
+            pipeline_queue_size=2,
+            defer_evaluation=False,
         )
         
         self.assertEqual(experiment_config.model_path, "/test/model")

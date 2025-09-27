@@ -145,7 +145,14 @@ class TestDataModelCompatibility:
                 emotions=["anger", "neutral"],
                 intensities=[1.0],
                 benchmark=benchmark_config,
-                output_dir="test_output"
+                output_dir="test_output",
+                batch_size=1,
+                generation_config=None,
+                loading_config=None,
+                repe_eng_config=None,
+                max_evaluation_workers=1,
+                pipeline_queue_size=1,
+                defer_evaluation=False,
             )
             
             # Verify required fields exist
@@ -279,7 +286,14 @@ class TestExperimentClassCompatibility:
             emotions=["anger"],
             intensities=[1.0],
             benchmark=benchmark_config,
-            output_dir="test_output"
+            output_dir="test_output",
+            batch_size=1,
+            generation_config=None,
+            loading_config=None,
+            repe_eng_config=None,
+            max_evaluation_workers=1,
+            pipeline_queue_size=1,
+            defer_evaluation=False,
         )
         
         # Mock heavy dependencies

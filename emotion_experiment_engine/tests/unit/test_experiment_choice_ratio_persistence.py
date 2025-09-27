@@ -114,6 +114,7 @@ def test_save_results_writes_choice_ratio_csv(tmp_path: Path, tmp_benchmark_conf
         repe_eng_config=None,
         max_evaluation_workers=1,
         pipeline_queue_size=1,
+        defer_evaluation=False,
     )
 
     experiment = EmotionExperiment.__new__(EmotionExperiment)

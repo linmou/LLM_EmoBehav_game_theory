@@ -136,9 +136,27 @@ ExperimentConfig(
         "max_new_tokens": 100,
         "do_sample": False,
         "top_p": 0.9
-    }
+    },
+    loading_config=None,                 # vLLM loading options (None uses defaults)
+    repe_eng_config=None,
+    max_evaluation_workers=4,
+    pipeline_queue_size=2,
+    defer_evaluation=False               # Set True to skip inline scoring and evaluate later
 )
 ```
+
+### Deferred Evaluation Workflow
+
+Set `defer_evaluation=True` when you want to separate GPU generation from judge
+scoring. The experiment run will emit `raw_results.json` plus a README with
+instructions for the offline scorer. After the run completes, execute:
+
+```bash
+python -m emotion_experiment_engine.evaluate_saved --input <run_output_dir>
+```
+
+The helper replays judge calls with configurable concurrency and regenerates the
+standard CSV/JSON summaries in place.
 
 ## Data Format
 

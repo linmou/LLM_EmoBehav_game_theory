@@ -90,7 +90,8 @@ class EmotionMemoryConfigLoader:
             loading_config=None,  # Add missing required fields
             repe_eng_config=None,
             max_evaluation_workers=1,
-            pipeline_queue_size=10
+            pipeline_queue_size=10,
+            defer_evaluation=False,
         )
     
     @staticmethod

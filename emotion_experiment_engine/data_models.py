@@ -207,6 +207,7 @@ class ExperimentConfig:
     # Pipeline settings (always enabled with DataLoader)
     max_evaluation_workers: int  # Number of evaluation worker threads
     pipeline_queue_size: int  # Max queued batches (controls memory usage)
+    defer_evaluation: bool
 
 
 @dataclass

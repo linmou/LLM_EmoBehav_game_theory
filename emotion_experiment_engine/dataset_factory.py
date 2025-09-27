@@ -226,7 +226,10 @@ def get_dataset_class(benchmark_name: str) -> Optional[Type[BaseBenchmarkDataset
 def create_vllm_config_from_dict(
     config_dict: Dict[str, Any], model_path: str
 ) -> Optional[VLLMLoadingConfig]:
-    """Create VLLMLoadingConfig from configuration dictionary."""
+    """
+    [Deprecated]
+    Create VLLMLoadingConfig from configuration dictionary.
+    """
     if "loading_config" not in config_dict:
         return None
 
@@ -254,7 +257,10 @@ def create_experiment_config_from_dict(
     benchmark_config: BenchmarkConfig,
     loading_config: Optional[VLLMLoadingConfig] = None,
 ) -> ExperimentConfig:
-    """Create ExperimentConfig from configuration dictionary."""
+    """
+    [Deprecated]
+    Create ExperimentConfig from configuration dictionary.
+    """
     return ExperimentConfig(
         model_path=model_path,
         emotions=config_dict["emotions"],
@@ -267,4 +273,5 @@ def create_experiment_config_from_dict(
         repe_eng_config=config_dict.get("repe_eng_config"),
         max_evaluation_workers=config_dict.get("max_evaluation_workers", 4),
         pipeline_queue_size=config_dict.get("pipeline_queue_size", 2),
+        defer_evaluation=bool(config_dict.get("defer_evaluation", False)),
     )
