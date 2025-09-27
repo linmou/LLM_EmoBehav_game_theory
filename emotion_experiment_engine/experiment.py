@@ -995,12 +995,24 @@ class EmotionExperiment:
         model = getattr(self, "model", None)
         if model is not None:
             if self.is_vllm and hasattr(model, "llm_engine"):
-                try:
-                    model.llm_engine.shutdown()
-                except Exception as engine_error:  # pragma: no cover - defensive
-                    self.logger.warning(
-                        f"Failed to shutdown vLLM engine: {engine_error}"
-                    )
+                llm_engine = model.llm_engine
+                shutdown_fn = getattr(llm_engine, "shutdown", None)
+                if callable(shutdown_fn):
+                    try:
+                        shutdown_fn()
+                    except Exception as engine_error:  # pragma: no cover - defensive
+                        self.logger.warning(
+                            f"Failed to shutdown vLLM engine: {engine_error}"
+                        )
+                executor = getattr(llm_engine, "engine_executor", None)
+                executor_shutdown = getattr(executor, "shutdown", None)
+                if callable(executor_shutdown):
+                    try:
+                        executor_shutdown()
+                    except Exception as executor_error:  # pragma: no cover - defensive
+                        self.logger.warning(
+                            f"Failed to shutdown vLLM executor: {executor_error}"
+                        )
 
             shutdown_fn = getattr(model, "shutdown", None)
             if callable(shutdown_fn):

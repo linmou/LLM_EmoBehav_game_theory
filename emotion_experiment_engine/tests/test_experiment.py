@@ -456,10 +456,9 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         pipeline.close = MagicMock()
         experiment.rep_control_pipeline = pipeline
 
+        model = MagicMock()
         llm_engine = MagicMock()
         llm_engine.shutdown = MagicMock()
-
-        model = MagicMock()
         model.llm_engine = llm_engine
         model.shutdown = MagicMock()
         experiment.model = model
@@ -481,6 +480,37 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         self.assertIsNone(experiment.dataset)
         self.assertIsNone(experiment.benchmark_prompt_wrapper_partial)
         self.assertIsNone(experiment.emotion_datasets)
+
+    def test_close_handles_llm_engine_without_shutdown(self):
+        """Close should fall back when llm_engine lacks shutdown()"""
+
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+        experiment.is_vllm = True
+
+        experiment.rep_control_pipeline = None
+
+        engine_executor = MagicMock()
+        engine_executor.shutdown = MagicMock()
+
+        llm_engine = MagicMock()
+        del llm_engine.shutdown  # Simulate absence
+        llm_engine.engine_executor = engine_executor
+
+        model = MagicMock()
+        model.llm_engine = llm_engine
+        model.shutdown = MagicMock()
+        experiment.model = model
+
+        experiment.emotion_rep_readers = None
+        experiment.dataset = None
+        experiment.benchmark_prompt_wrapper_partial = None
+        experiment.emotion_datasets = None
+
+        experiment.close()
+
+        engine_executor.shutdown.assert_called_once()
+        model.shutdown.assert_called_once()
 
 
 if __name__ == "__main__":
