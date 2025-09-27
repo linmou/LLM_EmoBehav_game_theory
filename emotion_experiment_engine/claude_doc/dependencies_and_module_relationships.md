@@ -100,7 +100,7 @@ graph TB
 from .dataset_factory import create_dataset_from_config
 from .truncation_utils import calculate_max_context_length
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
-from .memory_prompt_wrapper import get_memory_prompt_wrapper
+from .benchmark_component_registry import create_benchmark_components
 
 # Neural manipulation framework dependencies
 from neuro_manipulation.configs.experiment_config import get_repe_eng_config
@@ -532,12 +532,22 @@ from neuro_manipulation.repe.pipelines import get_pipeline
 
 #### **Abstraction Layers**
 ```python
-# Memory experiments add abstraction over framework
-def get_memory_prompt_wrapper(task_type: str, prompt_format: PromptFormat):
-    """Abstract memory-specific prompt creation"""
-    return MemoryPromptWrapper(prompt_format)
+# Memory experiments add abstraction over framework via the registry
+from emotion_experiment_engine.benchmark_component_registry import create_benchmark_components
+from emotion_experiment_engine.data_models import BenchmarkConfig
 
-# Reduces direct coupling to framework prompt system
+
+def create_benchmark_stack(config: BenchmarkConfig, prompt_format: PromptFormat):
+    """Assemble prompt/answer wrappers plus dataset."""
+
+    return create_benchmark_components(
+        benchmark_name=config.name,
+        task_type=config.task_type,
+        config=config,
+        prompt_format=prompt_format,
+    )
+
+# Reduces direct coupling to individual prompt wrapper classes
 ```
 
 ## Dependency Injection and Testing
@@ -604,15 +614,20 @@ setup_model_and_tokenizer(loading_config, backend="tensorrt")  # Future
 
 #### **Backward Compatibility**
 ```python
-# Version compatibility handling
-def get_memory_prompt_wrapper(task_type, prompt_format, **kwargs):
-    """Backward compatible prompt wrapper creation"""
-    
-    # Handle framework evolution gracefully
-    if hasattr(prompt_format, 'new_feature'):
-        return EnhancedMemoryPromptWrapper(prompt_format, **kwargs)
-    else:
-        return MemoryPromptWrapper(prompt_format)
+# Version compatibility handling now routes through the registry
+from emotion_experiment_engine.benchmark_component_registry import create_benchmark_components
+
+
+def create_benchmark_stack(config, prompt_format, **overrides):
+    """Backward compatible component creation via registry"""
+
+    return create_benchmark_components(
+        benchmark_name=config.name,
+        task_type=config.task_type,
+        config=config,
+        prompt_format=prompt_format,
+        **overrides,
+    )
 ```
 
 #### **Forward Compatibility**

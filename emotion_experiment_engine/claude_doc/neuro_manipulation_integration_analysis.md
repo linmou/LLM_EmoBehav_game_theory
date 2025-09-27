@@ -213,16 +213,25 @@ class MemoryPromptWrapper(PromptWrapper):
 
 #### **Model-Specific Format Support**
 ```python
-def get_memory_prompt_wrapper(task_type: str, prompt_format: PromptFormat):
-    """Create memory prompt wrapper using framework prompt formats"""
-    
-    # Framework handles model-specific formatting (Qwen, ChatML, etc.)
-    return MemoryPromptWrapper(prompt_format)
+from emotion_experiment_engine.benchmark_component_registry import create_benchmark_components
+from emotion_experiment_engine.data_models import BenchmarkConfig
+
+
+def create_memory_components(config: BenchmarkConfig, prompt_format: PromptFormat):
+    """Create memory benchmark components using framework prompt formats"""
+
+    return create_benchmark_components(
+        benchmark_name=config.name,
+        task_type=config.task_type,
+        config=config,
+        prompt_format=prompt_format,
+    )
+
 
 # Usage in experiment
-memory_prompt_wrapper = get_memory_prompt_wrapper(
-    config.benchmark.task_type,
-    self.prompt_format  # From framework model loading
+prompt_wrapper_fn, answer_wrapper_fn, dataset = create_memory_components(
+    config.benchmark,
+    self.prompt_format,  # From framework model loading
 )
 ```
 
