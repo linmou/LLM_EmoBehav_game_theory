@@ -131,7 +131,7 @@ Ready for future documentation of:
 - **Registry Guidance Refresh**: Updated architecture diagrams, walkthroughs, and README examples to showcase `create_benchmark_components` as the canonical entry point.
 - **Automation Guardrail**: Added a unit test that fails if the deprecated identifier resurfaces in docs or test sources.
 
-_Pending commit ID_: fill once the branch is merged.
+_Commit ID_: 9c47b0d
 
 ## Conclusion
 
