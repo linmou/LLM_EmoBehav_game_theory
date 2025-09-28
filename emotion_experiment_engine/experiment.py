@@ -5,6 +5,7 @@ Follows the pattern from emotion_game_experiment.py but adapted for otherbenchma
 
 from __future__ import annotations
 
+import gc
 import json
 import re
 import logging
@@ -76,6 +77,7 @@ class EmotionExperiment:
     def _setup_basic_components(self, config: ExperimentConfig):
         """Setup GPU-independent components: logging, tokenizer, prompt_format, truncation"""
         self.config = config
+        self.neutral_only = len(config.emotions) == 0
         self.generation_config = config.generation_config or DEFAULT_GENERATION_CONFIG
         self.loading_config = config.loading_config  # May be None for defaults
 
@@ -250,14 +252,17 @@ class EmotionExperiment:
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
 
-        self.emotion_rep_readers = load_emotion_readers(
-            self.repe_config,
-            self.model,
-            tokenizer_temp,
-            self.hidden_layers,
-            processor,
-            self.enable_thinking,
-        )
+        if self.neutral_only:
+            self.emotion_rep_readers = {}
+        else:
+            self.emotion_rep_readers = load_emotion_readers(
+                self.repe_config,
+                self.model,
+                tokenizer_temp,
+                self.hidden_layers,
+                processor,
+                self.enable_thinking,
+            )
         del self.model  # Save memory
 
         # Load vLLM model for inference with loading config
@@ -371,12 +376,14 @@ class EmotionExperiment:
         """Run the complete emotion experiment"""
         self.logger.info("Starting emotion experiment")
         all_results = []
+        neutral_rep_reader = None
 
         # Test each emotion with each intensity
         for emotion in self.config.emotions:
             self.logger.info(f"Processing emotion: {emotion}")
             rep_reader = self.emotion_rep_readers[emotion]
             self.cur_emotion = emotion
+            neutral_rep_reader = rep_reader
 
             # Build DataLoader for this emotion (fresh dataset each time)
             data_loader = self.build_dataloader(self.cur_emotion)
@@ -405,7 +412,7 @@ class EmotionExperiment:
         data_loader = self.build_dataloader(self.cur_emotion)
         for r in range(self.repeat_runs):
             self.cur_repeat = r
-            neutral_results = self._infer_with_activation(rep_reader, data_loader)
+            neutral_results = self._infer_with_activation(neutral_rep_reader, data_loader)
             for rec in neutral_results:
                 if rec.metadata is None:
                     rec.metadata = {"repeat_id": r}
@@ -425,21 +432,24 @@ class EmotionExperiment:
 
         # For vLLM models, use cpu device
         device = torch.device("cpu") if self.is_vllm else self.model.device
-        activations = {
-            layer: torch.tensor(
-                self.cur_intensity
-                * rep_reader.directions[layer]
-                * rep_reader.direction_signs[layer]
-            )
-            .to(device)
-            .half()
-            for layer in self.hidden_layers
-        }
+        if rep_reader is None:
+            activations = None
+        else:
+            activations = {
+                layer: torch.tensor(
+                    self.cur_intensity
+                    * rep_reader.directions[layer]
+                    * rep_reader.direction_signs[layer]
+                )
+                .to(device)
+                .half()
+                for layer in self.hidden_layers
+            }
 
         # Process batches using DataLoader (matches EmotionGameExperiment._forward_dataloader pattern)
         return self._forward_dataloader(data_loader, activations)
 
-    def _forward_dataloader(self, data_loader, activations: Dict) -> List[ResultRecord]:
+    def _forward_dataloader(self, data_loader, activations: Dict[str, Any] | None) -> List[ResultRecord]:
         """Forward pass using DataLoader"""
         batch_results = []
         pipeline_queue: "Queue[Any]" = Queue(maxsize=2)  # Control memory usage
@@ -1036,6 +1046,91 @@ class EmotionExperiment:
             "truncation_strategy": self.config.benchmark.truncation_strategy,
             "preserve_ratio": self.config.benchmark.preserve_ratio,
         }
+
+    def close(self) -> None:
+        """Release GPU-backed objects so subsequent experiments can load cleanly"""
+        self.logger.info("Closing emotion experiment resources")
+
+        def _get_timeout() -> float:
+            try:
+                return float(os.environ.get("EMO_SHUTDOWN_TIMEOUT_SEC", "10"))
+            except Exception:
+                return 10.0
+
+        def _call_with_timeout(fn, desc: str) -> None:
+            timeout = _get_timeout()
+            if timeout <= 0:
+                # No timeout requested
+                try:
+                    fn()
+                except Exception as e:  # pragma: no cover - defensive
+                    self.logger.warning(f"{desc} raised: {e}")
+                return
+
+            import threading
+
+            done = {"exc": None}
+
+            def _runner():
+                try:
+                    fn()
+                except Exception as e:
+                    done["exc"] = e
+
+            t = threading.Thread(target=_runner, daemon=True)
+            t.start()
+            t.join(timeout)
+            if t.is_alive():
+                self.logger.warning(f"Timed out while waiting for {desc}")
+            elif done["exc"] is not None:
+                self.logger.warning(f"{desc} raised: {done['exc']}")
+
+        pipeline = getattr(self, "rep_control_pipeline", None)
+        if pipeline is not None:
+            close_fn = getattr(pipeline, "close", None)
+            if callable(close_fn):
+                try:
+                    close_fn()
+                except Exception as pipeline_error:  # pragma: no cover - defensive
+                    self.logger.warning(
+                        f"Failed to close RepE pipeline: {pipeline_error}"
+                    )
+            self.rep_control_pipeline = None
+
+        model = getattr(self, "model", None)
+        if model is not None:
+            if self.is_vllm and hasattr(model, "llm_engine"):
+                llm_engine = model.llm_engine
+                shutdown_fn = getattr(llm_engine, "shutdown", None)
+                if callable(shutdown_fn):
+                    _call_with_timeout(shutdown_fn, "vLLM engine shutdown()")
+                executor = getattr(llm_engine, "engine_executor", None)
+                executor_shutdown = getattr(executor, "shutdown", None)
+                if callable(executor_shutdown):
+                    _call_with_timeout(
+                        lambda: executor_shutdown(wait=False),
+                        "vLLM engine executor.shutdown(wait=False)",
+                    )
+
+            shutdown_fn = getattr(model, "shutdown", None)
+            if callable(shutdown_fn):
+                _call_with_timeout(shutdown_fn, "model.shutdown()")
+
+            self.model = None
+
+        # Drop large references and trigger GC so CUDA memory can be reclaimed
+        self.emotion_rep_readers = None
+        self.dataset = None
+        self.benchmark_prompt_wrapper_partial = None
+        self.emotion_datasets = None
+
+        gc.collect()
+
+        try:
+            if "torch" in globals() and torch is not None and torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:  # pragma: no cover - defensive
+            pass
 
     def run_sanity_check(self, sample_limit: int = 5) -> pd.DataFrame:
         """Run a quick sanity check with limited samples"""

@@ -70,6 +70,8 @@ self.model, self.tokenizer, self.prompt_format, _ = (
 )
 ```
 
+> **Neutral-only mode:** When the configuration provides an empty `emotions` list the constructor flags the run as neutral-only, skips `load_emotion_readers`, and still rebuilds the vLLM pipeline. Downstream inference passes `activations=None`, so the experiment executes a pure baseline sweep without loading any emotion vectors.
+
 #### **3. RepE Control Pipeline Initialization**
 ```python
 # Setup representation control pipeline
@@ -87,19 +89,18 @@ self.rep_control_pipeline = get_pipeline(
 
 #### **4. Dataset Integration and Context Truncation**
 ```python
-# Create dataset using factory pattern
-test_dataset = create_dataset_from_config(config.benchmark)
-
-# Setup memory prompt wrapper with partial function binding
-memory_prompt_wrapper = get_memory_prompt_wrapper(
-    config.benchmark.task_type, self.prompt_format
-)
-self.memory_prompt_wrapper_partial = partial(
-    memory_prompt_wrapper.__call__,
-    user_messages="Please provide your answer.",
+# Assemble benchmark components via registry
+prompt_fn, answer_fn, test_dataset = create_benchmark_components(
+    benchmark_name=config.benchmark.name,
+    task_type=config.benchmark.task_type,
+    config=config.benchmark,
+    prompt_format=self.prompt_format,
     enable_thinking=self.enable_thinking,
     augmentation_config=config.benchmark.augmentation_config,
 )
+
+self.memory_prompt_wrapper_partial = prompt_fn
+self.answer_wrapper_partial = answer_fn
 
 # Configure context truncation if enabled
 if self.loading_config and self.loading_config.enable_auto_truncation:

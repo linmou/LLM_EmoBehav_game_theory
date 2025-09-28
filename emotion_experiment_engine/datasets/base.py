@@ -343,7 +343,7 @@ class BaseBenchmarkDataset(Dataset, ABC):
         scores: List[float] = []
         # Allow datasets/experiment to control evaluation parallelism.
         # Default to 8 workers if not explicitly provided.
-        max_workers = getattr(self, "eval_workers", 264)
+        max_workers = getattr(self, "eval_workers", 64)
         max_workers = max(1, min(int(max_workers), len(responses)))
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [

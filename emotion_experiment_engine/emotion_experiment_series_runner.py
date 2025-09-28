@@ -819,6 +819,8 @@ class MemoryExperimentSeriesRunner:
             exp_id, status=ExperimentStatus.RUNNING, start_time=start_time.isoformat()
         )
 
+        experiment = None
+        success = False
         try:
             experiment = self.setup_experiment(benchmark_config, model_name)
 
@@ -852,11 +854,7 @@ class MemoryExperimentSeriesRunner:
                 f"Memory experiment completed: {benchmark_config['name']}, {model_name}, Time cost: {time_cost_str}"
             )
 
-            # Clean up CUDA memory after experiment
-            self.logger.info("Cleaning up CUDA memory...")
-            self._clean_cuda_memory()
-
-            return True
+            success = True
 
         except Exception as e:
             # End timing even if experiment failed
@@ -877,13 +875,24 @@ class MemoryExperimentSeriesRunner:
                 error=f"{str(e)}\n{error_trace}",
             )
 
-            # Try to clean up CUDA memory even after failure
-            self.logger.info(
-                "Attempting to clean up CUDA memory after failed experiment..."
-            )
+        finally:
+            if experiment is not None:
+                try:
+                    experiment.close()
+                except Exception as close_error:
+                    self.logger.warning(
+                        f"Failed to close experiment resources: {close_error}"
+                    )
+
+            if success:
+                self.logger.info("Cleaning up CUDA memory...")
+            else:
+                self.logger.info(
+                    "Attempting to clean up CUDA memory after failed experiment..."
+                )
             self._clean_cuda_memory()
 
-            return False
+        return success
 
     def expand_benchmark_configs(self, benchmarks: List[Dict]) -> List[Dict]:
         """

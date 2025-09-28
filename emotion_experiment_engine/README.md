@@ -1,4 +1,5 @@
 # Emotion Memory Experiments
+<!-- Updated: 2025-09-27 | Commit: 9c47b0d -->
 
 Updated: 2025-09-27 · commit: dev-run
 
@@ -69,29 +70,33 @@ python emotion_experiment_engine/tests/test_original_evaluation_metrics.py
 ### 3. Basic Usage
 
 ```python
-from emotion_experiment_engine.benchmark_adapters import get_adapter, BenchmarkConfig
-from emotion_experiment_engine.memory_prompt_wrapper import get_memory_prompt_wrapper
+from emotion_experiment_engine.benchmark_component_registry import create_benchmark_components
+from emotion_experiment_engine.data_models import BenchmarkConfig
 from neuro_manipulation.prompt_formats import PromptFormat
 
-# Create adapter
+# Configure the benchmark entry
 config = BenchmarkConfig(
     name="infinitebench",
     data_path="test_data/real_benchmarks/infinitebench_passkey.jsonl",
     task_type="passkey"
 )
-adapter = get_adapter(config)
-
-# Create dataset with prompt wrapper
 prompt_format = PromptFormat.get_format("qwen")
-prompt_wrapper = get_memory_prompt_wrapper("passkey", prompt_format)
-dataset = adapter.create_dataset(prompt_wrapper=prompt_wrapper)
+
+# Assemble prompt/answer wrappers plus dataset via the registry
+prompt_fn, answer_fn, dataset = create_benchmark_components(
+    benchmark_name=config.name,
+    task_type=config.task_type,
+    config=config,
+    prompt_format=prompt_format,
+)
 
 # Use with DataLoader
 from torch.utils.data import DataLoader
-dataloader = adapter.get_dataloader(
+
+dataloader = DataLoader(
+    dataset,
     batch_size=4,
-    prompt_wrapper=prompt_wrapper,
-    collate_fn=collate_memory_benchmarks
+    collate_fn=getattr(dataset, "collate_fn", None),
 )
 ```
 

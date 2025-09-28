@@ -36,7 +36,7 @@
 **Version**: 1.4.0 → **1.5.0**
 
 **Changes Made**:
-- **Prompt Wrapper Integration**: Replaced `get_memory_prompt_wrapper()` with universal `get_benchmark_prompt_wrapper()`
+- **Prompt Wrapper Integration**: Documented migration from the legacy memory helper to the universal `get_benchmark_prompt_wrapper()`
 - **Factory Dispatch**: Added MTBench101 routing example
 - **Legacy Support**: Documented backward compatibility for memory benchmarks
 
@@ -122,6 +122,16 @@ Ready for future documentation of:
 - Multi-modal benchmark integration (vision + conversation)
 - Distributed evaluation system implementation
 - Real-time experiment monitoring and visualization
+
+---
+
+## Supplemental Update — 2025-09-27
+
+- **Deprecated Helper Removal**: Removed lingering references to the legacy memory prompt helper from tests and documentation in favor of the registry workflow.
+- **Registry Guidance Refresh**: Updated architecture diagrams, walkthroughs, and README examples to showcase `create_benchmark_components` as the canonical entry point.
+- **Automation Guardrail**: Added a unit test that fails if the deprecated identifier resurfaces in docs or test sources.
+
+_Commit ID_: 9c47b0d
 
 ## Conclusion
 

@@ -9,7 +9,7 @@ crashing experiments due to assertion failures.
 """
 
 import unittest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock, MagicMock, patch
 from pathlib import Path
 from emotion_experiment_engine.memory_prompt_wrapper import (
     MemoryPromptWrapper,
@@ -17,8 +17,11 @@ from emotion_experiment_engine.memory_prompt_wrapper import (
     ConversationalQAPromptWrapper,
     LongContextQAPromptWrapper,
     LongbenchRetrievalPromptWrapper,
-    get_memory_prompt_wrapper
 )
+from emotion_experiment_engine.benchmark_component_registry import (
+    create_benchmark_components,
+)
+from emotion_experiment_engine.data_models import BenchmarkConfig
 
 
 class TestMemoryPromptWrapper(unittest.TestCase):
@@ -344,28 +347,58 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         self.assertIn("emotion is required", str(cm.exception).lower())
 
 
-class TestPromptWrapperFactory(unittest.TestCase):
-    """Tests for get_memory_prompt_wrapper factory function"""
-    
-    def test_get_memory_prompt_wrapper_passkey(self):
-        """Test factory returns PasskeyPromptWrapper for passkey task"""
-        wrapper = get_memory_prompt_wrapper("passkey", Mock())
-        self.assertIsInstance(wrapper, PasskeyPromptWrapper)
-    
-    def test_get_memory_prompt_wrapper_conversationalqa(self):
-        """Test factory returns ConversationalQAPromptWrapper for conversationalqa task"""
-        wrapper = get_memory_prompt_wrapper("conversationalqa", Mock())
-        self.assertIsInstance(wrapper, ConversationalQAPromptWrapper)
-    
-    def test_get_memory_prompt_wrapper_longcontextqa(self):
-        """Test factory returns LongContextQAPromptWrapper for longcontextqa task"""
-        wrapper = get_memory_prompt_wrapper("longcontextqa", Mock())
-        self.assertIsInstance(wrapper, LongContextQAPromptWrapper)
-    
-    def test_get_memory_prompt_wrapper_longbench_retrieval(self):
-        """Test factory returns LongbenchRetrievalPromptWrapper for longbench_retrieval task"""
-        wrapper = get_memory_prompt_wrapper("longbench_retrieval", Mock())
-        self.assertIsInstance(wrapper, LongbenchRetrievalPromptWrapper)
+class TestPromptWrapperRegistryIntegration(unittest.TestCase):
+    """Validate prompt wrapper selection via benchmark_component_registry"""
+
+    def _config(self, benchmark: str, task: str) -> BenchmarkConfig:
+        return BenchmarkConfig(
+            name=benchmark,
+            task_type=task,
+            data_path=None,
+            base_data_dir=None,
+            sample_limit=None,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None,
+        )
+
+    def _assert_wrapper(self, benchmark: str, task: str, expected_cls):
+        with patch(
+            "emotion_experiment_engine.benchmark_component_registry.create_dataset_from_config",
+            return_value=Mock(name="dataset"),
+        ):
+            prompt_partial, _, _ = create_benchmark_components(
+                benchmark_name=benchmark,
+                task_type=task,
+                config=self._config(benchmark, task),
+                prompt_format=Mock(name="prompt_format"),
+                emotion=None,
+                enable_thinking=False,
+                augmentation_config=None,
+            )
+
+        wrapper_instance = prompt_partial.func.__self__  # type: ignore[attr-defined]
+        self.assertIsInstance(wrapper_instance, expected_cls)
+
+    def test_passkey_prompt_wrapper(self):
+        self._assert_wrapper("infinitebench", "passkey", PasskeyPromptWrapper)
+
+    def test_conversational_prompt_wrapper(self):
+        self._assert_wrapper(
+            "locomo", "locomo", ConversationalQAPromptWrapper
+        )
+
+    def test_long_context_prompt_wrapper(self):
+        self._assert_wrapper(
+            "infinitebench", "longbook_qa_eng", LongContextQAPromptWrapper
+        )
+
+    def test_longbench_retrieval_prompt_wrapper(self):
+        self._assert_wrapper(
+            "longbench", "passage_retrieval_en", LongbenchRetrievalPromptWrapper
+        )
 
 
 class TestPromptWrapperSystemPrompts(unittest.TestCase):
@@ -445,12 +478,13 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
             name="infinitebench",
             task_type="passkey",
             data_path=None,  # Not needed for this test
+            base_data_dir=None,
             sample_limit=10,
             augmentation_config={"method": "adaptive"},  # This is the key test point
             enable_auto_truncation=False,
-            truncation_strategy="right", 
+            truncation_strategy="right",
             preserve_ratio=0.8,
-            llm_eval_config=None
+            llm_eval_config=None,
         )
         
         # Mock prompt format
@@ -491,4 +525,3 @@ class TestAdaptiveAugmentationIntegration(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
