@@ -1,5 +1,7 @@
 # Emotion Memory Experiments
 
+Updated: 2025-09-27 · commit: dev-run
+
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
 **🎯 Key Achievement: Uses ORIGINAL paper evaluation metrics for scientifically valid results!**
@@ -92,6 +94,33 @@ dataloader = adapter.get_dataloader(
     collate_fn=collate_memory_benchmarks
 )
 ```
+
+## Experiment Series Runner
+
+Run multiple benchmark/model combinations and manage progress via a JSON report.
+
+- Start a new series from a YAML config:
+
+```bash
+python -m emotion_experiment_engine.emotion_experiment_series_runner \
+  --config path/to/config.yaml \
+  --name my_series
+```
+
+- Resume directly from a specific saved report (single flag interface):
+
+```bash
+python -m emotion_experiment_engine.emotion_experiment_series_runner \
+  --resume results/memory_experiments/my_series_20240927_12_memory_experiment_report.json
+```
+
+Notes:
+- When starting a fresh run, the runner persists a `series_config` snapshot into the report.
+- `--resume` expects a path to a report JSON; it uses the embedded `series_config` and runs only pending experiments listed in that report.
+- If you pass both `--resume <report.json>` and `--config <new.yaml>`, the tool compares configs. If they differ and stdin is interactive, it shows a unified diff and asks whether to use the new config for the resumed run. Choosing the new config updates `series_config` in the report. Pending experiment list still comes from the report.
+
+Session tracking
+- The report records session starts/ends, shutdown requests (SIGINT), and whether a session resumed from a report or started fresh. See `sessions` in the report JSON for details.
 
 ## Supported Benchmarks
 

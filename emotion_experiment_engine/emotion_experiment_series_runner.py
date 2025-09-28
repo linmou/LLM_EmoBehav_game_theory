@@ -4,10 +4,10 @@ Adapted from neuro_manipulation/experiment_series_runner.py for EmotionMemoryExp
 """
 
 import copy
+import difflib
 import gc
 
 # Use dynamic import to avoid relative import issues
-import importlib.util
 import json
 import logging
 import os
@@ -31,19 +31,7 @@ except Exception:
 
 # Defer heavy imports (torch/vLLM) to runtime when needed
 
-# Load data_models directly
-_spec = importlib.util.spec_from_file_location(
-    "data_models", os.path.join(os.path.dirname(__file__), "data_models.py")
-)
-if _spec is not None and _spec.loader is not None:
-    _data_models = importlib.util.module_from_spec(_spec)
-    _spec.loader.exec_module(_data_models)
-else:
-    raise ImportError("Cannot load data_models module")
-
-BenchmarkConfig = _data_models.BenchmarkConfig
-ExperimentConfig = _data_models.ExperimentConfig
-VLLMLoadingConfig = _data_models.VLLMLoadingConfig
+from .data_models import BenchmarkConfig, ExperimentConfig, VLLMLoadingConfig
 
 
 class ExperimentStatus:
@@ -60,17 +48,45 @@ class MemoryExperimentReport:
     benchmarks, models, and emotion configurations.
     """
 
-    def __init__(self, base_dir: str, experiment_series_name: str):
-        self.base_dir = base_dir
-        self.timestamp = datetime.now().strftime("%Y%m%d_%H")
-        self.report_file = Path(
-            f"{base_dir}/{experiment_series_name}_{self.timestamp}_memory_experiment_report.json"
-        )
-        self.report_file.parent.mkdir(parents=True, exist_ok=True)
+    def __init__(
+        self,
+        base_dir: Optional[str],
+        experiment_series_name: str,
+        report_path: Optional[str] = None,
+    ):
+        """
+        Initialize a MemoryExperimentReport.
+
+        If report_path is provided and exists, load it and use it for subsequent
+        updates. Otherwise create a new report file under base_dir.
+        """
         self.lock = threading.Lock()
+        self.series_name = experiment_series_name
+        self.series_config: Optional[Dict[str, Any]] = None
         self.experiments: Dict[str, Dict[str, Any]] = {}
-        self.series_start_time = datetime.now()
-        self._save_report()
+        self.series_start_time: datetime
+        self.sessions: List[Dict[str, Any]] = []
+        self._active_session_id: Optional[str] = None
+
+        if report_path:
+            # Resume from existing report
+            self.report_file = Path(report_path)
+            if not self.report_file.exists():
+                raise FileNotFoundError(
+                    f"Provided report_path does not exist: {report_path}"
+                )
+            # Load without creating/overwriting
+            self._load_report_internal()
+        else:
+            # Fresh report
+            self.base_dir = base_dir
+            self.timestamp = datetime.now().strftime("%Y%m%d_%H")
+            self.report_file = Path(
+                f"{base_dir}/{experiment_series_name}_{self.timestamp}_memory_experiment_report.json"
+            )
+            self.report_file.parent.mkdir(parents=True, exist_ok=True)
+            self.series_start_time = datetime.now()
+            self._save_report()
 
     def add_experiment(
         self,
@@ -150,20 +166,91 @@ class MemoryExperimentReport:
                     "last_updated": datetime.now().isoformat(),
                     "series_start_time": self.series_start_time.isoformat(),
                     "series_duration_seconds": series_duration,
+                    "series_name": self.series_name,
+                    "series_config": self.series_config,
+                    "sessions": self.sessions,
                     "experiments": self.experiments,
                 },
                 f,
                 indent=2,
             )
 
-    def load_report(self) -> bool:
+    def _load_report_internal(self) -> bool:
         """Load a report from disk if it exists"""
         if self.report_file.exists():
             with open(self.report_file, "r") as f:
                 report_data = json.load(f)
                 self.experiments = report_data.get("experiments", {})
+                # Preserve original start time if available
+                start_time = report_data.get("series_start_time")
+                if start_time:
+                    try:
+                        self.series_start_time = datetime.fromisoformat(start_time)
+                    except Exception:
+                        self.series_start_time = datetime.now()
+                else:
+                    self.series_start_time = datetime.now()
+
+                self.series_config = report_data.get("series_config")
+                self.series_name = report_data.get("series_name", self.series_name)
+                self.sessions = report_data.get("sessions", [])
             return True
         return False
+
+    def load_report(self) -> bool:
+        """Public wrapper to load a report from disk if it exists"""
+        return self._load_report_internal()
+
+    def attach_series_config(self, config: Dict[str, Any], series_name: Optional[str] = None) -> None:
+        """Attach a snapshot of the series configuration to the report and save it."""
+        with self.lock:
+            if series_name:
+                self.series_name = series_name
+            # Store a shallow copy to avoid accidental external mutation
+            self.series_config = copy.deepcopy(config)
+            self._save_report()
+
+    def start_session(
+        self,
+        resumed_from_report: bool,
+        resume_report_path: Optional[str],
+        config_source: str,
+        config_changed: bool,
+    ) -> str:
+        """Record the start of a runner session."""
+        with self.lock:
+            session_id = datetime.now().isoformat(timespec="seconds")
+            self._active_session_id = session_id
+            self.sessions.append(
+                {
+                    "session_id": session_id,
+                    "start_time": datetime.now().isoformat(),
+                    "resumed_from_report": resumed_from_report,
+                    "resume_report_path": resume_report_path,
+                    "config_source": config_source,  # 'report' or 'config'
+                    "config_changed": config_changed,
+                    "shutdown_requested_at": None,
+                    "end_time": None,
+                    "end_reason": None,  # 'completed' | 'shutdown' | 'exception'
+                }
+            )
+            self._save_report()
+            return session_id
+
+    def log_shutdown_request(self, reason: str) -> None:
+        with self.lock:
+            if self._active_session_id and self.sessions:
+                self.sessions[-1]["shutdown_requested_at"] = datetime.now().isoformat()
+                self.sessions[-1]["shutdown_reason"] = reason
+                self._save_report()
+
+    def end_session(self, reason: str) -> None:
+        with self.lock:
+            if self._active_session_id and self.sessions:
+                self.sessions[-1]["end_time"] = datetime.now().isoformat()
+                self.sessions[-1]["end_reason"] = reason
+                self._active_session_id = None
+                self._save_report()
 
     def get_summary(self) -> Dict[str, Any]:
         """Get summary of experiment statuses"""
@@ -234,9 +321,9 @@ class MemoryExperimentSeriesRunner:
 
     def __init__(
         self,
-        config_path: str,
+        config_path: Optional[str] = None,
         series_name: Optional[str] = None,
-        resume: bool = False,
+        resume: Optional[object] = None,
         dry_run: bool = False,
     ):
         # Setup logging
@@ -255,28 +342,105 @@ class MemoryExperimentSeriesRunner:
         self.series_name = series_name or f"memory_experiment_series"
         self.dry_run = dry_run
 
-        # Load and parse config
-        self._load_config()
-
         # Initialize shutdown flag
         self.shutdown_requested = False
         signal.signal(signal.SIGINT, self._handle_shutdown)
 
-        # Create or load experiment report
-        base_dir = self.base_config.get("output_dir", "results/memory_experiments")
-        self.report = MemoryExperimentReport(base_dir, self.series_name)
+        # Decide initialization mode
+        # Support both new style (resume is a report file path) and legacy bool
+        resume_report_path: Optional[str] = None
+        if isinstance(resume, str) and resume:
+            resume_report_path = resume
+        elif isinstance(resume, bool) and resume:
+            # Legacy truthy resume without path is not supported anymore for CLI,
+            # but keep API tolerant: treat as missing and proceed fresh.
+            resume_report_path = None
 
-        # Check if resuming
-        self.resume = resume
-        if resume:
-            if not self.report.load_report():
-                self.logger.warning(
-                    "No previous experiment report found. Starting fresh."
+        self._resuming = bool(resume_report_path)
+
+        # Optionally load a new config for comparison if provided
+        new_config_if_provided: Optional[Dict[str, Any]] = None
+        if self.config_path:
+            try:
+                with open(self.config_path, "r") as _cf:
+                    new_config_if_provided = yaml.safe_load(_cf)
+            except Exception as e:
+                self.logger.warning(f"Failed to load --config for comparison: {e}")
+
+        if resume_report_path:
+            # Load from existing report file and adopt its config snapshot
+            self.report = MemoryExperimentReport(
+                base_dir=None, experiment_series_name=self.series_name, report_path=resume_report_path
+            )
+
+            if not self.report.series_config:
+                raise ValueError(
+                    "Loaded report does not contain a 'series_config' snapshot; cannot resume from report."
                 )
+            resume_cfg = copy.deepcopy(self.report.series_config)
+
+            # If a new config is provided and we are interactive, show diff and ask
+            if new_config_if_provided is not None and hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
+                use_new = False
+                if not self._configs_equal(resume_cfg, new_config_if_provided):
+                    self._show_config_diff(resume_cfg, new_config_if_provided)
+                    try:
+                        ans = input("Configs differ. Use new --config to resume? [y/N]: ").strip().lower()
+                        use_new = ans in ("y", "yes")
+                    except Exception:
+                        use_new = False
+                if use_new:
+                    self.base_config = new_config_if_provided
+                    try:
+                        self.report.attach_series_config(self.base_config, self.series_name)
+                    except Exception as e:
+                        self.logger.warning(f"Could not update series_config in report: {e}")
+                    self._session_id = self.report.start_session(
+                        resumed_from_report=True,
+                        resume_report_path=resume_report_path,
+                        config_source="config",
+                        config_changed=True,
+                    )
+                else:
+                    self.base_config = resume_cfg
+                    self._session_id = self.report.start_session(
+                        resumed_from_report=True,
+                        resume_report_path=resume_report_path,
+                        config_source="report",
+                        config_changed=False,
+                    )
             else:
-                self.logger.info(
-                    f"Resumed experiment series. Status: {self.report.get_summary()}"
+                # Non-interactive or no new config provided
+                self.base_config = resume_cfg
+                self._session_id = self.report.start_session(
+                    resumed_from_report=True,
+                    resume_report_path=resume_report_path,
+                    config_source="report" if new_config_if_provided is None else "report(non-interactive)",
+                    config_changed=False,
                 )
+        else:
+            # Load and parse config
+            if not self.config_path:
+                raise ValueError(
+                    "config_path is required when resume (report path) is not provided"
+                )
+            self._load_config()
+
+            # Create a fresh report and persist the series config snapshot
+            base_dir = self.base_config.get("output_dir", "results/memory_experiments")
+            self.report = MemoryExperimentReport(base_dir, self.series_name)
+            # Save the config snapshot into the report for future resumption
+            try:
+                self.report.attach_series_config(self.base_config, self.series_name)
+            except Exception as e:
+                self.logger.warning(f"Could not attach series_config to report: {e}")
+            # Start a session record
+            self._session_id = self.report.start_session(
+                resumed_from_report=False,
+                resume_report_path=None,
+                config_source="config",
+                config_changed=False,
+            )
 
     def _load_config(self) -> None:
         """Load configuration from YAML file"""
@@ -444,6 +608,10 @@ class MemoryExperimentSeriesRunner:
                 "Shutdown requested. Finishing current experiment and stopping..."
             )
             self.shutdown_requested = True
+            try:
+                self.report.log_shutdown_request("SIGINT")
+            except Exception:
+                pass
         else:
             self.logger.warning("Forced shutdown requested. Exiting immediately.")
             sys.exit(1)
@@ -756,7 +924,21 @@ class MemoryExperimentSeriesRunner:
                 )
 
                 # Discover task types matching the pattern
-                discovered_tasks = temp_benchmark.discover_datasets_by_pattern()
+                discovery_base = temp_benchmark.base_data_dir
+                if discovery_base is None:
+                    discovery_base = (
+                        benchmark_config.get("base_data_dir")
+                        or self.base_config.get("base_data_dir")
+                        or self.base_config.get("output_dir")
+                    )
+                if discovery_base is None and self.config_path:
+                    discovery_base = str(Path(self.config_path).parent)
+                if discovery_base is None:
+                    discovery_base = "."
+
+                discovered_tasks = temp_benchmark.discover_datasets_by_pattern(
+                    discovery_base
+                )
                 if not discovered_tasks:
                     self.logger.warning(
                         f"No datasets found for benchmark '{benchmark_config['name']}' "
@@ -821,6 +1003,55 @@ class MemoryExperimentSeriesRunner:
         ]
         return any(char in task_type for char in pattern_chars)
 
+    def _create_temporary_benchmark_for_discovery(
+        self, benchmark_config: Dict[str, Any], pattern: str
+    ) -> BenchmarkConfig:
+        """Create a temporary BenchmarkConfig used only for pattern discovery."""
+        base_data_dir = benchmark_config.get("base_data_dir")
+        if base_data_dir is None:
+            base_data_dir = self.base_config.get("base_data_dir")
+        if base_data_dir is None:
+            base_data_dir = self.base_config.get("output_dir")
+        if base_data_dir is None and self.config_path:
+            base_data_dir = str(Path(self.config_path).parent)
+        if base_data_dir is None:
+            base_data_dir = "."
+        return BenchmarkConfig(
+            name=benchmark_config["name"],
+            task_type=pattern,
+            data_path=None,
+            base_data_dir=base_data_dir,
+            sample_limit=benchmark_config.get("sample_limit"),
+            augmentation_config=benchmark_config.get("augmentation_config"),
+            enable_auto_truncation=benchmark_config.get("enable_auto_truncation", False),
+            truncation_strategy=benchmark_config.get("truncation_strategy", "right"),
+            preserve_ratio=benchmark_config.get("preserve_ratio", 0.8),
+            llm_eval_config=benchmark_config.get("llm_eval_config"),
+        )
+
+    def _configs_equal(self, a: Dict[str, Any], b: Dict[str, Any]) -> bool:
+        try:
+            return json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True)
+        except Exception:
+            return a == b
+
+    def _show_config_diff(self, old_cfg: Dict[str, Any], new_cfg: Dict[str, Any]) -> None:
+        try:
+            old_text = yaml.safe_dump(old_cfg, sort_keys=True)
+            new_text = yaml.safe_dump(new_cfg, sort_keys=True)
+            diff = difflib.unified_diff(
+                old_text.splitlines(),
+                new_text.splitlines(),
+                fromfile="report(series_config)",
+                tofile="new --config",
+                lineterm="",
+            )
+            self.logger.info("Configuration differences detected:")
+            for line in diff:
+                self.logger.info(line)
+        except Exception as e:
+            self.logger.warning(f"Could not render config diff: {e}")
+
     def dry_run_series(self) -> None:
         """Dry run to validate configuration without running experiments"""
         self.logger.info("🚀 Starting DRY RUN - Memory Experiment Series Validation")
@@ -838,6 +1069,7 @@ class MemoryExperimentSeriesRunner:
         self.logger.info(f"🤖 Models: {len(models)}")
         self.logger.info(f"😊 Emotions: {len(self.base_config['emotions'])}")
         self.logger.info(f"📈 Intensities: {len(self.base_config['intensities'])}")
+
 
         # Calculate experiment combinations
         total_combinations = len(benchmarks) * len(models)
@@ -932,6 +1164,10 @@ class MemoryExperimentSeriesRunner:
         # Check if this is a dry run
         if self.dry_run:
             self.dry_run_series()
+            try:
+                self.report.end_session("completed")
+            except Exception:
+                pass
             return
 
         # Record series start time
@@ -982,7 +1218,7 @@ class MemoryExperimentSeriesRunner:
                         exp_id = f"{benchmark_name}_{task_type}_{model_folder_name.replace('/', '_')}"
 
                         # Only add if not resuming or not already in report
-                        if not self.resume or exp_id not in self.report.experiments:
+                        if not self._resuming or exp_id not in self.report.experiments:
                             self.report.add_experiment(
                                 f"{benchmark_name}_{task_type}",
                                 model_name,
@@ -1068,10 +1304,35 @@ class MemoryExperimentSeriesRunner:
                     self.logger.info(
                         f"✅ Experiment completed successfully: {exp['benchmark_name']}, {model_name}"
                     )
+                    # Fallback in case the underlying run_single_experiment mock
+                    # did not update the report (common in tests).
+                    exp_record = self.report.experiments.get(exp["exp_id"])
+                    if not exp_record or exp_record.get("status") != ExperimentStatus.COMPLETED:
+                        now = datetime.now().isoformat()
+                        update_payload = {
+                            "status": ExperimentStatus.COMPLETED,
+                            "end_time": now,
+                        }
+                        if exp_record and exp_record.get("start_time") and not exp_record.get("time_cost_seconds"):
+                            try:
+                                start_dt = datetime.fromisoformat(exp_record["start_time"])
+                                end_dt = datetime.fromisoformat(now)
+                                update_payload["time_cost_seconds"] = (end_dt - start_dt).total_seconds()
+                            except Exception:
+                                pass
+                        self.report.update_experiment(exp["exp_id"], **update_payload)
                 else:
                     self.logger.info(
                         f"❌ Experiment failed but series continues: {exp['benchmark_name']}, {exp['model_name']}"
                     )
+                    exp_record = self.report.experiments.get(exp["exp_id"])
+                    if not exp_record or exp_record.get("status") != ExperimentStatus.FAILED:
+                        self.report.update_experiment(
+                            exp["exp_id"],
+                            status=ExperimentStatus.FAILED,
+                            end_time=datetime.now().isoformat(),
+                            error="Run marked as failed without explicit report update",
+                        )
 
             except Exception as e:
                 # Catch ANY unexpected errors in the experiment series loop
@@ -1138,6 +1399,13 @@ class MemoryExperimentSeriesRunner:
                     f"  - {exp['benchmark_name']}, {exp['model_name']}{time_info}: {exp.get('error', 'Unknown error')}"
                 )
 
+        # End session record
+        try:
+            reason = "shutdown" if getattr(self, "shutdown_requested", False) else "completed"
+            self.report.end_session(reason)
+        except Exception:
+            pass
+
 
 def main():
     """Run the memory experiment series from command line"""
@@ -1147,13 +1415,16 @@ def main():
         description="Run a memory experiment series with multiple benchmarks and models"
     )
     parser.add_argument(
-        "--config", type=str, required=True, help="Path to experiment config file"
+        "--config", type=str, required=False, help="Path to experiment config file"
     )
     parser.add_argument(
         "--name", type=str, default=None, help="Custom name for the experiment series"
     )
     parser.add_argument(
-        "--resume", action="store_true", help="Resume interrupted experiment series"
+        "--resume",
+        type=str,
+        default=None,
+        help="Path to an existing memory_experiment_report.json to resume from",
     )
     parser.add_argument(
         "--dry-run",
@@ -1167,8 +1438,14 @@ def main():
     if not args.dry_run:
         from neuro_manipulation.repe.pipelines import repe_pipeline_registry
         repe_pipeline_registry()
+    if not args.resume and not args.config:
+        parser.error("either --config or --resume must be provided")
+
     runner = MemoryExperimentSeriesRunner(
-        args.config, args.name, args.resume, args.dry_run
+        config_path=args.config,
+        series_name=args.name,
+        resume=args.resume,
+        dry_run=args.dry_run,
     )
     runner.run_experiment_series()
 

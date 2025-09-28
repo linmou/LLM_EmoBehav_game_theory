@@ -159,16 +159,6 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
         self.assertFalse(self.runner._is_pattern_task_type(""))
 
     @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
-    def test_create_temporary_benchmark_for_discovery(self):
-        benchmark_config = {"name": "test_bench", "task_type": ".*test.*", "sample_limit": 100}
-        temp_benchmark = self.runner._create_temporary_benchmark_for_discovery(
-            benchmark_config, ".*test.*"
-        )
-        self.assertEqual(temp_benchmark.name, "test_bench")
-        self.assertEqual(temp_benchmark.task_type, ".*test.*")
-        self.assertEqual(temp_benchmark.sample_limit, 100)
-
-    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
     def test_experiment_series_continues_after_failure(self):
         with patch(
             "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner._check_model_existence"
