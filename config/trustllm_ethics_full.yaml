@@ -6,9 +6,18 @@
 #   explicit_moralchoice.json
 
 models:
-  - /data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B
-  - /data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B
-  - /data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B"
+  - "meta-llama/Llama-3.2-1B-Instruct"
+  - "meta-llama/Llama-3.2-3B-Instruct"
+  - "microsoft/Phi-3.5-mini-instruct"
+  - "microsoft/Phi-4-mini-instruct"
+  - "google/gemma-3-1b-it"
 
 benchmarks:
   - name: trustllm_ethics
@@ -57,20 +66,22 @@ intensities: [1.5]
 repeat_runs: 3
 repeat_seed_base: 123
 
-output_dir: results/TrustLLM_ethics/thinking
+defer_evaluation: true
+
+output_dir: results/TrustLLM_ethics/
 batch_size: 800
 
 sanity_check: false
 
 generation_config:
-  temperature: 0.0
+  temperature: 0.1
   max_new_tokens: 3000
   do_sample: false
-  enable_thinking: true
+  enable_thinking: false
+
 
 loading_config:
   gpu_memory_utilization: 0.90
-  max_model_len: 8192
   enforce_eager: true
   trust_remote_code: true
   dtype: float16

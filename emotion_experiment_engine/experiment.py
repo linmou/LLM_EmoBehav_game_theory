@@ -1,7 +1,4 @@
-"""
-Main emotion experiment class.
-Follows the pattern from emotion_game_experiment.py but adapted for otherbenchmarks.
-"""
+"""Main emotion experiment class (model-agnostic, benchmark-agnostic)."""
 
 from __future__ import annotations
 
@@ -62,7 +59,6 @@ class EmotionExperiment:
         self.repeat_runs = int(repeat_runs) if repeat_runs and repeat_runs > 0 else 1
         self.cur_repeat: int = 0
         self.repeat_seed_base = repeat_seed_base
-
         if dry_run:
             # Build real datasets for each emotion
             self.emotion_datasets = self._build_emotion_datasets()
@@ -277,7 +273,8 @@ class EmotionExperiment:
 
         self.logger.info(f"Model loaded: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)
-
+        assert self.is_vllm
+        
         # Setup RepE control pipeline - using basic tokenizer for consistency
         self.rep_control_pipeline = get_pipeline(
             "rep-control-vllm" if self.is_vllm else "rep-control",
@@ -491,7 +488,7 @@ class EmotionExperiment:
                             )
 
                         # Add per-run RNG seed if requested
-                        if getattr(self, "repeat_seed_base", None) is not None:
+                        if getattr(self, "repeat_seed_base", None) is not None and self.is_vllm:
                             generation_params["random_seed"] = int(self.repeat_seed_base) + int(getattr(self, "cur_repeat", 0))
 
                         # Validate batch structure before accessing
@@ -614,6 +611,15 @@ class EmotionExperiment:
                 batch_results.extend(results_dict[i])
 
         worker.join()
+        if hasattr(self.dataset, "flush_predictions"):
+            try:
+                self.dataset.flush_predictions(self.output_dir)
+            except Exception as e:
+                self.logger.error(
+                    "Failed to flush predictions for dataset '%s': %s",
+                    self.config.benchmark.name,
+                    e,
+                )
         return batch_results
 
     def _post_process_batch(
@@ -700,6 +706,33 @@ class EmotionExperiment:
             current_emotion = self.cur_emotion or "unknown"
             current_intensity = self.cur_intensity or 0.0
 
+            metadata: Dict[str, Any] = {
+                "benchmark": self.config.benchmark.name,
+                "item_metadata": item.metadata or {},
+            }
+
+            if hasattr(self.dataset, "record_model_patch"):
+                try:
+                    record_fn = getattr(self.dataset, "record_model_patch")
+                    path, run_id = record_fn(
+                        item_id=item.id,
+                        model_patch=response,
+                        emotion=current_emotion,
+                        intensity=float(current_intensity),
+                        repeat_id=int(getattr(self, "cur_repeat", 0)),
+                        output_dir=self.output_dir,
+                    )
+                    if run_id:
+                        metadata["run_id"] = run_id
+                    if path is not None:
+                        metadata["predictions_path"] = str(path)
+                except Exception as e:
+                    self.logger.error(
+                        "Failed to record model patch for dataset '%s': %s",
+                        self.config.benchmark.name,
+                        e,
+                    )
+
             result = ResultRecord(
                 emotion=current_emotion,
                 intensity=current_intensity,
@@ -710,10 +743,7 @@ class EmotionExperiment:
                 ground_truth=ground_truth,
                 score=score,
                 repeat_id=getattr(self, "cur_repeat", 0),
-                metadata={
-                    "benchmark": self.config.benchmark.name,
-                    "item_metadata": item.metadata or {},
-                },
+                metadata=metadata,
                 error=eval_errors[i],
             )
             results.append(result)
