@@ -1,7 +1,7 @@
 # Emotion Memory Experiments
-<!-- Updated: 2025-09-27 | Commit: 9c47b0d -->
+<!-- Updated: 2025-09-28 | Commit: 09808ad -->
 
-Updated: 2025-09-27 · commit: dev-run
+Updated: 2025-09-28 · commit: 09808ad
 
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
@@ -191,6 +191,21 @@ python -m emotion_experiment_engine.evaluate_saved --input <run_output_dir>
 
 The helper replays judge calls with configurable concurrency and regenerates the
 standard CSV/JSON summaries in place.
+
+Process an entire series report with the batch wrapper. Use `--dry-run` to list
+pending directories before launching judges, or increase `--max-workers` to
+match your available judge capacity.
+
+```bash
+python -m emotion_experiment_engine.evaluate_saved_series \
+  --report results/memory_experiments/<series_report>.json \
+  --max-workers 16
+
+# Audit pending runs without scoring
+python -m emotion_experiment_engine.evaluate_saved_series \
+  --report results/memory_experiments/<series_report>.json \
+  --dry-run
+```
 
 ## Data Format
 
