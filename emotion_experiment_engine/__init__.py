@@ -50,6 +50,7 @@ except ImportError:
     EmotionExperiment = None
 # Adapters replaced by smart datasets in refactoring
 from .config_loader import EmotionMemoryConfigLoader, load_emotion_memory_config
+from . import swebench_evaluation
 from .data_models import (
     DEFAULT_GENERATION_CONFIG,
     BenchmarkConfig,
@@ -67,4 +68,5 @@ __all__ = [
     # "get_adapter" removed in smart dataset refactoring
     "load_emotion_memory_config",
     "EmotionMemoryConfigLoader",
+    "swebench_evaluation",
 ]

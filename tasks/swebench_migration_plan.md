@@ -45,10 +45,10 @@ This migration connects the existing `emotion_experiment_engine` (inference, Rep
     - `python -m swebench.inference.make_datasets.create_text_dataset \\
       --dataset_name_or_path SWE-bench/SWE-bench_Lite \\
       --output_dir ./cache/datasets \\
-      --prompt_style style-3 --file_source bm25 \\swebench_data_prep
+      --prompt_style style-3 --file_source bm25 \\
       --retrieval_file ./cache/retrieval_results/<name>.retrieval.jsonl \\
       --k 20 --max_context_len 32768 --tokenizer_name llama`
-- [x] Provide helper script `python -m emotion_experiment_engine.swebench_data_prep` to orchestrate the above commands with cache management and dry-run support.
+- [x] Document manual CLI workflow for cache generation in `cache/README.md` (no helper script).
 
 ### Phase 1 – Minimal Adapter
 - [x] Create `SWEbenchDataset` that streams the Lite split and passes through `text_inputs` (predictions JSONL handled in Phase 2).
@@ -93,27 +93,21 @@ TDD (Phase 2)
   - Regression: suite green.
 
 ### Phase 3 – Equivalent Evaluation & Reporting 
-- [ ] Evaluate generated predictions via SWE-bench harness (deferred step):
-  - For each predictions JSONL from Phase 2, run `python -m swebench.harness.run_evaluation` and store logs/reports.
-- [ ] Merge harness report JSON into experiment summaries (resolved counts, pass@1).
-- [ ] Create a result manifest at `results/swebench/<model>/<timestamp>.json` storing emotion, intensity, predictions path, harness run ID, and pass rate.
-- [ ] Hook the evaluation + merge into an optional follow-up step or helper script consistent with the deferred workflow.
+- [x] Evaluate generated predictions via SWE-bench harness (deferred step):
+  - Use the offline helper in `emotion_experiment_engine/swebench_evaluation.py` to wrap `python -m swebench.harness.run_evaluation` and capture reports.
+  - Example (adjust paths):
+    - `python - <<'PY'\nfrom pathlib import Path\nfrom emotion_experiment_engine import swebench_evaluation\nswebench_evaluation.evaluate_swebench_run(\n    run_dir=Path('results/swebench/Qwen2.5-0.5B-Instruct_swebench_patch_20250101_000000'),\n    swebench_repo=Path('/data/home/jjl7137/SWE-bench'),\n    dataset_name='SWE-bench/SWE-bench_Lite',\n    split='test',\n    results_root=Path('results/swebench_evaluations'),\n    python_executable='python',\n    max_workers=8,\n)\nPY`
+- [x] Merge harness report JSON into experiment summaries (resolved counts, pass@1).
+- [x] Create a result manifest at `results/swebench/<model>/<timestamp>.json` storing emotion, intensity, predictions path, harness run ID, and pass rate.
+- [x] Hook the evaluation + merge into an optional follow-up step or helper script consistent with the deferred workflow (see `emotion_experiment_engine/swebench_evaluation.py`).
 
 TDD (Phase 3)
-- Harness Evaluation
-  - Red: failing integration test that runs the harness on a small predictions file; asserts reports are created and contain per-instance status.
-  - Green: wire harness invocation and artifact collection.
-  - Parity: verify harness accepts our predictions JSONL without transformation and produces expected log structure.
-  - Regression: suite green.
-- Reporting Merge
-  - Red: failing test when merged summary lacks `pass@1`, `resolved_count`.
-  - Green: implement merge; compute pass rate from harness reports.
-  - Parity: for the smoke subset, assert our merged metrics equal values computed directly from harness logs.
-  - Regression: suite green.
-- Result Manifest
-  - Red: failing test for manifest schema and file path under `results/swebench/<model>/`.
-  - Green: write manifest; validate round-trip load.
-  - Regression: suite green.
+- Harness Evaluation & Reporting
+  - Red: `emotion_experiment_engine/tests/test_swebench_evaluation.py` expected failure (helper must stage predictions, call harness, and emit manifest).
+  - Green: Implement helper to prepare predictions with `model_name_or_path`, invoke harness, and merge report statistics.
+  - Parity: Validate generated manifest records pass rate, resolved counts, and retains harness report path.
+  - Regression: run full pytest suite (note GPU collection guard requires `torch.cuda` availability).
+
 
  
 
