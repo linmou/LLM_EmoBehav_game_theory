@@ -7,6 +7,8 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
+import argparse
+import math
 
 _KEY_INSTANCE_ID = "instance_id"
 _KEY_MODEL = "model_name_or_path"
@@ -21,6 +23,15 @@ def _read_json(path: Path) -> Any:
 
 def _sanitize_model_name(model_path: str) -> str:
     return model_path.replace("/", "__")
+
+
+def _slug(value: str) -> str:
+    return (
+        value.replace("/", "__")
+        .replace(" ", "_")
+        .replace(":", "-")
+        .replace("|", "-")
+    )
 
 
 def _ensure_predictions_ready(
@@ -124,17 +135,18 @@ def _build_harness_command(
 def evaluate_swebench_run(
     *,
     run_dir: Path,
-    swebench_repo: Path,
-    dataset_name: str,
-    split: str,
-    results_root: Path,
+    swebench_repo: Path = Path("/data/home/jjl7137/SWE-bench"),
+    dataset_name: str = "SWE-bench/SWE-bench_Lite",
+    split: str = "test",
+    results_root: Optional[Path] = None,
     python_executable: str = "python",
     max_workers: Optional[int] = None,
     extra_args: Optional[Iterable[str]] = None,
 ) -> Dict[str, Any]:
     run_dir = Path(run_dir)
     swebench_repo = Path(swebench_repo)
-    results_root = Path(results_root)
+    if results_root is not None:
+        results_root = Path(results_root)
 
     exp_cfg = _read_json(run_dir / "experiment_config.json")
     model_path = exp_cfg.get("model_path", "unknown")
@@ -193,22 +205,32 @@ def evaluate_swebench_run(
         resolved = int(report.get("resolved_instances", 0))
         pass_rate = resolved / total if total else 0.0
 
-        summaries.append(
-            {
-                "emotion": entry.get("emotion"),
-                "intensity": entry.get("intensity"),
-                "repeat_id": int(entry.get("repeat_id", 0)),
-                "run_id": run_id,
-                "predictions_path": str(original_path),
-                "prepared_predictions_path": str(prepared_path),
-                "harness_report_path": str(report_path),
-                "resolved_instances": resolved,
-                "total_instances": total,
-                "pass_rate": pass_rate,
-                "empty_patch_instances": int(report.get("empty_patch_instances", 0)),
-                "error_instances": int(report.get("error_instances", 0)),
-            }
+        per_run_summary = {
+            "emotion": entry.get("emotion"),
+            "intensity": entry.get("intensity"),
+            "repeat_id": int(entry.get("repeat_id", 0)),
+            "run_id": run_id,
+            "model_path": model_path,
+            "dataset_name": dataset_name,
+            "split": split,
+            "predictions_path": str(original_path),
+            "prepared_predictions_path": str(prepared_path),
+            "harness_report_path": str(report_path),
+            "resolved_instances": resolved,
+            "total_instances": total,
+            "pass_rate": pass_rate,
+            "empty_patch_instances": int(report.get("empty_patch_instances", 0)),
+            "error_instances": int(report.get("error_instances", 0)),
+        }
+
+        # Write a distinct per-run evaluation file directly inside the run_dir
+        ds_slug = _slug(dataset_name)
+        per_run_name = f"{run_id}.swebench_eval.{ds_slug}.{split}.json"
+        (run_dir / per_run_name).write_text(
+            json.dumps(per_run_summary, indent=2), encoding="utf-8"
         )
+
+        summaries.append(per_run_summary)
 
     manifest = {
         "model_path": model_path,
@@ -219,11 +241,139 @@ def evaluate_swebench_run(
         "runs": summaries,
     }
 
-    manifest_dir = results_root / model_slug
-    manifest_dir.mkdir(parents=True, exist_ok=True)
-    manifest_path = manifest_dir / f"{run_dir.name}_evaluation.json"
+    # Write combined summary. If results_root is not provided, place next to per-run files.
+    if results_root is None:
+        manifest_dir = run_dir
+        manifest_name = f"swebench_eval_summary.{_slug(dataset_name)}.{split}.json"
+    else:
+        manifest_dir = results_root / model_slug
+        manifest_dir.mkdir(parents=True, exist_ok=True)
+        manifest_name = f"{run_dir.name}_evaluation.json"
+    manifest_path = manifest_dir / manifest_name
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
     return manifest
 
 __all__ = ["evaluate_swebench_run"]
+
+
+def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Run SWE-bench harness acceptance on a generated run directory.",
+    )
+    p.add_argument(
+        "--run-dir",
+        type=Path,
+        required=True,
+        help="Path to the experiment run directory containing raw_results.json",
+    )
+    p.add_argument(
+        "--swebench-repo",
+        type=Path,
+        default=Path("/data/home/jjl7137/SWE-bench"),
+        help="Path to the local SWE-bench repository (default: /data/home/jjl7137/SWE-bench)",
+    )
+    p.add_argument(
+        "--dataset-name",
+        type=str,
+        default="SWE-bench/SWE-bench_Lite",
+        help="HuggingFace dataset name (default: SWE-bench/SWE-bench_Lite)",
+    )
+    p.add_argument(
+        "--split",
+        type=str,
+        default="test",
+        help="Dataset split to evaluate (default: test)",
+    )
+    p.add_argument(
+        "--results-root",
+        type=Path,
+        default=None,
+        help="Optional directory to also write a combined summary manifest. If omitted, all outputs are saved into run_dir",
+    )
+    p.add_argument(
+        "--python-executable",
+        type=str,
+        default="python",
+        help="Python executable to invoke the harness (default: python)",
+    )
+    p.add_argument(
+        "--max-workers",
+        type=int,
+        default=None,
+        help="Optional max workers for harness evaluation",
+    )
+    p.add_argument(
+        "--harness-args",
+        nargs=argparse.REMAINDER,
+        help="Additional arguments to pass to swebench.harness.run_evaluation after '--'",
+    )
+    args = p.parse_args(argv)
+    # When using REMAINDER, it may start with '--'. Strip a leading '--' if present.
+    if args.harness_args and len(args.harness_args) > 0 and args.harness_args[0] == "--":
+        args.harness_args = args.harness_args[1:]
+    return args
+
+
+def main(argv: Optional[List[str]] = None) -> None:
+    args = _parse_args(argv)
+    manifest = evaluate_swebench_run(
+        run_dir=args.run_dir,
+        swebench_repo=args.swebench_repo,
+        dataset_name=args.dataset_name,
+        split=args.split,
+        results_root=args.results_root,
+        python_executable=args.python_executable,
+        max_workers=args.max_workers,
+        extra_args=args.harness_args,
+    )
+
+    # Emit a summary_results.csv like other benchmarks, using pass_rate as score.
+    # Layout matches the example pivot: two-level header with 'score' columns
+    # [mean, std, count, min, max] and index by emotion,intensity.
+    try:
+        rows = manifest.get("runs", [])
+        # Group pass_rate by (emotion, intensity)
+        groups: Dict[tuple, List[float]] = {}
+        for r in rows:
+            key = (r.get("emotion"), r.get("intensity"))
+            pr = r.get("pass_rate")
+            if isinstance(pr, (int, float)):
+                groups.setdefault(key, []).append(float(pr))
+
+        # Prepare CSV lines
+        lines: List[str] = []
+        lines.append(",,score,score,score,score,score")
+        lines.append(",,mean,std,count,min,max")
+        lines.append("emotion,intensity,,,,,")
+
+        def f4(x: float) -> str:
+            return f"{x:.4f}"
+
+        for (emotion, intensity) in sorted(groups.keys(), key=lambda k: (str(k[0]), float(k[1]) if isinstance(k[1], (int, float)) else 0.0)):
+            vals = groups[(emotion, intensity)]
+            if not vals:
+                continue
+            n = len(vals)
+            mean = sum(vals) / n
+            if n > 1:
+                var = sum((v - mean) ** 2 for v in vals) / (n - 1)
+                std = math.sqrt(var)
+            else:
+                std = 0.0
+            mn = min(vals)
+            mx = max(vals)
+            lines.append(
+                f"{emotion},{intensity},{f4(mean)},{f4(std)},{n},{f4(mn)},{f4(mx)}"
+            )
+
+        # Write under the run directory next to other artifacts
+        out_csv = args.run_dir / "summary_results.csv"
+        out_csv.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    except Exception:
+        # Do not fail the CLI if summary CSV write has issues
+        pass
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,66 @@
+models:
+  - "Qwen/Qwen3-32B-AWQ"
+
+benchmarks:
+  - name: trustllm_safety
+    task_type: jailbreak
+    data_path: ./data/TrustLLM/dataset/safety/jailbreak.json
+    enable_auto_truncation: false
+    truncation_strategy: right
+    preserve_ratio: 0.8
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+  - name: trustllm_safety
+    task_type: misuse
+    data_path: ./data/TrustLLM/dataset/safety/misuse.json
+    enable_auto_truncation: false
+    truncation_strategy: right
+    preserve_ratio: 0.8
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+  - name: trustllm_safety
+    task_type: exaggerated_safety
+    data_path: ./data/TrustLLM/dataset/safety/exaggerated_safety.json
+    enable_auto_truncation: false
+    truncation_strategy: right
+    preserve_ratio: 0.8
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+emotions: []
+intensities: [1.5]
+
+repeat_runs: 3
+repeat_seed_base: 123
+
+defer_evaluation: true
+
+output_dir: results/TrustLLM_safety/thinking
+batch_size: 800
+
+sanity_check: false
+
+generation_config:
+  enable_thinking: true
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  max_new_tokens: 3000
+  do_sample: true
+  presence_penalty: 1.5
+
+loading_config:
+  gpu_memory_utilization: 0.90
+  max_model_len: 8192
+  enforce_eager: true
+  trust_remote_code: true
+  dtype: float16
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}

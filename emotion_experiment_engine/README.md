@@ -1,7 +1,7 @@
 # Emotion Memory Experiments
-<!-- Updated: 2025-09-28 | Commit: 09808ad -->
+<!-- Updated: 2025-09-30 | Commit: TBD -->
 
-Updated: 2025-09-28 · commit: 09808ad
+Updated: 2025-09-30 · commit: TBD
 
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
@@ -127,19 +127,34 @@ Notes:
 Session tracking
 - The report records session starts/ends, shutdown requests (SIGINT), and whether a session resumed from a report or started fresh. See `sessions` in the report JSON for details.
 
-## Supported Benchmarks
 
-### InfiniteBench Tasks
-- **Passkey Retrieval**: Find hidden keys in long contexts
-- **Key-Value Retrieval**: Locate values for specific keys
-- **Number String**: Find repeated number sequences
-- **Reading Comprehension**: Answer questions about long texts
-- **Code Tasks**: Debug and execution simulation
-- **Math Tasks**: Arithmetic and pattern finding
+## Deferred Evaluation Workflow
 
-### LoCoMo Tasks
-- **Conversational QA**: Answer questions about multi-session conversations
-- **Event Summarization**: Summarize events across conversation sessions
+Set `defer_evaluation=True` when you want to separate GPU generation from judge
+scoring. The experiment run will emit `raw_results.json` plus a README with
+instructions for the offline scorer. After the run completes, execute:
+
+```bash
+python -m emotion_experiment_engine.evaluate_saved --input <run_output_dir>
+```
+
+The helper replays judge calls with configurable concurrency and regenerates the
+standard CSV/JSON summaries in place.
+
+Process an entire series report with the batch wrapper. Use `--dry-run` to list
+pending directories before launching judges, or increase `--max-workers` to
+match your available judge capacity.
+
+```bash
+python -m emotion_experiment_engine.evaluate_saved_series \
+  --report results/memory_experiments/<series_report>.json \
+  --max-workers 16
+
+# Audit pending runs without scoring
+python -m emotion_experiment_engine.evaluate_saved_series \
+  --report results/memory_experiments/<series_report>.json \
+  --dry-run
+```
 
 ## Configuration
 
@@ -179,33 +194,6 @@ ExperimentConfig(
 )
 ```
 
-### Deferred Evaluation Workflow
-
-Set `defer_evaluation=True` when you want to separate GPU generation from judge
-scoring. The experiment run will emit `raw_results.json` plus a README with
-instructions for the offline scorer. After the run completes, execute:
-
-```bash
-python -m emotion_experiment_engine.evaluate_saved --input <run_output_dir>
-```
-
-The helper replays judge calls with configurable concurrency and regenerates the
-standard CSV/JSON summaries in place.
-
-Process an entire series report with the batch wrapper. Use `--dry-run` to list
-pending directories before launching judges, or increase `--max-workers` to
-match your available judge capacity.
-
-```bash
-python -m emotion_experiment_engine.evaluate_saved_series \
-  --report results/memory_experiments/<series_report>.json \
-  --max-workers 16
-
-# Audit pending runs without scoring
-python -m emotion_experiment_engine.evaluate_saved_series \
-  --report results/memory_experiments/<series_report>.json \
-  --dry-run
-```
 
 ## Data Format
 
@@ -222,6 +210,36 @@ anger,1.0,0,passkey,"The passkey is 12345",12345,1.0,infinitebench
 happiness,0.5,1,passkey,"I think it's 67890",67890,1.0,infinitebench
 neutral,0.0,0,passkey,"12345",12345,1.0,infinitebench
 ```
+
+### SWE-bench Acceptance (Equivalent Evaluation & Reporting)
+
+SWE-bench acceptance does not follow the other benchmark pipelines (Series Runner
+post-processing or the Deferred Evaluation Workflow). For SWE-bench:
+
+- Generation: use the SWE-bench series config to produce predictions only
+  (JSONL lines with `instance_id` and `model_patch`).
+- Acceptance: run the official SWE-bench harness via the helper in
+  `emotion_experiment_engine/swebench_evaluation.py`. Do not use
+  `emotion_experiment_engine.evaluate_saved*` for these runs.
+- Reporting: the helper merges pass@1 and resolved counts and writes a manifest
+  to `results/swebench/<model>/<timestamp>.json` with emotion, intensity,
+  predictions path, harness run ID, and metrics.
+
+Example acceptance call (paths illustrative):
+
+```bash
+bash -c "python -m emotion_experiment_engine.swebench_evaluation \
+  --run-dir results/swebench/Qwen2.5-0.5B-Instruct_swebench_patch_20250101_000000 \
+  --swebench-repo /data/home/jjl7137/SWE-bench \
+  --dataset-name SWE-bench/SWE-bench_Lite \
+  --split test \
+  --python-executable python \
+  --max-workers 16"
+```
+
+This provides an equivalent evaluation using the authoritative harness while
+remaining independent of the Series Runner acceptance and the Deferred
+Evaluation Workflow.
 
 ## Testing
 

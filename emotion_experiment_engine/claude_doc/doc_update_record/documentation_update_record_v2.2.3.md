@@ -6,6 +6,5 @@
   - Tests: added smoke tests `emotion_experiment_engine/tests/test_swebench_dataset.py` and `emotion_experiment_engine/tests/test_registry_swebench.py`.
   - Predictions: extended `emotion_experiment_engine/experiment.py` to capture SWE-bench predictions JSONL and annotate run metadata; added `emotion_experiment_engine/tests/test_swebench_predictions.py`.
   - Config: created `config/swebench_series_lite.yaml` for deferred generation smoke runs.
-  - Tooling: created `emotion_experiment_engine/swebench_data_prep.py` with CLI helper + tests to automate Phase 0 retrieval/materialization.
   - Plan doc: updated `tasks/swebench_migration_plan.md` to include dry-run validation command and fixed typo in Phase 3 header.
   - Commit: N/A (applied via Codex CLI patch).

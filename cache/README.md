@@ -1,8 +1,8 @@
-Last updated: 2025-09-28 (commit TBD)
+Last updated: 2025-09-28 (commit 09808adf1db2101a19438cc733833f640f05be48)
 
 # SWE-bench Lite Cache Artifacts
 
-This directory holds the offline retrieval results and text datasets required for the SWE-bench Lite experiments under `emotion_experiment_engine`. Because the upstream SWE-bench CLI removed the old `--save_topk` flag, the legacy helper `emotion_experiment_engine/swebench_data_prep.py` has been retired. Recreate the cached artifacts by running the upstream scripts directly and then pointing the experiments at the outputs preserved here.
+This directory holds the offline retrieval results and text datasets required for the SWE-bench Lite experiments under `emotion_experiment_engine`. Regenerate the cache by running the upstream SWE-bench CLI commands below and then pointing the experiments at the outputs preserved here.
 
 ## Prerequisites
 - Active conda environment: `llm_fresh`

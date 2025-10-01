@@ -16,7 +16,12 @@ from huggingface_hub import hf_hub_download
 from PIL import Image
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer, MistralForCausalLM, pipeline
-from vllm import LLM
+try:
+    from vllm import LLM  # type: ignore
+except Exception:
+    # Provide a minimal stub to avoid hard dependency during dry-runs or CPU-only envs
+    class LLM:  # type: ignore
+        pass
 
 # from neuro_manipulation.repe import repe_pipeline_registry
 # import pickle

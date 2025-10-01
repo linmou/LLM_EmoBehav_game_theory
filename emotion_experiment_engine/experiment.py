@@ -32,12 +32,6 @@ except Exception:
     LLM = object  # type: ignore[assignment]
 
 from neuro_manipulation.configs.experiment_config import get_repe_eng_config
-from neuro_manipulation.model_layer_detector import ModelLayerDetector
-from neuro_manipulation.model_utils import (
-    load_emotion_readers,
-    setup_model_and_tokenizer,
-)
-from neuro_manipulation.repe.pipelines import get_pipeline
 
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 
@@ -128,13 +122,18 @@ class EmotionExperiment:
         dataset_size = len(test_dataset)
         self.logger.info(f"Benchmark contains {dataset_size} items")
 
-        # Load tokenizer using proper utility function (CPU-based, no GPU needed)
-        from neuro_manipulation.utils import load_tokenizer_only
-        self.tokenizer, _ = load_tokenizer_only(
-            model_name_or_path=config.model_path,
-            expand_vocab=False,
-            auto_load_multimodal=True,
-        )
+        # Load tokenizer (CPU-based). Fall back to direct HF load if utils imports heavy deps.
+        try:
+            from neuro_manipulation.utils import load_tokenizer_only  # type: ignore
+            self.tokenizer, _ = load_tokenizer_only(
+                model_name_or_path=config.model_path,
+                expand_vocab=False,
+                auto_load_multimodal=True,
+            )
+        except Exception:
+            # Avoid vllm import errors during dry-run by using transformers directly
+            from transformers import AutoTokenizer  # type: ignore
+            self.tokenizer = AutoTokenizer.from_pretrained(config.model_path)
 
         # Create prompt format (only needs tokenizer)
         from neuro_manipulation.prompt_formats import PromptFormat
@@ -225,6 +224,13 @@ class EmotionExperiment:
 
     def _setup_gpu_components(self, config: ExperimentConfig):
         """Setup GPU-dependent components: models, emotion readers, pipeline"""
+        # Lazy import heavy deps to keep dry-run fast and avoid optional imports
+        from neuro_manipulation.model_layer_detector import ModelLayerDetector  # type: ignore
+        from neuro_manipulation.model_utils import (  # type: ignore
+            load_emotion_readers,
+            setup_model_and_tokenizer,
+        )
+        from neuro_manipulation.repe.pipelines import get_pipeline  # type: ignore
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
         self.repe_config = get_repe_eng_config(
             config.model_path, yaml_config=config.repe_eng_config

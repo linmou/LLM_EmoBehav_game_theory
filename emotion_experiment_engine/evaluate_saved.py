@@ -43,7 +43,8 @@ LOGGER = logging.getLogger(__name__)
 def _load_manifest(run_dir: Path) -> dict:
     manifest_path = run_dir / "experiment_config.json"
     if not manifest_path.exists():
-        raise FileNotFoundError(
+        LOGGER.warning(f"Cannot locate experiment_config.json in {run_dir}. Did you point to a valid run directory?")
+        return FileNotFoundError(
             f"Cannot locate experiment_config.json in {run_dir}. Did you point to a valid run directory?"
         )
     return json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -103,6 +104,7 @@ def evaluate_saved_run(run_dir: Path | str, max_workers: int = 8) -> pd.DataFram
 
     run_path = Path(run_dir)
     manifest = _load_manifest(run_path)
+    if type(manifest) is not dict: return manifest
     experiment_config, benchmark_config = _reconstruct_configs(manifest)
 
     dataset = create_dataset_from_config(
