@@ -9,12 +9,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Iterable, List
 
 from .evaluate_saved import evaluate_saved_run
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -46,7 +50,7 @@ def _iter_run_dirs(report_payload: dict) -> Iterable[Path]:
 
 
 def _has_evaluation_summary(run_dir: Path) -> bool:
-    summary = run_dir / "evaluation_summary.json"
+    summary = run_dir / "summary_results.json"
     if summary.exists():
         return True
 
@@ -57,23 +61,11 @@ def _has_evaluation_summary(run_dir: Path) -> bool:
     return _DEFERRED_MARKER not in content
 
 
-def _rewrite_readme(run_dir: Path) -> None:
-    readme = run_dir / "README.md"
-    lines = [
-        "# Evaluation Completed\n\n",
-        "Deferred scoring was finalized with `evaluate_saved_series`.\n\n",
-        "Artifacts now include detailed results, summaries, and evaluation_summary.json.\n",
-    ]
-    readme.write_text("".join(lines), encoding="utf-8")
-
-
-def _write_summary_marker(run_dir: Path) -> None:
-    payload = {
-        "evaluated_at": datetime.utcnow().isoformat() + "Z",
-        "tool": "evaluate_saved_series",
-    }
-    summary_path = run_dir / "evaluation_summary.json"
-    summary_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+def _check_summary_results(run_dir: Path) -> bool:
+    summary = run_dir / "summary_results.json"
+    if summary.exists():
+        return True
+    return False
 
 
 def process_report(report_path: Path | str, *, dry_run: bool, max_workers: int = 8) -> SeriesProcessResult:
@@ -86,11 +78,13 @@ def process_report(report_path: Path | str, *, dry_run: bool, max_workers: int =
             continue
         pending.append(run_dir)
         if dry_run:
+            LOGGER.info("Pending deferred run: %s", run_dir)
             continue
+        LOGGER.info("Evaluating deferred run: %s", run_dir)
         evaluate_saved_run(run_dir, max_workers=max_workers)
-        _rewrite_readme(run_dir)
-        _write_summary_marker(run_dir)
-
+        LOGGER.info("Completed deferred run: %s", run_dir)
+        assert _check_summary_results(run_dir), f"Summary results not found: {run_dir}"
+                
     return SeriesProcessResult(report_path=report, pending_dirs=pending)
 
 
@@ -109,6 +103,8 @@ def _main(argv: List[str] | None = None) -> SeriesProcessResult:
         help="Worker count forwarded to evaluate_saved",
     )
     args = parser.parse_args(argv)
+
+    logging.basicConfig(level=logging.INFO)
 
     result = process_report(args.report, dry_run=args.dry_run, max_workers=args.max_workers)
 

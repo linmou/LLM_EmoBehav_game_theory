@@ -11,3 +11,9 @@ Feature: Deferred evaluation for experiment series reports
     When I rerun evaluate_saved_series without --dry-run
     Then it executes evaluate_saved for each unevaluated run and rewrites their README files
     And it creates evaluation_summary.json artifacts alongside the existing summaries
+
+  Scenario: Deferred replay uses dataset-level batch scoring
+    Given a deferred experiment run whose dataset exposes a batch evaluator
+    When I execute evaluate_saved on the run directory
+    Then the scorer uses dataset.evaluate_batch on each chunk of rows
+    And it persists the per-record scores and errors returned by the batch evaluator
