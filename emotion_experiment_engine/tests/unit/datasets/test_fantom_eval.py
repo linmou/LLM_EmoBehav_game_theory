@@ -277,6 +277,27 @@ class TestFantomAllTasks(unittest.TestCase):
         resp = {"reational": "r", "answer": gt}
         self.assertEqual(ds.evaluate_response(str(resp), gt, "short_infoaccessibility_list_inaccessible", ex["prompt"]), 1.0)
 
+    def test_list_accepts_json_with_answer_as_scalar_string(self):
+        """
+        emotion_experiment_engine/datasets/fantom.py: ensure _eval_list accepts
+        a JSON object where 'answer' is a comma-separated string of items.
+
+        This mirrors real outputs observed in results/fantom_qwen3/no-thinking-nogen
+        where the model returns {"reational": "...", "answer": "A, B, C"}
+        instead of a JSON array.
+        """
+        _, _, ds = self._build("short_infoaccessibility_list_inaccessible")
+        self.assertGreater(len(ds), 0)
+        ex = ds[0]
+        gt = ex["ground_truth"]
+        # Construct a scalar string joining ground-truth items with commas
+        scalar = ", ".join(gt)
+        resp = {"reational": "r", "answer": scalar}
+        self.assertEqual(
+            ds.evaluate_response(str(resp), gt, "short_infoaccessibility_list_inaccessible", ex["prompt"]),
+            1.0,
+        )
+
     def test_belief_choice_accessible(self):
         _, _, ds = self._build("short_belief_choice_accessible")
         self.assertGreater(len(ds), 0)
