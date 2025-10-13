@@ -64,6 +64,8 @@ from .datasets.games import GameTheoryDataset
 from .datasets.swebench import SWEbenchDataset
 from .datasets.gpqa import GPQADataset
 from .gpqa_prompt_wrapper import GPQAPromptWrapper
+from .datasets.humaneval import HumanEvalDataset
+from .humaneval_prompt_wrapper import HumanEvalPromptWrapper
 def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
     from .dataset_factory import create_dataset_from_config as _real_create
     return _real_create(*args, **kwargs)
@@ -241,6 +243,12 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=GPQADataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=GPQAPromptWrapper,
+    ),
+    # HumanEval benchmark (code completion); default raw prompt parity
+    ("humaneval", "*"): BenchmarkSpec(
+        dataset_class=HumanEvalDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=HumanEvalPromptWrapper,
     ),
     # Emotion Check benchmark - all tasks use the same wrapper
     ("emotion_check", "*"): BenchmarkSpec(
