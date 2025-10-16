@@ -39,24 +39,27 @@ class _DummyWrapper:
 dummy_prompt_wrapper.PromptWrapper = _DummyWrapper
 sys.modules["neuro_manipulation.prompt_wrapper"] = dummy_prompt_wrapper
 
-# Stub torch.utils.data.Dataset
-dummy_torch = types.ModuleType("torch")
-dummy_utils = types.ModuleType("torch.utils")
-dummy_utils_data = types.ModuleType("torch.utils.data")
+# Stub torch.utils.data.Dataset only when torch import is unavailable
+try:
+    import torch  # type: ignore  # noqa: F401
+except Exception:
+    dummy_torch = types.ModuleType("torch")
+    dummy_utils = types.ModuleType("torch.utils")
+    dummy_utils_data = types.ModuleType("torch.utils.data")
 
-class _DummyDataset:
-    def __len__(self):
-        return 0
+    class _DummyDataset:
+        def __len__(self):
+            return 0
 
-    def __getitem__(self, idx):
-        raise IndexError
+        def __getitem__(self, idx):
+            raise IndexError
 
-dummy_utils_data.Dataset = _DummyDataset
-dummy_utils.data = dummy_utils_data
-dummy_torch.utils = dummy_utils
-sys.modules["torch"] = dummy_torch
-sys.modules["torch.utils"] = dummy_utils
-sys.modules["torch.utils.data"] = dummy_utils_data
+    dummy_utils_data.Dataset = _DummyDataset
+    dummy_utils.data = dummy_utils_data
+    dummy_torch.utils = dummy_utils
+    sys.modules["torch"] = dummy_torch
+    sys.modules["torch.utils"] = dummy_utils
+    sys.modules["torch.utils.data"] = dummy_utils_data
 
 # Stub heavy dataset submodules to avoid importing dependencies
 def _stub_ds_module(qualname: str, cls_name: str):

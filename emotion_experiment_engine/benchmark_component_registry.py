@@ -66,6 +66,8 @@ from .datasets.gpqa import GPQADataset
 from .gpqa_prompt_wrapper import GPQAPromptWrapper
 from .datasets.humaneval import HumanEvalDataset
 from .humaneval_prompt_wrapper import HumanEvalPromptWrapper
+from .datasets.mbpp import MBPPDataset
+from .mbpp_prompt_wrapper import MBPPPromptWrapper
 def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
     from .dataset_factory import create_dataset_from_config as _real_create
     return _real_create(*args, **kwargs)
@@ -244,7 +246,18 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=GPQAPromptWrapper,
     ),
-    # HumanEval benchmark (code completion); default raw prompt parity
+    # HumanEval benchmark (code completion)
+    # Organize tasks as {default, plus, *} where * means combined view
+    ("humaneval", "default"): BenchmarkSpec(
+        dataset_class=HumanEvalDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=HumanEvalPromptWrapper,
+    ),
+    ("humaneval", "plus"): BenchmarkSpec(
+        dataset_class=HumanEvalDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=HumanEvalPromptWrapper,
+    ),
     ("humaneval", "*"): BenchmarkSpec(
         dataset_class=HumanEvalDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
@@ -255,6 +268,22 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=EmotionCheckDataset,
         answer_wrapper_class=EmotionAnswerWrapper,
         prompt_wrapper_class=EmotionCheckPromptWrapper,
+    ),
+    # MBPP benchmark
+    ("mbpp", "default"): BenchmarkSpec(
+        dataset_class=MBPPDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MBPPPromptWrapper,
+    ),
+    ("mbpp", "plus"): BenchmarkSpec(
+        dataset_class=MBPPDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MBPPPromptWrapper,
+    ),
+    ("mbpp", "*"): BenchmarkSpec(
+        dataset_class=MBPPDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=MBPPPromptWrapper,
     ),
     # FANToM – allow wildcard for shared wrapper
     ("fantom", "*"): BenchmarkSpec(
@@ -350,10 +379,6 @@ def create_benchmark_components(
     benchmark_key = (benchmark_name.lower(), task_type)
 
     spec: Optional[BenchmarkSpec] = BENCHMARK_SPECS.get(benchmark_key)
-    if spec is None:
-        # Fallback to wildcard default like (name, "*") to reduce duplication
-        wildcard_key = (benchmark_name.lower(), "*")
-        spec = BENCHMARK_SPECS.get(wildcard_key)
     if spec is None:
         available_combinations = list(BENCHMARK_SPECS.keys())
         raise KeyError(

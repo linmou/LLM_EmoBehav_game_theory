@@ -5,6 +5,12 @@ import types
 
 
 def _install_torch_stub() -> None:
+    try:
+        import torch  # type: ignore  # noqa: F401
+        return
+    except Exception:
+        pass
+
     if "torch" in sys.modules:
         return
 
@@ -13,9 +19,43 @@ def _install_torch_stub() -> None:
     data_module = types.ModuleType("torch.utils.data")
 
     class _TorchDataset:  # type: ignore[override]
-        pass
+        def __iter__(self):
+            return iter(())
+
+    class _TorchDataLoader:
+        def __init__(self, dataset, batch_size: int | None = 1, shuffle: bool = False, collate_fn=None):
+            self.dataset = dataset
+            self.batch_size = batch_size or 1
+            self.shuffle = shuffle
+            self.collate_fn = collate_fn
+
+        def __iter__(self):  # pragma: no cover - simple helper
+            data_iter = None
+            if hasattr(self.dataset, "__iter__"):
+                data_iter = iter(self.dataset)
+            elif hasattr(self.dataset, "__len__") and hasattr(self.dataset, "__getitem__"):
+                data_iter = (self.dataset[i] for i in range(len(self.dataset)))
+            else:
+                data_iter = iter(())
+
+            batch = []
+            for item in data_iter:
+                batch.append(item)
+                if len(batch) == self.batch_size:
+                    yield self._collate(batch)
+                    batch = []
+            if batch:
+                yield self._collate(batch)
+
+        def _collate(self, items):
+            if self.collate_fn is not None:
+                return self.collate_fn(items)
+            if self.batch_size == 1:
+                return items[0]
+            return list(items)
 
     data_module.Dataset = _TorchDataset
+    data_module.DataLoader = _TorchDataLoader
     utils_module.data = data_module
     torch_module.utils = utils_module
 

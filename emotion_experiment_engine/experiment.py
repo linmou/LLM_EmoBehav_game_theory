@@ -286,9 +286,10 @@ class EmotionExperiment:
             "rep-control-vllm" if self.is_vllm else "rep-control",
             model=self.model,
             tokenizer=self.tokenizer,  # Use basic tokenizer instead of tokenizer_temp
-            layers=self.hidden_layers[
-                len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
-            ],
+            layers=[self.hidden_layers[len(self.hidden_layers) // 2]],
+            # layers=self.hidden_layers[
+            #     len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
+            # ],
             block_name=self.repe_config["block_name"],
             control_method=self.repe_config["control_method"],
         )

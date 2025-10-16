@@ -7,6 +7,7 @@ version: "1.0.0"
 
 models:
   - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
 
 benchmarks:
   - name: "gpqa"
@@ -41,7 +42,7 @@ benchmarks:
 
 # Neutral-only run (no emotion injection) – set a list to enable emotions
 emotions: []
-intensities: []
+intensities: [1.5]
 
 repeat_run: 1
 repeat_seed_base: 12345

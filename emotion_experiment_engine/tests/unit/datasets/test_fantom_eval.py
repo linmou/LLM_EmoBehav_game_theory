@@ -25,24 +25,27 @@ from typing import List
 
 import numpy as np
 
-# Lightweight stubs to avoid heavy deps during import collection
-dummy_torch = types.ModuleType("torch")
-dummy_utils = types.ModuleType("torch.utils")
-dummy_utils_data = types.ModuleType("torch.utils.data")
+# Lightweight stubs to avoid heavy deps during import collection (fallback only)
+try:
+    import torch  # type: ignore  # noqa: F401
+except Exception:
+    dummy_torch = types.ModuleType("torch")
+    dummy_utils = types.ModuleType("torch.utils")
+    dummy_utils_data = types.ModuleType("torch.utils.data")
 
-class _DummyDataset:
-    def __len__(self):
-        return 0
+    class _DummyDataset:
+        def __len__(self):
+            return 0
 
-    def __getitem__(self, idx):
-        raise IndexError
+        def __getitem__(self, idx):
+            raise IndexError
 
-dummy_utils_data.Dataset = _DummyDataset
-dummy_utils.data = dummy_utils_data
-dummy_torch.utils = dummy_utils
-sys.modules["torch"] = dummy_torch
-sys.modules["torch.utils"] = dummy_utils
-sys.modules["torch.utils.data"] = dummy_utils_data
+    dummy_utils_data.Dataset = _DummyDataset
+    dummy_utils.data = dummy_utils_data
+    dummy_torch.utils = dummy_utils
+    sys.modules["torch"] = dummy_torch
+    sys.modules["torch.utils"] = dummy_utils
+    sys.modules["torch.utils.data"] = dummy_utils_data
 
 # Stub heavy dataset submodules to avoid importing full dependencies via registry
 def _stub_ds_module(qualname: str, cls_name: str):

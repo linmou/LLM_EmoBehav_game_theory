@@ -1,0 +1,628 @@
+# Fantom Emotion Impact by Task Family
+
+Last Updated: 2025-10-01
+
+Scope
+- Inputs: all `summary_overall.csv` under `results/fantom/`.
+- Grouping: per model, per task family (answerability, fact, infoaccessibility, belief_choice).
+- Metric: mean_of_means per emotion; deltas vs neutral (pp); averages across runs per model+family.
+
+## Llama-3.2-1B-Instruct
+- answerability:
+  - Neutral baseline: 16.47%
+  - Anger: -10.40 pp
+  - Disgust: -4.70 pp
+  - Fear: -1.54 pp
+  - Happiness: -11.96 pp
+  - Sadness: -13.26 pp
+  - Surprise: -11.40 pp
+- fact:
+  - Neutral baseline: 26.82%
+  - Anger: -24.69 pp
+  - Disgust: -17.97 pp
+  - Fear: -23.76 pp
+  - Happiness: -17.68 pp
+  - Sadness: -20.79 pp
+  - Surprise: -18.83 pp
+- infoaccessibility:
+  - Neutral baseline: 15.72%
+  - Anger: -11.40 pp
+  - Disgust: -2.35 pp
+  - Fear: -1.20 pp
+  - Happiness: -11.34 pp
+  - Sadness: -12.35 pp
+  - Surprise: -11.28 pp
+- belief_choice:
+  - Neutral baseline: 7.12%
+  - Anger: -6.90 pp
+  - Disgust: 29.09 pp
+  - Fear: -6.48 pp
+  - Happiness: -7.03 pp
+  - Sadness: -7.12 pp
+  - Surprise: -6.71 pp
+
+## Llama-3.2-3B-Instruct
+- answerability:
+  - Neutral baseline: 15.61%
+  - Anger: -3.07 pp
+  - Disgust: -4.48 pp
+  - Fear: -3.31 pp
+  - Happiness: -4.58 pp
+  - Sadness: -5.13 pp
+  - Surprise: -6.47 pp
+- fact:
+  - Neutral baseline: 28.12%
+  - Anger: -5.15 pp
+  - Disgust: -12.71 pp
+  - Fear: -5.48 pp
+  - Happiness: 3.51 pp
+  - Sadness: -1.12 pp
+  - Surprise: -18.97 pp
+- infoaccessibility:
+  - Neutral baseline: 27.58%
+  - Anger: -14.73 pp
+  - Disgust: -16.41 pp
+  - Fear: -11.17 pp
+  - Happiness: -12.94 pp
+  - Sadness: -12.14 pp
+  - Surprise: -18.50 pp
+- belief_choice:
+  - Neutral baseline: 46.15%
+  - Anger: -14.61 pp
+  - Disgust: -38.17 pp
+  - Fear: -7.40 pp
+  - Happiness: -26.33 pp
+  - Sadness: -6.31 pp
+  - Surprise: -46.05 pp
+
+## Phi-3.5-mini-instruct
+- answerability:
+  - Neutral baseline: 14.16%
+  - Anger: 0.66 pp
+  - Disgust: -3.57 pp
+  - Fear: -2.12 pp
+  - Happiness: 4.44 pp
+  - Sadness: 3.69 pp
+  - Surprise: 1.57 pp
+- fact:
+  - Neutral baseline: 37.06%
+  - Anger: 1.37 pp
+  - Disgust: 0.08 pp
+  - Fear: 1.62 pp
+  - Happiness: -1.28 pp
+  - Sadness: -0.64 pp
+  - Surprise: -0.53 pp
+- infoaccessibility:
+  - Neutral baseline: 31.77%
+  - Anger: 1.40 pp
+  - Disgust: -1.47 pp
+  - Fear: -2.15 pp
+  - Happiness: -0.62 pp
+  - Sadness: -0.36 pp
+  - Surprise: 3.93 pp
+- belief_choice:
+  - Neutral baseline: 57.33%
+  - Anger: 2.49 pp
+  - Disgust: 1.54 pp
+  - Fear: 1.25 pp
+  - Happiness: -3.15 pp
+  - Sadness: -2.24 pp
+  - Surprise: 1.82 pp
+
+## Phi-4-mini-instruct
+- answerability:
+  - Neutral baseline: 28.71%
+  - Anger: -4.53 pp
+  - Disgust: -8.97 pp
+  - Fear: 0.96 pp
+  - Happiness: 8.15 pp
+  - Sadness: 4.71 pp
+  - Surprise: -0.72 pp
+- fact:
+  - Neutral baseline: 32.36%
+  - Anger: 1.33 pp
+  - Disgust: 1.85 pp
+  - Fear: 0.20 pp
+  - Happiness: 0.86 pp
+  - Sadness: 0.71 pp
+  - Surprise: 0.93 pp
+- infoaccessibility:
+  - Neutral baseline: 41.36%
+  - Anger: -4.37 pp
+  - Disgust: -6.61 pp
+  - Fear: 0.94 pp
+  - Happiness: -0.20 pp
+  - Sadness: 0.65 pp
+  - Surprise: -0.17 pp
+- belief_choice:
+  - Neutral baseline: 59.05%
+  - Anger: -8.45 pp
+  - Disgust: -15.15 pp
+  - Fear: -0.54 pp
+  - Happiness: -5.98 pp
+  - Sadness: -3.37 pp
+  - Surprise: -0.10 pp
+
+## Qwen2.5-0.5B-Instruct
+- answerability:
+  - Neutral baseline: 30.07%
+  - Anger: -15.74 pp
+  - Disgust: 3.19 pp
+  - Fear: -8.15 pp
+  - Happiness: 5.42 pp
+  - Sadness: 4.21 pp
+  - Surprise: 2.71 pp
+- fact:
+  - Neutral baseline: 24.31%
+  - Anger: -13.64 pp
+  - Disgust: -10.21 pp
+  - Fear: -16.32 pp
+  - Happiness: -11.67 pp
+  - Sadness: -15.89 pp
+  - Surprise: -14.76 pp
+- infoaccessibility:
+  - Neutral baseline: 37.44%
+  - Anger: -23.11 pp
+  - Disgust: -8.02 pp
+  - Fear: -19.09 pp
+  - Happiness: -3.99 pp
+  - Sadness: -3.12 pp
+  - Surprise: -10.58 pp
+- belief_choice:
+  - Neutral baseline: 36.14%
+  - Anger: -19.60 pp
+  - Disgust: -12.49 pp
+  - Fear: -27.56 pp
+  - Happiness: -14.64 pp
+  - Sadness: -16.69 pp
+  - Surprise: -12.35 pp
+
+## Qwen2.5-1.5B-Instruct
+- answerability:
+  - Neutral baseline: 17.56%
+  - Anger: -4.06 pp
+  - Disgust: -2.66 pp
+  - Fear: 1.36 pp
+  - Happiness: 5.61 pp
+  - Sadness: 1.66 pp
+  - Surprise: 1.52 pp
+- fact:
+  - Neutral baseline: 25.46%
+  - Anger: 2.43 pp
+  - Disgust: -0.97 pp
+  - Fear: 2.83 pp
+  - Happiness: -0.87 pp
+  - Sadness: -3.29 pp
+  - Surprise: -0.11 pp
+- infoaccessibility:
+  - Neutral baseline: 29.34%
+  - Anger: 3.15 pp
+  - Disgust: -8.16 pp
+  - Fear: -0.81 pp
+  - Happiness: 6.11 pp
+  - Sadness: 2.45 pp
+  - Surprise: -2.87 pp
+- belief_choice:
+  - Neutral baseline: 51.28%
+  - Anger: 1.43 pp
+  - Disgust: 0.82 pp
+  - Fear: 0.22 pp
+  - Happiness: -0.26 pp
+  - Sadness: 0.00 pp
+  - Surprise: -6.56 pp
+
+## Qwen2.5-3B-Instruct
+- answerability:
+  - Neutral baseline: 29.84%
+  - Anger: 0.67 pp
+  - Disgust: -2.36 pp
+  - Fear: -2.60 pp
+  - Happiness: 2.62 pp
+  - Sadness: 1.34 pp
+  - Surprise: -5.37 pp
+- fact:
+  - Neutral baseline: 29.51%
+  - Anger: -1.81 pp
+  - Disgust: -0.34 pp
+  - Fear: -1.01 pp
+  - Happiness: 0.35 pp
+  - Sadness: -2.09 pp
+  - Surprise: 1.09 pp
+- infoaccessibility:
+  - Neutral baseline: 38.52%
+  - Anger: 1.51 pp
+  - Disgust: 1.92 pp
+  - Fear: -2.13 pp
+  - Happiness: -0.16 pp
+  - Sadness: -1.46 pp
+  - Surprise: -8.33 pp
+- belief_choice:
+  - Neutral baseline: 52.87%
+  - Anger: -0.60 pp
+  - Disgust: -1.29 pp
+  - Fear: -1.66 pp
+  - Happiness: -1.58 pp
+  - Sadness: -0.81 pp
+  - Surprise: -2.76 pp
+
+## Qwen3-0.6B
+- answerability:
+  - Neutral baseline: 31.64%
+  - Anger: -16.05 pp
+  - Disgust: 2.61 pp
+  - Fear: -17.05 pp
+  - Happiness: 3.99 pp
+  - Sadness: -3.99 pp
+  - Surprise: 2.33 pp
+- fact:
+  - Neutral baseline: 28.62%
+  - Anger: 0.53 pp
+  - Disgust: -2.82 pp
+  - Fear: 2.51 pp
+  - Happiness: 0.85 pp
+  - Sadness: 1.38 pp
+  - Surprise: 0.23 pp
+- infoaccessibility:
+  - Neutral baseline: 31.85%
+  - Anger: -14.48 pp
+  - Disgust: 2.98 pp
+  - Fear: -9.28 pp
+  - Happiness: 5.26 pp
+  - Sadness: -7.61 pp
+  - Surprise: 5.08 pp
+- belief_choice:
+  - Neutral baseline: 7.32%
+  - Anger: -6.98 pp
+  - Disgust: 3.87 pp
+  - Fear: -7.22 pp
+  - Happiness: -3.96 pp
+  - Sadness: -5.97 pp
+  - Surprise: -0.51 pp
+
+## Qwen3-1.7B
+- answerability:
+  - Neutral baseline: 37.69%
+  - Anger: -0.16 pp
+  - Disgust: -2.62 pp
+  - Fear: -2.25 pp
+  - Happiness: 2.05 pp
+  - Sadness: 1.53 pp
+  - Surprise: -0.89 pp
+- fact:
+  - Neutral baseline: 31.37%
+  - Anger: 0.49 pp
+  - Disgust: -0.99 pp
+  - Fear: -0.84 pp
+  - Happiness: 0.33 pp
+  - Sadness: 0.30 pp
+  - Surprise: 0.11 pp
+- infoaccessibility:
+  - Neutral baseline: 42.95%
+  - Anger: 0.00 pp
+  - Disgust: 0.17 pp
+  - Fear: 0.27 pp
+  - Happiness: -0.51 pp
+  - Sadness: -0.38 pp
+  - Surprise: 0.13 pp
+- belief_choice:
+  - Neutral baseline: 61.37%
+  - Anger: -0.73 pp
+  - Disgust: 2.85 pp
+  - Fear: 2.15 pp
+  - Happiness: -3.88 pp
+  - Sadness: -3.61 pp
+  - Surprise: 2.87 pp
+
+## Qwen3-4B
+- answerability:
+  - Neutral baseline: 29.60%
+  - Anger: 1.42 pp
+  - Disgust: -1.52 pp
+  - Fear: -0.39 pp
+  - Happiness: 0.89 pp
+  - Sadness: -0.89 pp
+  - Surprise: 0.08 pp
+- fact:
+  - Neutral baseline: 43.64%
+  - Anger: 3.80 pp
+  - Disgust: -6.07 pp
+  - Fear: -4.95 pp
+  - Happiness: 4.63 pp
+  - Sadness: 3.69 pp
+  - Surprise: 4.04 pp
+- infoaccessibility:
+  - Neutral baseline: 42.69%
+  - Anger: 0.21 pp
+  - Disgust: -0.61 pp
+  - Fear: -0.39 pp
+  - Happiness: 0.14 pp
+  - Sadness: 0.16 pp
+  - Surprise: 0.42 pp
+- belief_choice:
+  - Neutral baseline: 61.63%
+  - Anger: -1.13 pp
+  - Disgust: 1.51 pp
+  - Fear: 1.12 pp
+  - Happiness: -1.54 pp
+  - Sadness: -3.11 pp
+  - Surprise: -0.89 pp
+
+## gemma-3-1b-it
+- answerability:
+  - Neutral baseline: 10.38%
+  - Anger: -0.11 pp
+  - Disgust: -0.25 pp
+  - Fear: 0.13 pp
+  - Happiness: 0.19 pp
+  - Sadness: 0.27 pp
+  - Surprise: 0.13 pp
+- fact:
+  - Neutral baseline: 31.39%
+  - Anger: 0.16 pp
+  - Disgust: 0.00 pp
+  - Fear: 0.05 pp
+  - Happiness: 0.08 pp
+  - Sadness: 0.07 pp
+  - Surprise: -0.12 pp
+- infoaccessibility:
+  - Neutral baseline: 19.73%
+  - Anger: 0.29 pp
+  - Disgust: 0.00 pp
+  - Fear: 0.13 pp
+  - Happiness: -0.05 pp
+  - Sadness: 0.00 pp
+  - Surprise: 0.13 pp
+- belief_choice:
+  - Neutral baseline: 6.10%
+  - Anger: -0.37 pp
+  - Disgust: -0.11 pp
+  - Fear: -0.43 pp
+  - Happiness: 0.25 pp
+  - Sadness: -0.08 pp
+  - Surprise: 0.00 pp
+
+
+References (run directories)
+- Base: /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom
+- Llama-3.2-1B-Instruct | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_answerability_binary_accessible_20250929_153207
+- Llama-3.2-1B-Instruct | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_answerability_binary_inaccessible_20250929_155205
+- Llama-3.2-1B-Instruct | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_answerability_list_accessible_20250929_174439
+- Llama-3.2-1B-Instruct | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_answerability_list_inaccessible_20250929_175346
+- Llama-3.2-1B-Instruct | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_belief_choice_accessible_20250929_182233
+- Llama-3.2-1B-Instruct | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_belief_choice_inaccessible_20250929_185222
+- Llama-3.2-1B-Instruct | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_fact_20250929_194042
+- Llama-3.2-1B-Instruct | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_infoaccessibility_binary_accessible_20250929_202020
+- Llama-3.2-1B-Instruct | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_infoaccessibility_binary_inaccessible_20250929_203855
+- Llama-3.2-1B-Instruct | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_infoaccessibility_list_accessible_20250929_222726
+- Llama-3.2-1B-Instruct | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_full_infoaccessibility_list_inaccessible_20250929_223552
+- Llama-3.2-1B-Instruct | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_answerability_binary_accessible_20250929_230345
+- Llama-3.2-1B-Instruct | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_answerability_binary_inaccessible_20250929_233300
+- Llama-3.2-1B-Instruct | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_answerability_list_accessible_20250930_005102
+- Llama-3.2-1B-Instruct | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_answerability_list_inaccessible_20250930_010244
+- Llama-3.2-1B-Instruct | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_belief_choice_accessible_20250930_012330
+- Llama-3.2-1B-Instruct | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_belief_choice_inaccessible_20250930_014840
+- Llama-3.2-1B-Instruct | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_fact_20250930_022835
+- Llama-3.2-1B-Instruct | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_infoaccessibility_binary_accessible_20250930_025908
+- Llama-3.2-1B-Instruct | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_infoaccessibility_binary_inaccessible_20250930_032634
+- Llama-3.2-1B-Instruct | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_infoaccessibility_list_accessible_20250930_044132
+- Llama-3.2-1B-Instruct | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-1B-Instruct_fantom_short_infoaccessibility_list_inaccessible_20250930_045159
+- Llama-3.2-3B-Instruct | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_answerability_binary_accessible_20250929_153531
+- Llama-3.2-3B-Instruct | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_answerability_binary_inaccessible_20250929_161135
+- Llama-3.2-3B-Instruct | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_answerability_list_accessible_20250929_174616
+- Llama-3.2-3B-Instruct | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_answerability_list_inaccessible_20250929_175822
+- Llama-3.2-3B-Instruct | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_belief_choice_accessible_20250929_182631
+- Llama-3.2-3B-Instruct | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_belief_choice_inaccessible_20250929_185842
+- Llama-3.2-3B-Instruct | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_fact_20250929_194642
+- Llama-3.2-3B-Instruct | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_infoaccessibility_binary_accessible_20250929_202329
+- Llama-3.2-3B-Instruct | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_infoaccessibility_binary_inaccessible_20250929_205830
+- Llama-3.2-3B-Instruct | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_infoaccessibility_list_accessible_20250929_222855
+- Llama-3.2-3B-Instruct | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_full_infoaccessibility_list_inaccessible_20250929_224026
+- Llama-3.2-3B-Instruct | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_answerability_binary_accessible_20250929_230909
+- Llama-3.2-3B-Instruct | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_answerability_binary_inaccessible_20250929_234726
+- Llama-3.2-3B-Instruct | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_answerability_list_accessible_20250930_005255
+- Llama-3.2-3B-Instruct | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_answerability_list_inaccessible_20250930_010613
+- Llama-3.2-3B-Instruct | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_belief_choice_accessible_20250930_012702
+- Llama-3.2-3B-Instruct | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_belief_choice_inaccessible_20250930_015408
+- Llama-3.2-3B-Instruct | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_fact_20250930_023339
+- Llama-3.2-3B-Instruct | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_infoaccessibility_binary_accessible_20250930_030429
+- Llama-3.2-3B-Instruct | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_infoaccessibility_binary_inaccessible_20250930_034054
+- Llama-3.2-3B-Instruct | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_infoaccessibility_list_accessible_20250930_044321
+- Llama-3.2-3B-Instruct | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Llama-3.2-3B-Instruct_fantom_short_infoaccessibility_list_inaccessible_20250930_045529
+- Phi-3.5-mini-instruct | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_answerability_binary_accessible_20250929_153850
+- Phi-3.5-mini-instruct | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_answerability_binary_inaccessible_20250929_163226
+- Phi-3.5-mini-instruct | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_answerability_list_accessible_20250929_174812
+- Phi-3.5-mini-instruct | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_answerability_list_inaccessible_20250929_180315
+- Phi-3.5-mini-instruct | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_belief_choice_accessible_20250929_183115
+- Phi-3.5-mini-instruct | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_belief_choice_inaccessible_20250929_190705
+- Phi-3.5-mini-instruct | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_fact_20250929_195317
+- Phi-3.5-mini-instruct | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_infoaccessibility_binary_accessible_20250929_202646
+- Phi-3.5-mini-instruct | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_infoaccessibility_binary_inaccessible_20250929_211852
+- Phi-3.5-mini-instruct | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_infoaccessibility_list_accessible_20250929_223035
+- Phi-3.5-mini-instruct | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_full_infoaccessibility_list_inaccessible_20250929_224511
+- Phi-3.5-mini-instruct | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_answerability_binary_accessible_20250929_231412
+- Phi-3.5-mini-instruct | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_answerability_binary_inaccessible_20250930_000157
+- Phi-3.5-mini-instruct | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_answerability_list_accessible_20250930_005502
+- Phi-3.5-mini-instruct | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_answerability_list_inaccessible_20250930_010942
+- Phi-3.5-mini-instruct | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_belief_choice_accessible_20250930_013050
+- Phi-3.5-mini-instruct | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_belief_choice_inaccessible_20250930_020045
+- Phi-3.5-mini-instruct | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_fact_20250930_023840
+- Phi-3.5-mini-instruct | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_infoaccessibility_binary_accessible_20250930_030916
+- Phi-3.5-mini-instruct | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_infoaccessibility_binary_inaccessible_20250930_035440
+- Phi-3.5-mini-instruct | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_infoaccessibility_list_accessible_20250930_044516
+- Phi-3.5-mini-instruct | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-3.5-mini-instruct_fantom_short_infoaccessibility_list_inaccessible_20250930_045845
+- Phi-4-mini-instruct | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_answerability_binary_accessible_20250929_154622
+- Phi-4-mini-instruct | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_answerability_binary_inaccessible_20250929_171729
+- Phi-4-mini-instruct | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_answerability_list_accessible_20250929_175055
+- Phi-4-mini-instruct | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_answerability_list_inaccessible_20250929_181549
+- Phi-4-mini-instruct | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_belief_choice_accessible_20250929_184448
+- Phi-4-mini-instruct | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_belief_choice_inaccessible_20250929_192923
+- Phi-4-mini-instruct | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_fact_20250929_201008
+- Phi-4-mini-instruct | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_infoaccessibility_binary_accessible_20250929_203337
+- Phi-4-mini-instruct | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_infoaccessibility_binary_inaccessible_20250929_220126
+- Phi-4-mini-instruct | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_infoaccessibility_list_accessible_20250929_223259
+- Phi-4-mini-instruct | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_full_infoaccessibility_list_inaccessible_20250929_225711
+- Phi-4-mini-instruct | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_answerability_binary_accessible_20250929_232602
+- Phi-4-mini-instruct | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_answerability_binary_inaccessible_20250930_003217
+- Phi-4-mini-instruct | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_answerability_list_accessible_20250930_005929
+- Phi-4-mini-instruct | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_answerability_list_inaccessible_20250930_011839
+- Phi-4-mini-instruct | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_belief_choice_accessible_20250930_014238
+- Phi-4-mini-instruct | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_belief_choice_inaccessible_20250930_021856
+- Phi-4-mini-instruct | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_fact_20250930_025111
+- Phi-4-mini-instruct | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_infoaccessibility_binary_accessible_20250930_032012
+- Phi-4-mini-instruct | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_infoaccessibility_binary_inaccessible_20250930_042321
+- Phi-4-mini-instruct | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_infoaccessibility_list_accessible_20250930_044903
+- Phi-4-mini-instruct | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Phi-4-mini-instruct_fantom_short_infoaccessibility_list_inaccessible_20250930_050646
+- Qwen2.5-0.5B-Instruct | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_answerability_binary_accessible_20250929_153214
+- Qwen2.5-0.5B-Instruct | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_answerability_binary_inaccessible_20250929_154640
+- Qwen2.5-0.5B-Instruct | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_answerability_list_accessible_20250929_170014
+- Qwen2.5-0.5B-Instruct | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_answerability_list_inaccessible_20250929_170859
+- Qwen2.5-0.5B-Instruct | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_belief_choice_accessible_20250929_173027
+- Qwen2.5-0.5B-Instruct | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_belief_choice_inaccessible_20250929_175235
+- Qwen2.5-0.5B-Instruct | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_fact_20250929_182633
+- Qwen2.5-0.5B-Instruct | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_infoaccessibility_binary_accessible_20250929_185330
+- Qwen2.5-0.5B-Instruct | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_infoaccessibility_binary_inaccessible_20250929_190621
+- Qwen2.5-0.5B-Instruct | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_infoaccessibility_list_accessible_20250929_201650
+- Qwen2.5-0.5B-Instruct | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_full_infoaccessibility_list_inaccessible_20250929_202508
+- Qwen2.5-0.5B-Instruct | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_answerability_binary_accessible_20250929_204450
+- Qwen2.5-0.5B-Instruct | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_answerability_binary_inaccessible_20250929_210331
+- Qwen2.5-0.5B-Instruct | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_answerability_list_accessible_20250929_215534
+- Qwen2.5-0.5B-Instruct | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_answerability_list_inaccessible_20250929_220451
+- Qwen2.5-0.5B-Instruct | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_belief_choice_accessible_20250929_222016
+- Qwen2.5-0.5B-Instruct | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_belief_choice_inaccessible_20250929_223818
+- Qwen2.5-0.5B-Instruct | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_fact_20250929_230652
+- Qwen2.5-0.5B-Instruct | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_infoaccessibility_binary_accessible_20250929_232916
+- Qwen2.5-0.5B-Instruct | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_infoaccessibility_binary_inaccessible_20250929_234717
+- Qwen2.5-0.5B-Instruct | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_infoaccessibility_list_accessible_20250930_003757
+- Qwen2.5-0.5B-Instruct | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-0.5B-Instruct_fantom_short_infoaccessibility_list_inaccessible_20250930_004656
+- Qwen2.5-1.5B-Instruct | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_answerability_binary_accessible_20250929_153439
+- Qwen2.5-1.5B-Instruct | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_answerability_binary_inaccessible_20250929_155756
+- Qwen2.5-1.5B-Instruct | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_answerability_list_accessible_20250929_170203
+- Qwen2.5-1.5B-Instruct | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_answerability_list_inaccessible_20250929_171255
+- Qwen2.5-1.5B-Instruct | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_belief_choice_accessible_20250929_173323
+- Qwen2.5-1.5B-Instruct | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_belief_choice_inaccessible_20250929_175651
+- Qwen2.5-1.5B-Instruct | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_fact_20250929_183114
+- Qwen2.5-1.5B-Instruct | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_infoaccessibility_binary_accessible_20250929_185547
+- Qwen2.5-1.5B-Instruct | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_infoaccessibility_binary_inaccessible_20250929_191838
+- Qwen2.5-1.5B-Instruct | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_infoaccessibility_list_accessible_20250929_201830
+- Qwen2.5-1.5B-Instruct | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_full_infoaccessibility_list_inaccessible_20250929_202917
+- Qwen2.5-1.5B-Instruct | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_answerability_binary_accessible_20250929_204816
+- Qwen2.5-1.5B-Instruct | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_answerability_binary_inaccessible_20250929_211237
+- Qwen2.5-1.5B-Instruct | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_answerability_list_accessible_20250929_215724
+- Qwen2.5-1.5B-Instruct | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_answerability_list_inaccessible_20250929_220755
+- Qwen2.5-1.5B-Instruct | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_belief_choice_accessible_20250929_222257
+- Qwen2.5-1.5B-Instruct | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_belief_choice_inaccessible_20250929_224215
+- Qwen2.5-1.5B-Instruct | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_fact_20250929_231105
+- Qwen2.5-1.5B-Instruct | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_infoaccessibility_binary_accessible_20250929_233312
+- Qwen2.5-1.5B-Instruct | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_infoaccessibility_binary_inaccessible_20250929_235735
+- Qwen2.5-1.5B-Instruct | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_infoaccessibility_list_accessible_20250930_003949
+- Qwen2.5-1.5B-Instruct | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-1.5B-Instruct_fantom_short_infoaccessibility_list_inaccessible_20250930_005013
+- Qwen2.5-3B-Instruct | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_answerability_binary_accessible_20250929_153617
+- Qwen2.5-3B-Instruct | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_answerability_binary_inaccessible_20250929_160500
+- Qwen2.5-3B-Instruct | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_answerability_list_accessible_20250929_170257
+- Qwen2.5-3B-Instruct | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_answerability_list_inaccessible_20250929_171440
+- Qwen2.5-3B-Instruct | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_belief_choice_accessible_20250929_173509
+- Qwen2.5-3B-Instruct | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_belief_choice_inaccessible_20250929_175900
+- Qwen2.5-3B-Instruct | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_fact_20250929_183413
+- Qwen2.5-3B-Instruct | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_infoaccessibility_binary_accessible_20250929_185715
+- Qwen2.5-3B-Instruct | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_infoaccessibility_binary_inaccessible_20250929_192514
+- Qwen2.5-3B-Instruct | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_infoaccessibility_list_accessible_20250929_201923
+- Qwen2.5-3B-Instruct | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_full_infoaccessibility_list_inaccessible_20250929_203108
+- Qwen2.5-3B-Instruct | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_answerability_binary_accessible_20250929_205012
+- Qwen2.5-3B-Instruct | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_answerability_binary_inaccessible_20250929_211746
+- Qwen2.5-3B-Instruct | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_answerability_list_accessible_20250929_215816
+- Qwen2.5-3B-Instruct | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_answerability_list_inaccessible_20250929_220914
+- Qwen2.5-3B-Instruct | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_belief_choice_accessible_20250929_222426
+- Qwen2.5-3B-Instruct | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_belief_choice_inaccessible_20250929_224412
+- Qwen2.5-3B-Instruct | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_fact_20250929_231348
+- Qwen2.5-3B-Instruct | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_infoaccessibility_binary_accessible_20250929_233507
+- Qwen2.5-3B-Instruct | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_infoaccessibility_binary_inaccessible_20250930_000235
+- Qwen2.5-3B-Instruct | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_infoaccessibility_list_accessible_20250930_004046
+- Qwen2.5-3B-Instruct | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen2.5-3B-Instruct_fantom_short_infoaccessibility_list_inaccessible_20250930_005142
+- Qwen3-0.6B | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_answerability_binary_accessible_20250929_153825
+- Qwen3-0.6B | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_answerability_binary_inaccessible_20250929_161436
+- Qwen3-0.6B | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_answerability_list_accessible_20250929_170404
+- Qwen3-0.6B | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_answerability_list_inaccessible_20250929_171701
+- Qwen3-0.6B | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_belief_choice_accessible_20250929_173808
+- Qwen3-0.6B | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_belief_choice_inaccessible_20250929_180308
+- Qwen3-0.6B | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_fact_20250929_183721
+- Qwen3-0.6B | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_infoaccessibility_binary_accessible_20250929_185918
+- Qwen3-0.6B | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_infoaccessibility_binary_inaccessible_20250929_193432
+- Qwen3-0.6B | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_infoaccessibility_list_accessible_20250929_202038
+- Qwen3-0.6B | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_full_infoaccessibility_list_inaccessible_20250929_203327
+- Qwen3-0.6B | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_answerability_binary_accessible_20250929_205247
+- Qwen3-0.6B | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_answerability_binary_inaccessible_20250929_212431
+- Qwen3-0.6B | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_answerability_list_accessible_20250929_215936
+- Qwen3-0.6B | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_answerability_list_inaccessible_20250929_221112
+- Qwen3-0.6B | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_belief_choice_accessible_20250929_222713
+- Qwen3-0.6B | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_belief_choice_inaccessible_20250929_224800
+- Qwen3-0.6B | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_fact_20250929_231648
+- Qwen3-0.6B | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_infoaccessibility_binary_accessible_20250929_233746
+- Qwen3-0.6B | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_infoaccessibility_binary_inaccessible_20250930_000917
+- Qwen3-0.6B | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_infoaccessibility_list_accessible_20250930_004206
+- Qwen3-0.6B | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-0.6B_fantom_short_infoaccessibility_list_inaccessible_20250930_005339
+- Qwen3-1.7B | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_answerability_binary_accessible_20250929_154057
+- Qwen3-1.7B | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_answerability_binary_inaccessible_20250929_162731
+- Qwen3-1.7B | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_answerability_list_accessible_20250929_170526
+- Qwen3-1.7B | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_answerability_list_inaccessible_20250929_172009
+- Qwen3-1.7B | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_belief_choice_accessible_20250929_174124
+- Qwen3-1.7B | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_belief_choice_inaccessible_20250929_180803
+- Qwen3-1.7B | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_fact_20250929_184120
+- Qwen3-1.7B | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_infoaccessibility_binary_accessible_20250929_190133
+- Qwen3-1.7B | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_infoaccessibility_binary_inaccessible_20250929_194650
+- Qwen3-1.7B | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_infoaccessibility_list_accessible_20250929_202215
+- Qwen3-1.7B | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_full_infoaccessibility_list_inaccessible_20250929_203642
+- Qwen3-1.7B | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_answerability_binary_accessible_20250929_205558
+- Qwen3-1.7B | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_answerability_binary_inaccessible_20250929_213300
+- Qwen3-1.7B | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_answerability_list_accessible_20250929_220059
+- Qwen3-1.7B | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_answerability_list_inaccessible_20250929_221343
+- Qwen3-1.7B | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_belief_choice_accessible_20250929_223006
+- Qwen3-1.7B | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_belief_choice_inaccessible_20250929_225147
+- Qwen3-1.7B | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_fact_20250929_232010
+- Qwen3-1.7B | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_infoaccessibility_binary_accessible_20250929_234038
+- Qwen3-1.7B | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_infoaccessibility_binary_inaccessible_20250930_001647
+- Qwen3-1.7B | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_infoaccessibility_list_accessible_20250930_004341
+- Qwen3-1.7B | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-1.7B_fantom_short_infoaccessibility_list_inaccessible_20250930_005607
+- Qwen3-4B | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_answerability_binary_accessible_20250929_154400
+- Qwen3-4B | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_answerability_binary_inaccessible_20250929_164311
+- Qwen3-4B | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_answerability_list_accessible_20250929_170659
+- Qwen3-4B | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_answerability_list_inaccessible_20250929_172355
+- Qwen3-4B | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_belief_choice_accessible_20250929_174439
+- Qwen3-4B | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_belief_choice_inaccessible_20250929_181407
+- Qwen3-4B | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_fact_20250929_184530
+- Qwen3-4B | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_infoaccessibility_binary_accessible_20250929_190355
+- Qwen3-4B | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_infoaccessibility_binary_inaccessible_20250929_200109
+- Qwen3-4B | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_infoaccessibility_list_accessible_20250929_202338
+- Qwen3-4B | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_full_infoaccessibility_list_inaccessible_20250929_203938
+- Qwen3-4B | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_answerability_binary_accessible_20250929_205946
+- Qwen3-4B | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_answerability_binary_inaccessible_20250929_214336
+- Qwen3-4B | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_answerability_list_accessible_20250929_220237
+- Qwen3-4B | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_answerability_list_inaccessible_20250929_221633
+- Qwen3-4B | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_belief_choice_accessible_20250929_223307
+- Qwen3-4B | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_belief_choice_inaccessible_20250929_225628
+- Qwen3-4B | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_fact_20250929_232344
+- Qwen3-4B | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_infoaccessibility_binary_accessible_20250929_234352
+- Qwen3-4B | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_infoaccessibility_binary_inaccessible_20250930_002641
+- Qwen3-4B | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_infoaccessibility_list_accessible_20250930_004508
+- Qwen3-4B | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/Qwen3-4B_fantom_short_infoaccessibility_list_inaccessible_20250930_005815
+- gemma-3-1b-it | full_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_answerability_binary_accessible_20250929_154912
+- gemma-3-1b-it | full_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_answerability_binary_inaccessible_20250929_173400
+- gemma-3-1b-it | full_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_answerability_list_accessible_20250929_175238
+- gemma-3-1b-it | full_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_answerability_list_inaccessible_20250929_182024
+- gemma-3-1b-it | full_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_belief_choice_accessible_20250929_184932
+- gemma-3-1b-it | full_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_belief_choice_inaccessible_20250929_193721
+- gemma-3-1b-it | full_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_fact_20250929_201547
+- gemma-3-1b-it | full_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_infoaccessibility_binary_accessible_20250929_203641
+- gemma-3-1b-it | full_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_infoaccessibility_binary_inaccessible_20250929_221723
+- gemma-3-1b-it | full_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_infoaccessibility_list_accessible_20250929_223439
+- gemma-3-1b-it | full_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_full_infoaccessibility_list_inaccessible_20250929_230120
+- gemma-3-1b-it | short_answerability_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_answerability_binary_accessible_20250929_232946
+- gemma-3-1b-it | short_answerability_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_answerability_binary_inaccessible_20250930_004251
+- gemma-3-1b-it | short_answerability_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_answerability_list_accessible_20250930_010124
+- gemma-3-1b-it | short_answerability_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_answerability_list_inaccessible_20250930_012140
+- gemma-3-1b-it | short_belief_choice_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_belief_choice_accessible_20250930_014612
+- gemma-3-1b-it | short_belief_choice_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_belief_choice_inaccessible_20250930_022522
+- gemma-3-1b-it | short_fact | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_fact_20250930_025513
+- gemma-3-1b-it | short_infoaccessibility_binary_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_infoaccessibility_binary_accessible_20250930_032344
+- gemma-3-1b-it | short_infoaccessibility_binary_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_infoaccessibility_binary_inaccessible_20250930_043337
+- gemma-3-1b-it | short_infoaccessibility_list_accessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_infoaccessibility_list_accessible_20250930_045043
+- gemma-3-1b-it | short_infoaccessibility_list_inaccessible | /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/results/fantom/gemma-3-1b-it_fantom_short_infoaccessibility_list_inaccessible_20250930_050917

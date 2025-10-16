@@ -49,9 +49,18 @@ def _iter_run_dirs(report_payload: dict) -> Iterable[Path]:
             yield run_dir
 
 
+def _get_summary_path(run_dir: Path) -> Path | None:
+    csv_path = run_dir / "summary_results.csv"
+    if csv_path.exists():
+        return csv_path
+    json_path = run_dir / "summary_results.json"
+    if json_path.exists():
+        return json_path
+    return None
+
+
 def _has_evaluation_summary(run_dir: Path) -> bool:
-    summary = run_dir / "summary_results.json"
-    if summary.exists():
+    if _get_summary_path(run_dir):
         return True
 
     readme = run_dir / "README.md"
@@ -62,19 +71,23 @@ def _has_evaluation_summary(run_dir: Path) -> bool:
 
 
 def _check_summary_results(run_dir: Path) -> bool:
-    summary = run_dir / "summary_results.json"
-    if summary.exists():
-        return True
-    return False
+    return _get_summary_path(run_dir) is not None
 
 
-def process_report(report_path: Path | str, *, dry_run: bool, max_workers: int = 8) -> SeriesProcessResult:
+def process_report(
+    report_path: Path | str,
+    *,
+    dry_run: bool,
+    max_workers: int = 8,
+    continue_completed: bool = True,
+) -> SeriesProcessResult:
     report = Path(report_path).expanduser().resolve()
     payload = _load_report(report)
 
     pending: List[Path] = []
     for run_dir in _iter_run_dirs(payload):
-        if _has_evaluation_summary(run_dir):
+        completed = _has_evaluation_summary(run_dir)
+        if completed and continue_completed:
             continue
         pending.append(run_dir)
         if dry_run:
@@ -102,11 +115,23 @@ def _main(argv: List[str] | None = None) -> SeriesProcessResult:
         default=8,
         help="Worker count forwarded to evaluate_saved",
     )
+    parser.add_argument(
+        "--continue",
+        dest="continue_completed",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Skip already evaluated runs (default); use --no-continue to re-score all runs.",
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO)
 
-    result = process_report(args.report, dry_run=args.dry_run, max_workers=args.max_workers)
+    result = process_report(
+        args.report,
+        dry_run=args.dry_run,
+        max_workers=args.max_workers,
+        continue_completed=args.continue_completed,
+    )
 
     if args.dry_run:
         for run_dir in result.pending_dirs:
