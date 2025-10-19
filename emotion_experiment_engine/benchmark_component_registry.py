@@ -380,6 +380,11 @@ def create_benchmark_components(
 
     spec: Optional[BenchmarkSpec] = BENCHMARK_SPECS.get(benchmark_key)
     if spec is None:
+        # Wildcard fallback: allow concise specs like (name, "*")
+        wildcard_key = (benchmark_name.lower(), "*")
+        spec = BENCHMARK_SPECS.get(wildcard_key)
+
+    if spec is None:
         available_combinations = list(BENCHMARK_SPECS.keys())
         raise KeyError(
             f"Unknown benchmark combination: ({benchmark_name}, {task_type}). "

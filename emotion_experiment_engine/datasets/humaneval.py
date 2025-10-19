@@ -69,11 +69,19 @@ def _import_evalplus() -> Any:
         import evalplus  # type: ignore
         return evalplus
     except Exception:
-        ep_path = "~/evalplus"
-        if ep_path not in sys.path:
-            sys.path.insert(0, ep_path)
-        import evalplus  # type: ignore
-        return evalplus
+        ep_path = Path.home() / "evalplus"
+        if ep_path.exists() and str(ep_path) not in sys.path:
+            sys.path.insert(0, str(ep_path))
+            try:
+                import evalplus  # type: ignore
+                return evalplus
+            except Exception:
+                pass
+        raise RuntimeError(
+            "EvalPlus is required for HumanEval plus-mode. Install it into the active env "
+            "(e.g. `pip install -e /path/to/evalplus`) or export PYTHONPATH=/path/to/evalplus:$PYTHONPATH "
+            "before running."
+        )
 
 
 @dataclass

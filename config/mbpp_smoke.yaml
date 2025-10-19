@@ -25,8 +25,7 @@ repeat_run: 1
 repeat_seed_base: 42
 
 loading_config:
-  model_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-  gpu_memory_utilization: 0.60
+  gpu_memory_utilization: 0.90
   tensor_parallel_size: 1
   max_model_len: 4096
   enforce_eager: true
