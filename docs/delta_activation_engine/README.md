@@ -1,5 +1,5 @@
 Delta Activation Engine
-Last updated: 2025-10-21
+Last updated: 2025-10-21 (commit 5a9ef2e) 2025-10-21
 
 This package computes delta activation vectors by comparing baseline representations to activation-steered representations. It now contains two parallel pipelines:
 - Baseline pipeline (text probes, no chat templates)
