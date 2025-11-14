@@ -3,6 +3,7 @@
 OAI_CONFIG_LIST
 api_configs.py
 results/*
+results.bk/
 *.csv
 neuro_manipulation/representation_storage
 .cache/*
@@ -23,6 +24,9 @@ result_analysis/emotion_analysis_results.json
 # Track only this subset under data
 !data/emotion_scales/
 !data/emotion_scales/**
+!data/diplomacy/
+!data/diplomacy/**
+!auto_experiments/diplomacy_emotion_effects/*.csv
 
 # Editor swap files
 *.swp

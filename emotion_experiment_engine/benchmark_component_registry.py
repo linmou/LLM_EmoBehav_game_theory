@@ -61,6 +61,8 @@ from .datasets.trustllm_robustness import TrustLLMRobustnessDataset
 from .datasets.trustllm_safety import TrustLLMSafetyDataset
 from .datasets.trustllm_truthfulness import TrustLLMTruthfulnessDataset
 from .datasets.games import GameTheoryDataset
+from .datasets.diplomacy_gradient import DiplomacyGradientDataset
+from .diplomacy_prompts import DiplomacyOptionsPromptWrapper
 def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
     from .dataset_factory import create_dataset_from_config as _real_create
     return _real_create(*args, **kwargs)
@@ -274,6 +276,11 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=GameTheoryDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=GameBenchmarkPromptWrapper,
+    ),
+    ("diplomacy_pd", "*"): BenchmarkSpec(
+        dataset_class=DiplomacyGradientDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=DiplomacyOptionsPromptWrapper,
     ),
 }
 
