@@ -137,13 +137,13 @@ class MemoryExperimentReport:
 
                 self._save_report()
 
-    def get_pending_experiments(self) -> List[Dict[str, Any]]:
+    def get_incomplete_experiments(self) -> List[Dict[str, Any]]:
         """Get list of pending experiments"""
         with self.lock:
             return [
                 exp
                 for exp in self.experiments.values()
-                if exp["status"] == ExperimentStatus.PENDING
+                if exp["status"] != ExperimentStatus.COMPLETED
             ]
 
     def get_failed_experiments(self) -> List[Dict[str, Any]]:
@@ -1247,7 +1247,7 @@ class MemoryExperimentSeriesRunner:
             raise
 
         # Get pending experiments
-        pending_experiments = self.report.get_pending_experiments()
+        pending_experiments = self.report.get_incomplete_experiments()
         total_experiments = len(pending_experiments)
         self.logger.info(f"Total pending experiments: {total_experiments}")
 

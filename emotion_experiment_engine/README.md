@@ -1,7 +1,7 @@
 # Emotion Memory Experiments
-<!-- Updated: 2025-09-27 | Commit: 9c47b0d -->
+<!-- Updated: 2025-11-14 | Commit: TBD -->
 
-Updated: 2025-09-27 · commit: dev-run
+Updated: 2025-11-14 · commit: TBD
 
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
@@ -26,12 +26,11 @@ This framework enables researchers to study how induced emotional states affect 
 emotion_experiment_engine/
 ├── __init__.py
 ├── data_models.py          # Configuration and result data structures
-├── benchmark_adapters.py   # Adapters for different benchmark formats
 ├── experiment.py           # Main experiment orchestration class
 ├── example_usage.py        # Usage examples and demonstrations
 ├── tests/                  # Comprehensive test suite
 │   ├── test_data_models.py
-│   ├── test_benchmark_adapters.py
+│   ├── test_glob_pattern_discovery.py
 │   ├── test_experiment.py
 │   ├── test_integration.py
 │   ├── test_utils.py
@@ -127,19 +126,34 @@ Notes:
 Session tracking
 - The report records session starts/ends, shutdown requests (SIGINT), and whether a session resumed from a report or started fresh. See `sessions` in the report JSON for details.
 
-## Supported Benchmarks
 
-### InfiniteBench Tasks
-- **Passkey Retrieval**: Find hidden keys in long contexts
-- **Key-Value Retrieval**: Locate values for specific keys
-- **Number String**: Find repeated number sequences
-- **Reading Comprehension**: Answer questions about long texts
-- **Code Tasks**: Debug and execution simulation
-- **Math Tasks**: Arithmetic and pattern finding
+## Deferred Evaluation Workflow
 
-### LoCoMo Tasks
-- **Conversational QA**: Answer questions about multi-session conversations
-- **Event Summarization**: Summarize events across conversation sessions
+Set `defer_evaluation=True` when you want to separate GPU generation from judge
+scoring. The experiment run will emit `raw_results.json` plus a README with
+instructions for the offline scorer. After the run completes, execute:
+
+```bash
+python -m emotion_experiment_engine.evaluate_saved --input <run_output_dir>
+```
+
+The helper replays judge calls with configurable concurrency and regenerates the
+standard CSV/JSON summaries in place.
+
+Process an entire series report with the batch wrapper. Use `--dry-run` to list
+pending directories before launching judges, or increase `--max-workers` to
+match your available judge capacity.
+
+```bash
+python -m emotion_experiment_engine.evaluate_saved_series \
+  --report results/memory_experiments/<series_report>.json \
+  --max-workers 16
+
+# Audit pending runs without scoring
+python -m emotion_experiment_engine.evaluate_saved_series \
+  --report results/memory_experiments/<series_report>.json \
+  --dry-run
+```
 
 ## Configuration
 
@@ -179,18 +193,6 @@ ExperimentConfig(
 )
 ```
 
-### Deferred Evaluation Workflow
-
-Set `defer_evaluation=True` when you want to separate GPU generation from judge
-scoring. The experiment run will emit `raw_results.json` plus a README with
-instructions for the offline scorer. After the run completes, execute:
-
-```bash
-python -m emotion_experiment_engine.evaluate_saved --input <run_output_dir>
-```
-
-The helper replays judge calls with configurable concurrency and regenerates the
-standard CSV/JSON summaries in place.
 
 ## Data Format
 
@@ -207,6 +209,36 @@ anger,1.0,0,passkey,"The passkey is 12345",12345,1.0,infinitebench
 happiness,0.5,1,passkey,"I think it's 67890",67890,1.0,infinitebench
 neutral,0.0,0,passkey,"12345",12345,1.0,infinitebench
 ```
+
+### SWE-bench Acceptance (Equivalent Evaluation & Reporting)
+
+SWE-bench acceptance does not follow the other benchmark pipelines (Series Runner
+post-processing or the Deferred Evaluation Workflow). For SWE-bench:
+
+- Generation: use the SWE-bench series config to produce predictions only
+  (JSONL lines with `instance_id` and `model_patch`).
+- Acceptance: run the official SWE-bench harness via the helper in
+  `emotion_experiment_engine/swebench_evaluation.py`. Do not use
+  `emotion_experiment_engine.evaluate_saved*` for these runs.
+- Reporting: the helper merges pass@1 and resolved counts and writes a manifest
+  to `results/swebench/<model>/<timestamp>.json` with emotion, intensity,
+  predictions path, harness run ID, and metrics.
+
+Example acceptance call (paths illustrative):
+
+```bash
+bash -c "python -m emotion_experiment_engine.swebench_evaluation \
+  --run-dir results/swebench/Qwen2.5-0.5B-Instruct_swebench_patch_20250101_000000 \
+  --swebench-repo /data/home/jjl7137/SWE-bench \
+  --dataset-name SWE-bench/SWE-bench_Lite \
+  --split test \
+  --python-executable python \
+  --max-workers 16"
+```
+
+This provides an equivalent evaluation using the authoritative harness while
+remaining independent of the Series Runner acceptance and the Deferred
+Evaluation Workflow.
 
 ## Testing
 
@@ -261,29 +293,43 @@ This framework seamlessly integrates with the existing emotion manipulation syst
 
 ## Extending the Framework
 
-### Adding New Benchmarks
+### Adding New Benchmarks (Registry-Based)
 
-1. Create a new adapter class inheriting from `BenchmarkAdapter`
-2. Implement the required methods:
-   - `load_data()`: Parse benchmark data format
-   - `create_prompt()`: Generate prompts from items
-   - `evaluate_response()`: Score responses using benchmark method
-3. Register in the `get_adapter()` factory function
+This project uses a registry-driven flow (no legacy adapters). To add a benchmark:
 
+1) Implement a dataset class (subclass `BaseBenchmarkDataset`)
+- File: `emotion_experiment_engine/datasets/<your_dataset>.py`
+- Implement:
+  - `_load_and_parse_data(self) -> List[BenchmarkItem]`
+  - `evaluate_response(self, response: str, ground_truth: Any, task_name: str, prompt: str) -> float`
+  - `get_task_metrics(self, task_name: str) -> List[str]`
+
+2) Implement a prompt wrapper (subclass `neuro_manipulation.prompt_wrapper.PromptWrapper`)
+- File: `emotion_experiment_engine/<your_prompt_wrapper>.py`
+- Provide `system_prompt(event, options)` and an adapter `__call__(* , context, question, user_messages, enable_thinking, augmentation_config, answer, emotion, options)` that internally calls `self.prompt_format.build(...)`.
+
+3) Register in the component registry
+- Edit `emotion_experiment_engine/benchmark_component_registry.py`
+- Add a mapping in `BENCHMARK_SPECS`:
 ```python
-class CustomBenchmarkAdapter(BenchmarkAdapter):
-    def load_data(self) -> List[BenchmarkItem]:
-        # Load and parse custom format
-        pass
-    
-    def create_prompt(self, item: BenchmarkItem) -> str:
-        # Create task-specific prompt
-        pass
-    
-    def evaluate_response(self, response: str, ground_truth: Any, task_name: str) -> float:
-        # Use benchmark's evaluation method
-        pass
+("your_benchmark", "*") : BenchmarkSpec(
+    dataset_class=YourDatasetClass,
+    answer_wrapper_class=IdentityAnswerWrapper,  # or custom AnswerWrapper
+    prompt_wrapper_class=YourPromptWrapper,      # must subclass PromptWrapper
+)
 ```
+
+4) Provide data and a runner config
+- Place data under `data/<family>/<name>_<task_type>.jsonl`
+- Create a series config (e.g., `config/<family>_series_runner.yaml`) and validate:
+```bash
+bash -c "source /usr/local/anaconda3/etc/profile.d/conda.sh && \
+  conda activate llm_fresh && \
+  python -m emotion_experiment_engine.emotion_experiment_series_runner \
+  --config config/<family>_series_runner.yaml --dry-run"
+```
+
+See also: `emotion_experiment_engine/claude_doc/adding_a_new_benchmark.md` for a deeper walkthrough and a worked example.
 
 ### Adding New Task Types
 

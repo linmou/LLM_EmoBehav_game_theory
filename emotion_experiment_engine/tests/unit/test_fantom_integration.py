@@ -17,46 +17,55 @@ from typing import Optional
 from pathlib import Path
 from unittest.mock import patch
 
-# Stub heavy deps before importing target modules
-dummy_prompt_formats = types.ModuleType("neuro_manipulation.prompt_formats")
+# Stub heavy deps before importing target modules, but do NOT mask real modules if available.
+try:
+    import neuro_manipulation.prompt_formats as _pf_mod  # type: ignore  # noqa: F401
+except Exception:
+    dummy_prompt_formats = types.ModuleType("neuro_manipulation.prompt_formats")
 
-class _DummyPromptFormat:
-    def build(self, system_prompt: str, user_messages, **kwargs) -> str:
-        return f"{system_prompt}\n{user_messages}"
+    class _DummyPromptFormat:
+        def build(self, system_prompt: str, user_messages, **kwargs) -> str:
+            return f"{system_prompt}\n{user_messages}"
 
-dummy_prompt_formats.PromptFormat = _DummyPromptFormat
-sys.modules["neuro_manipulation.prompt_formats"] = dummy_prompt_formats
+    dummy_prompt_formats.PromptFormat = _DummyPromptFormat
+    sys.modules["neuro_manipulation.prompt_formats"] = dummy_prompt_formats
 
-dummy_prompt_wrapper = types.ModuleType("neuro_manipulation.prompt_wrapper")
+try:
+    import neuro_manipulation.prompt_wrapper as _pw_mod  # type: ignore  # noqa: F401
+except Exception:
+    dummy_prompt_wrapper = types.ModuleType("neuro_manipulation.prompt_wrapper")
 
-class _DummyWrapper:
-    def __init__(self, prompt_format):
-        self.prompt_format = prompt_format
+    class _DummyWrapper:
+        def __init__(self, prompt_format):
+            self.prompt_format = prompt_format
 
-    def __call__(self, *args, **kwargs):
-        return self.prompt_format.build("sys", ["user"])  # minimal
+        def __call__(self, *args, **kwargs):
+            return self.prompt_format.build("sys", ["user"])  # minimal
 
-dummy_prompt_wrapper.PromptWrapper = _DummyWrapper
-sys.modules["neuro_manipulation.prompt_wrapper"] = dummy_prompt_wrapper
+    dummy_prompt_wrapper.PromptWrapper = _DummyWrapper
+    sys.modules["neuro_manipulation.prompt_wrapper"] = dummy_prompt_wrapper
 
-# Stub torch.utils.data.Dataset
-dummy_torch = types.ModuleType("torch")
-dummy_utils = types.ModuleType("torch.utils")
-dummy_utils_data = types.ModuleType("torch.utils.data")
+# Stub torch.utils.data.Dataset only when torch import is unavailable
+try:
+    import torch  # type: ignore  # noqa: F401
+except Exception:
+    dummy_torch = types.ModuleType("torch")
+    dummy_utils = types.ModuleType("torch.utils")
+    dummy_utils_data = types.ModuleType("torch.utils.data")
 
-class _DummyDataset:
-    def __len__(self):
-        return 0
+    class _DummyDataset:
+        def __len__(self):
+            return 0
 
-    def __getitem__(self, idx):
-        raise IndexError
+        def __getitem__(self, idx):
+            raise IndexError
 
-dummy_utils_data.Dataset = _DummyDataset
-dummy_utils.data = dummy_utils_data
-dummy_torch.utils = dummy_utils
-sys.modules["torch"] = dummy_torch
-sys.modules["torch.utils"] = dummy_utils
-sys.modules["torch.utils.data"] = dummy_utils_data
+    dummy_utils_data.Dataset = _DummyDataset
+    dummy_utils.data = dummy_utils_data
+    dummy_torch.utils = dummy_utils
+    sys.modules["torch"] = dummy_torch
+    sys.modules["torch.utils"] = dummy_utils
+    sys.modules["torch.utils.data"] = dummy_utils_data
 
 # Stub heavy dataset submodules to avoid importing dependencies
 def _stub_ds_module(qualname: str, cls_name: str):

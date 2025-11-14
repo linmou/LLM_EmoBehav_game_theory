@@ -1,0 +1,76 @@
+models:
+  - "Qwen/Qwen3-32B-AWQ"
+
+benchmarks:
+  - name: trustllm_ethics
+    task_type: implicit_ethics
+    data_path: ./data/TrustLLM/dataset/ethics/implicit_ETHICS.json
+    enable_auto_truncation: false
+    truncation_strategy: right
+    preserve_ratio: 0.8
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+  - name: trustllm_ethics
+    task_type: social_norm
+    data_path: ./data/TrustLLM/dataset/ethics/implicit_SocialChemistry101.json
+    enable_auto_truncation: false
+    truncation_strategy: right
+    preserve_ratio: 0.8
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+  - name: trustllm_ethics
+    task_type: explicit_low
+    data_path: ./data/TrustLLM/dataset/ethics/explicit_moralchoice.json
+    enable_auto_truncation: false
+    truncation_strategy: right
+    preserve_ratio: 0.8
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+  - name: trustllm_ethics
+    task_type: explicit_high
+    data_path: ./data/TrustLLM/dataset/ethics/explicit_moralchoice.json
+    enable_auto_truncation: false
+    truncation_strategy: right
+    preserve_ratio: 0.8
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+emotions: []
+intensities: [1.5]
+
+repeat_runs: 3
+repeat_seed_base: 123
+
+defer_evaluation: true
+
+output_dir: results/TrustLLM_ethics/thinking
+batch_size: 800
+
+sanity_check: false
+
+generation_config:
+  enable_thinking: true
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  max_new_tokens: 3000
+  do_sample: true
+  presence_penalty: 1.5
+
+loading_config:
+  gpu_memory_utilization: 0.90
+  max_model_len: 8192
+  enforce_eager: true
+  trust_remote_code: true
+  dtype: float16
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}

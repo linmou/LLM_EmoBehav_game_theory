@@ -6,6 +6,7 @@ results/*
 *.csv
 neuro_manipulation/representation_storage
 .cache/*
+cache/*/*
 groupchat/agent_groups
 merge_data_samples.py
 *.json
@@ -18,6 +19,8 @@ data_creation/scenario_creation/langgraph_creation/scenarios/*
 data_creation/scenario_creation/langgraph_creation/histories/*
 logs/*
 result_analysis/emotion_analysis_results.json
+results
+results.bk
 *.log
 
 # Track only this subset under data

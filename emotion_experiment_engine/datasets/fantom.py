@@ -596,6 +596,7 @@ class FantomDataset(BaseBenchmarkDataset):
         # Try to fetch wrong_answer from last batch metadata (set in collate_fn)
         meta = self._get_meta_for_prompt(prompt) if prompt else {}
         wrong = meta.get("wrong_answer") if isinstance(meta, dict) else None
+        # 1) First try strict JSON/Python literal where answer is a list
         parsed_set = self._json_or_literal_answer_list(response_norm)
         if parsed_set is not None:
             ok = parsed_set == gt_set
@@ -604,6 +605,32 @@ class FantomDataset(BaseBenchmarkDataset):
                 if any(w in parsed_set for w in wrong_set):
                     ok = False
             return 1.0 if ok else 0.0
+        # 2) Next, allow JSON/Python object with 'answer' as a scalar string
+        #    e.g., {"reational": "...", "answer": "A, B, C"}
+        try:
+            try:
+                import json as _json
+                data = _json.loads(response_norm)
+            except Exception:
+                import ast as _ast
+                data = _ast.literal_eval(response_norm)
+            if isinstance(data, dict) and isinstance(data.get("answer"), str):
+                ans_str = data["answer"]
+                import re as _re
+                txt = str(ans_str)
+                txt = _re.sub(r"\band\b", ",", txt, flags=_re.IGNORECASE)
+                parts = [p for p in txt.replace("\n", ",").split(",")]
+                cands = [t.strip().lower() for t in parts]
+                pred = {c for c in cands if c}
+                ok = pred == gt_set
+                if ok and isinstance(wrong, list):
+                    wrong_set = {str(x).strip().lower() for x in wrong if str(x).strip()}
+                    if any(w in pred for w in wrong_set):
+                        ok = False
+                return 1.0 if ok else 0.0
+        except Exception:
+            pass
+        # 3) Finally, fall back to splitting the entire response text (legacy behavior)
         import re as _re
         txt = response_norm
         txt = _re.sub(r"\band\b", ",", txt, flags=_re.IGNORECASE)

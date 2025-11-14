@@ -394,3 +394,17 @@ QUALITY_GATES = {
 The `emotion_experiment_engine` module represents a mature, well-architected research framework that successfully balances scientific rigor with software engineering best practices. The registry-based factory pattern evolution from monolithic if-else chains demonstrates thoughtful architectural design that improves maintainability without sacrificing functionality.
 
 The module's seamless integration with the broader neural manipulation framework, combined with its commitment to using original paper evaluation metrics, positions it as a reliable foundation for advancing research into emotional effects on LLM memory performance.
+### 6. New Benchmark: Diplomacy PD-Style Gradient
+- Location: `data/diplomacy/diplomacy_pd_v1.jsonl` (18 items)
+- Registry: `emotion_experiment_engine/benchmark_component_registry.py` maps `("diplomacy_pd", "*")` →
+  - Dataset: `DiplomacyGradientDataset`
+  - Prompt: `DiplomacyOptionsPromptWrapper` (subclass of `neuro_manipulation.prompt_wrapper.PromptWrapper`)
+  - Answer: `IdentityAnswerWrapper`
+- Wrapper Contract: `SimpleOptionsPromptWrapper` subclasses `PromptWrapper` and accepts the registry adapter
+  signature (`__call__(..., question, options, user_messages, enable_thinking, ...)`). It renders:
+  - Scenario text
+  - `Option i. <natural-language orders>` lines (1–5)
+  - A final instruction: `Respond with the option text.`
+- Dataset Contract: `DiplomacyGradientDataset` loads JSONL items into `BenchmarkItem`s and evaluates model
+  output by extracting the chosen option id from either the explicit numeric form (e.g., `Option 4`)
+  or by matching the option text.
