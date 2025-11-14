@@ -347,6 +347,7 @@ class TestMemoryPromptWrapper(unittest.TestCase):
         self.assertIn("emotion is required", str(cm.exception).lower())
 
 
+
 class TestPromptWrapperRegistryIntegration(unittest.TestCase):
     """Validate prompt wrapper selection via benchmark_component_registry"""
 

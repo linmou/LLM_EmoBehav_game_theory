@@ -68,6 +68,8 @@ from .datasets.humaneval import HumanEvalDataset
 from .humaneval_prompt_wrapper import HumanEvalPromptWrapper
 from .datasets.mbpp import MBPPDataset
 from .mbpp_prompt_wrapper import MBPPPromptWrapper
+from .datasets.pubmed_qa import PubMedQADataset
+from .pubmedqa_prompt_wrapper import PubMedQAPromptWrapper
 def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
     from .dataset_factory import create_dataset_from_config as _real_create
     return _real_create(*args, **kwargs)
@@ -172,6 +174,12 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=MTBench101Dataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=MTBench101PromptWrapper,
+    ),
+    # PubMedQA (yes/no/maybe classification)
+    ("pubmed_qa", "pqa_labeled"): BenchmarkSpec(
+        dataset_class=PubMedQADataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=PubMedQAPromptWrapper,
     ),
     # Memory benchmarks - InfiniteBench
     # Default for most tasks
