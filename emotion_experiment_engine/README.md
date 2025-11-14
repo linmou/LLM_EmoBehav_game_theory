@@ -1,7 +1,7 @@
 # Emotion Memory Experiments
-<!-- Updated: 2025-09-30 | Commit: TBD -->
+<!-- Updated: 2025-11-14 | Commit: TBD -->
 
-Updated: 2025-09-30 · commit: TBD
+Updated: 2025-11-14 · commit: TBD
 
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
@@ -26,12 +26,11 @@ This framework enables researchers to study how induced emotional states affect 
 emotion_experiment_engine/
 ├── __init__.py
 ├── data_models.py          # Configuration and result data structures
-├── benchmark_adapters.py   # Adapters for different benchmark formats
 ├── experiment.py           # Main experiment orchestration class
 ├── example_usage.py        # Usage examples and demonstrations
 ├── tests/                  # Comprehensive test suite
 │   ├── test_data_models.py
-│   ├── test_benchmark_adapters.py
+│   ├── test_glob_pattern_discovery.py
 │   ├── test_experiment.py
 │   ├── test_integration.py
 │   ├── test_utils.py
@@ -294,29 +293,43 @@ This framework seamlessly integrates with the existing emotion manipulation syst
 
 ## Extending the Framework
 
-### Adding New Benchmarks
+### Adding New Benchmarks (Registry-Based)
 
-1. Create a new adapter class inheriting from `BenchmarkAdapter`
-2. Implement the required methods:
-   - `load_data()`: Parse benchmark data format
-   - `create_prompt()`: Generate prompts from items
-   - `evaluate_response()`: Score responses using benchmark method
-3. Register in the `get_adapter()` factory function
+This project uses a registry-driven flow (no legacy adapters). To add a benchmark:
 
+1) Implement a dataset class (subclass `BaseBenchmarkDataset`)
+- File: `emotion_experiment_engine/datasets/<your_dataset>.py`
+- Implement:
+  - `_load_and_parse_data(self) -> List[BenchmarkItem]`
+  - `evaluate_response(self, response: str, ground_truth: Any, task_name: str, prompt: str) -> float`
+  - `get_task_metrics(self, task_name: str) -> List[str]`
+
+2) Implement a prompt wrapper (subclass `neuro_manipulation.prompt_wrapper.PromptWrapper`)
+- File: `emotion_experiment_engine/<your_prompt_wrapper>.py`
+- Provide `system_prompt(event, options)` and an adapter `__call__(* , context, question, user_messages, enable_thinking, augmentation_config, answer, emotion, options)` that internally calls `self.prompt_format.build(...)`.
+
+3) Register in the component registry
+- Edit `emotion_experiment_engine/benchmark_component_registry.py`
+- Add a mapping in `BENCHMARK_SPECS`:
 ```python
-class CustomBenchmarkAdapter(BenchmarkAdapter):
-    def load_data(self) -> List[BenchmarkItem]:
-        # Load and parse custom format
-        pass
-    
-    def create_prompt(self, item: BenchmarkItem) -> str:
-        # Create task-specific prompt
-        pass
-    
-    def evaluate_response(self, response: str, ground_truth: Any, task_name: str) -> float:
-        # Use benchmark's evaluation method
-        pass
+("your_benchmark", "*") : BenchmarkSpec(
+    dataset_class=YourDatasetClass,
+    answer_wrapper_class=IdentityAnswerWrapper,  # or custom AnswerWrapper
+    prompt_wrapper_class=YourPromptWrapper,      # must subclass PromptWrapper
+)
 ```
+
+4) Provide data and a runner config
+- Place data under `data/<family>/<name>_<task_type>.jsonl`
+- Create a series config (e.g., `config/<family>_series_runner.yaml`) and validate:
+```bash
+bash -c "source /usr/local/anaconda3/etc/profile.d/conda.sh && \
+  conda activate llm_fresh && \
+  python -m emotion_experiment_engine.emotion_experiment_series_runner \
+  --config config/<family>_series_runner.yaml --dry-run"
+```
+
+See also: `emotion_experiment_engine/claude_doc/adding_a_new_benchmark.md` for a deeper walkthrough and a worked example.
 
 ### Adding New Task Types
 

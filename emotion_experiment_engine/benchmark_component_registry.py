@@ -62,10 +62,12 @@ from .datasets.trustllm_safety import TrustLLMSafetyDataset
 from .datasets.trustllm_truthfulness import TrustLLMTruthfulnessDataset
 from .datasets.games import GameTheoryDataset
 from .datasets.swebench import SWEbenchDataset
+from .datasets.diplomacy_gradient import DiplomacyGradientDataset
 from .datasets.gpqa import GPQADataset
 from .gpqa_prompt_wrapper import GPQAPromptWrapper
 from .datasets.humaneval import HumanEvalDataset
 from .humaneval_prompt_wrapper import HumanEvalPromptWrapper
+from .diplomacy_prompts import DiplomacyOptionsPromptWrapper
 from .datasets.mbpp import MBPPDataset
 from .mbpp_prompt_wrapper import MBPPPromptWrapper
 from .datasets.pubmed_qa import PubMedQADataset
@@ -328,6 +330,12 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=GameTheoryDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=GameBenchmarkPromptWrapper,
+    ),
+    # Diplomacy PD-style gradient benchmark (options = 1..5 natural-language orders)
+    ("diplomacy_pd", "*"): BenchmarkSpec(
+        dataset_class=DiplomacyGradientDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=DiplomacyOptionsPromptWrapper,
     ),
     # SWE-bench offline (generation-only); prompts come from precomputed text_inputs
     ("swebench", "patch"): BenchmarkSpec(
