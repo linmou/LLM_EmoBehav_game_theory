@@ -30,4 +30,14 @@ Iteration Log
   - Neutral baseline mirrors the emotional runs (16×Option5, 2×Option4).
 - **Interpretation**: steering alone can’t overcome deterministic decoding; logits shift but argmax remains stuck near aggressive moves. Need stochastic decoding to surface signal.
 
-Artifacts: aggregated option-count tables for the greedy sweep live under `auto_experiments/diplomacy_emotion_effects/` for quick diffing.
+## Iteration 2 – Light sampling + intensity sweep (2025-11-14)
+- **Hypothesis**: enabling mild sampling (temp 0.4, do_sample=True, top_p=0.9) will amplify whatever distribution shifts steering induces.
+- **Setup**:
+  - Config: `auto_experiments/diplomacy_emotion_effects/configs/light_sampling.yaml`
+  - Command: `python -m emotion_experiment_engine.emotion_experiment_series_runner --config .../light_sampling.yaml`
+- **Result snapshot** (`light_sampling_option_counts.csv`):
+  - Variance improves: disgust @1.5 intensity now 3×Option4 / 15×Option5; surprise @2.0 reaches all three buckets (1×Option3, 2×Option4, 15×Option5).
+  - Neutral run still leans assertive (3×O4, 15×O5), so we now have measurable deltas (e.g., anger 0.5 produces 2 Option4 vs neutral 3, yet Option3 remains rare).
+- **Interpretation**: sampling exposes small but non-zero shifts; still heavily skewed to conflict. Next ideas: rebalance dataset payoffs, add contrastive reminders, or increase temperature for emotions with the largest RepE norms.
+
+Artifacts: aggregated option-count tables for greedy vs. sampled sweeps live under `auto_experiments/diplomacy_emotion_effects/` for quick diffing.
