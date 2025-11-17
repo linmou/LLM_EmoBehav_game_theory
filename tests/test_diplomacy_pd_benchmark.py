@@ -18,7 +18,7 @@ def _make_config():
     return BenchmarkConfig(
         name="diplomacy_pd",
         task_type="v1b",
-        data_path=Path("data/diplomacy/diplomacy_pd_v1b.jsonl"),
+        data_path=Path("data/diplomacy/diplomacy_pd_escalation_20251117.jsonl"),
         base_data_dir="data/diplomacy",
         sample_limit=None,
         augmentation_config=None,
@@ -68,18 +68,49 @@ def test_dataset_loads_items_and_scores_responses():
 
     dataset = DiplomacyGradientDataset(_make_config(), prompt_wrapper)
 
-    assert len(dataset) >= 3  # v1b contains the full 18-item set
+    assert len(dataset) >= 3
 
     first_item = dataset.items[0]
     assert "Your Country:" in (first_item.context or "")
-    assert first_item.metadata and len(first_item.metadata.get("options", [])) >= 3
+    assert first_item.metadata and len(first_item.metadata.get("options", [])) == 2
 
     batch_entry = dataset[0]
     prompt = batch_entry["prompt"]
-    score_numeric = dataset.evaluate_response("Option 4", None, "v1b", prompt)
-    assert score_numeric == pytest.approx(4.0)
+    score_numeric = dataset.evaluate_response("Option 2", None, "v1b", prompt)
+    assert score_numeric == pytest.approx(2.0)
 
     # Option-text matching should also work irrespective of case differences.
-    option_text = first_item.metadata["options"][2]["text"].upper()
+    option_text = first_item.metadata["options"][0]["text"].upper()
     score_text = dataset.evaluate_response(option_text, None, "v1b", prompt)
-    assert score_text == pytest.approx(3.0)
+    assert score_text == pytest.approx(1.0)
+
+
+def test_dataset_prefers_description_and_gradient_options():
+    """
+    Validate the escalation Diplomacy set keeps description text, prefers behavior_choices,
+    and carries the whose_option label when constructing items.
+    """
+    from emotion_experiment_engine.datasets.diplomacy_gradient import DiplomacyGradientDataset
+    from emotion_experiment_engine.diplomacy_prompts import DiplomacyOptionsPromptWrapper
+
+    wrapper = DiplomacyOptionsPromptWrapper(DummyPromptFormat())
+    prompt_wrapper = partial(
+        wrapper.__call__,
+        user_messages=["Please decide"],
+        enable_thinking=False,
+        augmentation_config=None,
+        emotion=None,
+    )
+
+    dataset = DiplomacyGradientDataset(_make_config(), prompt_wrapper)
+
+    assert len(dataset) >= 10
+    first_item = dataset.items[0]
+
+    assert first_item.input_text.startswith("In the spring of 1901")
+    assert first_item.metadata["whose_option"] == "RUSSIA"
+    assert "Diplomacy_RUSSIA_vs_TURKEY_BLA_Spring1901_Orders" in (first_item.context or "")
+    option_texts = [opt["text"].lower() for opt in first_item.metadata["options"]]
+    assert len(option_texts) == 2  # behavior_choices: withdraw/escalate
+    assert any("withdraw" in opt or "reduce naval activity" in opt for opt in option_texts)
+    assert any("escalate" in opt or "increase naval presence" in opt for opt in option_texts)

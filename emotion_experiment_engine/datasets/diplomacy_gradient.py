@@ -29,8 +29,33 @@ class DiplomacyGradientDataset(BaseBenchmarkDataset):
 
         for idx, record in enumerate(raw):
             scenario = str(record.get("scenario") or record.get("event") or "").strip()
-            options = record.get("options") or []
-            if not scenario or not options:
+            description = str(record.get("description") or "").strip()
+            question_text = description or scenario
+            behavior_choices = record.get("behavior_choices") or {}
+            if behavior_choices:
+                ordered_labels = ["withdraw", "escalate"]
+                options_source = []
+                for idx, label in enumerate(ordered_labels, start=1):
+                    if label in behavior_choices:
+                        options_source.append(
+                            {"id": idx, "text": str(behavior_choices[label])}
+                        )
+                # If keys differ, append remaining entries in sorted-key order.
+                if len(options_source) < len(behavior_choices):
+                    for idx, (label, text) in enumerate(
+                        sorted(behavior_choices.items()), start=len(options_source) + 1
+                    ):
+                        options_source.append(
+                            {"id": idx, "text": str(text)}
+                        )
+            else:
+                options_source = (
+                    record.get("gradient_options")
+                    or record.get("options")
+                    or []
+                )
+            options = options_source
+            if not question_text or not options:
                 # Skip malformed rows; keep dataset resilient to editing mistakes.
                 continue
 
@@ -45,8 +70,9 @@ class DiplomacyGradientDataset(BaseBenchmarkDataset):
                 normalized_options.append({"id": int(opt_id), "text": str(text)})
 
             header_lines: List[str] = []
-            your_country = record.get("your_country")
-            game_name = record.get("game")
+            whose_option = record.get("whose_option")
+            your_country = record.get("your_country") or whose_option
+            game_name = record.get("game") or record.get("game_name")
             target_country = record.get("target_country")
             phase = record.get("phase") or {}
             season = phase.get("season")
@@ -57,21 +83,29 @@ class DiplomacyGradientDataset(BaseBenchmarkDataset):
                 header_lines.append(f"Your Country: {your_country}")
             if game_name:
                 header_lines.append(f"Game: {game_name}")
+            if whose_option and not your_country:
+                header_lines.append(f"Decision Owner: {whose_option}")
             phase_bits = [str(bit) for bit in (season, year, subphase) if bit]
             if phase_bits:
                 header_lines.append("Phase: " + " ".join(phase_bits))
             if target_country:
                 header_lines.append(f"Target Country: {target_country}")
+            if scenario:
+                header_lines.append(f"Scenario: {scenario}")
 
             context_header = "\n".join(header_lines) if header_lines else None
 
             items.append(
                 BenchmarkItem(
                     id=record.get("id", idx),
-                    input_text=scenario,
+                    input_text=question_text,
                     context=context_header,
                     ground_truth=None,
-                    metadata={"options": normalized_options},
+                    metadata={
+                        "options": normalized_options,
+                        "scenario": scenario,
+                        "whose_option": whose_option,
+                    },
                 )
             )
 
