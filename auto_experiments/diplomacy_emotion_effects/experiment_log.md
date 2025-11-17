@@ -98,3 +98,15 @@ Artifacts: aggregated option-count tables for greedy vs. sampled sweeps live und
   - Disgust climbs to 1.478 at 2.5 (≈18 points more escalations).
   - Happiness gradually nudges aggressive (1.382 at 2.5); sadness trends slightly calmer (1.234). Surprise stays near neutral (≈1.26).
 - **Interpretation**: Adding intensity 2.5 reinforces the existing split: anger and fear push harder toward de-escalation, disgust leads escalation, while happiness/sadness/surprise hover near neutral with small shifts (<0.1). Anger’s “calming” effect persists even at high intensity, so any “anger drives aggression” expectation fails here—likely because the RepE direction or prompt framing emphasizes caution; need to inspect activation vectors or invert sign if we want anger to drive escalation.
+
+## Iteration 7 – Model-size sweep (2025-11-17)
+- **Hypothesis**: Smaller Qwen checkpoints may respond differently to RepE steering; sweeping 0.5B and 1.5B should reveal whether anger’s calming effect is model-specific.
+- **Setup**:
+  - Dataset/config identical to Iteration 6 (500-row escalation JSONL, intensities up to 2.5, batch_size=200).
+  - Models run sequentially with one-model configs to avoid timeout:
+    1. `source /usr/local/anaconda3/etc/profile.d/conda.sh && conda activate llm_fresh && python -m emotion_experiment_engine.emotion_experiment_series_runner --config /tmp/light_sampling_05.yaml` (0.5B only)
+    2. `... --config /tmp/light_sampling_15b.yaml` (1.5B only)
+- **Results**:
+  - **0.5B** (`Qwen2.5-0.5B-Instruct_diplomacy_pd_v1b_20251117_120722`): anger becomes more escalatory (mean rises to 1.79 at intensity 1.5, stays >1.55 thereafter); fear collapses to pure withdraw (mean=1.0 at 2.5); disgust, happiness, sadness all drift toward withdraw.
+  - **1.5B** (`Qwen2.5-1.5B-Instruct_diplomacy_pd_v1b_20251117_121515`): anger also escalates (1.41→1.73 as intensity increases), unlike 3B. Fear still calms (1.10 at 2.5). Disgust stays near neutral (~1.35). Surprise trends calmer, happiness/sadness slightly escalatory.
+- **Interpretation**: RepE directions interact with capacity. Only the 3B checkpoint produced anger-driven de-escalation; smaller models revert to “anger → aggression” while still pushing fear toward calm. Disgust flips sign (aggressive on 3B, neutral/calm on smaller models). Future work: examine layer activations per model or retrain RepE vectors per checkpoint before comparing cross-model effects.
