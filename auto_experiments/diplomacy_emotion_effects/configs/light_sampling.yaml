@@ -8,7 +8,7 @@ benchmarks:
   - name: "diplomacy_pd"
     task_type: "v1b"
     base_data_dir: "data/diplomacy"
-    data_path: "data/diplomacy/diplomacy_pd_v1b.jsonl"
+    data_path: "data/diplomacy/diplomacy_pd_escalation_20251117_x10.jsonl"
     enable_auto_truncation: false
     truncation_strategy: "right"
     preserve_ratio: 1.0

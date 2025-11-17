@@ -72,3 +72,15 @@ Artifacts: aggregated option-count tables for greedy vs. sampled sweeps live und
   - Anger and fear drift mildly toward calmer choices at higher intensities (anger 2.0 mean 1.22; fear 2.0 mean 1.16), while disgust leans more aggressive (means up to 1.42). Differences remain ≤0.26 absolute—still small but now directionally meaningful.
   - `summary_results.csv`: only Options 1 or 2 appear, confirming prompt formatting change took effect.
 - **Interpretation**: Reducing to two choices exposes clearer but still subtle shifts. Disgust prefers escalation slightly more than neutral; fear/anger slope downward with intensity. However, variation is modest (≈10% swing). Additional prompt conditioning or higher temperature may be needed for larger effect sizes.
+
+## Iteration 5 – Behavior-choice prompts with 10× replicated dataset (2025-11-17)
+- **Hypothesis**: Expanding to 500 items (10× copies of the 50 scenarios) will stabilize estimates and surface small emotion effects in the 2-choice framing.
+- **Setup**:
+  - Data: `data/diplomacy/diplomacy_pd_escalation_20251117_x10.jsonl` (500 rows, each original row duplicated 10× with unique ids).
+  - Config: same as Iteration 4 except `data_path` points to the x10 file.
+  - Command: `source /usr/local/anaconda3/etc/profile.d/conda.sh && conda activate llm_fresh && python -m emotion_experiment_engine.emotion_experiment_series_runner --config auto_experiments/diplomacy_emotion_effects/configs/light_sampling.yaml`
+- **Results** (`results.bk/.../Qwen2.5-3B-Instruct_diplomacy_pd_v1b_20251117_101416`):
+  - Neutral mean = 1.294 (σ≈0.456). Emotion means: fear(2.0)=1.166 (most de-escalatory), anger(2.0)=1.196; disgust(2.0)=1.428 (most escalatory). Spread between extremes ≈0.26.
+  - Directional trends match Iteration 4 but tighter CIs: fear/anger drift toward withdraw with higher intensity; disgust drifts toward escalate. Happiness/sadness stay near neutral.
+  - Still only Options 1/2 appear; distributions remain narrow (var≈0.16–0.25).
+- **Interpretation**: Replicating the dataset improves statistical confidence but the effect size remains small (~0.25 option units). Emotion effects are detectable (fear/anger lean calmer; disgust leans aggressive), yet practical impact is limited under current prompting/decoding.
