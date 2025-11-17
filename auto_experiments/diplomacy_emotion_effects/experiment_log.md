@@ -84,3 +84,17 @@ Artifacts: aggregated option-count tables for greedy vs. sampled sweeps live und
   - Directional trends match Iteration 4 but tighter CIs: fear/anger drift toward withdraw with higher intensity; disgust drifts toward escalate. Happiness/sadness stay near neutral.
   - Still only Options 1/2 appear; distributions remain narrow (var≈0.16–0.25).
 - **Interpretation**: Replicating the dataset improves statistical confidence but the effect size remains small (~0.25 option units). Emotion effects are detectable (fear/anger lean calmer; disgust leans aggressive), yet practical impact is limited under current prompting/decoding.
+
+## Iteration 6 – Extending intensity sweep to 2.5 (2025-11-17)
+- **Hypothesis**: Increasing intensity to 2.5 will push steering further, clarifying whether anger’s de-escalation trend persists and revealing any effects for the other emotions.
+- **Setup**:
+  - Same 500-row dataset from Iteration 5.
+  - Updated config to include `intensities: [0.5, 1.0, 1.5, 2.0, 2.5]`.
+  - Command: `source /usr/local/anaconda3/etc/profile.d/conda.sh && conda activate llm_fresh && python -m emotion_experiment_engine.emotion_experiment_series_runner --config auto_experiments/diplomacy_emotion_effects/configs/light_sampling.yaml`
+- **Results** (`results.bk/.../Qwen2.5-3B-Instruct_diplomacy_pd_v1b_20251117_104402`):
+  - Neutral mean remains 1.286 (σ≈0.45).
+  - Anger now drops to 1.137 at intensity 2.5 (≈15 percentage points more withdrawals vs neutral). Score variance also shrinks (σ≈0.34), indicating more deterministic withdraw picks.
+  - Fear continues the same trend, reaching 1.128 at 2.5 (closest to pure withdraw).
+  - Disgust climbs to 1.478 at 2.5 (≈18 points more escalations).
+  - Happiness gradually nudges aggressive (1.382 at 2.5); sadness trends slightly calmer (1.234). Surprise stays near neutral (≈1.26).
+- **Interpretation**: Adding intensity 2.5 reinforces the existing split: anger and fear push harder toward de-escalation, disgust leads escalation, while happiness/sadness/surprise hover near neutral with small shifts (<0.1). Anger’s “calming” effect persists even at high intensity, so any “anger drives aggression” expectation fails here—likely because the RepE direction or prompt framing emphasizes caution; need to inspect activation vectors or invert sign if we want anger to drive escalation.
