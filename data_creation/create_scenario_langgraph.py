@@ -12,10 +12,6 @@ from tqdm import tqdm
 from tqdm.asyncio import tqdm_asyncio
 
 from constants import GameNames
-from data_creation.scenario_creation.langgraph_creation.scenario_creation_graph import (
-    a_create_scenario,
-    build_scenario_creation_graph,
-)
 
 # Configure logging
 logging.basicConfig(
@@ -87,6 +83,13 @@ class ScenarioCreationConfig:
         self.verification_nodes = kwargs.get(
             "verification_nodes", ["narrative", "preference_order", "pay_off"]
         )
+        # Diplomacy graph toggles
+        self.use_diplomacy_graph = kwargs.get("use_diplomacy_graph", False)
+        self.diplomacy_records_file = kwargs.get(
+            "diplomacy_records_file",
+            "/data/home/jjl7137/dipllm/data/pd_like_contests_sample.enriched.jsonl",
+        )
+        self.debug_num_records = kwargs.get("debug_num_records", 2)
 
     def to_dict(self):
         """Convert configuration to dictionary"""
@@ -166,6 +169,7 @@ async def create_scenario_with_timeout(
     timeout: int,
     max_retries: int,
     retry_delay: int,
+    raw_record: Optional[dict] = None,
 ) -> Optional[dict]:
     """
     Create scenario with timeout and retry logic.
@@ -192,15 +196,42 @@ async def create_scenario_with_timeout(
             )
 
             # Create the task with timeout
-            task = asyncio.create_task(
-                a_create_scenario(
-                    graph=graph,
-                    game_name=game_name,
-                    participants=participants,
-                    participant_jobs=participant_jobs,
-                    config=config,
+            if raw_record is None:
+                # Standard path using generic graph adapter
+                # Lazy import to avoid azure deps unless needed
+                from data_creation.scenario_creation.langgraph_creation.scenario_creation_graph import (
+                    a_create_scenario,
                 )
-            )
+                task = asyncio.create_task(
+                    a_create_scenario(
+                        graph=graph,
+                        game_name=game_name,
+                        participants=participants,
+                        participant_jobs=participant_jobs,
+                        config=config,
+                    )
+                )
+            else:
+                # Diplomacy path: call graph directly with initial state carrying raw_record
+                initial_state = {
+                    "game_name": game_name,
+                    "participants": participants,
+                    "raw_record": raw_record,
+                    "map_summary": None,
+                    "scenario_draft": None,
+                    "gradient_options": None,
+                    "narrative_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": None,
+                    "narrative_converged": False,
+                    "preference_converged": True,
+                    "payoff_converged": False,
+                    "all_converged": None,
+                    "auto_save_path": None,
+                }
+                task = asyncio.create_task(graph.ainvoke(initial_state, config))
 
             # Wait for task with timeout
             scenario = await asyncio.wait_for(task, timeout=timeout)
@@ -208,6 +239,9 @@ async def create_scenario_with_timeout(
             if scenario is None:
                 logger.warning(f"Scenario creation returned None for {persona_job}")
                 continue
+            # Diplomacy path returns state; standard path returns scenario
+            if isinstance(scenario, dict) and "final_scenario" in scenario:
+                scenario = scenario.get("final_scenario")
 
             return scenario
 
@@ -311,19 +345,34 @@ async def process_single_job(
     )
 
     try:
+        # Diplomacy mode: map rec id to raw record and call graph directly
+        raw_record = None
+        if getattr(config, "use_diplomacy_graph", False) and persona_job.startswith("rec_"):
+            try:
+                idx = int(persona_job.split("_")[1])
+            except Exception:
+                idx = 0
+            recs = json.loads(Path(".diplomacy_records_cache.json").read_text())
+            if 0 <= idx < len(recs):
+                raw_record = recs[idx]
         scenario = await create_scenario_with_timeout(
             graph=scenario_graph,
             game_name=game_name,
             participants=(
-                ["You", "Bob"]
-                if GameNames.from_string(game_name).is_symmetric()
-                else ["Alice", "Bob"]
+                []
+                if getattr(config, "use_diplomacy_graph", False)
+                else (
+                    ["You", "Bob"]
+                    if GameNames.from_string(game_name).is_symmetric()
+                    else ["Alice", "Bob"]
+                )
             ),
             participant_jobs=[persona_job, persona_job],
             config=graph_config,
             timeout=config.task_timeout,
             max_retries=config.max_retries,
             retry_delay=config.retry_delay,
+            raw_record=raw_record,
         )
         success = await save_scenario_and_history(
             scenario=scenario,
@@ -493,9 +542,8 @@ Examples:
     # Verification parameters
     parser.add_argument(
         "--verification-nodes",
-        nargs="+",
+        nargs="*",
         default=["narrative", "preference_order", "pay_off"],
-        choices=["narrative", "preference_order", "pay_off"],
         help="Which verification nodes to use in the graph.",
     )
 
@@ -528,6 +576,37 @@ Examples:
         action="store_true",
         help="Automatically run a debug batch before the full run. If debug succeeds, proceed to full run.",
     )
+    # Diplomacy LangGraph (API) mode
+    parser.add_argument(
+        "--use-diplomacy-graph",
+        action="store_true",
+        help="Use Diplomacy-specific LangGraph (reads enriched JSONL; no Azure if --azure-mode false).",
+    )
+    parser.add_argument(
+        "--diplomacy-records-file",
+        type=str,
+        default="/data/home/jjl7137/dipllm/data/pd_like_contests_sample.enriched.jsonl",
+        help="Path to enriched Diplomacy JSONL.",
+    )
+    parser.add_argument(
+        "--debug-num-records",
+        type=int,
+        default=2,
+        help="Number of Diplomacy records to process in debug mode.",
+    )
+    # Diplomacy map-to-scenario mode (bypass LLM graph)
+    parser.add_argument(
+        "--diplomacy-map-file",
+        type=str,
+        default=None,
+        help="JSON/JSONL file of Diplomacy map states to convert into scenarios.",
+    )
+    parser.add_argument(
+        "--diplomacy-output",
+        type=str,
+        default="data/diplomacy/diplomacy_pd_from_maps.jsonl",
+        help="Output JSONL path for generated Diplomacy scenarios.",
+    )
 
     return parser.parse_args()
 
@@ -541,7 +620,11 @@ def setup_configuration(
     if auto_debug_mode:
         # Use a separate output dir for debug
         debug_output_dir = (output_dir or args.output_dir) + "_debug"
-        return ScenarioCreationConfig(
+        # Map verification nodes (allow 'none' to indicate empty)
+        vnodes = args.verification_nodes
+        if vnodes == ["none"]:
+            vnodes = []
+        cfg_kwargs = dict(
             persona_jobs_file=args.persona_jobs_file,
             game_name=args.game_name,
             num_personas=debug_num_personas,
@@ -561,10 +644,18 @@ def setup_configuration(
             output_dir=debug_output_dir,
             resume=False,
             verbose=args.verbose,
-            verification_nodes=args.verification_nodes,
+            verification_nodes=vnodes,
+            use_diplomacy_graph=args.use_diplomacy_graph,
+            diplomacy_records_file=args.diplomacy_records_file,
+            debug_num_records=args.debug_num_records,
         )
+        return ScenarioCreationConfig(**cfg_kwargs)
     else:
-        return ScenarioCreationConfig(
+        # Map verification nodes (allow 'none' to indicate empty)
+        vnodes = args.verification_nodes
+        if vnodes == ["none"]:
+            vnodes = []
+        cfg_kwargs = dict(
             persona_jobs_file=args.persona_jobs_file,
             game_name=args.game_name,
             num_personas=args.num_personas,
@@ -584,8 +675,12 @@ def setup_configuration(
             output_dir=args.output_dir,
             resume=args.resume,
             verbose=args.verbose,
-            verification_nodes=args.verification_nodes,
+            verification_nodes=vnodes,
+            use_diplomacy_graph=args.use_diplomacy_graph,
+            diplomacy_records_file=args.diplomacy_records_file,
+            debug_num_records=args.debug_num_records,
         )
+        return ScenarioCreationConfig(**cfg_kwargs)
 
 
 def configure_logging(config: ScenarioCreationConfig):
@@ -604,16 +699,29 @@ def configure_logging(config: ScenarioCreationConfig):
 def load_persona_jobs(config: ScenarioCreationConfig) -> List[str]:
     """Load persona jobs from file"""
     try:
-        with open(config.persona_jobs_file, "r") as f:
-            all_persona_jobs = [json.loads(line)["item"] for line in f]
-            if config.num_personas > 0:
-                return all_persona_jobs[: config.num_personas]
-            else:
-                return all_persona_jobs
+        if getattr(config, "use_diplomacy_graph", False):
+            # Load enriched Diplomacy JSONL and return synthetic job ids
+            recs: List[dict] = []
+            with open(config.diplomacy_records_file, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    recs.append(json.loads(line))
+            # Stash to a temp file for retrieval in process_single_job
+            tmp_path = Path(".diplomacy_records_cache.json")
+            tmp_path.write_text(json.dumps(recs))
+            n = config.debug_num_records if config.debug_mode else len(recs)
+            return [f"rec_{i}" for i in range(min(n, len(recs)))]
+        else:
+            with open(config.persona_jobs_file, "r") as f:
+                all_persona_jobs = [json.loads(line)["item"] for line in f]
+                if config.num_personas > 0:
+                    return all_persona_jobs[: config.num_personas]
+                else:
+                    return all_persona_jobs
     except Exception as e:
-        logger.error(
-            f"Failed to load persona jobs from {config.persona_jobs_file}: {e}"
-        )
+        logger.error(f"Failed to load inputs: {e}")
         raise
 
 
@@ -658,6 +766,22 @@ def build_scenario_graph(config: ScenarioCreationConfig):
         logger.info("Config arguments before building scenario graph:")
         for key, value in config.to_dict().items():
             logger.info(f"  {key}: {value}")
+        # Lazy import selected graph to avoid azure deps unless actually needed
+        if getattr(config, "use_diplomacy_graph", False):
+            from data_creation.scenario_creation.langgraph_creation.diplomacy_scenario_creation_graph import (  # noqa: E501
+                build_scenario_creation_graph,
+            )
+        else:
+            from data_creation.scenario_creation.langgraph_creation.scenario_creation_graph import (  # noqa: E501
+                build_scenario_creation_graph,
+            )
+        # Adjust verification nodes only if not explicitly provided
+        vnodes = config.verification_nodes
+        if getattr(config, "use_diplomacy_graph", False):
+            if vnodes is None:
+                vnodes = ["narrative", "pay_off"]
+            else:
+                vnodes = [v for v in vnodes if v in ("narrative", "pay_off")]
         scenario_graph = build_scenario_creation_graph(
             debug_mode=config.debug_mode,
             llm_config={
@@ -668,7 +792,7 @@ def build_scenario_graph(config: ScenarioCreationConfig):
                 "azure_mode": config.azure_mode,
                 "max_iterations": config.max_iterations,
             },
-            verification_nodes=config.verification_nodes,
+            verification_nodes=vnodes,
         )
         logger.info("Graph built and compiled successfully.")
         return scenario_graph
@@ -846,6 +970,39 @@ async def main():
     Main function with restart capability and robust error handling.
     """
     args = parse_arguments()
+    # New mode: Diplomacy map-state → scenarios (no LLM)
+    if getattr(args, "diplomacy_map_file", None):
+        try:
+            out_path = Path(args.diplomacy_output)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            # Load map items
+            maps: List[dict]
+            mp = Path(args.diplomacy_map_file)
+            if mp.suffix == ".jsonl":
+                maps = [json.loads(line) for line in mp.read_text().splitlines() if line.strip()]
+            else:
+                maps = json.loads(mp.read_text())
+                if isinstance(maps, dict):
+                    maps = [maps]
+            # Import generator without touching azure/LLM deps
+            import runpy
+            mod = runpy.run_path("data_creation/scenario_creation/langgraph_creation/scenario_creation_graph_diplomacy.py")
+            generate_scenario_from_map = mod["generate_scenario_from_map"]
+            # Generate and write JSONL
+            with open(out_path, "w", encoding="utf-8") as f:
+                ok = 0
+                for m in maps:
+                    try:
+                        item = generate_scenario_from_map(m)
+                        f.write(json.dumps(item, ensure_ascii=False) + "\n")
+                        ok += 1
+                    except Exception as e:
+                        logger.error(f"Failed to generate for map id={m.get('id','?')}: {e}")
+            logger.info(f"Diplomacy map generation finished: {ok}/{len(maps)} items -> {out_path}")
+        except Exception as e:
+            logger.error(f"Diplomacy map generation failed: {e}")
+            raise
+        return
     if getattr(args, "auto_debug", False):
         # 1. Run debug batch
         debug_config = setup_configuration(
