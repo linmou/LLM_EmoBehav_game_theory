@@ -15,3 +15,4 @@
 
 ## Iteration Log
 - Iter 1 (2025-11-25): Implemented PD prompt builder with randomized A/B ordering and assistant label flips; added unit tests for label consistency. Next: dataset loader, RepReader training/validation harness, and behavioral evaluation scripts.
+- Iter 2 (2025-11-25): Added PD data loader/splitter and RepReader-ready dataset builder; unit tests cover deterministic splits and label ordering. Next: implement extraction/validation harness and behavioral benchmark runner.
