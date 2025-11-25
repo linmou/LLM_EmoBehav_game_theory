@@ -20,13 +20,15 @@ from auto_experiments.task_similarity.pd_data import (
     build_pd_pair_bundle,
     build_repreader_dataset,
 )
-from auto_experiments.task_similarity.pd_prompt_builder import PromptPair
+from auto_experiments.task_similarity.pd_prompt_builder import (
+    PromptPair,
+    build_inference_prompt,
+)
 from auto_experiments.task_similarity.pd_vector_extractor import (
     compute_vectors_and_accuracy,
     select_best_layer,
 )
-from delta_activation_engine.backends.hf import select_middle_third_layers
-from neuro_manipulation.repe.rep_control_reading_vec import WrappedReadingVecModel
+import torch.nn as nn
 
 
 def _collect_hidden(
@@ -54,9 +56,12 @@ def _collect_hidden(
         with torch.no_grad():
             outputs = model(**enc, output_hidden_states=True)
         hidden_states = outputs.hidden_states  # len = num_layers + 1
+        mask = enc["attention_mask"].unsqueeze(-1)
+        mask_sum = mask.sum(dim=1).clamp(min=1)
         for layer in layers:
-            layer_hidden = hidden_states[layer + 1][:, -1, :].detach().cpu().float()
-            out[layer].append(layer_hidden)
+            hs = hidden_states[layer + 1]
+            masked_mean = (hs * mask).sum(dim=1) / mask_sum
+            out[layer].append(masked_mean.detach().cpu().float())
     return {k: torch.cat(v, dim=0).numpy() for k, v in out.items()}
 
 
@@ -77,7 +82,9 @@ def _decision_rate(
 ) -> float:
     device = next(model.parameters()).device
     model.eval()
-    prompts = [p.positive for p in pairs]  # use defection-labeled prompt
+    prompts = [
+        build_inference_prompt(p.meta.description, p.meta.opt_a, p.meta.opt_b) for p in pairs
+    ]
     labels = [p.meta.defect_label for p in pairs]
     wins = 0
     total = 0
@@ -109,23 +116,21 @@ def _decision_rate(
     return wins / total if total else 0.0
 
 
-def _set_controller(
-    wrapped: WrappedReadingVecModel,
-    layer_id: int,
-    vec: np.ndarray,
-    intensity: float,
-) -> None:
-    device = next(wrapped.parameters()).device
-    activations = {layer_id: torch.tensor(vec * intensity, device=device, dtype=torch.float16)}
-    wrapped.set_controller(
-        [layer_id],
-        activations,
-        block_name="decoder_block",
-        token_pos=None,
-        masks=None,
-        normalize=False,
-        operator="linear_comb",
-    )
+def _register_control_hook(
+    layer: nn.Module, vec: np.ndarray, intensity: float
+):
+    vec_t = torch.tensor(vec * intensity, device=next(layer.parameters()).device)
+
+    def hook(module, inputs, output):
+        if isinstance(output, tuple):
+            hidden = output[0]
+            ctrl = vec_t.to(hidden.dtype).view(1, 1, -1)
+            hidden = hidden + ctrl
+            return (hidden,) + output[1:]
+        ctrl = vec_t.to(output.dtype).view(1, 1, -1)
+        return output + ctrl
+
+    return layer.register_forward_hook(hook)
 
 
 def run(
@@ -164,7 +169,7 @@ def run(
     num_layers = getattr(model.config, "num_hidden_layers", None)
     if num_layers is None:
         raise ValueError("Model config missing num_hidden_layers")
-    control_layers = select_middle_third_layers(num_layers)
+    control_layers = list(range(num_layers))
 
     train_hidden = _collect_hidden(model, tokenizer, train_ds["data"], control_layers, batch_size, max_length)
     test_hidden = _collect_hidden(model, tokenizer, test_ds["data"], control_layers, batch_size, max_length)
@@ -174,12 +179,18 @@ def run(
 
     label_to_token = {"A": _token_id(tokenizer, "A"), "B": _token_id(tokenizer, "B")}
 
-    wrapped = WrappedReadingVecModel(model, tokenizer)
-    wrapped.wrap_block([best_layer], "decoder_block")
+    # Locate layer module (assumes Qwen-style .model.layers)
+    try:
+        target_layer = model.model.layers[best_layer]
+    except Exception as exc:
+        raise RuntimeError(f"Cannot locate layer {best_layer} on model") from exc
 
-    base_rate = _decision_rate(wrapped, tokenizer, test_pairs, label_to_token, batch_size, max_length)
-    _set_controller(wrapped, best_layer, best.vector, intensity)
-    steered_rate = _decision_rate(wrapped, tokenizer, test_pairs, label_to_token, batch_size, max_length)
+    base_rate = _decision_rate(model, tokenizer, test_pairs, label_to_token, batch_size, max_length)
+    handle = _register_control_hook(target_layer, best.vector, intensity)
+    try:
+        steered_rate = _decision_rate(model, tokenizer, test_pairs, label_to_token, batch_size, max_length)
+    finally:
+        handle.remove()
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_dir = output_dir / f"{Path(model_path).name}_{timestamp}"

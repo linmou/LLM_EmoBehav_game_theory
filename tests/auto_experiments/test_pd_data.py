@@ -4,12 +4,19 @@ Purpose: validate PD data loading/splitting and label construction."""
 from pathlib import Path
 
 from auto_experiments.task_similarity import pd_data
-from auto_experiments.task_similarity.pd_prompt_builder import PromptPair
+from auto_experiments.task_similarity.pd_prompt_builder import PromptPair, PairMeta
 
 
 class DummyPair(PromptPair):
     def __init__(self, idx: int):
-        super().__init__(positive=f"pos{idx}", negative=f"neg{idx}", meta=None)  # type: ignore[arg-type]
+        meta = PairMeta(
+            opt_a=f"a{idx}",
+            opt_b=f"b{idx}",
+            defect_label="A",
+            cooperate_label="B",
+            description=f"desc{idx}",
+        )
+        super().__init__(positive=f"pos{idx}", negative=f"neg{idx}", meta=meta)
 
 
 def test_split_pairs_reproducible():
