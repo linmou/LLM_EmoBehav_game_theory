@@ -141,6 +141,7 @@ def run(
     seed: int = 0,
     intensity: float = 1.0,
     max_pairs: int | None = None,
+    middle_third_only: bool = False,
 ) -> Dict:
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -169,7 +170,12 @@ def run(
     num_layers = getattr(model.config, "num_hidden_layers", None)
     if num_layers is None:
         raise ValueError("Model config missing num_hidden_layers")
-    control_layers = list(range(num_layers))
+    if middle_third_only:
+        start = num_layers // 3
+        end = (2 * num_layers) // 3
+        control_layers = list(range(start, end))
+    else:
+        control_layers = list(range(num_layers))
 
     train_hidden = _collect_hidden(model, tokenizer, train_ds["data"], control_layers, batch_size, max_length)
     test_hidden = _collect_hidden(model, tokenizer, test_ds["data"], control_layers, batch_size, max_length)
@@ -179,18 +185,25 @@ def run(
 
     label_to_token = {"A": _token_id(tokenizer, "A"), "B": _token_id(tokenizer, "B")}
 
-    # Locate layer module (assumes Qwen-style .model.layers)
-    try:
-        target_layer = model.model.layers[best_layer]
-    except Exception as exc:
-        raise RuntimeError(f"Cannot locate layer {best_layer} on model") from exc
+    def _apply_hooks():
+        handles = []
+        if middle_third_only:
+            for layer_id in control_layers:
+                vec = layer_results[layer_id].vector
+                target_layer = model.model.layers[layer_id]
+                handles.append(_register_control_hook(target_layer, vec, intensity))
+        else:
+            target_layer = model.model.layers[best_layer]
+            handles.append(_register_control_hook(target_layer, best.vector, intensity))
+        return handles
 
     base_rate = _decision_rate(model, tokenizer, test_pairs, label_to_token, batch_size, max_length)
-    handle = _register_control_hook(target_layer, best.vector, intensity)
+    handles = _apply_hooks()
     try:
         steered_rate = _decision_rate(model, tokenizer, test_pairs, label_to_token, batch_size, max_length)
     finally:
-        handle.remove()
+        for h in handles:
+            h.remove()
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_dir = output_dir / f"{Path(model_path).name}_{timestamp}"
@@ -208,6 +221,7 @@ def run(
         "base_defect_rate": base_rate,
         "steered_defect_rate": steered_rate,
         "intensity": intensity,
+        "middle_third_only": middle_third_only,
     }
     with open(run_dir / "result.json", "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)
@@ -224,6 +238,7 @@ def main():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--intensity", type=float, default=1.0)
     parser.add_argument("--max_pairs", type=int, default=None)
+    parser.add_argument("--middle_third_only", action="store_true")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -235,6 +250,7 @@ def main():
         seed=args.seed,
         intensity=args.intensity,
         max_pairs=args.max_pairs,
+        middle_third_only=args.middle_third_only,
     )
     print(json.dumps(result, indent=2))
 
