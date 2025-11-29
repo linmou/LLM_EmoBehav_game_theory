@@ -10,59 +10,16 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 import numpy as np
 import torch
+import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from auto_experiments.task_similarity.pd_data import (
-    build_pd_pair_bundle,
-    build_repreader_dataset,
-)
-from auto_experiments.task_similarity.pd_prompt_builder import (
-    PromptPair,
-    build_inference_prompt,
-)
-from auto_experiments.task_similarity.pd_vector_extractor import (
-    compute_vectors_and_accuracy,
-    select_best_layer,
-)
-import torch.nn as nn
-
-
-def _collect_hidden(
-    model,
-    tokenizer,
-    prompts: Sequence[str],
-    layers: Sequence[int],
-    batch_size: int = 8,
-    max_length: int = 256,
-) -> Dict[int, np.ndarray]:
-    device = next(model.parameters()).device
-    model.eval()
-    out: Dict[int, List[np.ndarray]] = {l: [] for l in layers}
-    for start in range(0, len(prompts), batch_size):
-        batch_prompts = prompts[start : start + batch_size]
-        enc = tokenizer(
-            list(batch_prompts),
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=max_length,
-            add_special_tokens=False,
-        )
-        enc = {k: v.to(device) for k, v in enc.items()}
-        with torch.no_grad():
-            outputs = model(**enc, output_hidden_states=True)
-        hidden_states = outputs.hidden_states  # len = num_layers + 1
-        mask = enc["attention_mask"].unsqueeze(-1)
-        mask_sum = mask.sum(dim=1).clamp(min=1)
-        for layer in layers:
-            hs = hidden_states[layer + 1]
-            masked_mean = (hs * mask).sum(dim=1) / mask_sum
-            out[layer].append(masked_mean.detach().cpu().float())
-    return {k: torch.cat(v, dim=0).numpy() for k, v in out.items()}
+from .pd_data import build_pd_pair_bundle, build_repreader_dataset
+from .pd_prompt_builder import PromptPair, build_inference_prompt
+from .pd_hidden_extractor import collect_answer_means
 
 
 def _token_id(tokenizer, token_str: str) -> int:
@@ -107,11 +64,10 @@ def _decision_rate(
         b_scores = last_logits[:, label_to_token["B"]]
         for idx, label in enumerate(batch_labels):
             defect_token = label_to_token[label]
-            other_token = label_to_token["A" if label == "B" else "B"]
-            if (defect_token == label_to_token["A"] and a_scores[idx] > b_scores[idx]) or (
-                defect_token == label_to_token["B"] and b_scores[idx] > a_scores[idx]
-            ):
-                wins += 1
+            if defect_token == label_to_token["A"]:
+                wins += float(a_scores[idx] > b_scores[idx])
+            else:
+                wins += float(b_scores[idx] > a_scores[idx])
             total += 1
     return wins / total if total else 0.0
 
@@ -133,6 +89,118 @@ def _register_control_hook(
     return layer.register_forward_hook(hook)
 
 
+def train_pd_repreader(
+    model: Any,
+    tokenizer: Any,
+    train_data: Dict[str, Any],
+    test_data: Dict[str, Any],
+    hidden_layers: Sequence[int],
+    batch_size: int,
+    max_length: int,
+) -> Tuple[Any, Dict[int, float], Dict[int, np.ndarray]]:
+    """
+    Train a PCA-based defection direction for PD using assistant-span mean
+    hidden states as the representation.
+
+    Returns:
+        rep_reader: currently unused (kept for API compatibility; set to None)
+        layer_acc: per-layer validation accuracy on test_data
+        layer_vectors: oriented direction vector per layer (1D np.ndarray)
+    """
+    # Extract assistant-span mean representations for train and test data
+    hidden_layers_list = list(hidden_layers)
+    train_hiddens = collect_answer_means(
+        model=model,
+        tokenizer=tokenizer,
+        prompts=train_data["data"],
+        layers=hidden_layers_list,
+        max_length=max_length,
+        batch_size=batch_size,
+        span="assistant",
+    )
+    test_hiddens = collect_answer_means(
+        model=model,
+        tokenizer=tokenizer,
+        prompts=test_data["data"],
+        layers=hidden_layers_list,
+        max_length=max_length,
+        batch_size=batch_size,
+        span="assistant",
+    )
+
+    # Sanity checks: number of samples must match labels length (flattened)
+    total_train_examples = len(train_data["data"])
+    total_label_slots = len(np.concatenate(train_data["labels"]))
+    assert (
+        total_train_examples == total_label_slots
+    ), f"Train data/labels mismatch: {total_train_examples} examples vs {total_label_slots} label slots"
+    for layer in hidden_layers_list:
+        assert (
+            train_hiddens[layer].shape[0] == total_train_examples
+        ), f"Train hidden count mismatch at layer {layer}"
+        assert (
+            test_hiddens[layer].shape[0] == len(test_data["data"])
+        ), f"Test hidden count mismatch at layer {layer}"
+
+    layer_acc: Dict[int, float] = {}
+    layer_vectors: Dict[int, np.ndarray] = {}
+
+    for layer in hidden_layers_list:
+        H_train = train_hiddens[layer]  # (N_train, hidden)
+        H_test = test_hiddens[layer]    # (N_test, hidden)
+
+        # We expect paired ordering: [pos0, neg0, pos1, neg1, ...]
+        assert H_train.shape[0] % 2 == 0, f"Train examples for layer {layer} not even; cannot form pairs"
+        assert H_test.shape[0] % 2 == 0, f"Test examples for layer {layer} not even; cannot form pairs"
+
+        # Build difference matrix for PCA: pos - neg per pair
+        pos_train = H_train[0::2]
+        neg_train = H_train[1::2]
+        diffs = pos_train - neg_train  # (num_pairs, hidden)
+        diffs_centered = diffs - diffs.mean(axis=0, keepdims=True)
+
+        # If we have no pairs, fall back to zero vector and zero accuracy
+        if diffs_centered.shape[0] == 0:
+            hidden_dim = H_train.shape[1]
+            layer_vectors[layer] = np.zeros(hidden_dim, dtype=np.float32)
+            layer_acc[layer] = 0.0
+            continue
+
+        # PCA via SVD on the centered differences
+        # diffs_centered: (num_pairs, hidden_dim)
+        U, S, Vt = np.linalg.svd(diffs_centered, full_matrices=False)
+        direction = Vt[0].astype(np.float32)  # principal component, shape (hidden_dim,)
+
+        # Compute test projections
+        scores = H_test @ direction  # (N_test,)
+        # Test examples must be arranged as [pos0, neg0, pos1, neg1, ...]
+        assert scores.shape[0] == len(test_data["data"])
+        pairs: List[Tuple[float, float]] = []
+        for i in range(0, len(scores), 2):
+            if i + 1 < len(scores):
+                pairs.append((scores[i], scores[i + 1]))
+
+        # Decide orientation: choose sign that maximizes correctness on held-out pairs
+        pos_scores = np.array([p[0] for p in pairs], dtype=np.float32)
+        neg_scores = np.array([p[1] for p in pairs], dtype=np.float32)
+        acc_plus = float((pos_scores > neg_scores).mean()) if len(pairs) else 0.0
+        acc_minus = float((pos_scores < neg_scores).mean()) if len(pairs) else 0.0
+
+        if acc_minus > acc_plus:
+            sign = -1.0
+            acc = acc_minus
+        else:
+            sign = 1.0
+            acc = acc_plus
+
+        layer_acc[layer] = acc
+
+        layer_vectors[layer] = direction * sign
+
+    # rep_reader is unused by downstream code; keep API stable by returning None
+    return None, layer_acc, layer_vectors
+
+
 def run(
     model_path: str,
     output_dir: Path,
@@ -142,6 +210,7 @@ def run(
     intensity: float = 1.0,
     max_pairs: int | None = None,
     middle_third_only: bool = False,
+    behavior_intensities: Sequence[float] | None = None,
 ) -> Dict:
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -176,34 +245,57 @@ def run(
         control_layers = list(range(start, end))
     else:
         control_layers = list(range(num_layers))
+    # Train RepReader-based PD defection directions and compute per-layer accuracy
+    rep_reader, layer_acc, layer_vectors = train_pd_repreader(
+        model=model,
+        tokenizer=tokenizer,
+        train_data=train_ds,
+        test_data=test_ds,
+        hidden_layers=control_layers,
+        batch_size=batch_size,
+        max_length=max_length,
+    )
 
-    train_hidden = _collect_hidden(model, tokenizer, train_ds["data"], control_layers, batch_size, max_length)
-    test_hidden = _collect_hidden(model, tokenizer, test_ds["data"], control_layers, batch_size, max_length)
-
-    layer_results = compute_vectors_and_accuracy(train_hidden, test_hidden)
-    best_layer, best = select_best_layer(layer_results)
+    # Select best layer by validation accuracy
+    best_layer = max(layer_acc.items(), key=lambda kv: kv[1])[0]
+    best_accuracy = layer_acc[best_layer]
 
     label_to_token = {"A": _token_id(tokenizer, "A"), "B": _token_id(tokenizer, "B")}
 
-    def _apply_hooks():
-        handles = []
-        if middle_third_only:
-            for layer_id in control_layers:
-                vec = layer_results[layer_id].vector
-                target_layer = model.model.layers[layer_id]
-                handles.append(_register_control_hook(target_layer, vec, intensity))
-        else:
-            target_layer = model.model.layers[best_layer]
-            handles.append(_register_control_hook(target_layer, best.vector, intensity))
-        return handles
-
     base_rate = _decision_rate(model, tokenizer, test_pairs, label_to_token, batch_size, max_length)
-    handles = _apply_hooks()
-    try:
-        steered_rate = _decision_rate(model, tokenizer, test_pairs, label_to_token, batch_size, max_length)
-    finally:
-        for h in handles:
-            h.remove()
+
+    # Save per-layer vectors and accuracies
+    vectors_dir = output_dir / "layer_vectors"
+    vectors_dir.mkdir(parents=True, exist_ok=True)
+    for layer_idx, vec in layer_vectors.items():
+        np.save(vectors_dir / f"layer_{layer_idx}.npy", vec)
+    with open(output_dir / "layer_metrics.json", "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "layer_accuracies": {int(k): float(v) for k, v in layer_acc.items()},
+                "best_layer": int(best_layer),
+                "best_accuracy": float(best_accuracy),
+            },
+            f,
+            indent=2,
+        )
+
+    # Behavior evaluation per layer
+    intensities = list(behavior_intensities or [0.5, 1.0, 1.5, 2.0])
+    per_layer_behavior: Dict[int, Dict[float, float]] = {}
+    for layer_idx, vec in layer_vectors.items():
+        layer_module = model.model.layers[layer_idx]
+        per_intensity: Dict[float, float] = {}
+        for inten in intensities:
+            handle = _register_control_hook(layer_module, vec, inten)
+            try:
+                rate = _decision_rate(
+                    model, tokenizer, test_pairs, label_to_token, batch_size, max_length
+                )
+            finally:
+                handle.remove()
+            per_intensity[float(inten)] = rate
+        per_layer_behavior[layer_idx] = per_intensity
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_dir = output_dir / f"{Path(model_path).name}_{timestamp}"
@@ -215,17 +307,19 @@ def run(
         "seed": seed,
         "max_pairs": max_pairs,
         "control_layers": control_layers,
-        "best_layer": best_layer,
-        "best_accuracy": best.accuracy,
-        "layer_accuracies": {k: v.accuracy for k, v in layer_results.items()},
+        "best_layer": int(best_layer),
+        "best_accuracy": float(best_accuracy),
+        "layer_accuracies": {int(k): float(v) for k, v in layer_acc.items()},
         "base_defect_rate": base_rate,
-        "steered_defect_rate": steered_rate,
+        "steered_defect_rate": per_layer_behavior.get(best_layer, {}).get(intensity, base_rate),
         "intensity": intensity,
         "middle_third_only": middle_third_only,
+        "behavior_defect_rates": per_layer_behavior,
+        "intensities_tested": [float(x) for x in intensities],
     }
     with open(run_dir / "result.json", "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)
-    np.save(run_dir / "best_vector.npy", best.vector)
+    np.save(run_dir / "best_vector.npy", layer_vectors[best_layer])
     return result
 
 
@@ -239,8 +333,10 @@ def main():
     parser.add_argument("--intensity", type=float, default=1.0)
     parser.add_argument("--max_pairs", type=int, default=None)
     parser.add_argument("--middle_third_only", action="store_true")
+    parser.add_argument("--behavior_intensities", type=str, default="0.5,1.0,1.5,2.0")
     args = parser.parse_args()
 
+    behavior_intensities = [float(x) for x in args.behavior_intensities.split(",") if x]
     os.makedirs(args.output_dir, exist_ok=True)
     result = run(
         model_path=args.model,
@@ -251,6 +347,7 @@ def main():
         intensity=args.intensity,
         max_pairs=args.max_pairs,
         middle_third_only=args.middle_third_only,
+        behavior_intensities=behavior_intensities,
     )
     print(json.dumps(result, indent=2))
 
