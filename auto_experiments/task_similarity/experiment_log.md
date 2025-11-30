@@ -23,6 +23,38 @@
 - Iter 7 (2025-11-29): Switched PD representation from last-token to assistant-span mean pooling using `collect_answer_means` in `pd_hidden_extractor.py`. For each prompt, we locate the `"Assistant:"` span, compute mean hidden states over the answer tokens, and train per-layer defection directions via PCA on pairwise differences (pos − neg). Ran a new experiment for Qwen2.5-0.5B with middle-third layers (8–15). Results: best layer 8 with accuracy ≈0.506; other middle-third layers hover around 0.505. Behavioral effect on PD defection rate is small: base 0.479 → steered ≈0.477 at intensity 1.0, with per-layer behavior curves stored in `behavior_defect_rates`. This suggests assistant-mean representation is stable but does not yet recover the very high accuracies (≈0.95) seen with the earlier masked-mean pooling.
 - Iter 8 (2025-11-29): Representation tweak to option-text-only mean. Updated `collect_answer_means` to support `span=\"option\"`, where we exclude the `'Assistant:'` prefix and start pooling at the option label (`\"A)\"`/`\"B)\"`). `train_pd_repreader` now uses `span_mode=\"option\"`, so vectors are trained on `mean_hidden_L` over `LABEL) ANSWER` tokens. Re-ran Qwen2.5-0.5B with middle-third layers (8–15). New results: best layer remains 8, but accuracy improves to ≈0.552 (0.5515), while other layers stay ≈0.505. Behavioral effect at intensity 1.0 is still small at best layer: base defection rate 0.479 → steered 0.479 (no change), with slightly larger shifts at higher intensities (`behavior_defect_rates` in `result.json`). Overall, option-only mean gives a modest accuracy gain on the best layer but does not yet unlock a strong behavioral effect in PD for 0.5B.
 
+- Iter 9 (PLANNED, behavior stage): Test how the PD defection direction (trained on Prisoner's Dilemma) transfers to the **same Prisoner's Dilemma benchmark** in the `game_theory` framework. The key constraint is to avoid other games (no Trust Game etc.). We will implement `run_pd_defection_pd_behavior.py` under `auto_experiments/task_similarity`, which:
+  1. Loads a benchmark config that includes only `game_theory` / `Prisoners_Dilemma` (e.g., a PD-specific YAML under `auto_experiments/task_similarity/config/pd_behavior_game_theory.yaml`).
+  2. Uses `emotion_experiment_engine.benchmark_component_registry.BenchmarkComponentRegistry` to fetch the `game_theory` / `Prisoners_Dilemma` components (dataset, prompt wrapper, answer wrapper) and builds a `GameTheoryDataset` for Prisoner's Dilemma via `create_dataset_from_config`.
+  3. Loads a PD activation spec JSON (e.g., `auto_experiments/task_similarity/config/pd_defection_iter8_qwen2.5_0.5B.json`) that encodes:
+     - `pd_result_dir`: path to a PD training run directory (e.g., `.../Qwen2.5-0.5B-Instruct_20251129_211403`)
+     - `layer`: which layer to steer at (e.g., `8`)
+     - `vector_path`: path to the vector (e.g., `best_vector.npy` or `layer_vectors/layer_8.npy`)
+     - `span_mode`: representation used during training (`"option"` vs `"assistant"`), stored for bookkeeping so we know which training pipeline produced the vector.
+  4. Runs the Prisoner's Dilemma benchmark twice:
+     - Baseline (no hook): compute defection ratio by letting the `game_theory` answer wrapper decode the model’s choice into “Cooperate” vs “Defect” (reusing the same semantics as existing game-theory evaluation tests).
+     - Steered: for each intensity in a configurable list (e.g., `0.5, 1.0, 1.5, 2.0`), register a forward hook (reusing `_register_control_hook` from `run_pd_defection_experiment.py`) at the specified `layer` with the PD vector scaled by intensity; re-run the dataset and compute defection ratio.
+  5. Saves a behavior summary JSON under `auto_experiments/task_similarity/results/pd_behavior/`, storing:
+     - `model_path`, `benchmark_config`, `activation_spec`
+     - `pd_best_layer`, `pd_best_accuracy`
+     - `defect_ratio` per intensity (including `0.0` for baseline)
+     - `n_items` and metadata (`benchmark_name="game_theory"`, `task_type="Prisoners_Dilemma"`).
+
+  Hypothesis B1 (Prisoner's Dilemma behavior): For the Qwen2.5-0.5B PD vector from Iter 8 (option-span mean, best layer=8), steering on the `game_theory` / `Prisoners_Dilemma` benchmark will **increase** the defection ratio at moderate intensities (e.g., 1.0–1.5) compared to baseline, while not exploding behavior at high intensities. If the observed defection ratio remains flat across intensities, we will revise the hypothesis to “PD defection directions trained from prompt pairs are mostly local to the PD training framing and do not generalize strongly even to the benchmark PD variant”, and then design Iter 10 to try alternative layers/vectors or stronger interventions.
+
+  Planned reproduction command once `run_pd_defection_pd_behavior.py` is implemented:
+
+  ```bash
+  python -m auto_experiments.task_similarity.run_pd_defection_pd_behavior \
+    --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+    --benchmark_config auto_experiments/task_similarity/config/pd_behavior_game_theory.yaml \
+    --activation_spec auto_experiments/task_similarity/config/pd_defection_iter8_qwen2.5_0.5B.json \
+    --intensities 0.0,0.5,1.0,1.5,2.0 \
+    --output_dir auto_experiments/task_similarity/results/pd_behavior
+  ```
+
+  This iteration is **planning-only**; code and actual behavior metrics will be added in subsequent iterations (Iter 10+), each with its own commit and concrete results.
+
 ## Current Reproduction Commands
 
 The legacy runs in `auto_experiments/task_similarity/results` (2025-11-25) were produced roughly with:
