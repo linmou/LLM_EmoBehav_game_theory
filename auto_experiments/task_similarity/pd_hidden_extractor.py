@@ -51,23 +51,36 @@ def collect_answer_means(
                 These correspond to model hidden_states[layer+1].
         max_length: max_length used for tokenization/truncation.
         batch_size: how many prompts to process per model forward.
-        span: currently only 'assistant' is supported. Other values raise.
+        span: 'assistant' for mean over \"Assistant: LABEL) ANSWER\",
+              'option' for mean over \"LABEL) ANSWER\" (excluding the 'Assistant:' prefix).
 
     Returns:
         Dict[layer_idx, np.ndarray] with shape (num_prompts, hidden_dim)
         for each requested layer.
     """
-    if span != "assistant":
+    if span not in ("assistant", "option"):
         raise ValueError(f"Unsupported span mode: {span}")
 
     if not prompts:
         return {int(layer): np.zeros((0, 0), dtype=np.float32) for layer in layers}
 
-    # Compute prefix lengths (in tokens) up to the assistant span start
+    # Compute prefix lengths (in tokens) up to the chosen span start
     prefix_lens: List[int] = []
     for prompt in prompts:
         start_char = _find_assistant_start(prompt)
-        prefix_text = prompt[:start_char]
+        if span == "assistant":
+            # Everything before 'Assistant:' is prefix; span starts at 'Assistant:'
+            prefix_text = prompt[:start_char]
+        else:
+            # span == "option": skip 'Assistant: ' and start span at the option label
+            assistant_prefix = "Assistant:"
+            option_start = start_char + len(assistant_prefix)
+            # There should be a space after 'Assistant:' before the label, but we
+            # tolerate missing space as long as we do not go past the string end.
+            if option_start < len(prompt) and prompt[option_start] == " ":
+                option_start += 1
+            assert option_start <= len(prompt), "Computed option span start beyond prompt length"
+            prefix_text = prompt[:option_start]
         enc_prefix = tokenizer(
             prefix_text,
             add_special_tokens=False,

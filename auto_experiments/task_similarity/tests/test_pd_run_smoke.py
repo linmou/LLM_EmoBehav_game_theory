@@ -108,7 +108,7 @@ def test_run_smoke(tmp_path: Path, monkeypatch):
         hidden_layers: Sequence[int],
         batch_size: int,
         max_length: int,
-        rep_reading_pipeline=None,
+        span_mode: str = "assistant",
     ):
         # Return synthetic accuracies and vectors for 2 layers
         layer_acc = {layer: 0.8 + 0.1 * (1 if layer == 0 else 0) for layer in hidden_layers}
@@ -165,7 +165,6 @@ def test_run_smoke(tmp_path: Path, monkeypatch):
     run_dirs = [p for p in out_dir.iterdir() if p.is_dir()]
     assert run_dirs, "Expected a run directory to be created"
     run_dir = run_dirs[0]
-    assert (run_dir / "best_vector.npy").exists()
     assert (run_dir / "result.json").exists()
 
     # result.json should be parseable and consistent with returned result

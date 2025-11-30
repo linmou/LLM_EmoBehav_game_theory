@@ -97,6 +97,7 @@ def train_pd_repreader(
     hidden_layers: Sequence[int],
     batch_size: int,
     max_length: int,
+    span_mode: str = "assistant",
 ) -> Tuple[Any, Dict[int, float], Dict[int, np.ndarray]]:
     """
     Train a PCA-based defection direction for PD using assistant-span mean
@@ -107,7 +108,7 @@ def train_pd_repreader(
         layer_acc: per-layer validation accuracy on test_data
         layer_vectors: oriented direction vector per layer (1D np.ndarray)
     """
-    # Extract assistant-span mean representations for train and test data
+    # Extract span-mean representations for train and test data
     hidden_layers_list = list(hidden_layers)
     train_hiddens = collect_answer_means(
         model=model,
@@ -116,7 +117,7 @@ def train_pd_repreader(
         layers=hidden_layers_list,
         max_length=max_length,
         batch_size=batch_size,
-        span="assistant",
+        span=span_mode,
     )
     test_hiddens = collect_answer_means(
         model=model,
@@ -125,7 +126,7 @@ def train_pd_repreader(
         layers=hidden_layers_list,
         max_length=max_length,
         batch_size=batch_size,
-        span="assistant",
+        span=span_mode,
     )
 
     # Sanity checks: number of samples must match labels length (flattened)
@@ -254,6 +255,7 @@ def run(
         hidden_layers=control_layers,
         batch_size=batch_size,
         max_length=max_length,
+        span_mode="option",
     )
 
     # Select best layer by validation accuracy
