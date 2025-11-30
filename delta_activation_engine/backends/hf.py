@@ -24,11 +24,11 @@ def select_middle_third_layers(total_layers: int) -> List[int]:
 class HFBackend(BaseBackend):
     def __init__(self, cfg):
         # Deferred imports to limit GPU dependencies at import time
-        from neuro_manipulation.utils import setup_model_and_tokenizer, load_tokenizer_only
+        from neuro_manipulation.model_utils import setup_model_and_tokenizer, load_emotion_readers
         from neuro_manipulation.configs.experiment_config import get_repe_eng_config
-        from neuro_manipulation.repe.wrapped_model import WrappedReadingVecModel
+        from neuro_manipulation.repe.rep_control_reading_vec import WrappedReadingVecModel
         from neuro_manipulation.model_layer_detector import ModelLayerDetector
-        from neuro_manipulation.model_utils import load_emotion_readers
+        from neuro_manipulation.repe.pipelines import repe_pipeline_registry
 
         self.cfg = cfg
         self.model, self.tokenizer, self.prompt_format, _ = setup_model_and_tokenizer(
@@ -46,6 +46,7 @@ class HFBackend(BaseBackend):
         num_layers = ModelLayerDetector.num_layers(self.model)
         self.control_layers = select_middle_third_layers(num_layers)
 
+        repe_pipeline_registry()
         # RepE config and readers
         self.repe_cfg = get_repe_eng_config(cfg.model_path, yaml_config=cfg.repe_eng_config)
         self.readers = load_emotion_readers(
@@ -76,20 +77,51 @@ class HFBackend(BaseBackend):
         return vecs.mean(dim=0).detach().cpu().numpy().astype(np.float32)
 
     def _forward_last_hidden_avg_steered(self, texts: List[str], emotion: str, intensity: float) -> np.ndarray:
-        import numpy as np
-        # Build direction as operator='linear_comb' across control layers
+        import torch
+
         readers = self.readers.get(emotion)
         if readers is None:
             raise ValueError(f"No rep readers for emotion '{emotion}'")
 
-        # Minimal linear-comb: layer-wise vectors scaled by intensity
-        steered = self.wrapped.forward_with_control(
-            texts=texts,
-            readers=readers,
-            operator="linear_comb",
-            intensity=float(intensity),
+        activations = {}
+        for layer in self.control_layers:
+            if hasattr(readers, "directions") and layer in readers.directions:
+                vec = readers.directions[layer][0]
+                activations[layer] = torch.tensor(vec, device=self.model.device, dtype=self.model.dtype) * float(
+                    intensity
+                )
+
+        if not activations:
+            raise ValueError(f"No activation directions found for emotion '{emotion}' on control layers")
+
+        # Wrap decoder blocks and set controllers
+        self.wrapped.reset()
+        self.wrapped.unwrap()
+        self.wrapped.wrap_block(self.control_layers, block_name="decoder_block")
+        mask = torch.tensor(1.0, device=self.model.device, dtype=self.model.dtype)
+        self.wrapped.set_controller(
+            self.control_layers,
+            activations,
+            block_name="decoder_block",
+            token_pos=None,
+            masks=mask,
+            normalize=False,
         )
-        return steered
+
+        enc = self.tokenizer(
+            texts,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=self.max_length,
+        )
+        enc = {k: v.to(self.model.device) for k, v in enc.items()}
+        with torch.no_grad():
+            out = self.wrapped(**enc, output_hidden_states=True)
+        hs = out.hidden_states[-1]
+        vecs = hs[:, -1, :]
+        self.wrapped.reset()
+        return vecs.mean(dim=0).detach().cpu().numpy().astype(np.float32)
 
     def get_repr(
         self,
