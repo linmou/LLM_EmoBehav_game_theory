@@ -1,0 +1,22 @@
+name: "game_theory"
+task_type: "Prisoners_Dilemma"
+
+sample_limit: null
+augmentation_config: null
+
+enable_auto_truncation: false
+truncation_strategy: "right"
+preserve_ratio: 1.0
+llm_eval_config: null
+base_data_dir: null
+data_path: null
+
+generation_config:
+  max_new_tokens: 256
+  temperature: 0.0
+  top_p: 1.0
+  do_sample: false
+  repetition_penalty: 1.0
+
+batch_size: 100
+

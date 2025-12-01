@@ -161,13 +161,26 @@ def test_run_smoke(tmp_path: Path, monkeypatch):
     assert result["layer_accuracies"][0] >= result["layer_accuracies"][1]
 
     # Check that run directory and best_vector.npy exist
-    # There should be exactly one run directory under out_dir
-    run_dirs = [p for p in out_dir.iterdir() if p.is_dir()]
-    assert run_dirs, "Expected a run directory to be created"
-    run_dir = run_dirs[0]
+    run_dir = None
+    for p in out_dir.iterdir():
+        if p.is_dir() and p.name.startswith("dummy-model_"):
+            run_dir = p
+            break
+    assert run_dir is not None, "Expected a run directory for dummy-model to be created"
     assert (run_dir / "result.json").exists()
+    assert (run_dir / "best_vector.npy").exists()
 
     # result.json should be parseable and consistent with returned result
     on_disk = json.loads((run_dir / "result.json").read_text())
     assert on_disk["best_layer"] == result["best_layer"]
     assert abs(on_disk["best_accuracy"] - result["best_accuracy"]) < 1e-6
+
+    # Layer vectors should be saved under a per-model subdirectory
+    layer_root = out_dir / "layer_vectors"
+    assert layer_root.is_dir()
+    model_dir = layer_root / "dummy-model"
+    assert model_dir.is_dir()
+    # Two layers in hidden_layers for the smoke test
+    for layer_idx in (0, 1):
+        path = model_dir / f"layer_{layer_idx}.npy"
+        assert path.exists(), f"Missing vector file: {path}"

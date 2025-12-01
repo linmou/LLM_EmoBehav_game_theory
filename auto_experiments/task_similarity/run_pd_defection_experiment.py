@@ -1,11 +1,13 @@
 """
 Responsible: auto_experiments/task-similarity/run_pd_defection_experiment.py
-Purpose: Train defection activation vectors on PD data, validate per layer, and evaluate behavior shift.
+Purpose: Train contrastive defection activation vectors on Prisoner's Dilemma
+         data, validate per layer, and evaluate behavior shift.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from datetime import datetime
@@ -16,10 +18,15 @@ import numpy as np
 import torch
 import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from tqdm.auto import tqdm
 
 from .pd_data import build_pd_pair_bundle, build_repreader_dataset
 from .pd_prompt_builder import PromptPair, build_inference_prompt
 from .pd_hidden_extractor import collect_answer_means
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _token_id(tokenizer, token_str: str) -> int:
@@ -146,7 +153,11 @@ def train_pd_repreader(
     layer_acc: Dict[int, float] = {}
     layer_vectors: Dict[int, np.ndarray] = {}
 
-    for layer in hidden_layers_list:
+    for layer in tqdm(
+        hidden_layers_list,
+        desc="Training PD defection directions",
+        leave=False,
+    ):
         H_train = train_hiddens[layer]  # (N_train, hidden)
         H_test = test_hiddens[layer]    # (N_test, hidden)
 
@@ -216,10 +227,11 @@ def run(
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    bundle = build_pd_pair_bundle(
-        Path("data_creation/scenario_creation/langgraph_creation/Prisoners_Dilemma_all_data_samples.json"),
-        seed=seed,
+    dataset_path = Path(
+        "data_creation/scenario_creation/langgraph_creation/Prisoners_Dilemma_all_data_samples.json"
     )
+    logger.info("Loading contrastive dataset from %s", dataset_path)
+    bundle = build_pd_pair_bundle(dataset_path, seed=seed)
     train_pairs = bundle.train_pairs
     test_pairs = bundle.test_pairs
     if max_pairs is not None:
@@ -229,6 +241,14 @@ def run(
     train_ds = build_repreader_dataset(train_pairs)
     test_ds = build_repreader_dataset(test_pairs)
 
+    logger.info(
+        "Prepared %d total pairs (%d train / %d test)",
+        len(bundle.pairs),
+        len(train_pairs),
+        len(test_pairs),
+    )
+
+    logger.info("Loading model %s", model_path)
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
@@ -240,13 +260,18 @@ def run(
     num_layers = getattr(model.config, "num_hidden_layers", None)
     if num_layers is None:
         raise ValueError("Model config missing num_hidden_layers")
+    logger.info("Model has %d transformer layers", num_layers)
     if middle_third_only:
         start = num_layers // 3
         end = (2 * num_layers) // 3
         control_layers = list(range(start, end))
     else:
         control_layers = list(range(num_layers))
-    # Train RepReader-based PD defection directions and compute per-layer accuracy
+    # Train PD defection directions and compute per-layer accuracy
+    logger.info(
+        "Training contrastive directions on %d train prompts (span_mode=option)",
+        len(train_ds["data"]),
+    )
     rep_reader, layer_acc, layer_vectors = train_pd_repreader(
         model=model,
         tokenizer=tokenizer,
@@ -264,10 +289,44 @@ def run(
 
     label_to_token = {"A": _token_id(tokenizer, "A"), "B": _token_id(tokenizer, "B")}
 
-    base_rate = _decision_rate(model, tokenizer, test_pairs, label_to_token, batch_size, max_length)
+    logger.info("Measuring baseline defection rate on held-out set")
+    base_rate = _decision_rate(
+        model, tokenizer, test_pairs, label_to_token, batch_size, max_length
+    )
 
-    # Save per-layer vectors and accuracies
-    vectors_dir = output_dir / "layer_vectors"
+    # Persist split manifest and per-layer vectors under a model-specific root.
+    model_root = output_dir / Path(model_path).name / datetime.now().strftime("%Y%m%d_%H%M%S") / f"seed_{seed}"
+    model_root.mkdir(parents=True, exist_ok=True)
+
+    # Reconstruct train/test indices relative to original dataset entries
+    # so downstream behavior code can reuse the exact split.
+    idx_map: Dict[int, int] = {id(p): i for i, p in enumerate(bundle.pairs)}
+    train_indices: List[int] = [idx_map[id(p)] for p in train_pairs]
+    test_indices: List[int] = [idx_map[id(p)] for p in test_pairs]
+
+    # Compute dataset hash and per-entry hashes for integrity checks
+    raw_data = json.loads(dataset_path.read_text(encoding="utf-8"))
+    dataset_sha = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
+    entry_hashes: Dict[str, str] = {}
+    for idx in sorted(set(train_indices + test_indices)):
+        entry_json = json.dumps(raw_data[idx], sort_keys=True)
+        entry_hashes[str(idx)] = hashlib.sha256(entry_json.encode("utf-8")).hexdigest()
+
+    split_manifest = {
+        "dataset_path": str(dataset_path),
+        "dataset_sha256": dataset_sha,
+        "split_seed": seed,
+        "train_ratio": 0.5,
+        "max_pairs": max_pairs,
+        "train_indices": train_indices,
+        "test_indices": test_indices,
+        "entry_hashes": entry_hashes,
+    }
+    with open(model_root / "split_manifest.json", "w", encoding="utf-8") as f:
+        json.dump(split_manifest, f, indent=2)
+
+    # Save per-layer vectors under model_root/layer_vectors
+    vectors_dir = model_root / "layer_vectors"
     vectors_dir.mkdir(parents=True, exist_ok=True)
     for layer_idx, vec in layer_vectors.items():
         np.save(vectors_dir / f"layer_{layer_idx}.npy", vec)
@@ -285,7 +344,16 @@ def run(
     # Behavior evaluation per layer
     intensities = list(behavior_intensities or [0.5, 1.0, 1.5, 2.0])
     per_layer_behavior: Dict[int, Dict[float, float]] = {}
-    for layer_idx, vec in layer_vectors.items():
+    logger.info(
+        "Evaluating behavior shift for %d layers at intensities=%s",
+        len(layer_vectors),
+        intensities,
+    )
+    for layer_idx, vec in tqdm(
+        layer_vectors.items(),
+        desc="Behavior evaluation per layer",
+        leave=False,
+    ):
         layer_module = model.model.layers[layer_idx]
         per_intensity: Dict[float, float] = {}
         for inten in intensities:
@@ -337,6 +405,12 @@ def main():
     parser.add_argument("--middle_third_only", action="store_true")
     parser.add_argument("--behavior_intensities", type=str, default="0.5,1.0,1.5,2.0")
     args = parser.parse_args()
+
+    if not logging.getLogger().handlers:
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        )
 
     behavior_intensities = [float(x) for x in args.behavior_intensities.split(",") if x]
     os.makedirs(args.output_dir, exist_ok=True)
