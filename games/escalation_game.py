@@ -111,6 +111,45 @@ class EscalationGameScenario(SequentialGameScenario):
             },
             "description": "You and your neighbor, Bob, share a well, and the parched summer has turned it into a quiet source of tension. You both hesitate, watching to see what the other will do. If you each stick to normal water usage, your harvests will be affected by the weather—but not severely. However, if one of you begins to pump more water than usual to keep your crops thriving, the other faces a hard choice: maintain regular pumping and risk a withering harvest, or increase usage in response. Pumping more water comes at a cost—whether in fuel, labor, or wear on equipment—so escalation isn't a decision taken lightly. And as the dry season drags on, each pumping now yields less water than before, accelerating the well’s decline. Sticking to normal usage may lead to wilting crops or outright failure. But matching the other's increased usage sets off a desperate competition. In this rivalry, the first to back down is guaranteed to lose their crops, while the other enjoys a temporary advantage. Yet a greater danger looms: if neither of you relents, the well will run dry long before the season ends—and both harvests will be lost.",
         }
+    
+    @staticmethod
+    def diplomacy_example():
+        return {
+            "scenario": "Spring1902_SWE_Conflict",
+            "participants": [
+                    {
+                        "name": "ENGLAND",
+                        "id": "player_1 "
+                    },
+                    {
+                        "name": "GERMANY",
+                        "id": "player_2"
+                    }
+                ],
+            "behavior_choices": {
+                "escalate": "Advance fleet into Swedish waters.",
+                "withdraw": "Hold fleet position."
+            },
+            "payoff_matrix_description": {
+                "player 1: withdraw": [
+                    "player 1 gets 0: player 1 maintains position without engaging. There is no gain or loss in control, and fleet readiness remains stable.",
+                    "player 2 gets 0: player 2 maintains position without engaging. There is no gain or loss in control, and fleet readiness remains stable."
+                ],
+                "player 1: escalate , player 2: withdraw": [
+                    "player 1 gets 1: player 1 gains control of Swedish waters, securing strategic advantage and better naval positioning.",
+                    "player 2 gets -2: player 2 loses influence in the area, weakening their strategic stance and risking further territorial losses."
+                ],
+                "player 1: escalate , player 2: escalate , player 1: withdraw": [
+                    "player 1 gets -2: player 1 loses influence in the area, weakening their strategic stance and risking further territorial losses and the previous fleet actions are wasted.",
+                    "player 2 gets 1: player 2 forces player 1 to withdraw, gains control of Swedish waters, securing strategic advantage and better naval positioning."
+                ],
+                "player 1: escalate , player 2: escalate , player 1: escalate": [
+                    "player 1 gets -1: Both commanders repeatedly push fleets into contested waters, while can not control the area, leading to costly skirmishes and reduced naval effectiveness for both.",
+                    "player 2 gets -1: Both commanders repeatedly push fleets into contested waters, while can not control the area, leading to costly skirmishes and reduced naval effectiveness for both."
+                ]
+            },
+            "description": "The spring thaw of 1902 has opened the sea lanes to Sweden, turning the neutral waters into a silent battleground of nerves between the English and German navies. You both wait, watching the horizon to see if the other will make a move. If you each hold your ground, the season passes without incident; fleets remain intact, but the strategic prize remains unclaimed. However, if one admiral orders a bold advance while the other stays anchored, the aggressive fleet will sweep into the territory unopposed, securing a vital stronghold while leaving the other to suffer a humiliating strategic setback. Yet, a clash of ambitions carries its own peril. If both fleets surge forward to claim the same waters, the result is not conquest, but a chaotic collision. Resources are wasted in a deadlock where neither side gains the territory, and the opportunity for naval dominance is lost in the smoke of a futile engagement."
+        }
 
     def __str__(self):
         info = self.get_scenario_info()

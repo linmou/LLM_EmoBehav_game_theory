@@ -47,3 +47,21 @@ def test_participants_set_from_involved_power_singular_key():
     assert out["participants"] == ["RUSSIA", "TURKEY"]
     assert "Contesting BLA" in out.get("map_summary", "")
 
+
+def test_participants_fall_back_to_orders_to_dest_when_missing_involved_powers():
+    prepare = _load_prepare()
+    state = {
+        "game_name": "Escalation_Game",
+        "participants": [],
+        "raw_record": {
+            "phase": "S1901M",
+            "destination": "BLA",
+            "orders_to_dest": [
+                {"power": "RUSSIA", "order": "F SEV - BLA"},
+                {"power": "TURKEY", "order": "F ANK - BLA"},
+            ],
+        },
+    }
+    out = prepare(state)
+    assert out["participants"] == ["RUSSIA", "TURKEY"]
+    assert "Contesting BLA" in out.get("map_summary", "")

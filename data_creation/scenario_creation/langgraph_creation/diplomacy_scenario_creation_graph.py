@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Any, Dict, List, Optional, Sequence, TypedDict, Union
+import runpy
 
 # Optional Azure imports; fall back gracefully if not installed.
 try:
@@ -14,11 +15,29 @@ try:
     from langchain_azure_ai.chat_models import AzureAIChatCompletionsModel
 except Exception:
     AzureAIChatCompletionsModel = None  # type: ignore
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import END, START, StateGraph
+try:
+    from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+    from langchain_core.output_parsers import JsonOutputParser
+except Exception:  # pragma: no cover - minimal fallbacks for test environments
+    AIMessage = HumanMessage = SystemMessage = object  # type: ignore
+    JsonOutputParser = object  # type: ignore
+# langchain_openai may require azure deps for AzureChatOpenAI; fall back gracefully.
+try:
+    from langchain_openai import ChatOpenAI, AzureChatOpenAI
+except Exception:
+    try:
+        from langchain_openai import ChatOpenAI  # type: ignore
+    except Exception:  # pragma: no cover - allow tests without langchain_openai
+        ChatOpenAI = object  # type: ignore
+    AzureChatOpenAI = None  # type: ignore
+try:
+    from langgraph.checkpoint.memory import MemorySaver
+    from langgraph.graph import END, START, StateGraph
+except Exception:  # pragma: no cover - allow importing for unit tests
+    MemorySaver = object  # type: ignore
+    END = "END"  # type: ignore
+    START = "START"  # type: ignore
+
 from pydantic import BaseModel
 
 from constants import GameType
@@ -55,6 +74,9 @@ class ScenarioCreationState(TypedDict):
     narrative_feedback: Annotated[
         List[str], replace_reducer
     ]  # Feedback from narrative verification
+    behavior_feedback: Annotated[
+        List[str], replace_reducer
+    ]  # Feedback from behavior neutrality verification
     preference_feedback: Annotated[
         List[str], replace_reducer
     ]  # Feedback from mechanics verification
@@ -65,6 +87,7 @@ class ScenarioCreationState(TypedDict):
     # Output
     final_scenario: Optional[Dict[str, Any]]
     narrative_converged: bool  # Convergence flag from narrative verification
+    behavior_converged: bool  # Convergence flag from behavior neutrality verification
     preference_converged: bool  # Convergence flag from mechanics verification
     payoff_converged: bool  # Convergence flag from payoff validation
     all_converged: Optional[
@@ -95,6 +118,16 @@ def set_global_llm_config(llm_config: dict):
 def get_global_llm_config():
     """Get current global LLM configuration"""
     return _global_llm_config.copy()
+
+
+# Helper used to derive the dominant participant label
+def _primary_participant_label(players: List[Any]) -> str:
+    raw = players[0] if players else "Player 1"
+    if isinstance(raw, dict):
+        raw = raw.get("name") or "Player 1"
+    if not isinstance(raw, str):
+        raw = str(raw)
+    return raw
 
 
 # Initialize the LLM
@@ -191,6 +224,21 @@ def prepare_diplomacy_from_raw(state: ScenarioCreationState) -> ScenarioCreation
         # if od:
         #     mv = "; ".join(f"{o.get('power','?')} {o.get('order','')}" for o in od)
         #     nl_lines.append(f"Orders to destination: {mv}.")
+        if not participants:
+            orders = raw.get("orders_to_dest") or raw.get("moves") or []
+            if isinstance(orders, list):
+                seen = set()
+                for order in orders:
+                    if not isinstance(order, dict):
+                        continue
+                    power = str(order.get("power", "")).strip()
+                    if power and power not in seen:
+                        participants.append(power)
+                        seen.add(power)
+                    if len(participants) == 2:
+                        break
+                if len(participants) == 1:
+                    participants.append("Opponent")
         # Units near dest per power
         und = raw.get("units_near_dest") or {}
         if isinstance(und, dict) and und:
@@ -257,7 +305,9 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         decision_class=game_cfg["decision_class"],
         payoff_matrix=game_cfg["payoff_matrix"],
     )
-    example_scenario = game.example_scenario
+    # TODO:
+    example_scenario = game.scenario_class.diplomacy_example() if hasattr(game.scenario_class, 'diplomacy_example') else game.example_scenario
+    print( "is using diplomacy example: ", hasattr(game.scenario_class, 'diplomacy_example'))
     payoff_description = ""
     if isinstance(game.payoff_matrix, PayoffMatrix):
         payoff_description = game.payoff_matrix.get_natural_language_description(
@@ -958,6 +1008,108 @@ def verify_pay_off(
     }
 
 
+def _allowed_behavior_keys_for_game(game_name: str) -> Optional[List[str]]:
+    """
+    Best-effort helper to derive the canonical behavior_choices keys from the
+    game's BehaviorChoices.example() definition, e.g. EGBehaviorChoices.example().
+    """
+    try:
+        game_cfg = get_game_config(game_name)
+        scenario_cls = game_cfg.get("scenario_class")
+        if scenario_cls is None:
+            return None
+        annotations = getattr(scenario_cls, "__annotations__", {})
+        behavior_type = annotations.get("behavior_choices")
+        example_fn = getattr(behavior_type, "example", None)
+        if not callable(example_fn):
+            return None
+        example = example_fn()
+        if not isinstance(example, dict):
+            return None
+        keys = list(example.keys())
+        return keys if keys else None
+    except Exception:
+        return None
+
+
+def verify_behavior(state: ScenarioCreationState) -> Dict[str, Any]:
+    """
+    LLM-based verification that behavior_choices descriptions avoid emotional,
+    moral, or coordination-style wording and stay objective.
+
+    This node first enforces that behavior_choices field names match the
+    canonical template defined by GameClass.behavior_choices.example().
+    Only if the keys match will it call the LLM-based verifier to check
+    wording neutrality.
+
+    The LLM prompt construction and result parsing are delegated to the
+    behavior_choices_verifier helper module; this function wires in the
+    game context and LLM client.
+    """
+    # Static check: enforce behavior_choices keys match template, if available.
+    draft = state.get("scenario_draft") or {}
+    behaviors = draft.get("behavior_choices")
+    allowed_keys = _allowed_behavior_keys_for_game(state.get("game_name", ""))
+    if allowed_keys is not None and isinstance(behaviors, dict):
+        current_keys = list(behaviors.keys())
+        if set(current_keys) != set(allowed_keys):
+            missing = [k for k in allowed_keys if k not in behaviors]
+            extra = [k for k in current_keys if k not in allowed_keys]
+            parts: List[str] = []
+            if missing:
+                parts.append(f"missing keys: {missing}")
+            if extra:
+                parts.append(f"unexpected keys: {extra}")
+            parts.append(f"expected behavior_choices keys: {allowed_keys}")
+            msg = "Behavior_choices keys do not match template: " + "; ".join(parts)
+            return {"behavior_feedback": [msg], "behavior_converged": False}
+
+    try:
+        mod = runpy.run_path(str(Path(__file__).with_name("behavior_choices_verifier.py")))
+        build_prompt = mod.get("build_behavior_verification_prompt")
+        parse_result = mod.get("parse_behavior_verification_result")
+        if not callable(build_prompt) or not callable(parse_result):
+            raise KeyError("behavior_choices_verifier helpers not available")
+
+        # Build prompts specific to this state's behavior choices.
+        system_prompt, human_prompt = build_prompt(state)  # type: ignore[misc]
+
+        llm = get_llm(
+            temperature=_global_llm_config["temp_verify"],
+            json_mode=True,
+        )
+        messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=human_prompt),
+        ]
+
+        if AzureAIChatCompletionsModel is not None and isinstance(
+            llm, AzureAIChatCompletionsModel
+        ):
+            response = llm.invoke(messages)
+        else:
+            response = llm.invoke(messages, response_format={"type": "json_object"})
+
+        raw = getattr(response, "content", response)
+        parsed = parse_result(raw)  # type: ignore[misc]
+        feedback = parsed.get("feedback", [])
+        converged = bool(parsed.get("converged"))
+    except Exception as e:
+        return {
+            "behavior_feedback": [f"Behavior verifier unavailable: {e}"],
+            "behavior_converged": False,
+        }
+
+    if not isinstance(feedback, list):
+        feedback = [str(feedback)]
+    return {"behavior_feedback": feedback, "behavior_converged": converged}
+
+
+# Alias to match the requested node/function name in documentation and searches.
+def verify_behavior_choices(state: ScenarioCreationState) -> Dict[str, Any]:
+    return verify_behavior(state)
+
+
 def aggregate_verification(state: ScenarioCreationState) -> Dict[str, Any]:
     """
     Aggregation step after parallel verification.
@@ -1015,13 +1167,29 @@ def should_continue(state: ScenarioCreationState) -> str:
 
 def finalize_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
     """Finalize the scenario and save it."""
-    final_scenario = state["scenario_draft"] if state["all_converged"] else None
-    # Attach gradient options if present
-    if final_scenario is not None and state.get("gradient_options"):
+    all_converged = state.get("all_converged")
+    if all_converged is None and state.get("scenario_draft") is not None:
+        all_converged = True
+
+    final_scenario = state["scenario_draft"] if all_converged else None
+
+    if final_scenario is not None:
+        gradient_opts = state.get("gradient_options") or []
+        whose_option = _primary_participant_label(state.get("participants") or [])
         try:
-            final_scenario = {**final_scenario, "options": state["gradient_options"]}
+            final_scenario = {
+                **final_scenario,
+                "gradient_options": list(gradient_opts),
+                "whose_option": whose_option,
+            }
         except Exception:
             pass
+
+        if gradient_opts:
+            try:
+                final_scenario = {**final_scenario, "options": gradient_opts}
+            except Exception:
+                pass
     auto_save_path = state.get("auto_save_path", None)
 
     file_path = None
@@ -1069,8 +1237,8 @@ def build_scenario_creation_graph(
         set_global_llm_config(llm_config)
 
     if verification_nodes is None:
-        # Diplomacy flow: skip preference ordering, use narrative + payoff stage first
-        verification_nodes = ["narrative", "pay_off"]
+        # Diplomacy flow: skip preference ordering, verify narrative + behavior wording + payoff
+        verification_nodes = ["narrative", "behavior", "pay_off"]
 
     # Create the graph
     graph = StateGraph(ScenarioCreationState)
@@ -1167,18 +1335,11 @@ def build_scenario_creation_graph(
     graph.add_node("aggregate_gradient", aggregate_gradient)
     graph.add_node("finalize_scenario", finalize_scenario)
 
-    # If verify nodes are disabled entirely, short-circuit: propose -> finalize (no gradient stage)
-    if not verification_nodes:
-        graph.add_edge(START, "prepare_diplomacy_from_raw")
-        graph.add_edge("prepare_diplomacy_from_raw", "propose_scenario")
-        graph.add_edge("propose_scenario", "finalize_scenario")
-        graph.add_edge("finalize_scenario", END)
-        memory = MemorySaver()
-        return graph.compile(checkpointer=memory)
-
     # Conditionally add verification nodes
     if "narrative" in verification_nodes:
         graph.add_node("verify_narrative", verify_narrative)
+    if "behavior" in verification_nodes:
+        graph.add_node("verify_behavior", verify_behavior)
     if "pay_off" in verification_nodes:
         graph.add_node(
             "verify_pay_off", lambda state: verify_pay_off(state, debug_mode)
@@ -1209,23 +1370,15 @@ def build_scenario_creation_graph(
     if not (verification_nodes or []):
         graph.add_edge("propose_scenario", "aggregate_verification")
 
-    # Conditional edge from the aggregation node (stage1)
-    include_gradient = bool(verification_nodes) and ("gradient" in verification_nodes)
-    if include_gradient:
-        graph.add_conditional_edges(
-            "aggregate_verification",
-            should_continue,
-            {"refine": "propose_scenario", "finalize": "propose_gradient_options"},
-        )
-    else:
-        graph.add_conditional_edges(
-            "aggregate_verification",
-            should_continue,
-            {"refine": "propose_scenario", "finalize": "finalize_scenario"},
-        )
+    # Conditional edge from the aggregation node (stage1) always routes to gradient proposals
+    graph.add_conditional_edges(
+        "aggregate_verification",
+        should_continue,
+        {"refine": "propose_scenario", "finalize": "propose_gradient_options"},
+    )
 
     # Stage 2: gradient verification loop (only if requested)
-    if include_gradient:
+    if "gradient" in (verification_nodes or []):
         graph.add_edge("propose_gradient_options", "verify_gradient")
         graph.add_edge("verify_gradient", "aggregate_gradient")
         graph.add_conditional_edges(
@@ -1233,6 +1386,8 @@ def build_scenario_creation_graph(
             lambda s: "finalize" if s.get("all_converged") else "refine",
             {"refine": "propose_gradient_options", "finalize": "finalize_scenario"},
         )
+    else:
+        graph.add_edge("propose_gradient_options", "finalize_scenario")
 
     # Always end after finalizing
     graph.add_edge("finalize_scenario", END)
@@ -1272,11 +1427,13 @@ def create_scenario(
         "scenario_draft": None,
         "gradient_options": None,
         "narrative_feedback": [],
+        "behavior_feedback": [],
         "preference_feedback": [],
         "payoff_feedback": [],
         "iteration_count": 0,
         "final_scenario": None,
         "narrative_converged": False,
+        "behavior_converged": False,
         "preference_converged": True,
         "payoff_converged": False,
         "all_converged": None,
@@ -1326,11 +1483,13 @@ async def a_create_scenario(
         "scenario_draft": None,
         "gradient_options": None,
         "narrative_feedback": [],
+        "behavior_feedback": [],
         "preference_feedback": [],
         "payoff_feedback": [],
         "iteration_count": 0,
         "final_scenario": None,
         "narrative_converged": False,
+        "behavior_converged": False,
         "preference_converged": True,
         "payoff_converged": False,
         "all_converged": None,
@@ -1398,11 +1557,13 @@ if __name__ == "__main__":
         "scenario_draft": None,
         "gradient_options": None,
         "narrative_feedback": [],
+        "behavior_feedback": [],
         "preference_feedback": [],
         "payoff_feedback": [],
         "iteration_count": 0,
         "final_scenario": None,
         "narrative_converged": False,
+        "behavior_converged": False,
         "preference_converged": True,
         "payoff_converged": False,
         "all_converged": None,

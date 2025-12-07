@@ -6,12 +6,12 @@ models:
   - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
   - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
   - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
 
 emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
-intensities: [1.5]
+intensities: [1.0, 1.5, 2.0]
 
 benchmarks:
   - name: "game_theory"
@@ -50,6 +50,6 @@ generation_config:
 
 batch_size: 500
 
-output_dir: "results/diplomacy_escalation_game_refine_behav"
+output_dir: "results/diplomacy_escalation_game_refine_shuffle_choices"
 sanity_check: false
-defer_evaluation: false
+defer_evaluation: true
