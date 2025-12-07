@@ -18,6 +18,7 @@ from games.game_configs import get_game_config
 from neuro_manipulation.utils import oai_response
 from pydantic import BaseModel
 
+from .. import evaluation_utils
 from ..data_models import BenchmarkItem, ResultRecord
 from .base import BaseBenchmarkDataset
 
@@ -176,6 +177,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             raise ValueError("Raw scenario list was empty")
 
         return items
+
 
     class _ExtractionSchema(BaseModel):
         option_id: int
@@ -365,17 +367,45 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         if not options:
             return None
 
+        client_name = str(self.llm_eval_config.get("client", "openai")).lower()
+        formatted_options = ", ".join(
+            f"Option {idx + 1}: {text}" for idx, text in enumerate(options)
+        )
+
+        # Gemini path: delegate to shared evaluation helper
+        if client_name == "gemini":
+            system_prompt = (
+                "You are helping classify a model's decision. "
+                "Given the available options, identify which option best matches the response. "
+                "Return a JSON object with an integer field 'option_id' indicating the "
+                "1-based index of the chosen option. Use -1 if none apply."
+            )
+            query = (
+                f"Available options: {formatted_options}\n\n"
+                f"Response:\n{response}"
+            )
+            try:
+                result = evaluation_utils.llm_evaluate_response(
+                    system_prompt=system_prompt,
+                    query=query,
+                    llm_eval_config=self.llm_eval_config,
+                )
+            except Exception as exc:  # pragma: no cover - network failure safeguard
+                logger.warning("LLM extraction failed (gemini): %s", exc)
+                return None
+
+            return self._parse_option_id_from_result(result)
+
+        # OpenAI / Azure path: use existing beta parse helper
         client = self._ensure_llm_client()
         if client is None:
             return None
 
-        formatted_options = ", ".join(
-            f"Option {idx + 1}: {text}" for idx, text in enumerate(options)
-        )
         prompt = (
             "You are helping classify a model's decision. Given the available options "
             f"({formatted_options}), identify which option best matches the following "
             f"response. Respond with JSON containing an integer field named option_id.\n\n"
+            f"If the response is not one of the options, return option_id -1.\n\n"
             f"Response:\n{response}"
         )
 

@@ -1,0 +1,55 @@
+experiment_name: "diplomacy_escalation_game"
+description: "Diplomacy escalation game via game_theory benchmark using LangGraph samples."
+version: "1.0.0"
+
+models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+
+emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
+intensities: [1.5]
+
+benchmarks:
+  - name: "game_theory"
+    task_type: "Diplomacy_Escalation_Game"
+    enable_auto_truncation: false
+    truncation_strategy: "right"
+    preserve_ratio: 1.0
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+
+loading_config:
+  gpu_memory_utilization: 0.85
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 1
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+repeat_runs: 1
+
+generation_config:
+  temperature: 0.1
+  max_new_tokens: 512
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 500
+
+output_dir: "results/diplomacy_escalation_game_refine_behav"
+sanity_check: false
+defer_evaluation: false

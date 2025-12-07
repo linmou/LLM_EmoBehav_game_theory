@@ -1,7 +1,7 @@
 # Emotion Memory Experiments
-<!-- Updated: 2025-09-27 | Commit: 9c47b0d -->
+<!-- Updated: 2025-11-25 | Commit: c216fd8 -->
 
-Updated: 2025-09-27 · commit: dev-run
+Updated: 2025-11-25 · commit: c216fd8
 
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
@@ -191,6 +191,25 @@ python -m emotion_experiment_engine.evaluate_saved --input <run_output_dir>
 
 The helper replays judge calls with configurable concurrency and regenerates the
 standard CSV/JSON summaries in place.
+
+Process an entire series report with the batch wrapper. Use `--dry-run` to list
+pending directories before launching judges, or increase `--max-workers` to
+match your available judge capacity.
+
+```bash
+python -m emotion_experiment_engine.evaluate_saved_series \
+  --report results/memory_experiments/<series_report>.json \
+  --max-workers 16
+
+# Audit pending runs without scoring
+python -m emotion_experiment_engine.evaluate_saved_series \
+  --report results/memory_experiments/<series_report>.json \
+  --dry-run
+```
+
+LLM-based evaluation (`llm_eval_config`) accepts a `client` key. Supported
+options: `openai` (default) and `gemini` (uses `GEMINI_CONFIG` from
+`api_configs.py`).
 
 ## Data Format
 
