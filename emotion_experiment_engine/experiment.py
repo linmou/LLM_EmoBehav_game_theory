@@ -832,6 +832,7 @@ class EmotionExperiment:
         self.logger.info(f"Summary results saved to {summary_filename}")
 
         choice_ratio_payload: Optional[Dict[str, Any]] = None
+        behavior_ratio_payload: Optional[Dict[str, Any]] = None
         # Compute and persist split-level metrics if the dataset exposes the hook
         try:
             dataset_obj = getattr(self, "dataset", None)
@@ -842,6 +843,10 @@ class EmotionExperiment:
                         payload = split_metrics["choice_ratio"]
                         if isinstance(payload, dict):
                             choice_ratio_payload = payload
+                    if "behavior_choice_ratio" in split_metrics:
+                        b_payload = split_metrics["behavior_choice_ratio"]
+                        if isinstance(b_payload, dict):
+                            behavior_ratio_payload = b_payload
                     sm_path = self.output_dir / "split_metrics.json"
                     with open(sm_path, "w") as f:
                         json.dump(split_metrics, f, indent=2)
@@ -938,12 +943,28 @@ class EmotionExperiment:
                 overall_rows_payload = maybe_overall
 
         if overall_rows_payload:
-            overall_df = pd.DataFrame(overall_rows_payload)
-            if not overall_df.empty:
-                ratio_overall_filename = self.output_dir / "summary_choice_ratio.csv"
-                overall_df.to_csv(ratio_overall_filename, index=False)
+                overall_df = pd.DataFrame(overall_rows_payload)
+                if not overall_df.empty:
+                    ratio_overall_filename = self.output_dir / "summary_choice_ratio.csv"
+                    overall_df.to_csv(ratio_overall_filename, index=False)
+                    self.logger.info(
+                        f"Choice ratios saved to {ratio_overall_filename}"
+                    )
+
+        # Persist behavior-level ratios if available
+        behavior_overall_rows: List[Dict[str, Any]] = []
+        if behavior_ratio_payload:
+            maybe_overall = behavior_ratio_payload.get("overall")
+            if isinstance(maybe_overall, list):
+                behavior_overall_rows = maybe_overall
+
+        if behavior_overall_rows:
+            behavior_df = pd.DataFrame(behavior_overall_rows)
+            if not behavior_df.empty:
+                behavior_ratio_filename = self.output_dir / "summary_behavior_ratio.csv"
+                behavior_df.to_csv(behavior_ratio_filename, index=False)
                 self.logger.info(
-                    f"Choice ratios saved to {ratio_overall_filename}"
+                    f"Behavior choice ratios saved to {behavior_ratio_filename}"
                 )
 
         # Create README explaining output files

@@ -1,0 +1,79 @@
+openapi: 3.0.0
+info:
+  title: Game Theory Choice Ratio Analysis
+  version: 1.0.0
+paths:
+  /analysis/choice-ratios:
+    post:
+      summary: Compute behavior-level and index-level choice ratios from decision records.
+      description: >
+        Conceptual contract for the Python choice-ratio analysis functions. This
+        describes the input/output schema but does not require an HTTP service
+        to be implemented.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decisions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DecisionRecord'
+              required:
+                - decisions
+      responses:
+        '200':
+          description: Choice ratio summary computed from decision records.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChoiceRatioSummary'
+components:
+  schemas:
+    DecisionRecord:
+      type: object
+      properties:
+        sample_id:
+          type: string
+          description: Identifier for the game sample (index or scenario id).
+        chosen_option_index:
+          type: integer
+          minimum: 1
+          description: One-based index of the chosen behavior option.
+        chosen_behavior_label:
+          type: string
+          description: Semantic label of the chosen behavior (e.g., cooperate, defect). When no option matches the chosen option index, this value is recorded as "unknown".
+        emotion:
+          type: string
+          description: Emotion condition under which the decision was made.
+        model_name:
+          type: string
+          description: Logical model identifier.
+      required:
+        - sample_id
+        - chosen_option_index
+        - chosen_behavior_label
+    ChoiceRatioSummary:
+      type: object
+      properties:
+        total_decisions:
+          type: integer
+          minimum: 0
+        behavior_choice_ratios:
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+            description: Ratio in [0,1] for a given behavior label. Includes an "unknown" key when a chosen option index cannot be mapped to any option in the scenario.
+        index_choice_ratios:
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+            description: Ratio in [0,1] for a given option index.
+      required:
+        - total_decisions
+        - behavior_choice_ratios
+        - index_choice_ratios
