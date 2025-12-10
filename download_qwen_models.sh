@@ -25,10 +25,22 @@ MODELS=(
   
   # Bamba (IBM's latest SSM-transformer hybrid)
   #"ibm-ai-platform/Bamba-9B-v2"
-  "Qwen/Qwen2.5-0.5B"
-  "Qwen/Qwen2.5-1.5B"
-  "Qwen/Qwen2.5-3B"
-  "Qwen/Qwen2.5-7B"
+  "meta-llama/Llama-3.2-1B"
+  "meta-llama/Llama-3.2-3B"
+  "meta-llama/Llama-3.2-1B-Instruct"
+  "meta-llama/Llama-3.2-3B-Instruct"
+  "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+  "deepseek-ai/deepseek-vl2-tiny"
+  "HuggingFaceTB/SmolLM3-3B"
+  "HuggingFaceTB/SmolLM2-1.7B-Instruct"
+  "HuggingFaceTB/SmolLM2-360M-Instruct"
+  "HuggingFaceTB/SmolLM2-135M-Instruct"
+  "HuggingFaceTB/SmolVLM2-500M-Video-Instruct"
+  "microsoft/Phi-4-mini-flash-reasoning"
+  "microsoft/Phi-3.5-vision-instruct"
+  "facebook/MobileLLM-R1-950M"
+  "facebook/MobileLLM-R1-360M"
+  "facebook/MobileLLM-R1-140M"
 )
 # Base directory for saving models
 BASE_DIR="$HOME/huggingface_models"

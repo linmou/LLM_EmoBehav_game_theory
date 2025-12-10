@@ -1,0 +1,59 @@
+experiment:
+  name: "Mamba_Series_Prisoners_Dilemma"
+  
+  # List of games to run experiments with
+  games:
+    - "Prisoners_Dilemma"
+  
+  # List of models to run experiments with
+  models:
+    # - "/data/home/jjl7137/huggingface_models/state-spaces/mamba-370m-hf"
+    - "/data/home/jjl7137/huggingface_models/state-spaces/mamba-790m-hf"
+      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba-1.4b-hf"
+      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba-2.8b-hf"
+      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba2-370m"
+      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba2-780m"
+
+  game:
+    name: "Prisoners_Dilemma"  # Default game if needed
+    # Additional game parameters
+    previous_actions_length: 0
+    
+  data:
+    generate: false # generate game data if true
+    num_scenarios: 36
+    batch_size: 4
+  
+  llm:
+    model_name: 'meta-llama/Llama-3.1-8B-Instruct'  # Default model if needed
+    # Additional parameters to override or extend the base config
+    generation_config:
+      temperature: 0.7
+      do_sample: true
+      top_p: 0.95
+      max_new_tokens: 440
+
+  batch_size: 50
+
+  # Template for system message with placeholders
+  system_message_template: "Remember you are Alice. What is your option? Choose one option shown above."
+  
+  repeat: 1
+
+  emotions:
+    - "anger"
+    - "happiness"
+      #- "sadness"
+      #- "disgust"
+      #- "fear"
+      #- "surprise"
+
+  intensity:
+    - 1.5
+
+  run_sanity_check: false
+
+  output:
+    base_dir: "results/Mamba_Series_Prisoners_Dilemma"
+    save_plots: true
+    plot_format: "png" 

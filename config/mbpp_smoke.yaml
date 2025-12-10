@@ -1,0 +1,53 @@
+# MBPP Default Smoke Dry-Run
+# Updated: 2025-10-13 | Commit: TBD
+
+experiment_name: "mbpp_smoke_default"
+description: "Dry-run against MBPP (base tests only)"
+version: "1.0.0"
+
+models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+
+benchmarks:
+  - name: "mbpp"
+    task_type: "default"
+    data_path: "../evalplus/datasets/MbppPlus-v0.2.0.jsonl"
+    sample_limit: 5
+    enable_auto_truncation: false
+    truncation_strategy: "right"
+    preserve_ratio: 1.0
+    augmentation_config: {}
+
+emotions: []
+intensities: [0.0]
+
+repeat_run: 1
+repeat_seed_base: 42
+
+loading_config:
+  gpu_memory_utilization: 0.90
+  tensor_parallel_size: 1
+  max_model_len: 4096
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 1234
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+generation_config:
+  temperature: 0.0
+  max_new_tokens: 256
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 10
+output_dir: "results/mbpp_smoke_default"
+sanity_check: true

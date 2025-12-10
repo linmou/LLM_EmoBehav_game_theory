@@ -84,6 +84,6 @@ experiment:
 repe_config:
   # Essential for multimodal processing
   multimodal_intent: true
-  data_dir: "data/image"  # Points to directory with emotion JSON files
+  data_dir: "data/stimulus/image"  # Points to directory with emotion JSON files
   emotions: ["happiness", "sadness", "anger", "fear", "disgust"]
   rebuild: false

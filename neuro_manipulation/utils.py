@@ -16,7 +16,12 @@ from huggingface_hub import hf_hub_download
 from PIL import Image
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer, MistralForCausalLM, pipeline
-from vllm import LLM
+try:
+    from vllm import LLM  # type: ignore
+except Exception:
+    # Provide a minimal stub to avoid hard dependency during dry-runs or CPU-only envs
+    class LLM:  # type: ignore
+        pass
 
 # from neuro_manipulation.repe import repe_pipeline_registry
 # import pickle
@@ -182,8 +187,8 @@ def primary_emotions_concept_dataset(
 
     Args:
         data_dir: Directory containing emotion JSON files (anger.json, happiness.json, etc.)
-                 - For text mode: data_dir = "data/text/" containing text scenarios in JSONs
-                 - For image mode: data_dir = "data/image/" containing image paths in JSONs
+                 - For text mode: data_dir = "data/stimulus/text/" containing text scenarios in JSONs
+                 - For image mode: data_dir = "data/stimulus/image/" containing image paths in JSONs
         model_name: Name of the model to format prompts for
         tokenizer: Optional tokenizer for more accurate prompt formatting
         system_prompt: Optional system prompt, if None no system prompt will be used
@@ -689,6 +694,24 @@ def load_model_only(
         # Check if this should be a causal LM model based on its config
         from transformers import AutoConfig, AutoModelForCausalLM
 
+        # Determine HF torch dtype, defaulting to float16 when unspecified
+        hf_torch_dtype = torch.float16
+        if loading_config is not None:
+            if isinstance(loading_config, dict):
+                dtype_value = loading_config.get("dtype")
+            else:
+                dtype_value = getattr(loading_config, "dtype", None)
+
+            if isinstance(dtype_value, torch.dtype):
+                hf_torch_dtype = dtype_value
+            elif isinstance(dtype_value, str):
+                dtype_key = dtype_value.lower()
+                if dtype_key in {"bfloat16", "bf16"}:
+                    hf_torch_dtype = torch.bfloat16
+                elif dtype_key in {"float32", "fp32"}:
+                    hf_torch_dtype = torch.float32
+                elif dtype_key in {"float16", "fp16"}:
+                    hf_torch_dtype = torch.float16
         try:
             config = AutoConfig.from_pretrained(
                 model_name_or_path, token=True, trust_remote_code=True
@@ -699,7 +722,7 @@ def load_model_only(
                 if any("ForCausalLM" in arch for arch in config.architectures):
                     model = AutoModelForCausalLM.from_pretrained(
                         model_name_or_path,
-                        torch_dtype=torch.float16,
+                        torch_dtype=hf_torch_dtype,
                         device_map="auto",
                         token=True,
                         trust_remote_code=True,
@@ -707,7 +730,7 @@ def load_model_only(
                 else:
                     model = AutoModel.from_pretrained(
                         model_name_or_path,
-                        torch_dtype=torch.float16,
+                        torch_dtype=hf_torch_dtype,
                         device_map="auto",
                         token=True,
                         trust_remote_code=True,
@@ -716,16 +739,17 @@ def load_model_only(
                 # Fallback to AutoModel if we can't determine
                 model = AutoModel.from_pretrained(
                     model_name_or_path,
-                    torch_dtype=torch.float16,
+                    torch_dtype=hf_torch_dtype,
                     device_map="auto",
                     token=True,
                     trust_remote_code=True,
                 ).eval()
         except:
             # If config loading fails, fallback to AutoModel
+
             model = AutoModel.from_pretrained(
                 model_name_or_path,
-                torch_dtype=torch.float16,
+                torch_dtype=hf_torch_dtype,
                 device_map="auto",
                 token=True,
                 trust_remote_code=True,
@@ -800,13 +824,7 @@ def detect_emotion_data_type(data_dir, emotions=None):
     if emotions is None:
         emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
 
-    if not data_dir or not Path(data_dir).exists():
-        return {
-            "data_type": "none",
-            "available_emotions": [],
-            "total_samples": {},
-            "is_multimodal_data": False,
-        }
+    assert data_dir and Path(data_dir).exists(), f"The {data_dir} does not exist."
 
     available_emotions = []
     total_samples = {}

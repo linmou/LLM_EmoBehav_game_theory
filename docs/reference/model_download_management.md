@@ -1,5 +1,7 @@
 # Model Download and Management
 
+Updated: 2025-09-27
+
 ## Overview
 
 The ExperimentSeriesRunner has been enhanced with automatic model checking and downloading capabilities. This feature ensures that models required for experiments are downloaded before the experiment starts, improving the reliability of batch experiments.
@@ -39,7 +41,10 @@ def _check_model_existence(self, model_name: str) -> bool:
 
 ### Features:
 
-1. **Local Path Support**: Models specified with absolute paths (starting with `/`) are assumed to be local and skipped from checking.
+1. **Local Path Support**: Absolute local paths (starting with `/`) are validated first. The path must:
+   - resolve to an existing directory, and
+   - contain a `config.json` at the directory root (minimal Hugging Face folder check).
+   If either check fails, the runner treats it as missing and returns `None` with a clear log message. This prevents confusing HF repo-id validation errors from typos or non-model folders.
 2. **Path Detection**: For HuggingFace models, it correctly handles the path structure used by HuggingFace, including organization and model name.
 3. **Command-line Downloads**: Uses `huggingface-cli download` with `HF_HUB_ENABLE_HF_TRANSFER=1` for faster, more reliable downloads.
 4. **Real-time Progress**: Streams download progress to the log in real time.

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Important**: Always activate the conda environment before running Python commands:
 ```bash
-conda activate llm_behav
+conda activate llm_fresh
 ```
 
 **Memory**:
@@ -268,7 +268,7 @@ Red-Green-Refactor Cycle: You will strictly follow this cycle for every piece of
 
 Red: You will create a single, small, failing test that clearly defines a new piece of desired functionality or behavior and confirm it fails for the expected reason. Please also analyse if new feature is conflict with previous test, so that you need to locate then refactor someexisting tests.
 
-Green: You will write the absolute minimum amount of production code necessary to make the failing test pass. No overdesign, like meaningless help functions, keep the code clean. don't consider backward compatibility. 
+Green: You will write the absolute minimum amount of production code necessary to make the failing test pass. No overdesign, like meaningless help functions, keep the code clean. don't consider backward compatibility. In common sense , don't build fallback logics, throw the errors for debug. 
 
 Refactor: Once the test is passing, and only then, you will refactor the code to improve its structure, readability, and performance without changing its external behavior. 0.Please keep the code as breif as possible, check if there is anything overdesigned. 1. Go Deeper, Not Wider: Fix at the root cause not symptoms 2. Convention > Configuration: Smart defaults beat flexible options 90% of the time, stop to ask if you can not decide.  3.Build smart infrastructure that "just works" instead of flexible applications that require configuration.
 
@@ -300,7 +300,8 @@ Iteration: You will continue this cycle for each new piece of functionality, ens
 - Every time you build a new test, write in the beginning comment that which file and purpose it is responsible for.
 - everytime you refactor some code, mypy test for your modification
 
-- dont forget to use mypy for type check after each modification
 - don't set default value in the definition of dataclass. it is not safe because we may miss setting some fields in production. The setting of default value should happen each time when instantialise a dataclass
 - in most case , just implement the feature itself, don't consider backward backward compatibility.
 
+# Keep documents updated
+Every time you are going to commit a change, review the document markdown or claude_doc folder closest to the modified files. To see if the docs needs to be updated. For a single readme markdown. Besides updating the contents, also updating the beginning doc string with updating date and the commit ID. For complex doc folder like claude_doc folder, besides modify the doc contents, please create a seperate file  /claude_doc/doc_update_record/documentation_update_record_v....md to record the change. Also with date inside.

@@ -25,15 +25,15 @@ Returns: (model, tokenizer, prompt_format, processor)
 ### 2. PromptWrapper Creation & Integration
 
 ```
-get_memory_prompt_wrapper(task_type, prompt_format)
+create_benchmark_components(benchmark_name, task_type, config, prompt_format)
     ↓
-Factory creates task-specific wrapper:
+Registry selects prompt wrapper class:
     - "passkey" → PasskeyPromptWrapper(prompt_format)
     - "conversational" → ConversationalQAPromptWrapper(prompt_format)  
     - "longbook" → LongContextQAPromptWrapper(prompt_format)
-    - default → MemoryPromptWrapper(prompt_format)
+    - fallback → MemoryPromptWrapper(prompt_format)
     ↓
-Each wrapper stores prompt_format for model-specific formatting
+returns (prompt_wrapper_partial, answer_wrapper_partial, dataset)
 ```
 
 **Critical Relationship**: PromptWrapper takes PromptFormat in constructor and uses it to format prompts correctly for each model's tokenizer.
@@ -63,15 +63,14 @@ Each wrapper stores prompt_format for model-specific formatting
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           PROMPT WRAPPER CREATION                          │
 │                                                                             │
-│  get_memory_prompt_wrapper(task_type, prompt_format)                      │
-│      ├── Factory Pattern Selection:                                        │
+│  create_benchmark_components(name, task_type, config, prompt_format)      │
+│      ├── Registry Selection:                                              │
 │      │   ├── "passkey" → PasskeyPromptWrapper                             │
 │      │   ├── "conversational" → ConversationalQAPromptWrapper             │
 │      │   ├── "longbook" → LongContextQAPromptWrapper                      │
-│      │   └── default → MemoryPromptWrapper                                │
+│      │   └── fallback → MemoryPromptWrapper                               │
 │      │                                                                     │
-│      └── Each wrapper.__init__(prompt_format)                             │
-│          Stores model-specific formatting logic                            │
+│      └── Returns callable prompt/answer wrappers plus dataset              │
 └─────────────────────────────────────────────────────────────────────────────┘
                                        │
                                        ▼
@@ -227,16 +226,21 @@ class MemoryPromptWrapper(PromptWrapper):
 model, tokenizer, prompt_format, processor = setup_model_and_tokenizer(repe_config)
 ```
 
-### Step 2: Wrapper Creation  
+### Step 2: Wrapper and Dataset Creation  
 ```python
-# Creates PasskeyPromptWrapper with Qwen2.5PromptFormat
-wrapper = get_memory_prompt_wrapper("passkey", prompt_format)
+# Registry returns the correct wrapper + dataset combo for passkey task
+wrapper_fn, answer_fn, dataset = create_benchmark_components(
+    benchmark_name="infinitebench",
+    task_type="passkey",
+    config=config.benchmark,
+    prompt_format=prompt_format,
+)
 ```
 
 ### Step 3: Dataset Processing
 ```python
-# Dataset.__getitem__() calls:
-prompt = wrapper(
+# Dataset.__getitem__() calls the partial returned from the registry
+prompt = wrapper_fn(
     context="The pass key is 71432. Remember it...",
     question="What is the pass key?",
     user_messages="Please provide your answer.",

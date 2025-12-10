@@ -43,11 +43,9 @@ class MultimodalEmotionExtractor:
         self.pipeline = None
         self.emotion_vectors = {}
         
-    def _load_config(self, config_path: str = None) -> dict:
+    def _load_config(self, config_path: str) -> dict:
         """Load configuration from file or use defaults."""
-        if config_path is None:
-            config_path = "/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal/config/multimodal_rep_reading_config.yaml"
-            
+         
         if os.path.exists(config_path):
             with open(config_path, 'r') as f:
                 return yaml.safe_load(f)

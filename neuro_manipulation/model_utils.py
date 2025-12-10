@@ -93,7 +93,7 @@ def load_emotion_readers(
 
     # Build args dict including multimodal parameters
     args = {
-        "emotions": Emotions.get_emotions(),
+        "emotions": config['emotions'],
         "data_dir": config["data_dir"],
         "model_name_or_path": config["model_name_or_path"],
         "rep_token": config["rep_token"],
