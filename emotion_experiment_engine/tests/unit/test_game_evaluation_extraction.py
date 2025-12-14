@@ -97,3 +97,77 @@ def test_evaluate_response_llm_fallback(monkeypatch, dataset: GameTheoryDataset)
 
     assert choice == pytest.approx(1.0)
     assert captured["response_format"] is dataset._ExtractionSchema
+
+
+def test_evaluate_response_parses_option_number_json(monkeypatch, dataset: GameTheoryDataset):
+    """If the model returns a JSON decision like 'Option 1', use it directly without LLM."""
+
+    def _fail_oai(*args, **kwargs):  # pragma: no cover - should never be called
+        raise AssertionError("LLM fallback should not be invoked for JSON decision")
+
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.oai_response",
+        _fail_oai,
+    )
+
+    prompt = (
+        "Scenario: Prisoners dilemma\n"
+        "Option 1. Cooperate\n"
+        "Option 2. Defect\n"
+    )
+    response = '{"decision": "Option 1"}'
+
+    choice = dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Prisoners_Dilemma",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(1.0)
+
+
+def test_evaluate_response_uses_gemini_client(monkeypatch, dataset: GameTheoryDataset):
+    """Gemini client should go through evaluation_utils.llm_evaluate_response, not OpenAI."""
+
+    captured = {}
+
+    def _fake_eval(system_prompt: str, query: str, llm_eval_config: dict):
+        captured["system_prompt"] = system_prompt
+        captured["query"] = query
+        captured["config"] = llm_eval_config
+        return {"option_id": 2}
+
+    def _fail_openai_client():
+        raise AssertionError("OpenAI client should not be used for gemini")
+
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.evaluation_utils.llm_evaluate_response",
+        _fake_eval,
+    )
+    monkeypatch.setattr(
+        GameTheoryDataset,
+        "_ensure_llm_client",
+        lambda self: _fail_openai_client(),
+    )
+
+    dataset.llm_eval_config = {"client": "gemini", "model": "gemini-pro"}
+
+    prompt = (
+        "Scenario: Trust game\n"
+        "Option 1. Return money\n"
+        "Option 2. Keep money\n"
+    )
+    response = "No explicit decision"
+
+    choice = dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Trust_Game_Trustee",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(2.0)
+    assert "gemini" in captured["config"]["client"]
+    assert "Available options" in captured["query"]
+    assert "Option 1" in captured["query"] or "Option 2" in captured["query"]

@@ -5,6 +5,7 @@ These tests codify the September 2025 "LLM Evaluation System Update" contract.
 
 import math
 import unittest
+import types
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
@@ -135,6 +136,44 @@ class TestLLMEvaluateResponse(unittest.TestCase):
                 llm_eval_config={"model": "gpt-4o-mini"},
             )
         self.assertIn("LLM evaluation failed", str(exc.exception))
+
+    def test_llm_evaluate_response_gemini_path(self) -> None:
+        # Patch in a fake google.generativeai module
+        fake_mod = type("FakeGenAI", (), {})()
+        fake_state: dict[str, Any] = {}
+
+        class _FakeResponse:
+            def __init__(self, text: str):
+                self.text = text
+
+        class _FakeModel:
+            def __init__(self, name: str) -> None:
+                fake_state["model_name"] = name
+
+            def generate_content(self, prompt: str):
+                fake_state["prompt"] = prompt
+                return _FakeResponse('{"score": 0.99}')
+
+        def _fake_configure(api_key=None):
+            fake_state["api_key"] = api_key
+
+        fake_mod.configure = _fake_configure
+        fake_mod.GenerativeModel = _FakeModel
+
+        fake_pkg = types.ModuleType("google")
+        fake_pkg.generativeai = fake_mod  # type: ignore[attr-defined]
+
+        with patch.dict("sys.modules", {"google": fake_pkg, "google.generativeai": fake_mod}):
+            result = evaluation_utils.llm_evaluate_response(
+                system_prompt="Judge now",
+                query="Evaluate this answer",
+                llm_eval_config={"client": "gemini", "model": "gemini-pro", "temperature": 0.0},
+            )
+
+        self.assertEqual(result.get("score"), 0.99)
+        self.assertEqual(fake_state.get("model_name"), "gemini-pro")
+        self.assertIn("Evaluate this answer", fake_state.get("prompt", ""))
+        self.assertIn("Judge now", fake_state.get("prompt", ""))
 
 
 class ImmediateFuture:
