@@ -12,10 +12,6 @@ from tqdm import tqdm
 from tqdm.asyncio import tqdm_asyncio
 
 from constants import GameNames
-from data_creation.scenario_creation.langgraph_creation.scenario_creation_graph import (
-    a_create_scenario,
-    build_scenario_creation_graph,
-)
 
 # Configure logging
 logging.basicConfig(
@@ -87,10 +83,20 @@ class ScenarioCreationConfig:
         self.verification_nodes = kwargs.get(
             "verification_nodes", ["narrative", "preference_order", "pay_off"]
         )
+        # Diplomacy graph toggles
+        self.use_diplomacy_graph = kwargs.get("use_diplomacy_graph", False)
+        self.diplomacy_records_file = kwargs.get(
+            "diplomacy_records_file",
+            "/data/home/jjl7137/dipllm/data/pd_like_contests_sample.enriched.jsonl",
+        )
+        self.debug_num_records = kwargs.get("debug_num_records", 2)
 
     def to_dict(self):
         """Convert configuration to dictionary"""
-        return self.__dict__
+        data = dict(self.__dict__)
+        # Avoid logging or serializing the full diplomacy_records payload
+        data.pop("diplomacy_records", None)
+        return data
 
 
 def get_existing_processed_personas(scenario_path_base: str) -> set:
@@ -166,6 +172,7 @@ async def create_scenario_with_timeout(
     timeout: int,
     max_retries: int,
     retry_delay: int,
+    raw_record: Optional[dict] = None,
 ) -> Optional[dict]:
     """
     Create scenario with timeout and retry logic.
@@ -192,15 +199,44 @@ async def create_scenario_with_timeout(
             )
 
             # Create the task with timeout
-            task = asyncio.create_task(
-                a_create_scenario(
-                    graph=graph,
-                    game_name=game_name,
-                    participants=participants,
-                    participant_jobs=participant_jobs,
-                    config=config,
+            if raw_record is None:
+                # Standard path using generic graph adapter
+                # Lazy import to avoid azure deps unless needed
+                from data_creation.scenario_creation.langgraph_creation.scenario_creation_graph import (
+                    a_create_scenario,
                 )
-            )
+                task = asyncio.create_task(
+                    a_create_scenario(
+                        graph=graph,
+                        game_name=game_name,
+                        participants=participants,
+                        participant_jobs=participant_jobs,
+                        config=config,
+                    )
+                )
+            else:
+                # Diplomacy path: call graph directly with initial state carrying raw_record
+                initial_state = {
+                    "game_name": game_name,
+                    "participants": participants,
+                    "raw_record": raw_record,
+                    "map_summary": None,
+                    "scenario_draft": None,
+                    "gradient_options": None,
+                    "narrative_feedback": [],
+                    "behavior_feedback": [],
+                    "preference_feedback": [],
+                    "payoff_feedback": [],
+                    "iteration_count": 0,
+                    "final_scenario": None,
+                    "narrative_converged": False,
+                    "behavior_converged": False,
+                    "preference_converged": True,
+                    "payoff_converged": False,
+                    "all_converged": None,
+                    "auto_save_path": None,
+                }
+                task = asyncio.create_task(graph.ainvoke(initial_state, config))
 
             # Wait for task with timeout
             scenario = await asyncio.wait_for(task, timeout=timeout)
@@ -208,6 +244,9 @@ async def create_scenario_with_timeout(
             if scenario is None:
                 logger.warning(f"Scenario creation returned None for {persona_job}")
                 continue
+            # Diplomacy path returns state; standard path returns scenario
+            if isinstance(scenario, dict) and "final_scenario" in scenario:
+                scenario = scenario.get("final_scenario")
 
             return scenario
 
@@ -272,7 +311,7 @@ async def save_scenario_and_history(
         except Exception as e:
             logger.error(f"Error saving history for {persona_job_filename}: {e}")
 
-        # Save scenario
+        # Save scenario (or salvage from history if final_scenario is missing)
         if scenario:
             scenario_path = f"{scenario_path_base}/{persona_job_filename}.json"
             with open(scenario_path, "w") as f:
@@ -280,6 +319,41 @@ async def save_scenario_and_history(
             logger.info(f"Saved scenario for {persona_job_filename}")
             return True
         else:
+            # Attempt a graceful fallback: use the latest scenario_draft from history
+            fallback_scenario = None
+            try:
+                if history:
+                    latest_state = history[-1].values
+                    draft = latest_state.get("scenario_draft")
+                    if isinstance(draft, dict):
+                        participants = latest_state.get("participants") or []
+                        label = "Player 1"
+                        if participants:
+                            p0 = participants[0]
+                            if isinstance(p0, dict):
+                                p0 = p0.get("name") or "Player 1"
+                            label = str(p0)
+                        gradient_opts = latest_state.get("gradient_options") or []
+                        fallback_scenario = {
+                            **draft,
+                            "gradient_options": gradient_opts if isinstance(gradient_opts, list) else [],
+                            "whose_option": label,
+                        }
+                        # Preserve legacy "options" mirror if gradient options exist
+                        if gradient_opts:
+                            fallback_scenario.setdefault("options", gradient_opts)
+            except Exception:
+                fallback_scenario = None
+
+            if fallback_scenario:
+                scenario_path = f"{scenario_path_base}/{persona_job_filename}.json"
+                with open(scenario_path, "w") as f:
+                    json.dump(fallback_scenario, f, indent=4)
+                logger.warning(
+                    f"No finalized scenario; saved fallback draft for {persona_job_filename}"
+                )
+                return True
+
             logger.warning(f"No scenario to save for {persona_job_filename}")
             return False
 
@@ -311,19 +385,34 @@ async def process_single_job(
     )
 
     try:
+        # Diplomacy mode: map rec id to raw record and call graph directly
+        raw_record = None
+        if getattr(config, "use_diplomacy_graph", False) and persona_job.startswith("rec_"):
+            try:
+                idx = int(persona_job.split("_")[1])
+            except Exception:
+                idx = 0
+            recs = json.loads(Path(".diplomacy_records_cache.json").read_text())
+            if 0 <= idx < len(recs):
+                raw_record = recs[idx]
         scenario = await create_scenario_with_timeout(
             graph=scenario_graph,
             game_name=game_name,
             participants=(
-                ["You", "Bob"]
-                if GameNames.from_string(game_name).is_symmetric()
-                else ["Alice", "Bob"]
+                []
+                if getattr(config, "use_diplomacy_graph", False)
+                else (
+                    ["You", "Bob"]
+                    if GameNames.from_string(game_name).is_symmetric()
+                    else ["Alice", "Bob"]
+                )
             ),
             participant_jobs=[persona_job, persona_job],
             config=graph_config,
             timeout=config.task_timeout,
             max_retries=config.max_retries,
             retry_delay=config.retry_delay,
+            raw_record=raw_record,
         )
         success = await save_scenario_and_history(
             scenario=scenario,
@@ -493,9 +582,8 @@ Examples:
     # Verification parameters
     parser.add_argument(
         "--verification-nodes",
-        nargs="+",
+        nargs="*",
         default=["narrative", "preference_order", "pay_off"],
-        choices=["narrative", "preference_order", "pay_off"],
         help="Which verification nodes to use in the graph.",
     )
 
@@ -528,6 +616,37 @@ Examples:
         action="store_true",
         help="Automatically run a debug batch before the full run. If debug succeeds, proceed to full run.",
     )
+    # Diplomacy LangGraph (API) mode
+    parser.add_argument(
+        "--use-diplomacy-graph",
+        action="store_true",
+        help="Use Diplomacy-specific LangGraph (reads enriched JSONL; no Azure if --azure-mode false).",
+    )
+    parser.add_argument(
+        "--diplomacy-records-file",
+        type=str,
+        default="/data/home/jjl7137/dipllm/data/pd_like_contests_sample.enriched.jsonl",
+        help="Path to enriched Diplomacy JSONL.",
+    )
+    parser.add_argument(
+        "--debug-num-records",
+        type=int,
+        default=2,
+        help="Number of Diplomacy records to process in debug mode.",
+    )
+    # Diplomacy map-to-scenario mode (bypass LLM graph)
+    parser.add_argument(
+        "--diplomacy-map-file",
+        type=str,
+        default=None,
+        help="JSON/JSONL file of Diplomacy map states to convert into scenarios.",
+    )
+    parser.add_argument(
+        "--diplomacy-output",
+        type=str,
+        default="data/diplomacy/diplomacy_pd_from_maps.jsonl",
+        help="Output JSONL path for generated Diplomacy scenarios.",
+    )
 
     return parser.parse_args()
 
@@ -541,7 +660,11 @@ def setup_configuration(
     if auto_debug_mode:
         # Use a separate output dir for debug
         debug_output_dir = (output_dir or args.output_dir) + "_debug"
-        return ScenarioCreationConfig(
+        # Map verification nodes (allow 'none' to indicate empty)
+        vnodes = args.verification_nodes
+        if vnodes == ["none"]:
+            vnodes = []
+        cfg_kwargs = dict(
             persona_jobs_file=args.persona_jobs_file,
             game_name=args.game_name,
             num_personas=debug_num_personas,
@@ -561,10 +684,18 @@ def setup_configuration(
             output_dir=debug_output_dir,
             resume=False,
             verbose=args.verbose,
-            verification_nodes=args.verification_nodes,
+            verification_nodes=vnodes,
+            use_diplomacy_graph=args.use_diplomacy_graph,
+            diplomacy_records_file=args.diplomacy_records_file,
+            debug_num_records=args.debug_num_records,
         )
+        return ScenarioCreationConfig(**cfg_kwargs)
     else:
-        return ScenarioCreationConfig(
+        # Map verification nodes (allow 'none' to indicate empty)
+        vnodes = args.verification_nodes
+        if vnodes == ["none"]:
+            vnodes = []
+        cfg_kwargs = dict(
             persona_jobs_file=args.persona_jobs_file,
             game_name=args.game_name,
             num_personas=args.num_personas,
@@ -584,8 +715,12 @@ def setup_configuration(
             output_dir=args.output_dir,
             resume=args.resume,
             verbose=args.verbose,
-            verification_nodes=args.verification_nodes,
+            verification_nodes=vnodes,
+            use_diplomacy_graph=args.use_diplomacy_graph,
+            diplomacy_records_file=args.diplomacy_records_file,
+            debug_num_records=args.debug_num_records,
         )
+        return ScenarioCreationConfig(**cfg_kwargs)
 
 
 def configure_logging(config: ScenarioCreationConfig):
@@ -598,23 +733,78 @@ def configure_logging(config: ScenarioCreationConfig):
     if config.verbose:
         logger.info("Configuration:")
         for key, value in config.to_dict().items():
+            if key == "diplomacy_records":
+                continue
             logger.info(f"  {key}: {value}")
 
 
 def load_persona_jobs(config: ScenarioCreationConfig) -> List[str]:
     """Load persona jobs from file"""
     try:
-        with open(config.persona_jobs_file, "r") as f:
-            all_persona_jobs = [json.loads(line)["item"] for line in f]
-            if config.num_personas > 0:
-                return all_persona_jobs[: config.num_personas]
+        if getattr(config, "use_diplomacy_graph", False):
+            # Load enriched Diplomacy JSONL and return synthetic job ids
+            recs: List[dict] = []
+            with open(config.diplomacy_records_file, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    recs.append(json.loads(line))
+            # Stash to a temp file for retrieval in process_single_job
+            tmp_path = Path(".diplomacy_records_cache.json")
+            tmp_path.write_text(json.dumps(recs))
+            config.diplomacy_records = recs
+            if config.debug_mode:
+                n = config.debug_num_records
             else:
-                return all_persona_jobs
+                n = config.num_personas if config.num_personas > 0 else len(recs)
+            return [f"rec_{i}" for i in range(min(n, len(recs)))]
+        else:
+            with open(config.persona_jobs_file, "r") as f:
+                all_persona_jobs = [json.loads(line)["item"] for line in f]
+                if config.num_personas > 0:
+                    return all_persona_jobs[: config.num_personas]
+                else:
+                    return all_persona_jobs
     except Exception as e:
-        logger.error(
-            f"Failed to load persona jobs from {config.persona_jobs_file}: {e}"
-        )
+        logger.error(f"Failed to load inputs: {e}")
         raise
+
+
+def _parse_diplomacy_job_index(persona_job: str) -> Optional[int]:
+    """Extract numeric index from a diplomacy-style persona job."""
+    if not persona_job:
+        return None
+    normalized = persona_job.strip().lower()
+    parts = normalized.split("_", 1)
+    if len(parts) < 2 or parts[0] != "rec":
+        return None
+    try:
+        return int(parts[1])
+    except ValueError:
+        return None
+
+
+def resolve_diplomacy_record(
+    config: ScenarioCreationConfig, persona_job: str
+) -> Optional[Dict[str, Any]]:
+    """Resolve a raw diplomacy record for the given persona job."""
+    recs = getattr(config, "diplomacy_records", None)
+    if recs is None:
+        cache_path = Path(".diplomacy_records_cache.json")
+        if cache_path.exists():
+            try:
+                recs = json.loads(cache_path.read_text())
+            except Exception:
+                recs = None
+    if not recs:
+        return None
+
+    idx = _parse_diplomacy_job_index(persona_job)
+    if idx is None or idx < 0 or idx >= len(recs):
+        return None
+
+    return recs[idx]
 
 
 def setup_directories(config: ScenarioCreationConfig) -> Tuple[str, str]:
@@ -658,6 +848,24 @@ def build_scenario_graph(config: ScenarioCreationConfig):
         logger.info("Config arguments before building scenario graph:")
         for key, value in config.to_dict().items():
             logger.info(f"  {key}: {value}")
+        # Lazy import selected graph to avoid azure deps unless actually needed
+        if getattr(config, "use_diplomacy_graph", False):
+            from data_creation.scenario_creation.langgraph_creation.diplomacy_scenario_creation_graph import (  # noqa: E501
+                build_scenario_creation_graph,
+            )
+        else:
+            from data_creation.scenario_creation.langgraph_creation.scenario_creation_graph import (  # noqa: E501
+                build_scenario_creation_graph,
+            )
+        # Adjust verification nodes only if not explicitly provided
+        vnodes = config.verification_nodes
+        if getattr(config, "use_diplomacy_graph", False):
+            # Diplomacy graph supports a narrower set of verifiers today.
+            allowed = ("narrative", "behavior", "pay_off")
+            if vnodes is None:
+                vnodes = ["narrative", "behavior", "pay_off"]
+            else:
+                vnodes = [v for v in vnodes if v in allowed]
         scenario_graph = build_scenario_creation_graph(
             debug_mode=config.debug_mode,
             llm_config={
@@ -668,7 +876,7 @@ def build_scenario_graph(config: ScenarioCreationConfig):
                 "azure_mode": config.azure_mode,
                 "max_iterations": config.max_iterations,
             },
-            verification_nodes=config.verification_nodes,
+            verification_nodes=vnodes,
         )
         logger.info("Graph built and compiled successfully.")
         return scenario_graph
@@ -846,6 +1054,39 @@ async def main():
     Main function with restart capability and robust error handling.
     """
     args = parse_arguments()
+    # New mode: Diplomacy map-state → scenarios (no LLM)
+    if getattr(args, "diplomacy_map_file", None):
+        try:
+            out_path = Path(args.diplomacy_output)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            # Load map items
+            maps: List[dict]
+            mp = Path(args.diplomacy_map_file)
+            if mp.suffix == ".jsonl":
+                maps = [json.loads(line) for line in mp.read_text().splitlines() if line.strip()]
+            else:
+                maps = json.loads(mp.read_text())
+                if isinstance(maps, dict):
+                    maps = [maps]
+            # Import generator without touching azure/LLM deps
+            import runpy
+            mod = runpy.run_path("data_creation/scenario_creation/langgraph_creation/scenario_creation_graph_diplomacy.py")
+            generate_scenario_from_map = mod["generate_scenario_from_map"]
+            # Generate and write JSONL
+            with open(out_path, "w", encoding="utf-8") as f:
+                ok = 0
+                for m in maps:
+                    try:
+                        item = generate_scenario_from_map(m)
+                        f.write(json.dumps(item, ensure_ascii=False) + "\n")
+                        ok += 1
+                    except Exception as e:
+                        logger.error(f"Failed to generate for map id={m.get('id','?')}: {e}")
+            logger.info(f"Diplomacy map generation finished: {ok}/{len(maps)} items -> {out_path}")
+        except Exception as e:
+            logger.error(f"Diplomacy map generation failed: {e}")
+            raise
+        return
     if getattr(args, "auto_debug", False):
         # 1. Run debug batch
         debug_config = setup_configuration(

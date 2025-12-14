@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import random
 import re
 from collections import defaultdict
 from copy import deepcopy
@@ -18,6 +19,7 @@ from games.game_configs import get_game_config
 from neuro_manipulation.utils import oai_response
 from pydantic import BaseModel
 
+from .. import evaluation_utils
 from ..data_models import BenchmarkItem, ResultRecord
 from .base import BaseBenchmarkDataset
 
@@ -68,14 +70,24 @@ class GameTheoryDataset(BaseBenchmarkDataset):
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
         raw_items = self._load_raw_scenarios()
 
-        # if "scenario_class" not in self._game_config: # remove so that error can be raised
-        #     return self._build_items_from_raw(raw_items)
+        # For configs without a structured scenario_class, fall back to raw items.
+        if "scenario_class" not in self._game_config:
+            return self._build_items_from_raw(raw_items)
 
         scenario_class = self._game_config["scenario_class"]
         payoff_matrix = self._game_config["payoff_matrix"]
         augmentation = self.config.augmentation_config or {}
         scenario_fields = getattr(scenario_class, "model_fields", {})
         config_fields = self._game_config
+        shuffle_options = bool(self._game_config.get("shuffle_options", False))
+        behavior_ratio = self._game_config.get("behavior_ratio")
+        shuffle_rng = None
+        if shuffle_options:
+            shuffle_rng = (
+                random.Random(behavior_ratio)
+                if behavior_ratio is not None
+                else random.Random()
+            )
 
         items: List[BenchmarkItem] = []
         for idx, record in enumerate(raw_items):
@@ -97,17 +109,34 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 )
                 continue
 
-            options = [
-                {"id": opt_idx + 1, "text": choice}
-                for opt_idx, choice in enumerate(
-                    scenario.get_behavior_choices().get_choices()
+            # Build behavior-category options, then shuffle and reindex.
+            raw_choices = scenario.get_behavior_choices().get_choices()
+            options: List[Dict[str, Any]] = []
+            for opt_idx, choice in enumerate(raw_choices):
+                try:
+                    behavior = scenario.find_behavior_from_decision(choice)
+                except Exception:  # pragma: no cover - defensive guard
+                    behavior = ""
+                options.append(
+                    {
+                        "id": opt_idx + 1,
+                        "text": choice,
+                        "behavior": behavior,
+                    }
                 )
-            ]
+
+            # Optionally shuffle in-place and reassign ids to reflect presented order.
+            if shuffle_options and shuffle_rng is not None:
+                shuffle_rng.shuffle(options)
+                for new_idx, opt in enumerate(options, start=1):
+                    opt["id"] = new_idx
 
             item_id = enriched.get("id", idx)
             metadata: Dict[str, Any] = {
                 "options": options,
             }
+            if shuffle_options and behavior_ratio is not None:
+                metadata["behavior_ratio_used"] = behavior_ratio
 
             if isinstance(scenario, SequentialGameScenario):
                 previous_attr = getattr(scenario, "previous_actions", None)
@@ -176,6 +205,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             raise ValueError("Raw scenario list was empty")
 
         return items
+
 
     class _ExtractionSchema(BaseModel):
         option_id: int
@@ -256,6 +286,11 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             "by_repeat": repeat_rows,
         }
 
+        # Behavior-level ratios derived from item metadata + numeric scores
+        behavior_payload = self._behavior_choice_ratios(records)
+        if behavior_payload:
+            metrics["behavior_choice_ratio"] = behavior_payload
+
         # Add statistical analysis over categorical choices
         stats_payload = self._compute_stats(records)
         if stats_payload:
@@ -318,7 +353,29 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         )
         total_counts: Dict[Tuple[Any, ...], int] = defaultdict(int)
 
+        # If any record has behavior options metadata, restrict choice ratios
+        # to that same subset so id-level and behavior-level ratios share the
+        # same underlying decisions (FR-006).
+        has_behavior_metadata = False
         for record in records:
+            meta = getattr(record, "metadata", None)
+            if isinstance(meta, dict):
+                item_md = meta.get("item_metadata") or {}
+                opts = item_md.get("options")
+                if isinstance(opts, list) and opts:
+                    has_behavior_metadata = True
+                    break
+
+        for record in records:
+            if has_behavior_metadata:
+                meta = getattr(record, "metadata", None)
+                if not isinstance(meta, dict):
+                    continue
+                item_md = meta.get("item_metadata") or {}
+                opts = item_md.get("options")
+                if not isinstance(opts, list) or not opts:
+                    continue
+
             score = record.score
             if score is None:
                 continue
@@ -359,23 +416,160 @@ class GameTheoryDataset(BaseBenchmarkDataset):
 
         return rows
 
+    def _behavior_choice_ratios(self, records: List[ResultRecord]) -> Dict[str, List[Dict[str, Any]]]:
+        """Aggregate behavior-level counts/ratios from numeric scores and metadata.
+
+        FR-004/FR-006/FR-007: derive behavior categories from per-item options and
+        ensure that every chosen option_id has a non-empty behavior category.
+        """
+        # Build a simple cache: (item_id) -> list of option dicts
+        options_by_item: Dict[Any, List[Dict[str, Any]]] = {}
+
+        def _get_options_for(item_id: Any, meta: Dict[str, Any] | None) -> List[Dict[str, Any]]:
+            if item_id in options_by_item:
+                return options_by_item[item_id]
+            if not meta:
+                # No metadata: skip this record for behavior-level aggregation.
+                options_by_item[item_id] = []
+                return []
+            item_md = meta.get("item_metadata") or {}
+            opts = item_md.get("options")
+            if not isinstance(opts, list) or not opts:
+                options_by_item[item_id] = []
+                return []
+            options_by_item[item_id] = opts
+            return opts
+
+        # Counts keyed by (emotion, intensity[, repeat_id], behavior)
+        counts_overall: Dict[Tuple[Any, Any, str], int] = defaultdict(int)
+        counts_by_repeat: Dict[Tuple[Any, Any, Any, str], int] = defaultdict(int)
+        totals_overall: Dict[Tuple[Any, Any], int] = defaultdict(int)
+        totals_by_repeat: Dict[Tuple[Any, Any, Any], int] = defaultdict(int)
+
+        for record in records:
+            score = record.score
+            if score is None:
+                continue
+            try:
+                option_val = float(score)
+            except (TypeError, ValueError):
+                continue
+            if math.isnan(option_val):
+                continue
+
+            option_id = int(option_val)
+            # Look up behavior category from metadata
+            opts = _get_options_for(record.item_id, record.metadata)
+            if not opts:
+                # No behavior metadata for this item; skip for behavior-level ratios.
+                continue
+            behavior: Optional[str] = None
+            matched_opt: Optional[Dict[str, Any]] = None
+            for opt in opts:
+                if int(opt.get("id", -1)) == option_id:
+                    matched_opt = opt
+                    behavior = opt.get("behavior") or None
+                    break
+
+            if matched_opt is None:
+                # Unmappable option id: surface in an explicit unknown bucket.
+                behavior = "unknown"
+            elif not behavior:
+                # Matched option with missing/empty behavior is still an error.
+                raise ValueError(
+                    f"Missing behavior category for option_id {option_id} "
+                    f"(item_id={record.item_id!r}) while computing behavior-level ratios"
+                )
+
+            key_overall = (record.emotion, record.intensity)
+            counts_overall[(record.emotion, record.intensity, behavior)] += 1
+            totals_overall[key_overall] += 1
+
+            if hasattr(record, "repeat_id"):
+                key_rep = (record.emotion, record.intensity, record.repeat_id)
+                counts_by_repeat[(record.emotion, record.intensity, record.repeat_id, behavior)] += 1
+                totals_by_repeat[key_rep] += 1
+
+        if not totals_overall:
+            return {}
+
+        overall_rows: List[Dict[str, Any]] = []
+        for (emotion, intensity, behavior), count in counts_overall.items():
+            total = totals_overall[(emotion, intensity)]
+            if total:
+                overall_rows.append(
+                    {
+                        "emotion": emotion,
+                        "intensity": intensity,
+                        "behavior_label": behavior,
+                        "ratio": count / total,
+                    }
+                )
+
+        by_repeat_rows: List[Dict[str, Any]] = []
+        for (emotion, intensity, repeat_id, behavior), count in counts_by_repeat.items():
+            total = totals_by_repeat[(emotion, intensity, repeat_id)]
+            if total:
+                by_repeat_rows.append(
+                    {
+                        "emotion": emotion,
+                        "intensity": intensity,
+                        "repeat_id": repeat_id,
+                        "behavior_label": behavior,
+                        "ratio": count / total,
+                    }
+                )
+
+        return {
+            "overall": overall_rows,
+            "by_repeat": by_repeat_rows,
+        }
+
     def _fallback_option_via_llm(
         self, response: str, options: Sequence[str]
     ) -> Optional[int]:
         if not options:
             return None
 
+        client_name = str(self.llm_eval_config.get("client", "openai")).lower()
+        formatted_options = ", ".join(
+            f"Option {idx + 1}: {text}" for idx, text in enumerate(options)
+        )
+
+        # Gemini path: delegate to shared evaluation helper
+        if client_name == "gemini":
+            system_prompt = (
+                "You are helping classify a model's decision. "
+                "Given the available options, identify which option best matches the response. "
+                "Return a JSON object with an integer field 'option_id' indicating the "
+                "1-based index of the chosen option. Use -1 if none apply."
+            )
+            query = (
+                f"Available options: {formatted_options}\n\n"
+                f"Response:\n{response}"
+            )
+            try:
+                result = evaluation_utils.llm_evaluate_response(
+                    system_prompt=system_prompt,
+                    query=query,
+                    llm_eval_config=self.llm_eval_config,
+                )
+            except Exception as exc:  # pragma: no cover - network failure safeguard
+                logger.warning("LLM extraction failed (gemini): %s", exc)
+                return None
+
+            return self._parse_option_id_from_result(result)
+
+        # OpenAI / Azure path: use existing beta parse helper
         client = self._ensure_llm_client()
         if client is None:
             return None
 
-        formatted_options = ", ".join(
-            f"Option {idx + 1}: {text}" for idx, text in enumerate(options)
-        )
         prompt = (
             "You are helping classify a model's decision. Given the available options "
             f"({formatted_options}), identify which option best matches the following "
             f"response. Respond with JSON containing an integer field named option_id.\n\n"
+            f"If the response is not one of the options, return option_id -1.\n\n"
             f"Response:\n{response}"
         )
 

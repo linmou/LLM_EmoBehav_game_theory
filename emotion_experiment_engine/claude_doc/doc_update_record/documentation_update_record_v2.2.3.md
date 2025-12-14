@@ -8,3 +8,9 @@
   - Config: created `config/swebench_series_lite.yaml` for deferred generation smoke runs.
   - Plan doc: updated `tasks/swebench_migration_plan.md` to include dry-run validation command and fixed typo in Phase 3 header.
   - Commit: N/A (applied via Codex CLI patch).
+- **Date**: 2025-12-07
+- **Files Updated**:
+  - `emotion_experiment_engine/claude_doc/testing_strategy_and_coverage_analysis.md`
+- **Summary of Changes**:
+  - Documented game_theory choice-ratio testing updates, including the `"unknown"` behavior bucket for unmappable option ids.
+  - Clarified key tests and CSV column naming (`behavior`, including `"unknown"`), and listed targeted pytest subsets for fast feedback.

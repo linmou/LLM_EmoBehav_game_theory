@@ -61,17 +61,9 @@ from .datasets.trustllm_robustness import TrustLLMRobustnessDataset
 from .datasets.trustllm_safety import TrustLLMSafetyDataset
 from .datasets.trustllm_truthfulness import TrustLLMTruthfulnessDataset
 from .datasets.games import GameTheoryDataset
-from .datasets.swebench import SWEbenchDataset
+from .datasets.sc2_escalation import SC2EscalationDataset
 from .datasets.diplomacy_gradient import DiplomacyGradientDataset
-from .datasets.gpqa import GPQADataset
-from .gpqa_prompt_wrapper import GPQAPromptWrapper
-from .datasets.humaneval import HumanEvalDataset
-from .humaneval_prompt_wrapper import HumanEvalPromptWrapper
 from .diplomacy_prompts import DiplomacyOptionsPromptWrapper
-from .datasets.mbpp import MBPPDataset
-from .mbpp_prompt_wrapper import MBPPPromptWrapper
-from .datasets.pubmed_qa import PubMedQADataset
-from .pubmedqa_prompt_wrapper import PubMedQAPromptWrapper
 def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
     from .dataset_factory import create_dataset_from_config as _real_create
     return _real_create(*args, **kwargs)
@@ -79,7 +71,7 @@ if TYPE_CHECKING:
     from .datasets.base import BaseBenchmarkDataset
 from .fantom_prompt_wrapper import FantomPromptWrapper
 from .bfcl_prompt_wrapper import BFCLPromptWrapper
-from .game_prompt_wrapper import GameBenchmarkPromptWrapper, GameDecisionPromptWrapper
+from .game_prompt_wrapper import GameBenchmarkPromptWrapper
 
 
 @dataclass
@@ -177,12 +169,6 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=MTBench101PromptWrapper,
     ),
-    # PubMedQA (yes/no/maybe classification)
-    ("pubmed_qa", "pqa_labeled"): BenchmarkSpec(
-        dataset_class=PubMedQADataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=PubMedQAPromptWrapper,
-    ),
     # Memory benchmarks - InfiniteBench
     # Default for most tasks
     ("infinitebench", "*"): BenchmarkSpec(
@@ -250,50 +236,11 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=TruthfulQAPromptWrapper,
     ),
-    # GPQA benchmark (single-answer MC, reuse TruthfulQA MC1-style wrapper)
-    ("gpqa", "*"): BenchmarkSpec(
-        dataset_class=GPQADataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=GPQAPromptWrapper,
-    ),
-    # HumanEval benchmark (code completion)
-    # Organize tasks as {default, plus, *} where * means combined view
-    ("humaneval", "default"): BenchmarkSpec(
-        dataset_class=HumanEvalDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=HumanEvalPromptWrapper,
-    ),
-    ("humaneval", "plus"): BenchmarkSpec(
-        dataset_class=HumanEvalDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=HumanEvalPromptWrapper,
-    ),
-    ("humaneval", "*"): BenchmarkSpec(
-        dataset_class=HumanEvalDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=HumanEvalPromptWrapper,
-    ),
     # Emotion Check benchmark - all tasks use the same wrapper
     ("emotion_check", "*"): BenchmarkSpec(
         dataset_class=EmotionCheckDataset,
         answer_wrapper_class=EmotionAnswerWrapper,
         prompt_wrapper_class=EmotionCheckPromptWrapper,
-    ),
-    # MBPP benchmark
-    ("mbpp", "default"): BenchmarkSpec(
-        dataset_class=MBPPDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MBPPPromptWrapper,
-    ),
-    ("mbpp", "plus"): BenchmarkSpec(
-        dataset_class=MBPPDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MBPPPromptWrapper,
-    ),
-    ("mbpp", "*"): BenchmarkSpec(
-        dataset_class=MBPPDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=MBPPPromptWrapper,
     ),
     # FANToM – allow wildcard for shared wrapper
     ("fantom", "*"): BenchmarkSpec(
@@ -326,28 +273,20 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=TrustLLMTruthfulnessDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
     ),
-    ("game_theory_decision", "*"): BenchmarkSpec(
-        dataset_class=GameTheoryDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        prompt_wrapper_class=GameDecisionPromptWrapper,
-    ),
     ("game_theory", "*"): BenchmarkSpec(
         dataset_class=GameTheoryDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=GameBenchmarkPromptWrapper,
     ),
-    # Diplomacy PD-style gradient benchmark (options = 1..5 natural-language orders)
+    ("sc2_escalation", "*"): BenchmarkSpec(
+        dataset_class=SC2EscalationDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=GameBenchmarkPromptWrapper,
+    ),
     ("diplomacy_pd", "*"): BenchmarkSpec(
         dataset_class=DiplomacyGradientDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=DiplomacyOptionsPromptWrapper,
-    ),
-    # SWE-bench offline (generation-only); prompts come from precomputed text_inputs
-    ("swebench", "patch"): BenchmarkSpec(
-        dataset_class=SWEbenchDataset,
-        answer_wrapper_class=IdentityAnswerWrapper,
-        # No explicit prompt wrapper; dataset passes through precomputed prompts
-        prompt_wrapper_class=None,
     ),
 }
 
@@ -401,10 +340,9 @@ def create_benchmark_components(
 
     spec: Optional[BenchmarkSpec] = BENCHMARK_SPECS.get(benchmark_key)
     if spec is None:
-        # Wildcard fallback: allow concise specs like (name, "*")
+        # Fallback to wildcard default like (name, "*") to reduce duplication
         wildcard_key = (benchmark_name.lower(), "*")
         spec = BENCHMARK_SPECS.get(wildcard_key)
-
     if spec is None:
         available_combinations = list(BENCHMARK_SPECS.keys())
         raise KeyError(

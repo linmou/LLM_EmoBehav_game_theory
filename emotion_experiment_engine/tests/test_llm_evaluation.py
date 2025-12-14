@@ -5,7 +5,6 @@ These tests codify the September 2025 "LLM Evaluation System Update" contract.
 
 import math
 import unittest
-import types
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
@@ -70,6 +69,10 @@ class TestLLMEvaluateResponse(unittest.TestCase):
 
     def setUp(self) -> None:
         evaluation_utils._global_client = None  # type: ignore[attr-defined]
+        if hasattr(evaluation_utils, "_global_gemini_model"):
+            evaluation_utils._global_gemini_model = None  # type: ignore[attr-defined]
+        if hasattr(evaluation_utils, "_global_gemini_model_name"):
+            evaluation_utils._global_gemini_model_name = None  # type: ignore[attr-defined]
 
     @patch("emotion_experiment_engine.evaluation_utils.openai.OpenAI")
     def test_llm_evaluate_response_parses_json(self, mock_openai: MagicMock) -> None:
@@ -137,43 +140,57 @@ class TestLLMEvaluateResponse(unittest.TestCase):
             )
         self.assertIn("LLM evaluation failed", str(exc.exception))
 
-    def test_llm_evaluate_response_gemini_path(self) -> None:
-        # Patch in a fake google.generativeai module
-        fake_mod = type("FakeGenAI", (), {})()
-        fake_state: dict[str, Any] = {}
+    def test_llm_evaluate_response_supports_gemini_client(self) -> None:
+        # Stub google.generativeai module to avoid real dependency calls
+        import sys
+        import types
 
-        class _FakeResponse:
-            def __init__(self, text: str):
-                self.text = text
+        fake_genai = types.SimpleNamespace()
+        model_instance = MagicMock()
+        model_instance.generate_content.return_value = MagicMock(
+            text='{"score": 0.5}'
+        )
+        fake_genai.GenerativeModel = MagicMock(return_value=model_instance)
+        fake_genai.configure = MagicMock()
 
-        class _FakeModel:
-            def __init__(self, name: str) -> None:
-                fake_state["model_name"] = name
+        sys.modules["google"] = types.ModuleType("google")
+        sys.modules["google.generativeai"] = fake_genai
 
-            def generate_content(self, prompt: str):
-                fake_state["prompt"] = prompt
-                return _FakeResponse('{"score": 0.99}')
-
-        def _fake_configure(api_key=None):
-            fake_state["api_key"] = api_key
-
-        fake_mod.configure = _fake_configure
-        fake_mod.GenerativeModel = _FakeModel
-
-        fake_pkg = types.ModuleType("google")
-        fake_pkg.generativeai = fake_mod  # type: ignore[attr-defined]
-
-        with patch.dict("sys.modules", {"google": fake_pkg, "google.generativeai": fake_mod}):
+        with patch("emotion_experiment_engine.evaluation_utils.openai.OpenAI") as mock_openai:
             result = evaluation_utils.llm_evaluate_response(
-                system_prompt="Judge now",
-                query="Evaluate this answer",
-                llm_eval_config={"client": "gemini", "model": "gemini-pro", "temperature": 0.0},
+                system_prompt="Judge",
+                query="Evaluate",
+                llm_eval_config={"client": "gemini", "model": "gemini-test"},
             )
 
-        self.assertEqual(result.get("score"), 0.99)
-        self.assertEqual(fake_state.get("model_name"), "gemini-pro")
-        self.assertIn("Evaluate this answer", fake_state.get("prompt", ""))
-        self.assertIn("Judge now", fake_state.get("prompt", ""))
+        self.assertAlmostEqual(result["score"], 0.5)
+        fake_genai.configure.assert_called_once()
+        fake_genai.GenerativeModel.assert_called_once_with("gemini-test")
+        model_instance.generate_content.assert_called_once()
+        mock_openai.assert_not_called()
+
+    def test_llm_evaluate_response_strips_code_fences_from_llm_output(self) -> None:
+        import sys
+        import types
+
+        fake_genai = types.SimpleNamespace()
+        model_instance = MagicMock()
+        model_instance.generate_content.return_value = MagicMock(
+            text="```json\\n{\"score\": 0.9}\\n```"
+        )
+        fake_genai.GenerativeModel = MagicMock(return_value=model_instance)
+        fake_genai.configure = MagicMock()
+
+        sys.modules["google"] = types.ModuleType("google")
+        sys.modules["google.generativeai"] = fake_genai
+
+        result = evaluation_utils.llm_evaluate_response(
+            system_prompt="Judge",
+            query="Evaluate",
+            llm_eval_config={"client": "gemini", "model": "gemini-test"},
+        )
+
+        self.assertAlmostEqual(result["score"], 0.9)
 
 
 class ImmediateFuture:

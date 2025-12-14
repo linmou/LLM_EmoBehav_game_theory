@@ -14,7 +14,8 @@ __all__ = [
     "BFCLDataset",
     "MTBench101Dataset",
     "TruthfulQADataset",
-    "GPQADataset",
+    "DiplomacyGradientDataset",
+    "SC2EscalationDataset",
 ]
 
 _LAZY_MAP = {
@@ -26,7 +27,8 @@ _LAZY_MAP = {
     "BFCLDataset": (".bfcl", "BFCLDataset"),
     "MTBench101Dataset": (".mtbench101", "MTBench101Dataset"),
     "TruthfulQADataset": (".truthfulqa", "TruthfulQADataset"),
-    "GPQADataset": (".gpqa", "GPQADataset"),
+    "DiplomacyGradientDataset": (".diplomacy_gradient", "DiplomacyGradientDataset"),
+    "SC2EscalationDataset": (".sc2_escalation", "SC2EscalationDataset"),
 }
 
 

@@ -159,6 +159,34 @@ class UltimatumGameScenario(SequentialGameScenario):
             "proposer_behavior_choices": UGProposerChoices.example(),
             "responder_behavior_choices": UGResponderChoices.example(),
         }
+        
+    @staticmethod
+    def diplomacy_example():
+        return {
+            "game_name": "Ultimatum_Game",
+            "scenario": "Gunboat_Diplomacy_FRANCE_vs_GERMANY_Bur_Threat",
+            "participants": [
+            { "name": "FRANCE", "role": "Proposer" },
+            { "name": "GERMANY", "role": "Responder" }
+            ],
+            "behavior_choices": {
+            "implicit_threat": "France moves Army Marseilles to Burgundy (A Mar -> Bur). This puts a unit adjacent to German home centers Munich and Belgium.",
+            "capitulate": "Germany moves fleet to Holland (F Kie -> Hol) allowing France to take Belgium unopposed.",
+            "retaliate": "Germany bounces France in Burgundy (A Mun -> Bur), ensuring neither gains position but wasting both moves."
+            },
+            "payoff_matrix_description": {
+            "player 2: capitulate": [
+                "player 1 gets 2: France takes Belgium (Gain). The threat in Burgundy was successful without firing a shot.",
+                "player 2 gets 1: Germany secures Holland. They gain a build but have allowed a French unit on their border to avoid a bounce."
+            ],
+            "player 2: retaliate": [
+                "player 1 gets -1: France bounces in Burgundy (1-1). The move fails, and France has wasted a turn positioning for a threat that didn't work.",
+                "player 2 gets -1: Germany bounces in Burgundy. They are safe, but they failed to take a supply center this turn because they had to defend."
+            ]
+            },
+            "description": "France cannot speak to Germany. To issue an ultimatum, France moves a unit toward a shared vital choke point (Burgundy). The board state acts as the message: 'I am taking position here. If you try to stop me, we both bounce and waste our turn. If you let me in, you can take a different center.' Germany must interpret this silence: is it an invasion (War) or a negotiation for space (Ultimatum)?",
+            "payoff_description": "Implied Payoffs:\nFrance Move/Germany Yield: France +2 (Position), Germany +1 (Safety).\nFrance Move/Germany Bounce: France -1 (Waste), Germany -1 (Waste)."
+        }
 
     @staticmethod
     def specific_prompt() -> str:
