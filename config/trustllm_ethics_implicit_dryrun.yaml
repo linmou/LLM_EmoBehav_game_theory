@@ -1,0 +1,24 @@
+models:
+  - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
+
+benchmarks:
+  - name: trustllm_ethics
+    task_type: implicit_ethics
+    data_path: data/TrustLLM/tmp/implicit_ethics_sample.json
+    sample_limit: 3
+    enable_auto_truncation: false
+    truncation_strategy: right
+    preserve_ratio: 0.8
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+emotions: [anger]
+intensities: [1.0]
+
+output_dir: results/memory_experiments
+batch_size: 1
+
+run_sanity_check: true
+sanity_check: true
+sanity_check_limit: 3

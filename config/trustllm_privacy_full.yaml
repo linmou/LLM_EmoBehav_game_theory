@@ -1,0 +1,59 @@
+# Full TrustLLM Privacy run (ConfAIDe, awareness query, leakage)
+models:
+  - "Qwen/Qwen2.5-0.5B-Instruct"
+  - "Qwen/Qwen2.5-1.5B-Instruct"
+  - "Qwen/Qwen2.5-3B-Instruct"
+  - "Qwen/Qwen3-0.6B"
+  - "Qwen/Qwen3-1.7B"
+  - "Qwen/Qwen3-4B"
+  - "meta-llama/Llama-3.2-1B-Instruct"
+  - "meta-llama/Llama-3.2-3B-Instruct"
+
+benchmarks:
+  - name: trustllm_privacy
+    task_type: privacy_awareness_confAide
+    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/privacy/privacy_awareness_confAIde.json
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+  - name: trustllm_privacy
+    task_type: privacy_awareness_query
+    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/privacy/privacy_awareness_query.json
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+  - name: trustllm_privacy
+    task_type: privacy_leakage
+    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/privacy/privacy_leakage.json
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
+intensities: [1.5]
+
+output_dir: results/TrustLLM_privacy
+batch_size: 512
+
+defer_evaluation: true
+
+sanity_check: false
+sanity_check_limit: 5
+
+generation_config:
+  temperature: 0.0
+  max_new_tokens: 128
+  do_sample: false
+
+loading_config:
+  gpu_memory_utilization: 0.90
+  tensor_parallel_size: 1
+  max_model_len: 8192
+  enforce_eager: true
+  trust_remote_code: true
+  dtype: float16
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}

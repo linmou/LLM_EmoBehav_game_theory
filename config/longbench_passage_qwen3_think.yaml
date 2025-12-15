@@ -1,0 +1,45 @@
+
+# LongBench passage-focused Qwen3 configuration
+models:
+  - "Qwen/Qwen3-32B-AWQ"
+
+benchmarks:
+  - name: longbench
+    task_type: "passage.*"
+    base_data_dir: ./data/memory_benchmarks
+    llm_eval_config:
+      model: gpt-4o-mini
+      temperature: 0.0
+
+emotions: []
+intensities: [1.5]
+
+repeat_runs: 3
+repeat_seed_base: 123
+
+defer_evaluation: true
+
+output_dir: results/longbench_passage_qwen3/thinking
+batch_size: 96
+
+sanity_check: false
+
+loading_config:
+  gpu_memory_utilization: 0.90
+  max_model_len: 32768
+  enforce_eager: true
+  trust_remote_code: true
+  dtype: float16
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+generation_config:
+  enable_thinking: true
+  temperature: 0.6
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  max_new_tokens: 512
+  do_sample: true
+  presence_penalty: 1.5

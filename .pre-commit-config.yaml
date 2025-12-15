@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: test-layout-check
+        name: Test layout duplicate check
+        entry: python emotion_memory_experiments/tests/utils/check_test_layout.py
+        language: system
+        files: ^emotion_memory_experiments/tests/
+

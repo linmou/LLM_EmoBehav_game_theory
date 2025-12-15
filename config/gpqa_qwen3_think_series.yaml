@@ -1,0 +1,84 @@
+# GPQA Qwen3-1.7B Thinking Series
+# Updated: 2025-09-30 | Commit: TBD
+
+experiment_name: "GPQA_Qwen3_Think_Series"
+description: "Run GPQA (main/extended/diamond) with Qwen3-1.7B using zero-shot CoT prompts"
+version: "1.0.0"
+
+models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+
+benchmarks:
+  - name: "gpqa"
+    task_type: "main"
+    base_data_dir: "/data/home/jjl7137/gpqa/dataset"
+    enable_auto_truncation: false
+    truncation_strategy: "right"
+    preserve_ratio: 0.95
+    sample_limit: null
+    augmentation_config:
+      gpqa_mode: "cot"  # default anyway; explicit for clarity
+
+  - name: "gpqa"
+    task_type: "extended"
+    base_data_dir: "/data/home/jjl7137/gpqa/dataset"
+    enable_auto_truncation: false
+    truncation_strategy: "right"
+    preserve_ratio: 0.95
+    sample_limit: null
+    augmentation_config:
+      gpqa_mode: "cot"
+
+  - name: "gpqa"
+    task_type: "diamond"
+    base_data_dir: "/data/home/jjl7137/gpqa/dataset"
+    enable_auto_truncation: false
+    truncation_strategy: "right"
+    preserve_ratio: 0.95
+    sample_limit: null
+    augmentation_config:
+      gpqa_mode: "cot"
+
+# Neutral-only run (no emotion injection) – set a list to enable emotions
+emotions: []
+intensities: [1.5]
+
+repeat_run: 1
+repeat_seed_base: 12345
+
+loading_config:
+  model_path: null    # filled by runner from `models`
+  gpu_memory_utilization: 0.90
+  tensor_parallel_size: 2   # use both GPUs exposed via CUDA_VISIBLE_DEVICES=2,3
+  max_model_len: 32768
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+repe_eng_config:
+  direction_method: "pca"
+
+generation_config:
+  temperature: 0.2
+  max_new_tokens: 256
+  do_sample: true
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: true   # Qwen3 thinking mode
+
+batch_size: 16
+max_evaluation_workers: 4
+pipeline_queue_size: 2
+
+output_dir: "results/gpqa_qwen3_think"
+
+sanity_check: true

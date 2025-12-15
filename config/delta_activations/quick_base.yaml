@@ -1,0 +1,13 @@
+model_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
+intensities: [0.0, 1.0, 1.5]
+output_dir: "results/delta_activations/quick_compare"
+
+# Minimal HF loading config. The engine will pick sane defaults.
+loading_config:
+  model_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  max_model_len: 4096
+
+# RepE engine overrides (empty = use defaults: PCA, n_components=1, middle layers)
+repe_eng_config: {}
+

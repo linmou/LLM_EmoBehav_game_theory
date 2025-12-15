@@ -6,17 +6,17 @@ experiment:
   models: 
     - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
     - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B-AWQ"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B-AWQ"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-14B-AWQ"
+    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+      #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B-AWQ"
+      #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-14B-AWQ"
   
   # List of games to run experiments with
   games:
-    - "Prisoners_Dilemma"
-    - "Escalation_Game"
-    - "Trust_Game_Trustor"
-    - "Trust_Game_Trustee"
-    - "Ultimatum_Game_Proposer"
+    # - "Prisoners_Dilemma"
+      #- "Escalation_Game"
+      #- "Trust_Game_Trustor"
+      #- "Trust_Game_Trustee"
+      #- "Ultimatum_Game_Proposer"
     - "Ultimatum_Game_Responder"
 
   games_config:
@@ -57,6 +57,9 @@ experiment:
   
   repeat: 1
 
+  repe_config:
+    data_dir: "data/stimulus/crowd-enVent-transformed"
+
   emotions:
     - "anger"
     - "happiness"
@@ -72,6 +75,6 @@ experiment:
   run_sanity_check: false
 
   output:
-    base_dir: "results/Qwen3_Series_none_thinking"
+    base_dir: "results/Qwen3_Series_none_thinking/crowd-enVent-transform"
     save_plots: true
     plot_format: "png"

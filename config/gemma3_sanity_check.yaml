@@ -49,6 +49,6 @@ experiment:
 # Minimal multimodal config for testing
 repe_config:
   multimodal_intent: true
-  data_dir: "data/image"
+  data_dir: "data/stimulus/image"
   emotions: ["happiness"]
   rebuild: false

@@ -1,6 +1,5 @@
 # Import all functions from the utils.py file to make them available when importing from neuro_manipulation.utils
 import importlib.util
-import sys
 import os
 
 # Get the path to the utils.py file in the parent directory
@@ -26,6 +25,8 @@ test_direction = utils_module.test_direction
 get_rep_reader = utils_module.get_rep_reader
 prob_cal_record = utils_module.prob_cal_record
 load_model_tokenizer = utils_module.load_model_tokenizer
+load_tokenizer_only = utils_module.load_tokenizer_only
+load_model_only = utils_module.load_model_only
 all_emotion_rep_reader = utils_module.all_emotion_rep_reader
 dict_to_unique_code = utils_module.dict_to_unique_code
 oai_response = utils_module.oai_response
@@ -45,6 +46,8 @@ __all__ = [
     'get_rep_reader',
     'prob_cal_record',
     'load_model_tokenizer',
+    'load_tokenizer_only',
+    'load_model_only',
     'all_emotion_rep_reader',
     'dict_to_unique_code',
     'oai_response'

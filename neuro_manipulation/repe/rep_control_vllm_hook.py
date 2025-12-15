@@ -591,6 +591,7 @@ class RepControlVLLMHook:
                 ),  # Default to 0 for reproducibility if baseline needed
                 repetition_penalty=kwargs.get("repetition_penalty", 1.0),
                 top_p=kwargs.get("top_p", 1.0),
+                seed=kwargs.get("seed", None),
                 # Add other params from kwargs if needed
                 # **{k: v for k, v in kwargs.items() if k not in ['max_new_tokens', 'temperature', 'repetition_penalty', 'top_p']}
             )
