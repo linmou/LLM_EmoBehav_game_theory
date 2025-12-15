@@ -1,5 +1,5 @@
 # HFBackend (`delta_activation_engine/backends/hf.py`)
-Last updated: 2024-03-19 (working copy)
+Last updated: 2025-12-01 (working copy)
 
 ## Purpose
 HF-backed processor that produces baseline and steered representations using RepE activation directions. This is the computational core for both baseline and chat pipelines.
@@ -7,6 +7,7 @@ HF-backed processor that produces baseline and steered representations using Rep
 ## Implementation Walkthrough
 - `select_middle_third_layers(total_layers)`: returns the middle third of decoder layers; empty list if depth ≤ 0.
 - `HFBackend.__init__(cfg)`: lazily imports HF/RepE utilities, loads model/tokenizer via `setup_model_and_tokenizer(from_vllm=False)`, forces `output_hidden_states=True`, detects layer count, and selects control layers. It registers RepE pipelines, builds RepE config (`get_repe_eng_config`), loads emotion readers, and wraps the model with `WrappedReadingVecModel`. Max sequence length is fixed at 256.
+- RepE reader loading honors `emotion_data_seed` in `repe_eng_config` when hashing caches and building train/test splits. Adjust this seed to reshuffle RepE directions between delta runs.
 - `_forward_last_hidden_avg(texts)`: tokenizes with padding/truncation, runs HF forward pass, takes last hidden state → last token slice → mean over batch → CPU numpy float32.
 - `_forward_last_hidden_avg_steered(texts, emotion, intensity)`: fetches emotion directions for control layers, scales by intensity, wraps decoder blocks, sets controllers (no normalization, mask=1.0), runs forward, averages last token, then resets wrapper.
 - `get_repr(prompts, steered, emotion=None, intensity=None)`: routes to baseline vs steered paths, asserting emotion/intensity for steered runs.

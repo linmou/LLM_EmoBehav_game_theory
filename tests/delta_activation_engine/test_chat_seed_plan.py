@@ -47,10 +47,13 @@ def test_build_seeded_chat_jobs_creates_full_grid_without_mutation() -> None:
     # First job should use first model and seed 0
     assert jobs[0].model_path == models[0]
     assert jobs[0].loading_config["seed"] == 0
+    assert jobs[0].repe_eng_config["emotion_data_seed"] == 0
     # Last job should use last model and last seed
     assert jobs[-1].model_path == models[-1]
     assert jobs[-1].loading_config["seed"] == seeds[-1]
+    assert jobs[-1].repe_eng_config["emotion_data_seed"] == seeds[-1]
     # Base config should remain unchanged
     assert base_cfg.model_path == "base-model"
     assert base_cfg.loading_config["seed"] == 0
     assert base_cfg.output_dir == "results/delta_activations"
+    assert "emotion_data_seed" not in base_cfg.repe_eng_config

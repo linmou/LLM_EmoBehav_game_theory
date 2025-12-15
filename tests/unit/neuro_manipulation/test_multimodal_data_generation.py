@@ -180,6 +180,25 @@ class TestPrimaryEmotionsConceptDatasetEnhanced:
             train_data = data["anger"]["train"]["data"]
             assert len(train_data) > 0
             assert all(isinstance(item, str) for item in train_data)
+
+    def test_text_only_seed_changes_pair_order(self, tmp_path):
+        """Different seeds should reorder train data pairs."""
+        data_dir = tmp_path / "data"
+        data_dir.mkdir()
+        (data_dir / "anger.json").write_text(
+            json.dumps(["a1", "a2", "a3", "a4"]), encoding="utf-8"
+        )
+        (data_dir / "happiness.json").write_text(
+            json.dumps(["h1", "h2", "h3", "h4"]), encoding="utf-8"
+        )
+
+        data0 = primary_emotions_concept_dataset(str(data_dir), seed=0)
+        data1 = primary_emotions_concept_dataset(str(data_dir), seed=1)
+
+        anger_train_0 = data0["anger"]["train"]["data"]
+        anger_train_1 = data1["anger"]["train"]["data"]
+
+        assert anger_train_0 != anger_train_1
     
     def test_multimodal_mode_enabled(self, temp_data_dir, temp_image_dir, mock_tokenizer):
         """Test multimodal data generation."""
