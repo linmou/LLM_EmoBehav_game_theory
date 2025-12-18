@@ -111,6 +111,40 @@ def test_registry_creates_components(
     assert collated["prompts"][0]
 
 
+def test_diplomacy_escalation_game_theory_dataset(prompt_format) -> None:
+    # Test for emotion_experiment_engine/datasets/games.py: ensure diplomacy escalation data loads via game_theory benchmark.
+    config = BenchmarkConfig(
+        name="game_theory",
+        task_type="Diplomacy_Escalation_Game",
+        data_path=None,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=1.0,
+        llm_eval_config=None,
+    )
+
+    prompt_wrapper, answer_wrapper, dataset = create_benchmark_components(
+        benchmark_name="game_theory",
+        task_type="Diplomacy_Escalation_Game",
+        config=config,
+        prompt_format=prompt_format,
+    )
+
+    assert callable(prompt_wrapper)
+    assert callable(answer_wrapper)
+    assert isinstance(dataset, GameTheoryDataset)
+    assert (
+        Path(dataset.config.data_path).name
+        == "diplomacy_Escalation_Game_all_data_samples.json"
+    )
+    first_item = dataset[0]["item"]
+    assert first_item.metadata["options"]
+    assert len(first_item.metadata["options"]) == 2
+
+
 @pytest.mark.parametrize(
     "task_type, extra",
     [

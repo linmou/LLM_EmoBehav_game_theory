@@ -90,4 +90,50 @@ class GameBenchmarkPromptWrapper:
         return prompt_text
 
 
-__all__ = ["GameBenchmarkPromptWrapper"]
+class GameDecisionPromptWrapper(GameBenchmarkPromptWrapper):
+    """Prompt variant that demands an immediate JSON decision."""
+
+    DECIDE_INSTRUCTION = (
+        'You must make a decision now. Do not wait for additional information or refuse '
+        'to decide. Respond only with this JSON object: {"decision": "<copy one option text exactly>"}'
+    )
+
+    def __call__(
+        self,
+        *,
+        context: str | None,
+        question: str,
+        user_messages: Sequence[str] | str | None,
+        enable_thinking: bool,
+        augmentation_config: Optional[dict],
+        answer: Any,
+        emotion: Optional[str],
+        options: Optional[Sequence[Any]],
+    ) -> str:
+        del context, augmentation_config, answer, emotion  # unused in adapter
+        normalized_options = self._normalize_options(options)
+
+        system_lines = [question]
+        for idx, option in enumerate(normalized_options, start=1):
+            system_lines.append(f"Option {idx}. {option}")
+        system_lines.append(self.DECIDE_INSTRUCTION)
+        system_lines.append('Do not output anything else.')
+
+        system_prompt = "\n".join(system_lines)
+
+        if user_messages is None:
+            user_messages = ["Please provide your answer."]
+        elif isinstance(user_messages, str):
+            user_messages = [user_messages]
+
+        if self.prompt_format is None:
+            return system_prompt
+
+        return self.prompt_format.build(
+            system_prompt,
+            list(user_messages),
+            enable_thinking=enable_thinking,
+        )
+
+
+__all__ = ["GameBenchmarkPromptWrapper", "GameDecisionPromptWrapper"]

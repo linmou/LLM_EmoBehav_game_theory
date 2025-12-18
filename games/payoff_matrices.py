@@ -361,12 +361,15 @@ SIMULTANEOUS_GAMES = {
     # ),
 }
 
+_escalation_matrix = PayoffMatrix(
+    player_num=2,
+    game_type=GameType.SEQUENTIAL,
+    payoff_leaves=_parse_sequential_game_tree(escalation_game),
+)
+
 SEQUENTIAL_GAMES = {
-    GameNames.ESCALATION_GAME: PayoffMatrix(
-        player_num=2,
-        game_type=GameType.SEQUENTIAL,
-        payoff_leaves=_parse_sequential_game_tree(escalation_game),
-    ),
+    GameNames.ESCALATION_GAME: _escalation_matrix,
+    GameNames.DIPLOMACY_ESCALATION_GAME: _escalation_matrix,
     GameNames.MONOPOLY_GAME: PayoffMatrix(
         player_num=2,
         game_type=GameType.SEQUENTIAL,

@@ -72,6 +72,14 @@ GAME_CONFIGS = {
         "payoff_matrix": ALL_GAME_PAYOFF[GameNames.ESCALATION_GAME],
         "data_path": data_path_format.format(GameNames.ESCALATION_GAME.value),
     },
+    GameNames.DIPLOMACY_ESCALATION_GAME: {
+        "game_name": GameNames.DIPLOMACY_ESCALATION_GAME.value,
+        "scenario_class": EscalationGameScenario,
+        "decision_class": EscalationGameDecision,
+        "payoff_matrix": ALL_GAME_PAYOFF[GameNames.ESCALATION_GAME],
+        "data_path": "data_creation/scenario_creation/langgraph_creation/diplomacy_Escalation_Game_all_data_samples.json",
+        "previous_actions_length": 0,
+    },
     GameNames.TRUST_GAME_TRUSTOR: {
         "game_name": GameNames.TRUST_GAME_TRUSTOR.value,
         "scenario_class": TrustGameTrustorScenario,

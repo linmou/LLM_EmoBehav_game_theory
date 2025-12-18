@@ -1,30 +1,25 @@
-"""
-tests/test_diplomacy_pd_benchmark.py
-Purpose: TDD for a new Diplomacy PD-style benchmark wiring.
- - Verifies registry entry exists and constructs components
- - Verifies dataset loads the small JSONL and exposes items
- - Verifies prompt wrapper renders options properly
- - Verifies evaluate_response extracts the chosen option id
-"""
+"""Tests for Diplomacy PD benchmark dataset and prompt wrapper."""
 
-import math
 from pathlib import Path
+from functools import partial
 
 import pytest
 
 from emotion_experiment_engine.data_models import BenchmarkConfig
-from emotion_experiment_engine.benchmark_component_registry import (
-    create_benchmark_components,
-)
 
 
-def _make_config() -> BenchmarkConfig:
-    # Use base_data_dir so path = {base}/{name}_{task}.jsonl
+class DummyPromptFormat:
+    def build(self, text, user_messages, enable_thinking=False):
+        # Mirror the simple plaintext behavior used in production when no formatter exists.
+        return text
+
+
+def _make_config():
     return BenchmarkConfig(
         name="diplomacy_pd",
-        task_type="v1",
-        data_path=None,
-        base_data_dir=str(Path("data/diplomacy")),
+        task_type="v1b",
+        data_path=Path("data/diplomacy/diplomacy_pd_escalation_20251117.jsonl"),
+        base_data_dir="data/diplomacy",
         sample_limit=None,
         augmentation_config=None,
         enable_auto_truncation=False,
@@ -34,47 +29,95 @@ def _make_config() -> BenchmarkConfig:
     )
 
 
-def test_registry_and_loading():
-    config = _make_config()
+def test_prompt_wrapper_renders_header_and_options():
+    from emotion_experiment_engine.diplomacy_prompts import DiplomacyOptionsPromptWrapper
 
-    # Red: Expect registry to construct components; dataset should load 3 items
-    prompt_wrapper, answer_wrapper, dataset = create_benchmark_components(
-        benchmark_name=config.name,
-        task_type=config.task_type,
-        config=config,
-        prompt_format=None,
+    wrapper = DiplomacyOptionsPromptWrapper(DummyPromptFormat())
+    prompt = wrapper(
+        context="Your Country: Italy\nGame: Standard Diplomacy",
+        question="Scenario text",
+        user_messages=["Respond"],
+        enable_thinking=False,
+        augmentation_config=None,
+        answer=None,
+        emotion=None,
+        options=[
+            {"id": 1, "text": "Maintain the stalemate line"},
+            {"id": 2, "text": "Advance into Tyrolia"},
+        ],
+    )
+
+    assert "Your Country: Italy" in prompt
+    assert "Game: Standard Diplomacy" in prompt
+    assert "Option 1. Maintain the stalemate line" in prompt
+    assert "Respond with the option text." in prompt
+
+
+def test_dataset_loads_items_and_scores_responses():
+    from emotion_experiment_engine.diplomacy_prompts import DiplomacyOptionsPromptWrapper
+    from emotion_experiment_engine.datasets.diplomacy_gradient import DiplomacyGradientDataset
+
+    wrapper = DiplomacyOptionsPromptWrapper(DummyPromptFormat())
+    prompt_wrapper = partial(
+        wrapper.__call__,
+        user_messages=["Please decide"],
+        enable_thinking=False,
+        augmentation_config=None,
         emotion=None,
     )
 
-    assert len(dataset.items) >= 3, "Expected at least 3 diplomacy PD items"
+    dataset = DiplomacyGradientDataset(_make_config(), prompt_wrapper)
 
-    # Build a prompt for the first item using the wrapper
-    item = dataset.items[0]
-    options = item.metadata.get("options", []) if item.metadata else []
-    prompt_text = prompt_wrapper(
-        context=None,
-        question=item.input_text,
-        options=options,
-        answer=None,
+    assert len(dataset) >= 3
+
+    first_item = dataset.items[0]
+    assert "Your Country:" in (first_item.context or "")
+    assert first_item.metadata and len(first_item.metadata.get("options", [])) == 2
+
+    batch_entry = dataset[0]
+    prompt = batch_entry["prompt"]
+    score_numeric = dataset.evaluate_response("Option 2", None, "v1b", prompt)
+    assert score_numeric == pytest.approx(2.0)
+
+    # Option-text matching should also work irrespective of case differences.
+    option_text = first_item.metadata["options"][0]["text"].upper()
+    score_text = dataset.evaluate_response(option_text, None, "v1b", prompt)
+    assert score_text == pytest.approx(1.0)
+
+
+def test_dataset_prefers_description_and_gradient_options():
+    """
+    Validate the escalation Diplomacy set keeps description text, prefers behavior_choices,
+    and carries the whose_option label when constructing items.
+    """
+    from emotion_experiment_engine.datasets.diplomacy_gradient import DiplomacyGradientDataset
+    from emotion_experiment_engine.diplomacy_prompts import DiplomacyOptionsPromptWrapper
+
+    wrapper = DiplomacyOptionsPromptWrapper(DummyPromptFormat())
+    prompt_wrapper = partial(
+        wrapper.__call__,
+        user_messages=["Please decide"],
+        enable_thinking=False,
+        augmentation_config=None,
+        emotion=None,
     )
-    assert "Option 1." in prompt_text and "Option 2." in prompt_text
 
-    # Simulate model picking an option by text and confirm evaluation returns its id
-    opt2_text = options[1]["text"] if isinstance(options[1], dict) else str(options[1])
-    score = dataset.evaluate_response(
-        response=opt2_text,
-        ground_truth=None,
-        task_name=config.task_type,
-        prompt=prompt_text,
-    )
-    assert score == 2.0, f"Expected option id 2.0, got {score}"
+    dataset = DiplomacyGradientDataset(_make_config(), prompt_wrapper)
 
-    # Also support numeric choice like "Option 4"
-    score2 = dataset.evaluate_response(
-        response="Option 4",
-        ground_truth=None,
-        task_name=config.task_type,
-        prompt=prompt_text,
-    )
-    assert score2 == 4.0 or math.isnan(score2) is False
+    assert len(dataset) >= 10
+    first_item = dataset.items[0]
 
+    assert first_item.input_text.startswith("In the spring of 1901")
+    assert first_item.metadata["whose_option"] == "RUSSIA"
+    assert "Diplomacy_RUSSIA_vs_TURKEY_BLA_Spring1901_Orders" in (first_item.context or "")
+    option_texts = [opt["text"].lower() for opt in first_item.metadata["options"]]
+    assert len(option_texts) == 2  # behavior_choices: withdraw/escalate
+    assert any("withdraw" in opt or "reduce naval activity" in opt for opt in option_texts)
+    assert any("escalate" in opt or "increase naval presence" in opt for opt in option_texts)
+
+
+# Covers emotion_experiment_engine/datasets/diplomacy_gradient.py: explicit option-id mapping readability.
+def test_behavior_option_order_mapping_is_explicit():
+    from emotion_experiment_engine.datasets import diplomacy_gradient
+
+    assert diplomacy_gradient.BEHAVIOR_OPTION_ORDER == {"withdraw": 1, "escalate": 2}
