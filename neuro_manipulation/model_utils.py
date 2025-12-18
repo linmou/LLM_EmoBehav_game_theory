@@ -141,7 +141,12 @@ def load_emotion_readers(
         )
     else:
         print("✓ Creating text-only rep-reading pipeline")
-        rep_reading_pipeline = pipeline("rep-reading", model=model, tokenizer=tokenizer)
+        rep_reading_pipeline = pipeline(
+            "rep-reading",
+            model=model,
+            tokenizer=tokenizer,
+            image_processor=processor,
+        )
 
     return all_emotion_rep_reader(
         data,
