@@ -61,7 +61,6 @@ from .datasets.trustllm_robustness import TrustLLMRobustnessDataset
 from .datasets.trustllm_safety import TrustLLMSafetyDataset
 from .datasets.trustllm_truthfulness import TrustLLMTruthfulnessDataset
 from .datasets.games import GameTheoryDataset
-#from .datasets.sc2_escalation import SC2EscalationDataset
 from .datasets.diplomacy_gradient import DiplomacyGradientDataset
 from .diplomacy_prompts import DiplomacyOptionsPromptWrapper
 def create_dataset_from_config(*args, **kwargs):  # lazy import to avoid heavy deps at import time
@@ -71,7 +70,7 @@ if TYPE_CHECKING:
     from .datasets.base import BaseBenchmarkDataset
 from .fantom_prompt_wrapper import FantomPromptWrapper
 from .bfcl_prompt_wrapper import BFCLPromptWrapper
-from .game_prompt_wrapper import GameBenchmarkPromptWrapper
+from .game_prompt_wrapper import GameBenchmarkPromptWrapper, GameDecisionPromptWrapper
 
 
 @dataclass
@@ -273,16 +272,16 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         dataset_class=TrustLLMTruthfulnessDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
     ),
+    ("game_theory_decision", "*"): BenchmarkSpec(
+        dataset_class=GameTheoryDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=GameDecisionPromptWrapper,
+    ),
     ("game_theory", "*"): BenchmarkSpec(
         dataset_class=GameTheoryDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=GameBenchmarkPromptWrapper,
     ),
-    #("sc2_escalation", "*"): BenchmarkSpec(
-    #    dataset_class=SC2EscalationDataset,
-    #    answer_wrapper_class=IdentityAnswerWrapper,
-    #    prompt_wrapper_class=GameBenchmarkPromptWrapper,
-    #),
     ("diplomacy_pd", "*"): BenchmarkSpec(
         dataset_class=DiplomacyGradientDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
