@@ -5,6 +5,13 @@
 
 The emotion memory experiments module implements a comprehensive testing strategy that emphasizes Test-Driven Development (TDD), behavioral equivalence validation, and scientific integrity. The testing architecture spans unit tests, integration tests, real data validation, and refactoring verification, ensuring both software quality and research validity.
 
+### Recent game_theory choice-ratio updates (2025-12-07)
+
+- Behavior-level aggregation now maps unmappable option ids (for example, `score=3` when options are only 1/2) to an explicit `"unknown"` bucket; matched options with missing/empty `behavior` still raise.
+- Index-level ratios continue to count the original option id.
+- CSVs: `summary_behavior_ratio.csv` uses column `behavior` (may include `"unknown"`); choice-ratio CSVs remain id-based.
+- Key tests: `test_games_behavior_choice_ratio.py` (unknown bucket + missing behavior error), `test_split_choice_ratio.py`, `test_game_stats_analysis.py`, `test_experiment_choice_ratio_persistence.py`.
+
 ## Testing Architecture
 
 ```mermaid

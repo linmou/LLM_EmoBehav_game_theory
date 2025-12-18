@@ -48,6 +48,16 @@ def tmp_benchmark_config(tmp_path: Path) -> BenchmarkConfig:
 
 
 def _build_results() -> List[ResultRecord]:
+    # Include minimal metadata so raw_results.json contains per-item options
+    # and can be used to trace decisions back to the underlying choices.
+    options = [
+        {"id": 1, "text": "Cooperate", "behavior": "cooperate"},
+        {"id": 2, "text": "Defect", "behavior": "defect"},
+    ]
+    meta: Dict[str, object] = {
+        "benchmark": "game_theory",
+        "item_metadata": {"options": options},
+    }
     return [
         ResultRecord(
             emotion="anger",
@@ -59,6 +69,7 @@ def _build_results() -> List[ResultRecord]:
             ground_truth=None,
             score=1.0,
             repeat_id=0,
+            metadata=meta,
         ),
         ResultRecord(
             emotion="anger",
@@ -70,6 +81,7 @@ def _build_results() -> List[ResultRecord]:
             ground_truth=None,
             score=2.0,
             repeat_id=1,
+            metadata=meta,
         ),
     ]
 
@@ -150,3 +162,74 @@ def test_save_results_writes_choice_ratio_csv(tmp_path: Path, tmp_benchmark_conf
     assert len(repeat_df) == 2
     repeat_ratios = repeat_df.sort_values(["repeat_id", "option_id"])["ratio"].tolist()
     assert repeat_ratios == pytest.approx([1.0, 1.0])
+
+
+def test_save_results_writes_behavior_ratio_csv(tmp_path: Path, tmp_benchmark_config: BenchmarkConfig) -> None:
+    """Ensure EmotionExperiment persists behavior-level choice ratio summaries."""
+    payload = {
+        "choice_ratio": {
+            "overall": [
+                {"emotion": "anger", "intensity": 0.1, "option_id": 1, "ratio": 0.4},
+                {"emotion": "anger", "intensity": 0.1, "option_id": 2, "ratio": 0.6},
+            ],
+            "by_repeat": [],
+        },
+        "behavior_choice_ratio": {
+            "overall": [
+                {"emotion": "anger", "intensity": 0.1, "behavior": "cooperate", "ratio": 0.4},
+                {"emotion": "anger", "intensity": 0.1, "behavior": "defect", "ratio": 0.6},
+            ],
+            "by_repeat": [],
+        },
+    }
+
+    dataset = _ChoiceRatioDataset(payload)
+
+    experiment_config = ExperimentConfig(
+        model_path="/dev/null",
+        emotions=["anger"],
+        intensities=[0.1],
+        benchmark=tmp_benchmark_config,
+        output_dir=str(tmp_path),
+        batch_size=1,
+        generation_config=None,
+        loading_config=None,
+        repe_eng_config=None,
+        max_evaluation_workers=1,
+        pipeline_queue_size=1,
+        defer_evaluation=False,
+    )
+
+    experiment = EmotionExperiment.__new__(EmotionExperiment)
+    experiment.config = experiment_config
+    experiment.logger = logging.getLogger("test-behavior-ratio")
+    experiment.logger.addHandler(logging.NullHandler())
+    experiment.output_dir = tmp_path
+    experiment.dataset = dataset
+    experiment._save_experiment_config = lambda: None
+
+    df = experiment._save_results(_build_results())
+    assert not df.empty
+    assert dataset.calls == 1
+
+    behavior_ratio_path = tmp_path / "summary_behavior_ratio.csv"
+    assert behavior_ratio_path.exists()
+
+    behavior_df = pd.read_csv(behavior_ratio_path)
+    assert set(behavior_df.columns) == {"emotion", "intensity", "behavior", "ratio"}
+    assert len(behavior_df) == 2
+    behavior_df = behavior_df.sort_values("behavior")
+    ratios = behavior_df["ratio"].tolist()
+    assert ratios == pytest.approx([0.4, 0.6])
+
+    # raw_results.json should retain the enriched metadata, including options.
+    raw_path = tmp_path / "raw_results.json"
+    assert raw_path.exists()
+    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    assert isinstance(raw, list) and raw
+    first = raw[0]
+    md = first.get("metadata") or {}
+    item_md = md.get("item_metadata") or {}
+    opts = item_md.get("options")
+    assert isinstance(opts, list) and opts
+    assert {opt["behavior"] for opt in opts} == {"cooperate", "defect"}

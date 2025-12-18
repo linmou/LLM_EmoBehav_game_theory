@@ -69,6 +69,10 @@ class TestLLMEvaluateResponse(unittest.TestCase):
 
     def setUp(self) -> None:
         evaluation_utils._global_client = None  # type: ignore[attr-defined]
+        if hasattr(evaluation_utils, "_global_gemini_model"):
+            evaluation_utils._global_gemini_model = None  # type: ignore[attr-defined]
+        if hasattr(evaluation_utils, "_global_gemini_model_name"):
+            evaluation_utils._global_gemini_model_name = None  # type: ignore[attr-defined]
 
     @patch("emotion_experiment_engine.evaluation_utils.openai.OpenAI")
     def test_llm_evaluate_response_parses_json(self, mock_openai: MagicMock) -> None:
@@ -135,6 +139,58 @@ class TestLLMEvaluateResponse(unittest.TestCase):
                 llm_eval_config={"model": "gpt-4o-mini"},
             )
         self.assertIn("LLM evaluation failed", str(exc.exception))
+
+    def test_llm_evaluate_response_supports_gemini_client(self) -> None:
+        # Stub google.generativeai module to avoid real dependency calls
+        import sys
+        import types
+
+        fake_genai = types.SimpleNamespace()
+        model_instance = MagicMock()
+        model_instance.generate_content.return_value = MagicMock(
+            text='{"score": 0.5}'
+        )
+        fake_genai.GenerativeModel = MagicMock(return_value=model_instance)
+        fake_genai.configure = MagicMock()
+
+        sys.modules["google"] = types.ModuleType("google")
+        sys.modules["google.generativeai"] = fake_genai
+
+        with patch("emotion_experiment_engine.evaluation_utils.openai.OpenAI") as mock_openai:
+            result = evaluation_utils.llm_evaluate_response(
+                system_prompt="Judge",
+                query="Evaluate",
+                llm_eval_config={"client": "gemini", "model": "gemini-test"},
+            )
+
+        self.assertAlmostEqual(result["score"], 0.5)
+        fake_genai.configure.assert_called_once()
+        fake_genai.GenerativeModel.assert_called_once_with("gemini-test")
+        model_instance.generate_content.assert_called_once()
+        mock_openai.assert_not_called()
+
+    def test_llm_evaluate_response_strips_code_fences_from_llm_output(self) -> None:
+        import sys
+        import types
+
+        fake_genai = types.SimpleNamespace()
+        model_instance = MagicMock()
+        model_instance.generate_content.return_value = MagicMock(
+            text="```json\\n{\"score\": 0.9}\\n```"
+        )
+        fake_genai.GenerativeModel = MagicMock(return_value=model_instance)
+        fake_genai.configure = MagicMock()
+
+        sys.modules["google"] = types.ModuleType("google")
+        sys.modules["google.generativeai"] = fake_genai
+
+        result = evaluation_utils.llm_evaluate_response(
+            system_prompt="Judge",
+            query="Evaluate",
+            llm_eval_config={"client": "gemini", "model": "gemini-test"},
+        )
+
+        self.assertAlmostEqual(result["score"], 0.9)
 
 
 class ImmediateFuture:
