@@ -1094,14 +1094,22 @@ class MemoryExperimentSeriesRunner:
         )
 
         # Test creating experiment configurations
+        #
+        # NOTE: Dry-run should catch dataset/schema issues, which are benchmark-specific
+        # (e.g., required scenario fields like previous_offer_level). Those failures are
+        # independent of model choice. For speed and determinism, validate *all* benchmarks
+        # against the first model entry rather than sampling the first 3 benchmark×model pairs.
         self.logger.info("\n🔬 Testing experiment configuration creation...")
-        test_count = min(3, len(benchmarks), len(models))  # Test first 3 combinations
+        if not models:
+            raise ValueError("Configuration must include at least one model")
+        model_name = models[0]
+        self.logger.info(
+            f"🔎 Dry-run validating {len(benchmarks)} benchmark(s) using first model: {model_name}"
+        )
 
-        errors: List[Tuple[int, str]] = []
+        errors: List[Tuple[int, str, str]] = []
 
-        for i, (benchmark_config, model_name) in enumerate(
-            zip(benchmarks[:test_count], models[:test_count])
-        ):
+        for i, benchmark_config in enumerate(benchmarks):
             try:
                 experiment = self.setup_experiment(benchmark_config, model_name)
                 self.logger.info(
@@ -1150,12 +1158,14 @@ class MemoryExperimentSeriesRunner:
                             # Fallback for unexpected structure
                             self.logger.info(f"         Unexpected item structure: {first_item}")
             except Exception as e:
-                self.logger.error(f"   ❌ Config {i+1} failed: {e}")
-                errors.append((i + 1, str(e)))
+                bench_id = f"{benchmark_config.get('name')}_{benchmark_config.get('task_type')}"
+                self.logger.error(f"   ❌ Config {i+1} failed ({bench_id}): {e}")
+                errors.append((i + 1, bench_id, str(e)))
 
         if errors:
             failure_summary = "; ".join(
-                f"Config {idx} failed: {message}" for idx, message in errors
+                f"Config {idx} failed ({bench_id}): {message}"
+                for idx, bench_id, message in errors
             )
             self.logger.error(
                 "Dry run aborted with %d configuration error(s)", len(errors)

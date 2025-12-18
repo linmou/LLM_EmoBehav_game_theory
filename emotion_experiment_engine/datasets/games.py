@@ -79,15 +79,14 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         augmentation = self.config.augmentation_config or {}
         scenario_fields = getattr(scenario_class, "model_fields", {})
         config_fields = self._game_config
-        shuffle_options = bool(self._game_config.get("shuffle_options", False))
+        # Always shuffle options; allow deterministic control via behavior_ratio.
         behavior_ratio = self._game_config.get("behavior_ratio")
-        shuffle_rng = None
-        if shuffle_options:
-            shuffle_rng = (
-                random.Random(behavior_ratio)
-                if behavior_ratio is not None
-                else random.Random()
-            )
+        shuffle_rng = (
+            random.Random(behavior_ratio)
+            if behavior_ratio is not None
+            else random
+        )
+        shuffle_options = True
 
         items: List[BenchmarkItem] = []
         for idx, record in enumerate(raw_items):
@@ -123,13 +122,12 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                         "text": choice,
                         "behavior": behavior,
                     }
-                )
+            )
 
-            # Optionally shuffle in-place and reassign ids to reflect presented order.
-            if shuffle_options and shuffle_rng is not None:
-                shuffle_rng.shuffle(options)
-                for new_idx, opt in enumerate(options, start=1):
-                    opt["id"] = new_idx
+            # Shuffle in-place and reassign ids to reflect presented order.
+            shuffle_rng.shuffle(options)
+            for new_idx, opt in enumerate(options, start=1):
+                opt["id"] = new_idx
 
             item_id = enriched.get("id", idx)
             metadata: Dict[str, Any] = {
