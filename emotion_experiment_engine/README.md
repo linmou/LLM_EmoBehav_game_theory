@@ -1,7 +1,7 @@
 # Emotion Memory Experiments
-<!-- Updated: 2025-11-25 | Commit: c216fd8 -->
+<!-- Updated: 2025-12-20 | Commit: a5cad74 -->
 
-Updated: 2025-11-25 · commit: c216fd8
+Updated: 2025-12-20 · commit: a5cad74
 
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
@@ -126,6 +126,15 @@ Notes:
 
 Session tracking
 - The report records session starts/ends, shutdown requests (SIGINT), and whether a session resumed from a report or started fresh. See `sessions` in the report JSON for details.
+
+## vLLM v0.11+ Notes (RepControl Hook)
+
+If you use the `rep-control-vllm` pipeline (vLLM-backed RepControl hook), vLLM v0.11+ imposes a few constraints that are now handled by default:
+
+- **Worker extension**: `VLLMLoadingConfig.to_vllm_kwargs()` defaults `worker_extension_cls` to `neuro_manipulation.repe.vllm_worker_extension.NMRepControlWorkerExtension` so `collective_rpc` can call `_nm_repcontrol_*` safely (no pickling callables).
+- **KV cache sizing**: The series runner defaults `additional_vllm_kwargs.max_num_seqs` to `batch_size` if not set, to avoid vLLM defaulting to 256 and reserving huge KV cache.
+- **FlashAttention ABI mismatch**: If `flash-attn` fails to import due to a torch upgrade, force a non-flash backend via vLLM env:
+  - set `loading_config.additional_vllm_kwargs.attention_backend: "TRITON_ATTN"` (the loader exports `VLLM_ATTENTION_BACKEND`).
 
 ## Supported Benchmarks
 
