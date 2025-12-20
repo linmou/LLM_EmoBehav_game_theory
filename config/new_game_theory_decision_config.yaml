@@ -19,25 +19,62 @@ benchmarks:
     task_type: "Prisoners_Dilemma"
     augmentation_config:
       shuffle_options: true
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
   - name: "game_theory_decision"
     task_type: "Stag_Hunt"
     augmentation_config:
       shuffle_options: true
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
   - name: "game_theory_decision"
     task_type: "Escalation_Game"
     augmentation_config:
       shuffle_options: true
       previous_actions_length: 0
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
   - name: "game_theory_decision"
     task_type: "Trust_Game_Trustor"
     augmentation_config:
       shuffle_options: true
       previous_actions_length: 0
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
   - name: "game_theory_decision"
     task_type: "Trust_Game_Trustee"
     augmentation_config:
       shuffle_options: true
+      previous_actions_length: 1
+      previous_trust_level: 1
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+  - name: "game_theory_decision"
+    task_type: "Ultimatum_Game_Proposer"
+    augmentation_config:
+      shuffle_options: true
       previous_actions_length: 0
+      previous_offer_level: 1
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+  - name: "game_theory_decision"
+    task_type: "Ultimatum_Game_Responder"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 1
+      previous_offer_level: 2
     enable_auto_truncation: false
     truncation_strategy: "right"
     preserve_ratio: 1.0
@@ -56,7 +93,7 @@ loading_config:
   disable_custom_all_reduce: false
   additional_vllm_kwargs: {}
 
-repeat_runs: 3
+repeat_runs: 1
 
 generation_config:
   temperature: 0.1
