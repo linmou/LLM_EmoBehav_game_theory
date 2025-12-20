@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
 
 import pandas as pd
+from typing import TYPE_CHECKING
 try:
     import torch  # type: ignore
     from torch.utils.data import DataLoader  # type: ignore
@@ -25,11 +26,9 @@ except Exception:
     torch = None  # type: ignore
     class DataLoader:  # type: ignore
         pass
-try:
-    # Optional for dry-run; real import only needed for execution
-    from vllm import LLM  # type: ignore
-except Exception:
-    LLM = object  # type: ignore[assignment]
+
+if TYPE_CHECKING:
+    from vllm import LLM as VLLM_LLM  # pragma: no cover
 
 from neuro_manipulation.configs.experiment_config import get_repe_eng_config
 
@@ -278,7 +277,11 @@ class EmotionExperiment:
         )
 
         self.logger.info(f"Model loaded: {type(self.model)}")
-        self.is_vllm = isinstance(self.model, LLM)
+        try:
+            from vllm import LLM as _VLLM_LLM  # type: ignore
+        except Exception:
+            _VLLM_LLM = None  # type: ignore
+        self.is_vllm = _VLLM_LLM is not None and isinstance(self.model, _VLLM_LLM)
         assert self.is_vllm
         
         # Setup RepE control pipeline - using basic tokenizer for consistency

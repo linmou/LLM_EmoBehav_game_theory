@@ -23,11 +23,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
-try:
-    # Optional: only needed when downloading remote models
-    from transformers import AutoConfig  # type: ignore
-except Exception:
-    AutoConfig = None  # Will be checked before use
+# Optional: only needed when downloading remote models.
+# Importing transformers can transitively import torch/OpenMP, which may SIGABRT
+# in sandboxed environments (e.g., missing shared memory). Defer to runtime.
+AutoConfig = None  # type: ignore
 
 # Defer heavy imports (torch/vLLM) to runtime when needed
 
@@ -444,6 +443,7 @@ class MemoryExperimentSeriesRunner:
 
     def _load_config(self) -> None:
         """Load configuration from YAML file"""
+        assert self.config_path is not None
         with open(self.config_path, "r") as f:
             self.base_config = yaml.safe_load(f)
 
@@ -534,18 +534,15 @@ class MemoryExperimentSeriesRunner:
             os.makedirs(os.path.dirname(alt_model_path), exist_ok=True)
 
             # First verify the model exists on HuggingFace (if transformers available)
-            if AutoConfig is not None:
-                try:
-                    AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-                except Exception as e:
-                    self.logger.error(
-                        f"Model {model_name} not found on HuggingFace: {str(e)}"
-                    )
-                    return None
-            else:
-                self.logger.warning(
-                    "transformers not available; skipping remote existence check"
+            try:
+                from transformers import AutoConfig as _AutoConfig  # type: ignore
+
+                _AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+            except Exception as e:
+                self.logger.error(
+                    f"Model {model_name} not found on HuggingFace or transformers unavailable: {str(e)}"
                 )
+                return None
 
             # Download model using huggingface-cli command
             self.logger.info(
@@ -675,8 +672,12 @@ class MemoryExperimentSeriesRunner:
             llm_eval_config=benchmark_config.get("llm_eval_config"),
         )
 
+        batch_size = int(self.base_config.get("batch_size", 4))
+
         # Create VLLMLoadingConfig directly from base config
         loading_cfg = self.base_config["loading_config"]
+        additional_vllm_kwargs = dict(loading_cfg.get("additional_vllm_kwargs", {}) or {})
+        additional_vllm_kwargs.setdefault("max_num_seqs", batch_size)
         loading_config = VLLMLoadingConfig(
             model_path=loading_cfg.get("model_path", model_name),
             gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
@@ -690,7 +691,7 @@ class MemoryExperimentSeriesRunner:
             disable_custom_all_reduce=loading_cfg.get(
                 "disable_custom_all_reduce", False
             ),
-            additional_vllm_kwargs=loading_cfg.get("additional_vllm_kwargs", {}),
+            additional_vllm_kwargs=additional_vllm_kwargs,
         )
 
         defer_eval_flag = bool(self.base_config.get("defer_evaluation", False))
@@ -702,7 +703,7 @@ class MemoryExperimentSeriesRunner:
             intensities=self.base_config["intensities"],
             benchmark=benchmark,
             output_dir=self.base_config.get("output_dir", "results/memory_experiments"),
-            batch_size=self.base_config.get("batch_size", 4),
+            batch_size=batch_size,
             generation_config=self.base_config.get("generation_config"),
             loading_config=loading_config,
             repe_eng_config=self.base_config.get("repe_eng_config"),
@@ -1328,7 +1329,7 @@ class MemoryExperimentSeriesRunner:
                     exp_record = self.report.experiments.get(exp["exp_id"])
                     if not exp_record or exp_record.get("status") != ExperimentStatus.COMPLETED:
                         now = datetime.now().isoformat()
-                        update_payload = {
+                        update_payload: Dict[str, Any] = {
                             "status": ExperimentStatus.COMPLETED,
                             "end_time": now,
                         }

@@ -1,6 +1,7 @@
 import logging
 import sys
 import traceback
+from typing import Any, Dict, Optional
 
 import numpy as np
 import torch
@@ -17,6 +18,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def _to_rpc_serializable_tensor_payload(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, torch.Tensor):
+        return value.detach().cpu().tolist()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, (list, tuple)):
+        return list(value)
+    return value
+
 
 # --- Hook Function ---
 def hook_fn_rep_control(module, args, output):
@@ -30,7 +42,6 @@ def hook_fn_rep_control(module, args, output):
         return output  # No state set, do nothing
 
     state = module._rep_control_state
-    controller = state.get("controller")
     mask = state.get("mask")
     token_pos = state.get("token_pos")
     normalize = state.get("normalize", False)
@@ -75,8 +86,11 @@ def hook_fn_rep_control(module, args, output):
             )
             return output
 
+        if isinstance(full_controller, (list, tuple, np.ndarray)):
+            full_controller = torch.as_tensor(full_controller)
+
         logger.debug(
-            f"Rank {rank} - Applying RepControl hook on {module.__class__.__name__}. Full Controller shape: {full_controller.shape}, Modified shape: {modified.shape}, TP size: {tp_size}"
+            f"Rank {rank} - Applying RepControl hook on {module.__class__.__name__}. Full Controller shape: {getattr(full_controller, 'shape', None)}, Modified shape: {modified.shape}, TP size: {tp_size}"
         )
 
         # --- Apply modification logic (Tensor Parallel Aware) ---
@@ -431,9 +445,7 @@ class RepControlVLLMHook:
         self.layers = layers
         self.block_name = block_name
         self.control_method = control_method
-        self.hook_handles = (
-            {}
-        )  # Store handles locally if needed, but primary management is RPC
+        self.hook_handles: Dict[Any, Any] = {}
         self.tp_size = tensor_parallel_size  # Use the passed value
 
         if control_method != "reading_vec":
@@ -467,12 +479,8 @@ class RepControlVLLMHook:
                 f"Registering hook for layer {layer_id}, block '{block_name}'..."
             )
             rpc_results = self.model.llm_engine.collective_rpc(
-                _register_hook_on_worker_rpc,
-                args=(
-                    layer_id,
-                    self.block_name,
-                    hook_fn_rep_control,
-                ),  # Pass hook fn directly
+                "_nm_repcontrol_register_hook",
+                args=(layer_id, self.block_name),
             )
             logger.info(
                 f"RPC hook registration results for layer {layer_id}: {rpc_results}"
@@ -499,7 +507,7 @@ class RepControlVLLMHook:
     def __call__(
         self,
         text_inputs: list[str],
-        activations: dict = None,  # Dict mapping layer_id to activation tensor
+        activations: Optional[Dict[int, torch.Tensor]] = None,  # Dict mapping layer_id to activation tensor
         token_pos=None,
         masks=None,  # Can be a single mask or dict mapping layer_id to mask
         normalize=False,
@@ -525,8 +533,8 @@ class RepControlVLLMHook:
         Returns:
             List of vLLM RequestOutput objects.
         """
-        control_active = activations is not None and len(activations) > 0
-        operator_fn = self._get_operator_fn(operator)  # Get the actual function
+        activations = activations or {}
+        control_active = len(activations) > 0
 
         try:
             # 1. Set controller state via RPC if activations are provided
@@ -547,9 +555,9 @@ class RepControlVLLMHook:
                         masks.get(layer_id) if isinstance(masks, dict) else masks
                     )
                     state = {
-                        "controller": activation_tensor,
-                        "mask": layer_mask,
-                        "token_pos": token_pos,
+                        "controller": _to_rpc_serializable_tensor_payload(activation_tensor),
+                        "mask": _to_rpc_serializable_tensor_payload(layer_mask),
+                        "token_pos": _to_rpc_serializable_tensor_payload(token_pos),
                         "normalize": normalize,
                         "operator_name": operator,
                         "kwargs": kwargs,  # Pass generation kwargs in case hook needs them (e.g., position_ids)
@@ -562,7 +570,7 @@ class RepControlVLLMHook:
 
                     # Send state via RPC
                     rpc_results = self.model.llm_engine.collective_rpc(
-                        _set_controller_state_on_worker_rpc,
+                        "_nm_repcontrol_set_state",
                         args=(layer_id, self.block_name, state),
                     )
                     set_results.append(
@@ -616,7 +624,7 @@ class RepControlVLLMHook:
                         continue  # Skip layers not managed by this instance
 
                     rpc_results = self.model.llm_engine.collective_rpc(
-                        _reset_controller_state_on_worker_rpc,
+                        "_nm_repcontrol_reset_state",
                         args=(layer_id, self.block_name),
                     )
                     reset_results.append(all(rpc_results))
