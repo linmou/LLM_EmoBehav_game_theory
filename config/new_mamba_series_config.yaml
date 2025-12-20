@@ -1,0 +1,55 @@
+experiment_name: "game_theory_mamba_pd"
+description: "Mamba series Prisoners Dilemma config in new benchmark schema"
+version: "1.0.0"
+
+models:
+  - "/home/jjl7137/huggingface_models/Zyphra/Zamba2-1.2B-Instruct"
+    #  - "/data/home/jjl7137/huggingface_models/state-spaces/mamba-790m-hf"
+
+emotions: ["anger", "happiness"]
+intensities:
+  - 1.5
+
+benchmarks:
+  - name: "game_theory"
+    task_type: "Prisoners_Dilemma"
+    sample_limit: 36
+    augmentation_config:
+      previous_actions_length: 0
+    enable_auto_truncation: false
+    truncation_strategy: "right"
+    preserve_ratio: 1.0
+    llm_eval_config:
+      model: "gpt-4o-mini"
+      temperature: 0.0
+
+loading_config:
+  gpu_memory_utilization: 0.9
+  tensor_parallel_size: null
+  max_model_len: 328
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+repeat_runs: 1
+
+generation_config:
+  temperature: 0.7
+  max_new_tokens: 440
+  do_sample: true
+  top_p: 0.95
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 50
+
+output_dir: "results/Mamba_Series_Prisoners_Dilemma"
+sanity_check: ture

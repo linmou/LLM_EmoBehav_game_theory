@@ -27,6 +27,8 @@ except Exception:
         pass
 try:
     # Optional for dry-run; real import only needed for execution
+    from neuro_manipulation.threading_env import ensure_mkl_threading_layer
+    ensure_mkl_threading_layer()
     from vllm import LLM  # type: ignore
 except Exception:
     LLM = object  # type: ignore[assignment]
@@ -38,6 +40,12 @@ from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultReco
 # NEW: Import the registry-based component assembly
 from .benchmark_component_registry import create_benchmark_components
 from .truncation_utils import calculate_max_context_length
+
+# Lazily imported GPU dependencies (keeps import-time light, but still patchable in unit tests).
+ModelLayerDetector = None
+setup_model_and_tokenizer = None
+load_emotion_readers = None
+get_pipeline = None
 
 
 class EmotionExperiment:
@@ -224,13 +232,22 @@ class EmotionExperiment:
 
     def _setup_gpu_components(self, config: ExperimentConfig):
         """Setup GPU-dependent components: models, emotion readers, pipeline"""
-        # Lazy import heavy deps to keep dry-run fast and avoid optional imports
-        from neuro_manipulation.model_layer_detector import ModelLayerDetector  # type: ignore
-        from neuro_manipulation.model_utils import (  # type: ignore
-            load_emotion_readers,
-            setup_model_and_tokenizer,
-        )
-        from neuro_manipulation.repe.pipelines import get_pipeline  # type: ignore
+        # Lazy import heavy deps to keep import-time light, and make them patchable in tests.
+        global ModelLayerDetector, setup_model_and_tokenizer, load_emotion_readers, get_pipeline
+        if ModelLayerDetector is None:
+            from neuro_manipulation.model_layer_detector import ModelLayerDetector as _ModelLayerDetector  # type: ignore
+            ModelLayerDetector = _ModelLayerDetector
+        if setup_model_and_tokenizer is None or load_emotion_readers is None:
+            from neuro_manipulation.model_utils import (  # type: ignore
+                load_emotion_readers as _load_emotion_readers,
+                setup_model_and_tokenizer as _setup_model_and_tokenizer,
+            )
+            setup_model_and_tokenizer = _setup_model_and_tokenizer
+            load_emotion_readers = _load_emotion_readers
+        if get_pipeline is None:
+            from neuro_manipulation.repe.pipelines import get_pipeline as _get_pipeline  # type: ignore
+            get_pipeline = _get_pipeline
+
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
         self.repe_config = get_repe_eng_config(
             config.model_path, yaml_config=config.repe_eng_config
@@ -242,7 +259,7 @@ class EmotionExperiment:
 
         # First load from HF for emotion readers
         self.model, tokenizer_temp, prompt_format_temp, processor = (
-            setup_model_and_tokenizer(self.loading_config, from_vllm=False)
+            setup_model_and_tokenizer(self.loading_config, from_vllm=False)  # type: ignore[misc]
         )
 
         # Assert tokenizers are functionally equivalent (not necessarily identical objects)
@@ -250,14 +267,14 @@ class EmotionExperiment:
             self.tokenizer, tokenizer_temp, "basic", "gpu"
         )
 
-        num_hidden_layers = ModelLayerDetector.num_layers(self.model)
+        num_hidden_layers = ModelLayerDetector.num_layers(self.model)  # type: ignore[union-attr]
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
 
         if self.neutral_only:
             self.emotion_rep_readers = {}
         else:
-            self.emotion_rep_readers = load_emotion_readers(
+            self.emotion_rep_readers = load_emotion_readers(  # type: ignore[misc]
                 self.repe_config,
                 self.model,
                 tokenizer_temp,
@@ -269,7 +286,7 @@ class EmotionExperiment:
 
         # Load vLLM model for inference with loading config
         self.model, tokenizer_temp, prompt_format_temp, _ = setup_model_and_tokenizer(
-            self.loading_config, from_vllm=True
+            self.loading_config, from_vllm=True  # type: ignore[misc]
         )
 
         # Assert vLLM tokenizer is functionally equivalent to basic tokenizer

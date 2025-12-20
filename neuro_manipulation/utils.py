@@ -9,14 +9,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-import matplotlib.pyplot as plt
-import numpy as np
 import torch
+import numpy as np
+import matplotlib.pyplot as plt
 from huggingface_hub import hf_hub_download
 from PIL import Image
 from tqdm import tqdm
-from transformers import AutoModel, AutoTokenizer, MistralForCausalLM, pipeline
+from neuro_manipulation.threading_env import ensure_mkl_threading_layer
 try:
+    ensure_mkl_threading_layer()
     from vllm import LLM  # type: ignore
 except Exception:
     # Provide a minimal stub to avoid hard dependency during dry-runs or CPU-only envs
@@ -372,14 +373,19 @@ def primary_emotions_concept_dataset(
 
 
 def test_direction(
-    hidden_layers, rep_reading_pipeline, rep_reader, test_data, rep_token=-1
+    hidden_layers,
+    rep_reading_pipeline,
+    rep_reader,
+    test_data,
+    rep_token=-1,
+    batch_size: int = 32,
 ):
     H_tests = rep_reading_pipeline(
         test_data["data"],
         rep_token=rep_token,
         hidden_layers=hidden_layers,
         rep_reader=rep_reader,
-        batch_size=32,
+        batch_size=batch_size,
     )
 
     results = {layer: {} for layer in hidden_layers}
@@ -408,18 +414,24 @@ def get_rep_reader(
     rep_token=-1,
     n_difference=1,
     direction_method="pca",
+    batch_size: int = 32,
 ):
     rep_reader = rep_reading_pipeline.get_directions(
         train_data["data"],
         rep_token=rep_token,
         hidden_layers=hidden_layers,
         n_difference=n_difference,
+        batch_size=batch_size,
         train_labels=train_data["labels"],
         direction_method=direction_method,
     )
 
     result, _ = test_direction(
-        hidden_layers, rep_reading_pipeline, rep_reader, test_data
+        hidden_layers=hidden_layers,
+        rep_reading_pipeline=rep_reading_pipeline,
+        rep_reader=rep_reader,
+        test_data=test_data,
+        rep_token=rep_token,
     )
     print(result)
 
@@ -602,16 +614,23 @@ def load_tokenizer_only(
         tuple: (tokenizer, processor_or_none)
                - processor_or_none: AutoProcessor for multimodal models, None for text-only
     """
+    from transformers import AutoTokenizer  # type: ignore
+
     # Load tokenizer (same logic as in load_model_tokenizer)
-    use_fast_tokenizer = False
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name_or_path,
-        use_fast=use_fast_tokenizer,
+    tokenizer_kwargs = dict(
         padding_side="left",
         legacy=False,
         token=True,
         trust_remote_code=True,
     )
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name_or_path, use_fast=True, **tokenizer_kwargs
+        )
+    except Exception:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name_or_path, use_fast=False, **tokenizer_kwargs
+        )
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = 0
 
@@ -692,7 +711,7 @@ def load_model_only(
 
     if not model:
         # Check if this should be a causal LM model based on its config
-        from transformers import AutoConfig, AutoModelForCausalLM
+        from transformers import AutoConfig, AutoModel, AutoModelForCausalLM  # type: ignore
 
         # Determine HF torch dtype, defaulting to float16 when unspecified
         hf_torch_dtype = torch.float16
@@ -1117,6 +1136,7 @@ def oai_response(
 
 
 def main():
+    from transformers import AutoTokenizer  # type: ignore
 
     emotions = [
         "happiness",
