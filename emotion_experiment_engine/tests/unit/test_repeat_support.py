@@ -292,7 +292,7 @@ def test_series_runner_sets_vllm_max_num_seqs_default(tmp_path: Path):
     Purpose:
     vLLM preallocates KV-cache based on max_num_seqs/max_model_len; if max_num_seqs
     is left at vLLM defaults (often 256), small experiments can OOM unexpectedly.
-    The series runner should default max_num_seqs to batch_size unless explicitly set.
+    The series runner should default max_num_seqs to a safe value tied to batch_size.
     """
     cfg = {
         "models": ["/mock/model"],
