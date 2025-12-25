@@ -17,7 +17,7 @@ import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Mapping, MutableMapping
+from typing import Iterable, List, Mapping, MutableMapping, Tuple
 
 
 LOGGER = logging.getLogger(__name__)
@@ -29,6 +29,9 @@ class SeriesProcessResult:
 
     report_path: Path
     pending_dirs: List[Path]
+    evaluated_dirs: List[Path]
+    failed_dirs: List[Path]
+    failures: List[Tuple[Path, str]]
 
 
 _DEFERRED_MARKER = "# Evaluation Deferred"
@@ -88,23 +91,7 @@ def _is_terminal(report_payload: Mapping[str, object]) -> bool:
         if not isinstance(exp, dict):
             continue
         status = str(exp.get("status", "")).strip().lower()
-        if status in {"pending", "running"}:
-            return False
-    return True
-
-
-def _all_completed_evaluated(report_payload: Mapping[str, object]) -> bool:
-    for exp in _iter_experiments(report_payload):
-        status = str(exp.get("status", "")).strip().lower()
-        if status != "completed":
-            continue
-        output_dir = exp.get("output_dir")
-        if not output_dir:
-            continue
-        run_dir = Path(str(output_dir)).expanduser().resolve()
-        if not run_dir.exists():
-            continue
-        if not _has_evaluation_summary(run_dir):
+        if status not in {"completed", "failed"}:
             return False
     return True
 
@@ -120,6 +107,9 @@ def process_report(
     payload = _load_report(report)
 
     pending: List[Path] = []
+    evaluated: List[Path] = []
+    failed: List[Path] = []
+    failures: List[Tuple[Path, str]] = []
     for exp in _iter_experiments(payload):
         status = str(exp.get("status", "")).strip().lower()
         if status != "completed":
@@ -138,11 +128,25 @@ def process_report(
             LOGGER.info("Pending deferred run: %s", run_dir)
             continue
         LOGGER.info("Evaluating deferred run: %s", run_dir)
-        _evaluate_saved_run(run_dir, max_workers=max_workers)
+        try:
+            _evaluate_saved_run(run_dir, max_workers=max_workers)
+        except Exception as exc:
+            LOGGER.exception("Deferred evaluation failed for %s; skipping", run_dir)
+            failed.append(run_dir)
+            failures.append((run_dir, str(exc)))
+            continue
+
         LOGGER.info("Completed deferred run: %s", run_dir)
         assert _check_summary_results(run_dir), f"Summary results not found: {run_dir}"
+        evaluated.append(run_dir)
                 
-    return SeriesProcessResult(report_path=report, pending_dirs=pending)
+    return SeriesProcessResult(
+        report_path=report,
+        pending_dirs=pending,
+        evaluated_dirs=evaluated,
+        failed_dirs=failed,
+        failures=failures,
+    )
 
 
 def watch_report(
@@ -157,18 +161,25 @@ def watch_report(
     while True:
         payload = _load_report(report)
 
-        try:
-            process_report(
+        result = process_report(
                 report,
                 dry_run=False,
                 max_workers=max_workers,
                 continue_completed=continue_completed,
             )
-        except Exception:  # keep watching on evaluation errors
-            LOGGER.exception("Deferred evaluation attempt failed; will retry")
-        else:
-            if _is_terminal(payload) and _all_completed_evaluated(payload):
-                return
+
+        if result.failed_dirs:
+            LOGGER.warning(
+                "Deferred evaluation failures this round: %d (showing up to 10)",
+                len(result.failed_dirs),
+            )
+            for run_dir, message in result.failures[:10]:
+                LOGGER.warning("Failed: %s (%s)", run_dir, message)
+
+        if _is_terminal(payload):
+            if result.failed_dirs:
+                LOGGER.warning("Deferred evaluation finished with %d failures", len(result.failed_dirs))
+            return
 
         time.sleep(max(0.0, poll_interval_seconds))
 
@@ -219,6 +230,9 @@ def _main(argv: List[str] | None = None) -> SeriesProcessResult:
         return SeriesProcessResult(
             report_path=Path(args.report).expanduser().resolve(),
             pending_dirs=[],
+            evaluated_dirs=[],
+            failed_dirs=[],
+            failures=[],
         )
 
     result = process_report(

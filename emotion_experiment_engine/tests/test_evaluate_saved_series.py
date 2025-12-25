@@ -225,4 +225,39 @@ def test_evaluate_saved_series_watch_mode_keeps_watching_on_failure(tmp_path: Pa
 
         evaluate_saved_series.watch_report(report, poll_interval_seconds=0.0, max_workers=8)
 
-    assert len(calls) >= 2
+    # One run fails, but watch still evaluates the others and then exits (terminal report).
+    assert len(calls) == 2
+
+
+def test_evaluate_saved_series_skips_error_and_records_failure(tmp_path: Path) -> None:
+    # Tests for emotion_experiment_engine.evaluate_saved_series recording failed eval runs instead of getting stuck.
+    report = tmp_path / "series_report.json"
+    bad_run = _make_run_dir(tmp_path, "bad_run", evaluated=False)
+    good_run = _make_run_dir(tmp_path, "good_run", evaluated=False)
+
+    payload = {
+        "experiments": {
+            "exp_bad": {"status": "completed", "output_dir": str(bad_run)},
+            "exp_good": {"status": "completed", "output_dir": str(good_run)},
+        }
+    }
+    report.write_text(json.dumps(payload), encoding="utf-8")
+
+    with patch(
+        "emotion_experiment_engine.evaluate_saved_series._evaluate_saved_run"
+    ) as mock_eval:
+        def _fake_eval(run_dir: Path, max_workers: int = 8) -> MagicMock:
+            if run_dir.name == "bad_run":
+                raise ValueError("no raw rows")
+            (run_dir / "summary_results.csv").write_text("score\n", encoding="utf-8")
+            (run_dir / "README.md").write_text("# Evaluation Completed\n", encoding="utf-8")
+            return MagicMock()
+
+        mock_eval.side_effect = _fake_eval
+
+        import emotion_experiment_engine.evaluate_saved_series as evaluate_saved_series
+
+        result = evaluate_saved_series.process_report(report, dry_run=False)
+
+    assert good_run.resolve() in result.evaluated_dirs
+    assert bad_run.resolve() in result.failed_dirs

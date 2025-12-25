@@ -130,9 +130,13 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 opt["id"] = new_idx
 
             item_id = enriched.get("id", idx)
-            metadata: Dict[str, Any] = {
-                "options": options,
-            }
+            metadata: Dict[str, Any] = {"options": options}
+            try:
+                scenario_info = scenario.get_scenario_info()
+            except Exception:  # pragma: no cover - keep dataset load resilient
+                scenario_info = {}
+            if isinstance(scenario_info, dict):
+                metadata.update(scenario_info)
             if shuffle_options and behavior_ratio is not None:
                 metadata["behavior_ratio_used"] = behavior_ratio
 
@@ -195,7 +199,16 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                     input_text=str(event),
                     context=None,
                     ground_truth=None,
-                    metadata={"options": normalized_options},
+                    metadata=self._compact_metadata(
+                        {
+                            "options": normalized_options,
+                            "scenario": record.get("scenario"),
+                            "description": record.get("description"),
+                            "participants": record.get("participants"),
+                            "game_name": record.get("game_name"),
+                            "payoff_description": record.get("payoff_description"),
+                        }
+                    ),
                 )
             )
 
@@ -204,6 +217,9 @@ class GameTheoryDataset(BaseBenchmarkDataset):
 
         return items
 
+    @staticmethod
+    def _compact_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
+        return {key: value for key, value in metadata.items() if value is not None}
 
     class _ExtractionSchema(BaseModel):
         option_id: int
