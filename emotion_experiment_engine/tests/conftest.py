@@ -1,15 +1,17 @@
 """Test configuration for emotion_experiment_engine tests."""
 
+import os
 import sys
 import types
 
 
 def _install_torch_stub() -> None:
-    try:
-        import torch  # type: ignore  # noqa: F401
-        return
-    except Exception:
-        pass
+    if os.environ.get("EMOTION_EXPERIMENT_ENGINE_USE_REAL_TORCH") == "1":
+        try:
+            import torch  # type: ignore  # noqa: F401
+            return
+        except Exception:
+            pass
 
     if "torch" in sys.modules:
         return
