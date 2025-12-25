@@ -7,26 +7,33 @@ import torch
 
 def project_onto_direction(H, direction):
     """Project matrix H (n, d_1) onto direction vector (d_2,)"""
-    # Calculate the magnitude of the direction vector
-     # Ensure H and direction are on the same device (CPU or GPU)
-    if type(direction) != torch.Tensor:
-        H = torch.Tensor(H).cuda()
-    if type(direction) != torch.Tensor:
-        direction = torch.Tensor(direction)
-        direction = direction.to(H.device)
+    if not isinstance(H, torch.Tensor):
+        H = torch.as_tensor(H, dtype=torch.float32)
+    if not isinstance(direction, torch.Tensor):
+        direction = torch.as_tensor(direction, dtype=torch.float32, device=H.device)
+    else:
+        direction = direction.to(device=H.device, dtype=torch.float32)
+
+    H = H.to(dtype=torch.float32)
     mag = torch.norm(direction)
-    assert not torch.isinf(mag).any()
-    # Calculate the projection
-    projection = H.matmul(direction) / mag
-    return projection
+    if not torch.isfinite(mag) or mag.item() == 0:
+        raise ValueError("Direction vector norm is non-finite or zero")
+    return H.matmul(direction) / mag
 
 def recenter(x, mean=None):
-    x = torch.Tensor(x).cuda()
-    if mean is None:
-        mean = torch.mean(x,axis=0,keepdims=True).cuda()
+    if not isinstance(x, torch.Tensor):
+        x = torch.as_tensor(x, dtype=torch.float32)
     else:
-        mean = torch.Tensor(mean).cuda()
-    return x - mean
+        x = x.to(dtype=torch.float32)
+
+    if mean is None:
+        mean_t = torch.mean(x, axis=0, keepdims=True)
+    else:
+        if isinstance(mean, torch.Tensor):
+            mean_t = mean.to(device=x.device, dtype=torch.float32)
+        else:
+            mean_t = torch.as_tensor(mean, dtype=torch.float32, device=x.device)
+    return x - mean_t
 
 class RepReader(ABC):
     """Class to identify and store concept directions.
@@ -139,14 +146,24 @@ class PCARepReader(RepReader):
         directions = {}
 
         for layer in hidden_layers:
-            H_train = hidden_states[layer]
+            H_train = np.asarray(hidden_states[layer], dtype=np.float32)
+            if H_train.ndim == 1:
+                H_train = H_train.reshape(1, -1)
+            elif H_train.ndim > 2:
+                H_train = H_train.reshape(H_train.shape[0], -1)
+
+            finite_rows = np.isfinite(H_train).all(axis=1)
+            if not finite_rows.all():
+                H_train = H_train[finite_rows]
+            if H_train.shape[0] == 0:
+                raise ValueError("All training hidden states are non-finite (NaN/Inf)")
+
             H_train_mean = H_train.mean(axis=0, keepdims=True)
             self.H_train_means[layer] = H_train_mean
-            H_train = recenter(H_train, mean=H_train_mean).cpu()
-            H_train = np.vstack(H_train)
+            H_train = H_train - H_train_mean
             pca_model = PCA(n_components=self.n_components, whiten=False).fit(H_train)
 
-            directions[layer] = pca_model.components_ # shape (n_components, n_features)
+            directions[layer] = pca_model.components_.astype(np.float32, copy=False)  # shape (n_components, n_features)
             self.n_components = pca_model.n_components_
         
         return directions

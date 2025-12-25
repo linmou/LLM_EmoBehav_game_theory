@@ -1,6 +1,7 @@
 """Test configuration for emotion_experiment_engine tests."""
 
 import os
+import importlib.machinery
 import sys
 import types
 
@@ -98,6 +99,7 @@ def _install_openai_stub() -> None:
         return
 
     openai_module = types.ModuleType("openai")
+    openai_module.__spec__ = importlib.machinery.ModuleSpec("openai", loader=None)
 
     class _StubChatCompletions:
         def create(self, *args, **kwargs):
