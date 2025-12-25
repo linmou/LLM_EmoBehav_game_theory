@@ -1,6 +1,6 @@
 # Result Analysis Directory
 
-Last updated: 2025-12-07
+Last updated: 2025-12-25 (commit 56fe594)
 
 This directory contains all post-experiment analysis scripts and results for the LLM Emotional Behavior Game Theory experiments.
 
@@ -10,6 +10,9 @@ This directory contains all post-experiment analysis scripts and results for the
 - `analyze_switches_detailed.py` - Analyzes switching patterns between activation_only and context_and_activation conditions
 - `analyze_choice_patterns.py` - Comprehensive analysis of choice patterns across all conditions
 - `analyze_choice_differences.py` - Finds cases where choices differ between conditions
+- `generate_game_theory_impact_report.py` - Builds option/behavior impact tables vs neutral from `summary_choice_ratio.csv` / `summary_behavior_ratio.csv`
+- `trust_game_trustor_expected_score.py` - Report-driven Trust Game (Trustor) item-level decision shift vs neutral (trust_none=0, trust_low=1, trust_high=2)
+- `trust_game_trustee_expected_score.py` - Report-driven Trust Game (Trustee) item-level decision shift vs neutral (return_none=0, return_medium=1, return_high=2)
 
 ### Debug/Utility Scripts
 - `debug_data_structure.py` - Utility to inspect data structure and verify scenario matching
@@ -48,6 +51,30 @@ python analyze_switches_detailed.py
 # For comprehensive pattern analysis
 python analyze_choice_patterns.py
 
+# Trust Game (Trustor) expected-score deltas from a series report
+python -m result_analysis.trust_game_trustor_expected_score \
+  --report results/.../memory_experiment_series_..._memory_experiment_report.json \
+  --out_dir results/.../shuffle_decision_only
+
+This writes:
+- `trustor_item_expected_score_delta_vs_neutral.csv`
+- `trustor_item_expected_score_max_delta_summary.csv` (deterministic tie-break: delta desc, then intensity asc, then emotion asc)
+- `trustor_expected_score_delta_aggregate_by_emotion_intensity.csv`
+- `trustor_expected_score_delta_aggregate_by_emotion.csv`
+- `trustor_item_expected_score_delta_report.md`
+
+# Trust Game (Trustee) expected-score deltas from a series report
+python -m result_analysis.trust_game_trustee_expected_score \
+  --report results/.../memory_experiment_series_..._memory_experiment_report.json \
+  --out_dir results/.../shuffle_decision_only
+
+This writes:
+- `trustee_item_expected_score_delta_vs_neutral.csv`
+- `trustee_item_expected_score_max_delta_summary.csv` (deterministic tie-break: delta desc, then intensity asc, then emotion asc)
+- `trustee_expected_score_delta_aggregate_by_emotion_intensity.csv`
+- `trustee_expected_score_delta_aggregate_by_emotion.csv`
+- `trustee_item_expected_score_delta_report.md`
+
 # Inspecting Individual Decisions from Aggregated Ratios
 
 The experiment runner writes a `raw_results.json` file alongside summary CSVs (including `summary_choice_ratio.csv` and, when available, `summary_behavior_ratio.csv`). A simple pattern to trace an aggregate ratio back to an example decision is:
@@ -84,6 +111,25 @@ print("Options:", options)
 
 This keeps analysis in pure Python (no new dependencies) and matches the dataset’s metadata format used for behavior-level choice ratios.
 ```
+
+## Game-Theory Impact Report (vs neutral)
+
+This aggregates per-game choice/behavior ratios and reports emotion deltas vs `neutral`, collapsing over intensity.
+
+```bash
+# Shuffle-choice decision benchmark (choice + behavior ratios)
+python -m result_analysis.generate_game_theory_impact_report \
+  --root results/new_game_theory_decision/shuffle_choices
+
+# Older game-theory benchmark (usually choice ratios only)
+python -m result_analysis.generate_game_theory_impact_report \
+  --root results/new_game_theory
+```
+
+This writes into the `--root` folder:
+- `option_impacted_by_emo_vs_neutral_latest.csv`
+- `behavior_impacted_emo_vs_neutral_latest.csv` (only if `summary_behavior_ratio.csv` exists)
+- `game_theory_impact_report.md` (includes which runs were used + any skipped runs missing `neutral`)
 
 ## Original Experiment Results Location
 
