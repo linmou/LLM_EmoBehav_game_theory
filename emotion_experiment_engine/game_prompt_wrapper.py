@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, List, Optional, Sequence
 
 from games.game_configs import get_game_config
@@ -97,6 +98,7 @@ class GameDecisionPromptWrapper(GameBenchmarkPromptWrapper):
         'You must make a decision now. Do not wait for additional information or refuse '
         'to decide. Respond only with this JSON object: {"decision": "<copy one option text exactly>"}'
     )
+    _scenario_re = re.compile(r"\bScenario:\s*(\S+)")
 
     def __call__(
         self,
@@ -113,7 +115,15 @@ class GameDecisionPromptWrapper(GameBenchmarkPromptWrapper):
         del context, augmentation_config, answer, emotion  # unused in adapter
         normalized_options = self._normalize_options(options)
 
-        system_lines = [question]
+        persona = "Alice"
+        m = self._scenario_re.search(question)
+        if m and m.group(1).startswith("Diplomacy_"):
+            persona = "a commander who needs to make the decision"
+
+        system_lines = [
+            f"You are {persona}. You are in the following situation:",
+            question,
+        ]
         for idx, option in enumerate(normalized_options, start=1):
             system_lines.append(f"Option {idx}. {option}")
         system_lines.append(self.DECIDE_INSTRUCTION)
