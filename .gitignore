@@ -20,6 +20,8 @@ data_creation/scenario_creation/langgraph_creation/histories/*
 logs/*
 result_analysis/emotion_analysis_results.json
 *.log
+results
+results.bk
 
 # Track only this subset under data
 !data/emotion_scales/

@@ -74,6 +74,7 @@ class GameNames(Enum):
         GameType.SIMULTANEOUS,
         SymmetryType.SYMMETRIC,
     )
+    SEALED_AUCTION = ("Sealed_Auction", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
     BATTLE_OF_SEXES = ("Battle_Of_Sexes", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
     WAIT_GO = ("Wait_Go", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
     DUOPOLISTIC_COMPETITION = (

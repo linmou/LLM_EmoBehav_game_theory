@@ -9,6 +9,7 @@ from games.duopolistic_competition import (
 from games.escalation_game import EscalationGameDecision, EscalationGameScenario
 from games.payoff_matrices import ALL_GAME_PAYOFF
 from games.prisoner_delimma import PrisionerDelimmaDecision, PrisonerDilemmaScenario
+from games.sealed_auction import SealedAuctionDecision, SealedAuctionScenario
 from games.stag_hunt import StagHuntDecision, StagHuntScenario
 from games.trust_game import (
     TrustGameDecision,
@@ -43,6 +44,13 @@ GAME_CONFIGS = {
         "decision_class": PrisionerDelimmaDecision,
         "payoff_matrix": ALL_GAME_PAYOFF[GameNames.PRISONERS_DILEMMA],
         "data_path": data_path_format.format(GameNames.PRISONERS_DILEMMA.value),
+    },
+    GameNames.SEALED_AUCTION: {
+        "game_name": GameNames.SEALED_AUCTION.value,
+        "scenario_class": SealedAuctionScenario,
+        "decision_class": SealedAuctionDecision,
+        "payoff_matrix": dict(),
+        "data_path": data_path_format.format(GameNames.SEALED_AUCTION.value),
     },
     GameNames.BATTLE_OF_SEXES: {
         "game_name": GameNames.BATTLE_OF_SEXES.value,

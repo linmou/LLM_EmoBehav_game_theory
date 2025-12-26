@@ -1,0 +1,73 @@
+{
+  "instruction": [
+    "Generate exactly 4 StarCraft commitment situations, one for each scenario type: air drop, base race, air control, gold mineral competition.",
+    "Do not restrict matchups to any specific races; participants can be any two of: Protoss, Terran, Zerg (mirror matchups allowed).",
+    "Do not use any game-theory or economics language anywhere (forbidden examples: \"auction\", \"sealed-auction\", \"bid\", \"chicken\", \"Nash\", \"equilibrium\", \"all-pay\"). Use only StarCraft language.",
+    "For each example, output a single JSON object with fields: description, participants, behavior_choices.",
+    "The description must start with exactly: \"You, the <Your Race> commander\" where <Your Race> matches participants[0].name.",
+    "Participants must be exactly: [{\"name\":\"<Your Race>\"},{\"name\":\"<Opponent Race>\"}].",
+    "Behavior_choices must be an object with keys: devote_none, devote_low, devote_high.",
+    "In description, invent a plausible map name and describe several terrain features that matter for the chosen scenario (air lanes, cliffs, dead space, watchtowers, choke points, gold-base placement, flank routes).",
+    "In description, describe the game state in qualitative terms (economy state, tech stage, key unit types, and what each side threatens), and do not use numeric digits.",
+    "In description, include the exact sentence: \"You have to make a decision about [SCENARIO_TYPE]\" where [SCENARIO_TYPE] is one of: air drop | base race | air control | gold mineral competition.",
+    "In description, clearly define the concrete objective being fought over (the \"item\" in StarCraft terms, such as controlling the central air corridor, securing the gold base, maintaining a backline drop route, or destroying core production), and state the benefits of winning it in exactly three brief natural-language points without bullet formatting.",
+    "In description, explain that both sides may commit resources at the same time without clear confirmation of the opponent’s commitment, and that over-committing can weaken another part of the map while under-committing can surrender the objective.",
+    "In behavior_choices, do not add leading strategy labels; write only the behavior itself.",
+    "Devote_none must describe minimal/near-zero extra commitment (positioning, scouting, holding, small defensive measures), with concrete StarCraft actions.",
+    "Devote_low must describe a moderate commitment (some production or tech steps, limited forces, a single coordinated attempt), with concrete StarCraft actions and implied tradeoffs.",
+    "Devote_high must describe a heavy commitment (major production focus, multiple layers of support, repeated cycles, strong positional dedication), and accept clear risk elsewhere.",
+    "Ensure devote_none -> devote_low -> devote_high is strictly increasing in resource devotion and irreversibility.",
+    "Keep all outputs valid JSON (no trailing commas, no comments, properly escaped quotes).",
+    "Maintain a tactical mid-to-late-game tone focused on StarCraft decisions, timings, and map control."
+  ],
+  "examples": [
+    {
+      "description": "You, the Zerg commander, are playing on **Cinder Hollow**—a macro map with deep dead space behind main bases, wide edge air lanes, and cliff rings that hide approach paths into mineral lines. The Protoss has stabilized into splash-supported ground with tight defensive positioning, while you have strong creep spread and the ability to remax quickly if trades go well. The immediate objective is a safe air route into the Protoss backline, because winning that route lets you hit workers before the army arrives, interrupt key tech and production at the source, and force the Protoss to pull units away from the front. You have to make a decision about air drop. Both sides can ramp up preparation at the same time without a clear tell, and if you commit too hard you may arrive at the next frontal fight underpowered, but if you commit too little the Protoss keeps clean positioning and shuts down the route before it ever pays off.",
+      "participants": [
+        { "name": "Zerg" },
+        { "name": "Protoss" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Keep Overlords as scouts and spotters only; threaten run-bys into outer bases; spread creep toward key attack lanes; keep your core army grouped and ready to take a fight without allocating extra effort into drop setup.",
+        "devote_low": "Enable Overlord drop capability and repositioning; prepare a compact payload meant to punish a mineral line or a tech corner; time the backline hit with light frontal pressure so the Protoss has to look away and reposition.",
+        "devote_high": "Maintain multiple drop-ready transports and a steady stream of loaded units; coordinate repeated backline landings with continued pressure at the front; accept a leaner main army for a window in exchange for sustained disruption of workers, tech, and production."
+      }
+    },
+    {
+      "description": "You, the Protoss commander, are fighting on **Rift of Embers**—a compact map with short ground distances, narrow ramps into mains, and side lanes that enable fast counterattacks. A recent clash left both armies damaged and out of position: your surviving force is deep on the Terran side near production, while the Terran’s remaining units are threatening your core structures. The objective is collapsing the enemy’s ability to reinforce, because breaking production slows the next wave, removing tech blocks key unit types, and killing economy stops a comeback from stabilizing. You have to make a decision about base race. Both sides can commit forward damage and defense at the same time without certainty of how hard the other is committing, and pushing too far can cost your own production, but hesitating can give Terran enough time to regroup and hold.",
+      "participants": [
+        { "name": "Protoss" },
+        { "name": "Terran" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Rotate back toward your Nexuses and production; warp in defensively; prioritize keeping your tech alive and unit production running; take only safe trades that slow the Terran push.",
+        "devote_low": "Send a limited strike group to hit production or workers while keeping most of your army ready to stabilize at home; warp in offensively only when you still maintain a defensive anchor; focus on delaying reinforcements rather than committing everything forward.",
+        "devote_high": "Warp in repeatedly onto production and tech areas and keep your army forward to finish structures; focus down buildings that sustain reinforcements before chasing units; accept losing home structures if the Terran’s production collapses first."
+      }
+    },
+    {
+      "description": "You, the Terran commander, are on **Skyline Junction**—a wide map with an open central air corridor, tall watchtower ridges that reveal rotations, and exposed outer bases that are vulnerable to fast harassment. The opposing Terran is setting up strong drop patterns and siege angles, and both sides have mobile ground forces that punish overextensions. The objective is control of the central airspace, because owning it keeps your drops safer, protects your outer bases from sudden air angles, and makes it easier to set up favorable fights around siege zones. You have to make a decision about air control. Both sides can quietly shift production and positioning at the same time without immediately revealing commitment, and leaning too hard into air can thin your ground army, but ignoring it lets the opponent dictate the pace and angles of pressure.",
+      "participants": [
+        { "name": "Terran" },
+        { "name": "Terran" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Rely on scans and positioning to track drops; keep your army near key chokes and reinforcement paths; add only light defensive coverage near mineral lines without changing your main production plan.",
+        "devote_low": "Allocate steady production toward air-support units that contest the corridor; keep air upgrades moving at a sustainable pace; stage your army so air escorts can cover drops and help you hold ground around contested mid-map space.",
+        "devote_high": "Commit heavily to sustained air production and supporting upgrades; structure your movement to keep the corridor under constant pressure and deny enemy air freedom; accept slower ground scaling and sharper vulnerability to direct ground timings elsewhere."
+      }
+    },
+    {
+      "description": "You, the Zerg commander, are playing on **Gilded Basin**—a map with a central gold base protected by narrow ramps, flankable approach lanes, and open perimeter ground that invites counterattacks. Both you and the opposing Zerg have strong economies and fast remax potential, and the next advantage will snowball into map control. The objective is the gold base itself, because taking it improves your income to remax harder, accelerates upgrades and tech transitions, and denies the opponent the same tempo boost. You have to make a decision about gold mineral competition. Both sides can start fortifying or pressuring the area at the same time without a clear read on commitment, and over-focusing on the gold can expose other bases, but giving it up can leave you behind for the rest of the game.",
+      "participants": [
+        { "name": "Zerg" },
+        { "name": "Zerg" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Delay taking the gold; keep vision around it with creep and spotters; pressure outer bases with run-bys to punish any move-away; prioritize safer expansions and keep your main army ready to respond.",
+        "devote_low": "Start the gold with measured support by positioning your army within quick reinforcement distance; add limited static defense and a reliable reinforcement path; use small counterpressure to discourage a straight cancel while still protecting your other bases.",
+        "devote_high": "Fortify the gold with layered static defense and a dedicated army posture; spread creep and vision aggressively around entrances and likely flanks; commit reinforcements to hold ramps and deny entry while accepting reduced map coverage elsewhere."
+      }
+    }
+  ]
+}
