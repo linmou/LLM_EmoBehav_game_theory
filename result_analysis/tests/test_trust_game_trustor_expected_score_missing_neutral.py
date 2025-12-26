@@ -1,4 +1,4 @@
-# Tests `result_analysis/trust_game_trustor_expected_score.py`: skip rows lacking neutral baseline.
+# Tests `result_analysis/trust_game_expected_score.py`: skip rows lacking neutral baseline.
 
 import pandas as pd
 

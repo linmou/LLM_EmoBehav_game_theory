@@ -1,7 +1,7 @@
 """
 tests/result_analysis/test_trust_game_trustee_expected_score.py
 Purpose: TDD for report-driven Trust Game (Trustee) expected-score deltas vs neutral.
-Targets: result_analysis/trust_game_trustee_expected_score.py
+Targets: result_analysis/trust_game_expected_score.py (Trustee)
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ def _ensure_repo_on_path() -> None:
 
 def test_generates_expected_score_outputs_from_report(tmp_path: Path) -> None:
     _ensure_repo_on_path()
-    from result_analysis.trust_game_trustee_expected_score import run_from_report
+    from result_analysis.trust_game_expected_score import TRUSTEE_SPEC, run_from_report
 
     base_out = tmp_path / "results" / "series"
     run_dir = base_out / "Qwen2.5-0.5B-Instruct_game_theory_decision_Trust_Game_Trustee_20250101_000000"
@@ -104,7 +104,7 @@ def test_generates_expected_score_outputs_from_report(tmp_path: Path) -> None:
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report))
 
-    outputs = run_from_report(report_path=report_path, out_dir=base_out)
+    outputs = run_from_report(report_path=report_path, out_dir=base_out, spec=TRUSTEE_SPEC)
     df = outputs.item_expected_score_deltas
     row = df[(df["item_id"] == "itemB:trustee") & (df["emotion"] == "sadness") & (df["intensity"] == 1.5)].iloc[0]
     assert row["neutral_decision_score"] == 1.0
@@ -127,4 +127,3 @@ def test_generates_expected_score_outputs_from_report(tmp_path: Path) -> None:
         outputs.report_md_path,
     ]:
         assert Path(path).exists()
-
