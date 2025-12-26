@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import os
 import random
 import re
 from collections import defaultdict
@@ -16,7 +17,6 @@ from scipy import stats
 
 from games.game import SequentialGameScenario
 from games.game_configs import get_game_config
-from neuro_manipulation.utils import oai_response
 from pydantic import BaseModel
 
 from .. import evaluation_utils
@@ -99,6 +99,10 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                     enriched[field_name] = augmentation[field_name]
                 elif field_name in config_fields and field_name not in enriched:
                     enriched[field_name] = config_fields[field_name]
+
+            if "previous_actions_length" in scenario_fields and "previous_actions_length" not in enriched:
+                previous_actions = enriched.get("previous_actions") or []
+                enriched["previous_actions_length"] = len(previous_actions) if isinstance(previous_actions, list) else 0
 
             try:
                 scenario = scenario_class(**enriched)
@@ -351,6 +355,9 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         if choice_id is not None:
             return float(choice_id)
 
+        if os.environ.get("DISABLE_LLM_JUDGE") == "1":
+            return -1.0
+
         logger.warning("Failed to extract option id for response: %s", response)
         return math.nan
 
@@ -508,22 +515,13 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         FR-004/FR-006/FR-007: derive behavior categories from per-item options and
         ensure that every chosen option_id has a non-empty behavior category.
         """
-        # Build a simple cache: (item_id) -> list of option dicts
-        options_by_item: Dict[Any, List[Dict[str, Any]]] = {}
-
-        def _get_options_for(item_id: Any, meta: Dict[str, Any] | None) -> List[Dict[str, Any]]:
-            if item_id in options_by_item:
-                return options_by_item[item_id]
+        def _get_options_for(meta: Dict[str, Any] | None) -> List[Dict[str, Any]]:
             if not meta:
-                # No metadata: skip this record for behavior-level aggregation.
-                options_by_item[item_id] = []
                 return []
             item_md = meta.get("item_metadata") or {}
             opts = item_md.get("options")
             if not isinstance(opts, list) or not opts:
-                options_by_item[item_id] = []
                 return []
-            options_by_item[item_id] = opts
             return opts
 
         # Counts keyed by (emotion, intensity[, repeat_id], behavior)
@@ -545,7 +543,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
 
             option_id = int(option_val)
             # Look up behavior category from metadata
-            opts = _get_options_for(record.item_id, record.metadata)
+            opts = _get_options_for(record.metadata)
             if not opts:
                 # No behavior metadata for this item; skip for behavior-level ratios.
                 continue
@@ -614,6 +612,8 @@ class GameTheoryDataset(BaseBenchmarkDataset):
     def _fallback_option_via_llm(
         self, response: str, options: Sequence[str]
     ) -> Optional[int]:
+        if os.environ.get("DISABLE_LLM_JUDGE") == "1":
+            return None
         if not options:
             return None
 
@@ -660,6 +660,8 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         )
 
         try:
+            from neuro_manipulation.utils import oai_response
+
             result = oai_response(
                 prompt,
                 client=client,
