@@ -79,6 +79,9 @@ def _iter_run_dirs(report: dict[str, Any], spec: TrustGameSpec) -> Iterable[tupl
     for exp in experiments.values():
         if not isinstance(exp, dict):
             continue
+        status = exp.get("status")
+        if isinstance(status, str) and status.lower() != "completed":
+            continue
         benchmark_name = exp.get("benchmark_name", "")
         if not isinstance(benchmark_name, str) or spec.benchmark_substring not in benchmark_name:
             continue
@@ -396,14 +399,17 @@ def main(argv: list[str] | None = None) -> int:
     args = p.parse_args(argv)
 
     if args.role is None:
-        ok = False
+        any_role_ran = False
         for spec in (TRUSTOR_SPEC, TRUSTEE_SPEC):
             try:
                 run_from_report(report_path=args.report, out_dir=args.out_dir, spec=spec)
-                ok = True
-            except ValueError:
-                continue
-        if not ok:
+                any_role_ran = True
+            except ValueError as e:
+                msg = str(e)
+                if msg.startswith(f"No {spec.benchmark_substring} runs found in "):
+                    continue
+                raise
+        if not any_role_ran:
             raise ValueError(f"No Trust_Game_Trustor/Trust_Game_Trustee runs found in {args.report}")
         return 0
 
