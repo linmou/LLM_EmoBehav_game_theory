@@ -3,13 +3,19 @@ description: "new game theory config for new benchmark infra"
 version: "1.0.0"
 
 models:
-  #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
   - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
   - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
-
-#  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-#  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
-#  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/google/gemma-3-270m-it"
+  - "/data/home/jjl7137/huggingface_models/google/gemma-3-1b-it"
+  - "/data/home/jjl7137/huggingface_models/google/gemma-3-4b-it"
+  - "/data/home/jjl7137/huggingface_models/microsoft/Phi-3.5-mini-instruct/"
+  - "/data/home/jjl7137/huggingface_models/microsoft/Phi-4-mini-instruct/"
+  - "/data/home/jjl7137/huggingface_models/meta-llama/Llama-3.2-1B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/meta-llama/Llama-3.2-3B-Instruct"
 
 emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
 intensities:
@@ -17,19 +23,79 @@ intensities:
 
 benchmarks:
   - name: "game_theory"
+    task_type: "Prisoners_Dilemma"
+    augmentation_config:
+      shuffle_options: true
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Stag_Hunt"
+    augmentation_config:
+      shuffle_options: true
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Escalation_Game"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 0
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Trust_Game_Trustor"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 0
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
     task_type: "Trust_Game_Trustee"
     augmentation_config:
+      shuffle_options: true
       previous_actions_length: 1
       previous_trust_level: 1
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Ultimatum_Game_Proposer"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 0
+      previous_offer_level: 1
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Ultimatum_Game_Responder"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 1
+      previous_offer_level: 2
     enable_auto_truncation: false
     truncation_strategy: "right"
     preserve_ratio: 1.0
     llm_eval_config:
-      model: "gpt-4o-mini"
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
       temperature: 0.0
-    # extra_dataset_params:
-    #   previous_actions_length: 2
-    #   previous_trust_level: 0
+    sample_limit: 800
 
 loading_config:
   gpu_memory_utilization: 0.9
@@ -41,7 +107,7 @@ loading_config:
   disable_custom_all_reduce: false
   additional_vllm_kwargs: {}
 
-repeat_runs: 3
+repeat_runs: 1
 
 generation_config:
   temperature: 0.1
@@ -55,7 +121,8 @@ generation_config:
   frequency_penalty: 0.0
   enable_thinking: false
 
-batch_size: 600
+batch_size: 800
 
-output_dir: "results/new_game_theory"
+output_dir: "results/new_game_theory/shuffle_800_samples"
 sanity_check: false
+defer_evaluation: true

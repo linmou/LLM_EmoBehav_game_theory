@@ -88,9 +88,13 @@ def pytest_configure(config):
 # Skip GPU tests if no GPU available
 def pytest_collection_modifyitems(config, items):
     """Modify test collection based on available resources"""
-    import torch
+    if os.environ.get("OPENAI_SERVER_USE_REAL_TORCH") == "1":
+        import torch  # type: ignore
+        has_gpu = bool(getattr(torch, "cuda", None)) and torch.cuda.is_available()
+    else:
+        has_gpu = False
 
-    if not torch.cuda.is_available():
+    if not has_gpu:
         skip_gpu = pytest.mark.skip(reason="GPU not available")
         for item in items:
             if "gpu" in item.keywords:

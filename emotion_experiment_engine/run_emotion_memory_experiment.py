@@ -10,9 +10,8 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-import pandas as pd
 import yaml
 
 # Add project root to path
@@ -290,8 +289,8 @@ def validate_config(config_dict: Dict[str, Any]) -> bool:
 
 def run_experiment(
     config_path: Path, dry_run: bool = False, debug: bool = False,
-    repeat_runs: int | None = None,
-    repeat_seed_base: int | None = None,
+    repeat_runs: Optional[int] = None,
+    repeat_seed_base: Optional[int] = None,
 ) -> bool:
     """Run emotion memory experiment from configuration file"""
 

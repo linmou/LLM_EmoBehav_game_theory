@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
 
 import pandas as pd
+from typing import TYPE_CHECKING
 try:
     import torch  # type: ignore
     from torch.utils.data import DataLoader  # type: ignore
@@ -25,13 +26,9 @@ except Exception:
     torch = None  # type: ignore
     class DataLoader:  # type: ignore
         pass
-try:
-    # Optional for dry-run; real import only needed for execution
-    from neuro_manipulation.threading_env import ensure_mkl_threading_layer
-    ensure_mkl_threading_layer()
-    from vllm import LLM  # type: ignore
-except Exception:
-    LLM = object  # type: ignore[assignment]
+
+if TYPE_CHECKING:
+    from vllm import LLM as VLLM_LLM  # pragma: no cover
 
 from neuro_manipulation.configs.experiment_config import get_repe_eng_config
 
@@ -295,7 +292,11 @@ class EmotionExperiment:
         )
 
         self.logger.info(f"Model loaded: {type(self.model)}")
-        self.is_vllm = isinstance(self.model, LLM)
+        try:
+            from vllm import LLM as _VLLM_LLM  # type: ignore
+        except Exception:
+            _VLLM_LLM = None  # type: ignore
+        self.is_vllm = _VLLM_LLM is not None and isinstance(self.model, _VLLM_LLM)
         assert self.is_vllm
         
         # Setup RepE control pipeline - using basic tokenizer for consistency
@@ -1021,6 +1022,23 @@ class EmotionExperiment:
                     f"Behavior choice ratios saved to {behavior_ratio_filename}"
                 )
 
+        behavior_by_repeat_rows: List[Dict[str, Any]] = []
+        if behavior_ratio_payload:
+            maybe_by_repeat = behavior_ratio_payload.get("by_repeat")
+            if isinstance(maybe_by_repeat, list):
+                behavior_by_repeat_rows = maybe_by_repeat
+
+        if behavior_by_repeat_rows:
+            behavior_by_repeat_df = pd.DataFrame(behavior_by_repeat_rows)
+            if not behavior_by_repeat_df.empty:
+                behavior_by_repeat_filename = (
+                    self.output_dir / "summary_behavior_ratio_by_repeat.csv"
+                )
+                behavior_by_repeat_df.to_csv(behavior_by_repeat_filename, index=False)
+                self.logger.info(
+                    f"Behavior choice ratios per repeat saved to {behavior_by_repeat_filename}"
+                )
+
         # Create README explaining output files
         try:
             readme_content = (
@@ -1036,6 +1054,8 @@ class EmotionExperiment:
                 "  - pooled_var: Unbiased pooled variance across all observations (law of total variance).\n"
                 "- summary_choice_ratio.csv: Per-option selection ratios grouped by emotion and intensity (present when dataset supplies choice ratios).\n"
                 "- summary_choice_ratio_by_repeat.csv: Per-option selection ratios grouped by emotion, intensity, and repeat (requires dataset-supplied choice ratios and repeat runs).\n"
+                "- summary_behavior_ratio.csv: Per-behavior selection ratios grouped by emotion and intensity (present when dataset supplies behavior ratios).\n"
+                "- summary_behavior_ratio_by_repeat.csv: Per-behavior selection ratios grouped by emotion, intensity, and repeat (requires dataset-supplied behavior ratios and repeat runs).\n"
                 "- experiment_config.json: Resolved configuration and runtime info (includes repeat settings).\n\n"
                 "Notes:\n"
                 "- For meaningful repeat variance, enable stochastic decoding (do_sample=true, nonzero temperature/top_p).\n"
