@@ -272,3 +272,71 @@ def test_choice_and_behavior_ratios_use_same_decision_subset(monkeypatch: pytest
     assert b_row["intensity"] == 0.1
     assert b_row["behavior_label"] == "cat_a"
     assert b_row["ratio"] == pytest.approx(1.0)
+
+
+def test_behavior_choice_ratio_does_not_cache_options_across_emotions(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Regression: behavior ratios must use each record's own options metadata.
+
+    Responsible file: emotion_experiment_engine/datasets/games.py
+    Bug: caching options by item_id reuses a different emotion's shuffled options.
+    """
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.GameTheoryDataset._load_and_parse_data",
+        lambda self: [],
+    )
+
+    cfg = _stub_config()
+    dataset = GameTheoryDataset(config=cfg, prompt_wrapper=None, answer_wrapper=None)
+
+    meta_anger: Dict[str, object] = {
+        "benchmark": "game_theory",
+        "item_metadata": {
+            "options": [
+                {"id": 1, "text": "A", "behavior": "cooperate"},
+                {"id": 2, "text": "B", "behavior": "defect"},
+            ]
+        },
+    }
+    meta_neutral: Dict[str, object] = {
+        "benchmark": "game_theory",
+        "item_metadata": {
+            "options": [
+                {"id": 1, "text": "A", "behavior": "defect"},
+                {"id": 2, "text": "B", "behavior": "cooperate"},
+            ]
+        },
+    }
+
+    records = [
+        ResultRecord(
+            emotion="anger",
+            intensity=1.0,
+            item_id="item-1",
+            task_name="Prisoners_Dilemma",
+            prompt="",
+            response="",
+            ground_truth=None,
+            score=1.0,  # cooperate for anger
+            repeat_id=0,
+            metadata=meta_anger,
+        ),
+        ResultRecord(
+            emotion="neutral",
+            intensity=0.0,
+            item_id="item-1",
+            task_name="Prisoners_Dilemma",
+            prompt="",
+            response="",
+            ground_truth=None,
+            score=1.0,  # defect for neutral (swapped)
+            repeat_id=0,
+            metadata=meta_neutral,
+        ),
+    ]
+
+    metrics = dataset.compute_split_metrics(records)
+    overall = metrics["behavior_choice_ratio"]["overall"]
+    by_key = {(r["emotion"], float(r["intensity"]), r["behavior_label"]): r["ratio"] for r in overall}
+
+    assert by_key[("anger", 1.0, "cooperate")] == pytest.approx(1.0)
+    assert by_key[("neutral", 0.0, "defect")] == pytest.approx(1.0)

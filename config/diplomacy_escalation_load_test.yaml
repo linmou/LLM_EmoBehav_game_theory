@@ -1,0 +1,52 @@
+experiment_name: "diplomacy_escalation_load_test"
+description: "Dry-run config to validate Diplomacy Escalation_Game dataset loading."
+version: "1.0.0"
+
+models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+
+emotions: ["anger"]
+intensities: [1.0]
+
+benchmarks:
+  - name: "game_theory"
+    task_type: "Escalation_Game"
+    enable_auto_truncation: false
+    truncation_strategy: "right"
+    augmentation_config:
+      data_path: "data_creation/scenario_creation/langgraph_creation/diplomacy_Escalation_Game_all_data_samples.json"
+    sample_limit: 3
+    preserve_ratio: 1.0
+    llm_eval_config: null
+
+loading_config:
+  gpu_memory_utilization: 0.20
+  max_num_seqs: 8
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 1
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+repeat_runs: 1
+repeat_seed_base: 1231
+
+generation_config:
+  temperature: 0.0
+  max_new_tokens: 16
+  do_sample: false
+  top_p: 1.0
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 2
+
+output_dir: "results/dry_run_diplomacy_escalation_load_test/"
+sanity_check: false
+defer_evaluation: true

@@ -4,6 +4,7 @@ import os
 import importlib.machinery
 import sys
 import types
+from typing import Optional
 
 
 def _install_torch_stub() -> None:
@@ -18,15 +19,18 @@ def _install_torch_stub() -> None:
         return
 
     torch_module = types.ModuleType("torch")
+    torch_module.__spec__ = importlib.machinery.ModuleSpec("torch", loader=None)
     utils_module = types.ModuleType("torch.utils")
+    utils_module.__spec__ = importlib.machinery.ModuleSpec("torch.utils", loader=None)
     data_module = types.ModuleType("torch.utils.data")
+    data_module.__spec__ = importlib.machinery.ModuleSpec("torch.utils.data", loader=None)
 
     class _TorchDataset:  # type: ignore[override]
         def __iter__(self):
             return iter(())
 
     class _TorchDataLoader:
-        def __init__(self, dataset, batch_size: int | None = 1, shuffle: bool = False, collate_fn=None):
+        def __init__(self, dataset, batch_size: Optional[int] = 1, shuffle: bool = False, collate_fn=None):
             self.dataset = dataset
             self.batch_size = batch_size or 1
             self.shuffle = shuffle
