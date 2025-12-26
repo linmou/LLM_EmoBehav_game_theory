@@ -179,7 +179,10 @@ def test_save_results_writes_behavior_ratio_csv(tmp_path: Path, tmp_benchmark_co
                 {"emotion": "anger", "intensity": 0.1, "behavior": "cooperate", "ratio": 0.4},
                 {"emotion": "anger", "intensity": 0.1, "behavior": "defect", "ratio": 0.6},
             ],
-            "by_repeat": [],
+            "by_repeat": [
+                {"emotion": "anger", "intensity": 0.1, "repeat_id": 0, "behavior": "cooperate", "ratio": 1.0},
+                {"emotion": "anger", "intensity": 0.1, "repeat_id": 1, "behavior": "defect", "ratio": 1.0},
+            ],
         },
     }
 
@@ -221,6 +224,15 @@ def test_save_results_writes_behavior_ratio_csv(tmp_path: Path, tmp_benchmark_co
     behavior_df = behavior_df.sort_values("behavior")
     ratios = behavior_df["ratio"].tolist()
     assert ratios == pytest.approx([0.4, 0.6])
+
+    behavior_ratio_repeat_path = tmp_path / "summary_behavior_ratio_by_repeat.csv"
+    assert behavior_ratio_repeat_path.exists()
+    repeat_df = pd.read_csv(behavior_ratio_repeat_path)
+    assert set(repeat_df.columns) == {"emotion", "intensity", "repeat_id", "behavior", "ratio"}
+    assert len(repeat_df) == 2
+    repeat_df = repeat_df.sort_values(["repeat_id", "behavior"])
+    repeat_ratios = repeat_df["ratio"].tolist()
+    assert repeat_ratios == pytest.approx([1.0, 1.0])
 
     # raw_results.json should retain the enriched metadata, including options.
     raw_path = tmp_path / "raw_results.json"

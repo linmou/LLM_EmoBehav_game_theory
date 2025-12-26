@@ -1007,6 +1007,23 @@ class EmotionExperiment:
                     f"Behavior choice ratios saved to {behavior_ratio_filename}"
                 )
 
+        behavior_by_repeat_rows: List[Dict[str, Any]] = []
+        if behavior_ratio_payload:
+            maybe_by_repeat = behavior_ratio_payload.get("by_repeat")
+            if isinstance(maybe_by_repeat, list):
+                behavior_by_repeat_rows = maybe_by_repeat
+
+        if behavior_by_repeat_rows:
+            behavior_by_repeat_df = pd.DataFrame(behavior_by_repeat_rows)
+            if not behavior_by_repeat_df.empty:
+                behavior_by_repeat_filename = (
+                    self.output_dir / "summary_behavior_ratio_by_repeat.csv"
+                )
+                behavior_by_repeat_df.to_csv(behavior_by_repeat_filename, index=False)
+                self.logger.info(
+                    f"Behavior choice ratios per repeat saved to {behavior_by_repeat_filename}"
+                )
+
         # Create README explaining output files
         try:
             readme_content = (
@@ -1022,6 +1039,8 @@ class EmotionExperiment:
                 "  - pooled_var: Unbiased pooled variance across all observations (law of total variance).\n"
                 "- summary_choice_ratio.csv: Per-option selection ratios grouped by emotion and intensity (present when dataset supplies choice ratios).\n"
                 "- summary_choice_ratio_by_repeat.csv: Per-option selection ratios grouped by emotion, intensity, and repeat (requires dataset-supplied choice ratios and repeat runs).\n"
+                "- summary_behavior_ratio.csv: Per-behavior selection ratios grouped by emotion and intensity (present when dataset supplies behavior ratios).\n"
+                "- summary_behavior_ratio_by_repeat.csv: Per-behavior selection ratios grouped by emotion, intensity, and repeat (requires dataset-supplied behavior ratios and repeat runs).\n"
                 "- experiment_config.json: Resolved configuration and runtime info (includes repeat settings).\n\n"
                 "Notes:\n"
                 "- For meaningful repeat variance, enable stochastic decoding (do_sample=true, nonzero temperature/top_p).\n"
