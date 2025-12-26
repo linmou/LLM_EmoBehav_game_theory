@@ -115,7 +115,8 @@ class UltimatumGameScenario(SequentialGameScenario):
 
         return self
 
-    def previous_actions(self) -> list:
+    @property
+    def previous_actions(self) -> list:  # type: ignore[override]
         assert (
             self.previous_actions_length == 0
         ), "Currently ultimatum game does not have previous actions"
@@ -144,7 +145,7 @@ class UltimatumGameScenario(SequentialGameScenario):
         Description: {info.get('description', 'No description')}
         Participants: {self.get_participant_names()}
         Behavior Choices: {self.get_behavior_choices().get_choices()}
-        Previous Actions: {self.previous_actions()}
+        Previous Actions: {self.previous_actions}
         """
 
     @staticmethod
@@ -230,8 +231,8 @@ class UltimatumGameResponderScenario(UltimatumGameScenario):
             for participant in self.participants
         ]
 
-    # Keep API consistent with base class: previous_actions() is a method.
-    def previous_actions(self) -> list:
+    @property
+    def previous_actions(self) -> list:  # type: ignore[override]
         if self.previous_offer_level == 0:
             return [(self.proposer_name, self.proposer_behavior_choices.offer_low)]
         elif self.previous_offer_level == 1:
