@@ -1,6 +1,6 @@
 # Result Analysis Directory
 
-Last updated: 2025-12-25 (commit 56fe594)
+Last updated: 2025-12-26 (commit 5ccdfe8)
 
 This directory contains all post-experiment analysis scripts and results for the LLM Emotional Behavior Game Theory experiments.
 
@@ -13,6 +13,7 @@ This directory contains all post-experiment analysis scripts and results for the
 - `generate_game_theory_impact_report.py` - Builds option/behavior impact tables vs neutral from `summary_choice_ratio.csv` / `summary_behavior_ratio.csv`
 - `trust_game_trustor_expected_score.py` - Report-driven Trust Game (Trustor) item-level decision shift vs neutral (trust_none=0, trust_low=1, trust_high=2)
 - `trust_game_trustee_expected_score.py` - Report-driven Trust Game (Trustee) item-level decision shift vs neutral (return_none=0, return_medium=1, return_high=2)
+- `trust_game_expected_score.py` - Shared Trust Game expected-score analysis (runs both roles by default; use `--role` to limit)
 
 ### Debug/Utility Scripts
 - `debug_data_structure.py` - Utility to inspect data structure and verify scenario matching
@@ -51,7 +52,14 @@ python analyze_switches_detailed.py
 # For comprehensive pattern analysis
 python analyze_choice_patterns.py
 
-# Trust Game (Trustor) expected-score deltas from a series report
+# Trust Game expected-score deltas from a series report (Trustor + Trustee)
+python -m result_analysis.trust_game_expected_score \
+  --report results/.../memory_experiment_series_..._memory_experiment_report.json \
+  --out_dir results/.../shuffle_decision_only
+
+This writes both `trustor_*` and `trustee_*` outputs when the report contains both benchmarks.
+
+# Trust Game (Trustor) expected-score deltas from a series report (wrapper)
 python -m result_analysis.trust_game_trustor_expected_score \
   --report results/.../memory_experiment_series_..._memory_experiment_report.json \
   --out_dir results/.../shuffle_decision_only
@@ -63,7 +71,7 @@ This writes:
 - `trustor_expected_score_delta_aggregate_by_emotion.csv`
 - `trustor_item_expected_score_delta_report.md`
 
-# Trust Game (Trustee) expected-score deltas from a series report
+# Trust Game (Trustee) expected-score deltas from a series report (wrapper)
 python -m result_analysis.trust_game_trustee_expected_score \
   --report results/.../memory_experiment_series_..._memory_experiment_report.json \
   --out_dir results/.../shuffle_decision_only
