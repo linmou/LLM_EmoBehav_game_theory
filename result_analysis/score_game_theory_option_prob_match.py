@@ -31,10 +31,30 @@ def _maybe_tqdm(iterable: Iterable[object], *, total: Optional[int], desc: str, 
         return iterable
 
 
+def _as_float(v: object) -> float:
+    if isinstance(v, (int, float)):
+        return float(v)
+    if isinstance(v, str):
+        return float(v)
+    raise TypeError(f"Expected float-compatible value, got {type(v).__name__}")
+
+
+def _as_int(v: object) -> int:
+    if isinstance(v, bool):
+        raise TypeError("bool is not a valid int input here")
+    if isinstance(v, int):
+        return v
+    if isinstance(v, float):
+        return int(v)
+    if isinstance(v, str):
+        return int(float(v))
+    raise TypeError(f"Expected int-compatible value, got {type(v).__name__}")
+
+
 def build_option_strings(options: Sequence[Mapping[str, object]]) -> Dict[int, str]:
     option_strings: Dict[int, str] = {}
     for opt in options:
-        opt_id = int(opt["id"])
+        opt_id = _as_int(opt["id"])
         text = str(opt["text"])
         option_strings[opt_id] = f"Option {opt_id}. {text}"
     return option_strings
@@ -113,7 +133,7 @@ def _group_adjacent_by_emotion_intensity(records: Sequence[Mapping[str, object]]
     cur: List[Mapping[str, object]] = []
     cur_key: Optional[Tuple[str, float]] = None
     for r in records:
-        key = (str(r["emotion"]), float(r["intensity"]))
+        key = (str(r["emotion"]), _as_float(r["intensity"]))
         if cur_key is None or key == cur_key:
             cur.append(r)
             cur_key = key
@@ -124,6 +144,161 @@ def _group_adjacent_by_emotion_intensity(records: Sequence[Mapping[str, object]]
     if cur:
         groups.append(cur)
     return groups
+
+
+def _options_by_key(raw_records: Sequence[Mapping[str, object]]) -> Dict[Tuple[str, float, int], List[Mapping[str, object]]]:
+    out: Dict[Tuple[str, float, int], List[Mapping[str, object]]] = {}
+    for r in raw_records:
+        if not isinstance(r, dict):
+            continue
+        emotion = r.get("emotion")
+        intensity = r.get("intensity")
+        item_id = r.get("item_id")
+        if emotion is None or intensity is None or item_id is None:
+            continue
+        md = r.get("metadata") or {}
+        options = (md.get("item_metadata") or {}).get("options")
+        if not isinstance(options, list):
+            continue
+        out[(str(emotion), _as_float(intensity), _as_int(item_id))] = [o for o in options if isinstance(o, dict)]
+    return out
+
+
+def _option_payload_by_id(options: Sequence[Mapping[str, object]]) -> Dict[int, Tuple[str, str]]:
+    out: Dict[int, Tuple[str, str]] = {}
+    for opt in options:
+        if "id" not in opt or "text" not in opt:
+            continue
+        opt_id = _as_int(opt["id"])
+        text = str(opt["text"])
+        if "behavior" not in opt:
+            raise KeyError(f"Missing behavior for option_id={opt_id}")
+        behavior = str(opt["behavior"])
+        out[opt_id] = (text, behavior)
+    return out
+
+
+def behavior_match_rows(
+    *,
+    raw_records: Sequence[Mapping[str, object]],
+    scored_rows: Sequence[Mapping[str, object]],
+) -> List[Dict[str, object]]:
+    opts_by_key = _options_by_key(raw_records)
+
+    out: List[Dict[str, object]] = []
+    for row in scored_rows:
+        emotion = str(row["emotion"])
+        intensity = _as_float(row["intensity"])
+        item_id = _as_int(row["item_id"])
+        pred_id = _as_int(row["predicted_option_id"])
+        chosen_id = row.get("chosen_option_id")
+        chosen_opt_id = None if chosen_id is None else _as_int(chosen_id)
+
+        options = opts_by_key.get((emotion, intensity, item_id))
+        if options is None:
+            raise KeyError(f"Missing options for emotion={emotion} intensity={intensity} item_id={item_id}")
+        payload_by_id = _option_payload_by_id(options)
+
+        pred_text, pred_behavior = payload_by_id[pred_id]
+        if chosen_opt_id is None:
+            chosen_text, chosen_behavior, is_match = "", "", None
+        else:
+            chosen_payload = payload_by_id.get(chosen_opt_id)
+            if chosen_payload is None:
+                chosen_text, chosen_behavior, is_match = "", "", None
+            else:
+                chosen_text, chosen_behavior = chosen_payload
+                is_match = bool(pred_behavior == chosen_behavior)
+
+        out.append(
+            {
+                "item_id": item_id,
+                "emotion": emotion,
+                "intensity": intensity,
+                "chosen_option_id": chosen_opt_id,
+                "predicted_option_id": pred_id,
+                "predicted_option_text": pred_text,
+                "predicted_behavior": pred_behavior,
+                "chosen_option_text": chosen_text,
+                "chosen_behavior": chosen_behavior,
+                "is_behavior_match": is_match,
+            }
+        )
+    return out
+
+
+def enrich_scored_rows_with_behaviors(
+    *,
+    raw_records: Sequence[Mapping[str, object]],
+    scored_rows: Sequence[Mapping[str, object]],
+) -> List[Dict[str, object]]:
+    behavior_rows = behavior_match_rows(raw_records=raw_records, scored_rows=scored_rows)
+    by_key: Dict[Tuple[str, float, int], Tuple[str, str]] = {}
+    for r in behavior_rows:
+        by_key[(str(r["emotion"]), _as_float(r["intensity"]), _as_int(r["item_id"]))] = (
+            str(r["chosen_behavior"]),
+            str(r["predicted_behavior"]),
+        )
+
+    out: List[Dict[str, object]] = []
+    for r in scored_rows:
+        key = (str(r["emotion"]), _as_float(r["intensity"]), _as_int(r["item_id"]))
+        chosen_behavior, predicted_behavior = by_key[key]
+        rr = dict(r)
+        rr["chosen_behavior"] = chosen_behavior
+        rr["predicted_behavior"] = predicted_behavior
+        out.append(rr)
+    return out
+
+
+def predicted_option_argmax_ratios(scored_rows: Sequence[Mapping[str, object]]) -> List[Dict[str, object]]:
+    counts: Dict[Tuple[str, float], Dict[int, int]] = {}
+    totals: Dict[Tuple[str, float], int] = {}
+    for r in scored_rows:
+        key = (str(r["emotion"]), _as_float(r["intensity"]))
+        opt_id = _as_int(r["predicted_option_id"])
+        totals[key] = totals.get(key, 0) + 1
+        counts.setdefault(key, {})
+        counts[key][opt_id] = counts[key].get(opt_id, 0) + 1
+
+    out: List[Dict[str, object]] = []
+    for (emotion, intensity), c in sorted(counts.items()):
+        total = totals[(emotion, intensity)] or 1
+        for opt_id in sorted(c):
+            out.append(
+                {
+                    "emotion": emotion,
+                    "intensity": intensity,
+                    "option_id": int(opt_id),
+                    "ratio": float(c[opt_id]) / float(total),
+                }
+            )
+    return out
+
+
+def predicted_behavior_argmax_ratios(behavior_rows: Sequence[Mapping[str, object]]) -> List[Dict[str, object]]:
+    counts: Dict[Tuple[str, float], Dict[str, int]] = {}
+    totals: Dict[Tuple[str, float], int] = {}
+    for r in behavior_rows:
+        key = (str(r["emotion"]), _as_float(r["intensity"]))
+        label = str(r["predicted_behavior"])
+        totals[key] = totals.get(key, 0) + 1
+        counts.setdefault(key, {})
+        counts[key][label] = counts[key].get(label, 0) + 1
+
+    out: List[Dict[str, object]] = []
+    for (emotion, intensity), c in sorted(counts.items()):
+        total = totals[(emotion, intensity)] or 1
+        for label in sorted(c):
+            out.append(
+                {
+                    "emotion": emotion,
+                    "intensity": intensity,
+                    "behavior_label": label,
+                    "ratio": float(c[label]) / float(total),
+                }
+            )
+    return out
 
 
 def score_records(
@@ -603,16 +778,24 @@ def score_run_dir(
     )
 
     raw = _load_json(raw_path)
+    raw_records_list = list(_iter_run_records(raw))
     rows = score_records(
-        raw_records=list(_iter_run_records(raw)),
+        raw_records=raw_records_list,
         scorer=scorer,
         limit=limit,
         batch_size=batch_size,
         progress=progress,
     )
 
-    out_path = output_csv or (run_dir / "option_prob_argmax_matches_score.csv")
-    _write_item_csv(rows, out_path)
+    enriched_rows = enrich_scored_rows_with_behaviors(raw_records=raw_records_list, scored_rows=rows)
+    out_path = output_csv or (run_dir / "prob_argmax_matches_score.csv")
+    _write_item_csv(enriched_rows, out_path)
+
+    behavior_rows = behavior_match_rows(raw_records=raw_records_list, scored_rows=rows)
+    _write_item_csv(behavior_rows, run_dir / "behavior_prob_argmax_matches_score.csv")
+
+    _write_item_csv(predicted_option_argmax_ratios(rows), run_dir / "summary_predicted_option_argmax_ratio.csv")
+    _write_item_csv(predicted_behavior_argmax_ratios(behavior_rows), run_dir / "summary_predicted_behavior_argmax_ratio.csv")
     return out_path
 
 
