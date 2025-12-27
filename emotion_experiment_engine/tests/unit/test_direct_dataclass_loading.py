@@ -206,7 +206,7 @@ class TestDirectDataclassLoading(unittest.TestCase):
             model_path=loading_cfg.get("model_path") or model_path,
             gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
             tensor_parallel_size=loading_cfg.get("tensor_parallel_size"),
-            max_model_len=loading_cfg.get("max_model_len", 32768),
+            max_model_len=loading_cfg.get("max_model_len", 8192),
             enforce_eager=loading_cfg.get("enforce_eager", True),
             quantization=loading_cfg.get("quantization"),
             trust_remote_code=loading_cfg.get("trust_remote_code", True),

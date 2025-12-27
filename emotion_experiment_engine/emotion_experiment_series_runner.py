@@ -30,7 +30,13 @@ AutoConfig = None  # type: ignore
 
 # Defer heavy imports (torch/vLLM) to runtime when needed
 
-from .data_models import BenchmarkConfig, ExperimentConfig, VLLMLoadingConfig
+from .data_models import (
+    DEFAULT_VLLM_MAX_MODEL_LEN,
+    DEFAULT_VLLM_MAX_NUM_SEQS_CAP,
+    BenchmarkConfig,
+    ExperimentConfig,
+    VLLMLoadingConfig,
+)
 
 
 class ExperimentStatus:
@@ -677,12 +683,14 @@ class MemoryExperimentSeriesRunner:
         # Create VLLMLoadingConfig directly from base config
         loading_cfg = self.base_config["loading_config"]
         additional_vllm_kwargs = dict(loading_cfg.get("additional_vllm_kwargs", {}) or {})
-        additional_vllm_kwargs.setdefault("max_num_seqs", batch_size)
+        additional_vllm_kwargs.setdefault(
+            "max_num_seqs", min(batch_size, DEFAULT_VLLM_MAX_NUM_SEQS_CAP)
+        )
         loading_config = VLLMLoadingConfig(
             model_path=loading_cfg.get("model_path", model_name),
             gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
             tensor_parallel_size=loading_cfg.get("tensor_parallel_size"),
-            max_model_len=loading_cfg.get("max_model_len", 32768),
+            max_model_len=loading_cfg.get("max_model_len", DEFAULT_VLLM_MAX_MODEL_LEN),
             enforce_eager=loading_cfg.get("enforce_eager", True),
             quantization=loading_cfg.get("quantization"),
             trust_remote_code=loading_cfg.get("trust_remote_code", True),
