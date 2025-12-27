@@ -13,7 +13,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
-from scipy import stats
+from scipy import stats  # type: ignore[import-untyped]
 
 from games.game import SequentialGameScenario
 from games.game_configs import get_game_config
@@ -420,9 +420,21 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 candidates.append(match.group(1).strip())
 
         for candidate in candidates:
-            option_id = GameTheoryDataset._match_option(candidate, options)
-            if option_id is not None:
-                return option_id
+            candidate_stripped = candidate.strip()
+            if candidate_stripped.isdigit():
+                option_id = int(candidate_stripped)
+                if 1 <= option_id <= len(options):
+                    return option_id
+
+            match = re.match(r"option\s*(\d+)(?:\s*[:\.\)\-]|$)", candidate_stripped, re.IGNORECASE)
+            if match:
+                option_id = int(match.group(1))
+                if 1 <= option_id <= len(options):
+                    return option_id
+
+            matched = GameTheoryDataset._match_option(candidate, options)
+            if matched is not None:
+                return matched
         return None
 
     @staticmethod

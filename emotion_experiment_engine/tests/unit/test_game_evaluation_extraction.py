@@ -70,16 +70,13 @@ def test_evaluate_response_regex_only(dataset: GameTheoryDataset):
 
 
 def test_evaluate_response_llm_fallback(monkeypatch, dataset: GameTheoryDataset):
-    captured = {}
+    captured = {"called": False}
 
-    def _fake_oai(prompt, client=None, model=None, response_format=None):
-        captured["response_format"] = response_format
-        return dataset._ExtractionSchema(option_id=1, rationale="", decision="")
+    def _fake_fallback(*args, **kwargs):
+        captured["called"] = True
+        return 1
 
-    monkeypatch.setattr(
-        "emotion_experiment_engine.datasets.games.oai_response",
-        _fake_oai,
-    )
+    monkeypatch.setattr(GameTheoryDataset, "_fallback_option_via_llm", _fake_fallback)
 
     prompt = (
         "Scenario: Prisoners dilemma\n"
@@ -96,19 +93,16 @@ def test_evaluate_response_llm_fallback(monkeypatch, dataset: GameTheoryDataset)
     )
 
     assert choice == pytest.approx(1.0)
-    assert captured["response_format"] is dataset._ExtractionSchema
+    assert captured["called"] is True
 
 
 def test_evaluate_response_parses_option_number_json(monkeypatch, dataset: GameTheoryDataset):
     """If the model returns a JSON decision like 'Option 1', use it directly without LLM."""
 
-    def _fail_oai(*args, **kwargs):  # pragma: no cover - should never be called
+    def _fail_fallback(*args, **kwargs):  # pragma: no cover - should never be called
         raise AssertionError("LLM fallback should not be invoked for JSON decision")
 
-    monkeypatch.setattr(
-        "emotion_experiment_engine.datasets.games.oai_response",
-        _fail_oai,
-    )
+    monkeypatch.setattr(GameTheoryDataset, "_fallback_option_via_llm", _fail_fallback)
 
     prompt = (
         "Scenario: Prisoners dilemma\n"
