@@ -42,22 +42,27 @@ Example Usage:
     results = experiment.run_experiment()
 """
 
-# Import EmotionMemoryExperiment conditionally to avoid vllm dependency during imports
-try:
-    from .experiment import EmotionExperiment
-except ImportError:
-    # vllm not available, EmotionMemoryExperiment will be None
-    EmotionExperiment = None
+# Keep package import cheap and robust.
+# Some environments (e.g., sandboxed /dev/shm) will SIGABRT when importing GPU-heavy deps
+# like vLLM / torch via OpenMP initialization. Import those lazily on attribute access.
+
 # Adapters replaced by smart datasets in refactoring
 from .config_loader import EmotionMemoryConfigLoader, load_emotion_memory_config
-from .data_models import (
-    DEFAULT_GENERATION_CONFIG,
-    BenchmarkConfig,
-    ExperimentConfig,
-    ResultRecord,
-)
+from .data_models import DEFAULT_GENERATION_CONFIG, BenchmarkConfig, ExperimentConfig, ResultRecord
 
 __version__ = "1.0.0"
+
+
+def __getattr__(name: str):
+    if name == "EmotionExperiment":
+        from .experiment import EmotionExperiment as _EmotionExperiment
+
+        return _EmotionExperiment
+    if name == "swebench_evaluation":
+        from . import swebench_evaluation as _swebench_evaluation
+
+        return _swebench_evaluation
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 __all__ = [
     "EmotionExperiment",
     "ExperimentConfig",
@@ -67,4 +72,5 @@ __all__ = [
     # "get_adapter" removed in smart dataset refactoring
     "load_emotion_memory_config",
     "EmotionMemoryConfigLoader",
+    "swebench_evaluation",
 ]

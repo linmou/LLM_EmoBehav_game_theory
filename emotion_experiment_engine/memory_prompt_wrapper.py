@@ -133,16 +133,7 @@ class MemoryPromptWrapper(PromptWrapper):
         """
         Apply custom prefix/suffix to context or mark answers in context.
 
-        Supports both manual augmentation (with prefix/suffix) and adaptive emotion augmentation.
-
-        Args:
-            context: Original context text
-            augmentation_config: Dict with 'prefix', 'suffix', or 'method': 'adaptive'
-            answer: Answer to find and mark in context (always provided from datasets)
-            emotion: Emotion for adaptive augmentation mode
-
-        Returns:
-            Augmented context string
+        Supports manual augmentation (prefix/suffix) and adaptive emotion augmentation.
         """
         if not context or not augmentation_config:
             return context

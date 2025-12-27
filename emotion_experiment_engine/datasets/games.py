@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import logging
 import math
+import os
+import random
 import re
 from collections import defaultdict
 from copy import deepcopy
@@ -15,7 +17,6 @@ from scipy import stats
 
 from games.game import SequentialGameScenario
 from games.game_configs import get_game_config
-from neuro_manipulation.utils import oai_response
 from pydantic import BaseModel
 
 from .. import evaluation_utils
@@ -69,14 +70,23 @@ class GameTheoryDataset(BaseBenchmarkDataset):
     def _load_and_parse_data(self) -> List[BenchmarkItem]:
         raw_items = self._load_raw_scenarios()
 
-        # if "scenario_class" not in self._game_config: # remove so that error can be raised
-        #     return self._build_items_from_raw(raw_items)
+        # For configs without a structured scenario_class, fall back to raw items.
+        if "scenario_class" not in self._game_config:
+            return self._build_items_from_raw(raw_items)
 
         scenario_class = self._game_config["scenario_class"]
         payoff_matrix = self._game_config["payoff_matrix"]
         augmentation = self.config.augmentation_config or {}
         scenario_fields = getattr(scenario_class, "model_fields", {})
         config_fields = self._game_config
+        # Always shuffle options; allow deterministic control via behavior_ratio.
+        behavior_ratio = self._game_config.get("behavior_ratio")
+        shuffle_rng = (
+            random.Random(behavior_ratio)
+            if behavior_ratio is not None
+            else random
+        )
+        shuffle_options = True
 
         items: List[BenchmarkItem] = []
         for idx, record in enumerate(raw_items):
@@ -90,6 +100,10 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 elif field_name in config_fields and field_name not in enriched:
                     enriched[field_name] = config_fields[field_name]
 
+            if "previous_actions_length" in scenario_fields and "previous_actions_length" not in enriched:
+                previous_actions = enriched.get("previous_actions") or []
+                enriched["previous_actions_length"] = len(previous_actions) if isinstance(previous_actions, list) else 0
+
             try:
                 scenario = scenario_class(**enriched)
             except Exception as exc:  # pragma: no cover - defensive logging
@@ -98,17 +112,37 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 )
                 continue
 
-            options = [
-                {"id": opt_idx + 1, "text": choice}
-                for opt_idx, choice in enumerate(
-                    scenario.get_behavior_choices().get_choices()
-                )
-            ]
+            # Build behavior-category options, then shuffle and reindex.
+            raw_choices = scenario.get_behavior_choices().get_choices()
+            options: List[Dict[str, Any]] = []
+            for opt_idx, choice in enumerate(raw_choices):
+                try:
+                    behavior = scenario.find_behavior_from_decision(choice)
+                except Exception:  # pragma: no cover - defensive guard
+                    behavior = ""
+                options.append(
+                    {
+                        "id": opt_idx + 1,
+                        "text": choice,
+                        "behavior": behavior,
+                    }
+            )
+
+            # Shuffle in-place and reassign ids to reflect presented order.
+            shuffle_rng.shuffle(options)
+            for new_idx, opt in enumerate(options, start=1):
+                opt["id"] = new_idx
 
             item_id = enriched.get("id", idx)
-            metadata: Dict[str, Any] = {
-                "options": options,
-            }
+            metadata: Dict[str, Any] = {"options": options}
+            try:
+                scenario_info = scenario.get_scenario_info()
+            except Exception:  # pragma: no cover - keep dataset load resilient
+                scenario_info = {}
+            if isinstance(scenario_info, dict):
+                metadata.update(scenario_info)
+            if shuffle_options and behavior_ratio is not None:
+                metadata["behavior_ratio_used"] = behavior_ratio
 
             if isinstance(scenario, SequentialGameScenario):
                 previous_attr = getattr(scenario, "previous_actions", None)
@@ -169,7 +203,16 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                     input_text=str(event),
                     context=None,
                     ground_truth=None,
-                    metadata={"options": normalized_options},
+                    metadata=self._compact_metadata(
+                        {
+                            "options": normalized_options,
+                            "scenario": record.get("scenario"),
+                            "description": record.get("description"),
+                            "participants": record.get("participants"),
+                            "game_name": record.get("game_name"),
+                            "payoff_description": record.get("payoff_description"),
+                        }
+                    ),
                 )
             )
 
@@ -178,6 +221,9 @@ class GameTheoryDataset(BaseBenchmarkDataset):
 
         return items
 
+    @staticmethod
+    def _compact_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
+        return {key: value for key, value in metadata.items() if value is not None}
 
     class _ExtractionSchema(BaseModel):
         option_id: int
@@ -237,6 +283,9 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         if choice_id is not None:
             return float(choice_id)
 
+        if os.environ.get("DISABLE_LLM_JUDGE") == "1":
+            return -1.0
+
         logger.warning("Failed to extract option id for response: %s", response)
         return math.nan
 
@@ -257,6 +306,11 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             "overall": overall_rows,
             "by_repeat": repeat_rows,
         }
+
+        # Behavior-level ratios derived from item metadata + numeric scores
+        behavior_payload = self._behavior_choice_ratios(records)
+        if behavior_payload:
+            metrics["behavior_choice_ratio"] = behavior_payload
 
         # Add statistical analysis over categorical choices
         stats_payload = self._compute_stats(records)
@@ -320,7 +374,29 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         )
         total_counts: Dict[Tuple[Any, ...], int] = defaultdict(int)
 
+        # If any record has behavior options metadata, restrict choice ratios
+        # to that same subset so id-level and behavior-level ratios share the
+        # same underlying decisions (FR-006).
+        has_behavior_metadata = False
         for record in records:
+            meta = getattr(record, "metadata", None)
+            if isinstance(meta, dict):
+                item_md = meta.get("item_metadata") or {}
+                opts = item_md.get("options")
+                if isinstance(opts, list) and opts:
+                    has_behavior_metadata = True
+                    break
+
+        for record in records:
+            if has_behavior_metadata:
+                meta = getattr(record, "metadata", None)
+                if not isinstance(meta, dict):
+                    continue
+                item_md = meta.get("item_metadata") or {}
+                opts = item_md.get("options")
+                if not isinstance(opts, list) or not opts:
+                    continue
+
             score = record.score
             if score is None:
                 continue
@@ -361,9 +437,111 @@ class GameTheoryDataset(BaseBenchmarkDataset):
 
         return rows
 
+    def _behavior_choice_ratios(self, records: List[ResultRecord]) -> Dict[str, List[Dict[str, Any]]]:
+        """Aggregate behavior-level counts/ratios from numeric scores and metadata.
+
+        FR-004/FR-006/FR-007: derive behavior categories from per-item options and
+        ensure that every chosen option_id has a non-empty behavior category.
+        """
+        def _get_options_for(meta: Dict[str, Any] | None) -> List[Dict[str, Any]]:
+            if not meta:
+                return []
+            item_md = meta.get("item_metadata") or {}
+            opts = item_md.get("options")
+            if not isinstance(opts, list) or not opts:
+                return []
+            return opts
+
+        # Counts keyed by (emotion, intensity[, repeat_id], behavior)
+        counts_overall: Dict[Tuple[Any, Any, str], int] = defaultdict(int)
+        counts_by_repeat: Dict[Tuple[Any, Any, Any, str], int] = defaultdict(int)
+        totals_overall: Dict[Tuple[Any, Any], int] = defaultdict(int)
+        totals_by_repeat: Dict[Tuple[Any, Any, Any], int] = defaultdict(int)
+
+        for record in records:
+            score = record.score
+            if score is None:
+                continue
+            try:
+                option_val = float(score)
+            except (TypeError, ValueError):
+                continue
+            if math.isnan(option_val):
+                continue
+
+            option_id = int(option_val)
+            # Look up behavior category from metadata
+            opts = _get_options_for(record.metadata)
+            if not opts:
+                # No behavior metadata for this item; skip for behavior-level ratios.
+                continue
+            behavior: Optional[str] = None
+            matched_opt: Optional[Dict[str, Any]] = None
+            for opt in opts:
+                if int(opt.get("id", -1)) == option_id:
+                    matched_opt = opt
+                    behavior = opt.get("behavior") or None
+                    break
+
+            if matched_opt is None:
+                # Unmappable option id: surface in an explicit unknown bucket.
+                behavior = "unknown"
+            elif not behavior:
+                # Matched option with missing/empty behavior is still an error.
+                raise ValueError(
+                    f"Missing behavior category for option_id {option_id} "
+                    f"(item_id={record.item_id!r}) while computing behavior-level ratios"
+                )
+
+            key_overall = (record.emotion, record.intensity)
+            counts_overall[(record.emotion, record.intensity, behavior)] += 1
+            totals_overall[key_overall] += 1
+
+            if hasattr(record, "repeat_id"):
+                key_rep = (record.emotion, record.intensity, record.repeat_id)
+                counts_by_repeat[(record.emotion, record.intensity, record.repeat_id, behavior)] += 1
+                totals_by_repeat[key_rep] += 1
+
+        if not totals_overall:
+            return {}
+
+        overall_rows: List[Dict[str, Any]] = []
+        for (emotion, intensity, behavior), count in counts_overall.items():
+            total = totals_overall[(emotion, intensity)]
+            if total:
+                overall_rows.append(
+                    {
+                        "emotion": emotion,
+                        "intensity": intensity,
+                        "behavior_label": behavior,
+                        "ratio": count / total,
+                    }
+                )
+
+        by_repeat_rows: List[Dict[str, Any]] = []
+        for (emotion, intensity, repeat_id, behavior), count in counts_by_repeat.items():
+            total = totals_by_repeat[(emotion, intensity, repeat_id)]
+            if total:
+                by_repeat_rows.append(
+                    {
+                        "emotion": emotion,
+                        "intensity": intensity,
+                        "repeat_id": repeat_id,
+                        "behavior_label": behavior,
+                        "ratio": count / total,
+                    }
+                )
+
+        return {
+            "overall": overall_rows,
+            "by_repeat": by_repeat_rows,
+        }
+
     def _fallback_option_via_llm(
         self, response: str, options: Sequence[str]
     ) -> Optional[int]:
+        if os.environ.get("DISABLE_LLM_JUDGE") == "1":
+            return None
         if not options:
             return None
 
@@ -410,6 +588,8 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         )
 
         try:
+            from neuro_manipulation.utils import oai_response
+
             result = oai_response(
                 prompt,
                 client=client,

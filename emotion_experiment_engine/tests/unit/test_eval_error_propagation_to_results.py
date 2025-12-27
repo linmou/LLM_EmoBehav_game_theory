@@ -1,21 +1,27 @@
 """
 Unit test: ensure evaluation errors from dataset.evaluate_batch are propagated
-into EmotionExperiment results and persisted by _save_results.
+into EmotionExperiment results and persisted by _save_results, and that
+emotion_experiment_engine.evaluate_saved reuses dataset-level batch scoring
+during deferred replay.
 
 Covers: emotion_experiment_engine/experiment.py
 - _post_process_batch should read dataset._last_eval_errors and set ResultRecord.error
 - _save_results should include an 'error' column in detailed_results.csv/DataFrame
 """
 
+import json
+import logging
 from pathlib import Path
-from typing import Any, List
+from typing import Any, Dict, List, Sequence
 from unittest.mock import MagicMock, patch
 import importlib
 import sys
 
 import math
 import pandas as pd
+import pytest
 
+from emotion_experiment_engine import evaluate_saved
 from emotion_experiment_engine.data_models import BenchmarkItem
 from emotion_experiment_engine.tests.test_utils import (
     create_mock_experiment_config,
@@ -39,6 +45,194 @@ class DummyDataset:
         self._last_eval_errors = ["mock eval error", None]
         # Return NaN for the errored item, and 1.0 for the successful item
         return [float("nan"), 1.0]
+
+
+class _RecordingDataset:
+    """Stub dataset that records which evaluation API is used."""
+
+    def __init__(self) -> None:
+        self.batch_calls: List[Dict[str, Sequence[str]]] = []
+        self.response_calls: List[Dict[str, str]] = []
+        self._last_eval_errors: List[str | None] = []
+
+    def evaluate_batch(
+        self,
+        responses: List[str],
+        ground_truths: List[Any],
+        task_names: List[str],
+        prompts: List[str],
+    ) -> List[float]:
+        self.batch_calls.append(
+            {
+                "responses": tuple(responses),
+                "ground_truths": tuple(map(str, ground_truths)),
+                "task_names": tuple(task_names),
+                "prompts": tuple(prompts),
+            }
+        )
+        self._last_eval_errors = ["err-one", None]
+        return [0.25, 0.75]
+
+    def evaluate_response(
+        self, response: str, ground_truth: Any, task_name: str, prompt: str
+    ) -> float:
+        self.response_calls.append(
+            {
+                "response": response,
+                "ground_truth": str(ground_truth),
+                "task_name": task_name,
+                "prompt": prompt,
+            }
+        )
+        return 1.0
+
+
+@pytest.fixture()
+def deferred_run_dir(tmp_path: Path) -> Path:
+    run = tmp_path / "run"
+    run.mkdir()
+    manifest = {
+        "model_path": "dummy",
+        "emotions": ["anger"],
+        "intensities": [1.0],
+        "benchmark": {
+            "name": "dummy",
+            "task_type": "dummy_task",
+            "data_path": None,
+            "base_data_dir": None,
+            "sample_limit": None,
+            "augmentation_config": None,
+            "enable_auto_truncation": False,
+            "truncation_strategy": "right",
+            "preserve_ratio": 0.8,
+            "llm_eval_config": None,
+        },
+        "output_dir": str(run),
+        "batch_size": 2,
+        "generation_config": None,
+        "repe_eng_config": None,
+        "max_evaluation_workers": 4,
+        "pipeline_queue_size": 2,
+        "defer_evaluation": True,
+    }
+    (run / "experiment_config.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    raw_rows = [
+        {
+            "emotion": "anger",
+            "intensity": 1.0,
+            "item_id": "item-1",
+            "task_name": "dummy_task",
+            "prompt": "prompt-1",
+            "response": "response-1",
+            "ground_truth": "gt-1",
+            "repeat_id": 0,
+            "metadata": None,
+        },
+        {
+            "emotion": "anger",
+            "intensity": 1.0,
+            "item_id": "item-2",
+            "task_name": "dummy_task",
+            "prompt": "prompt-2",
+            "response": "response-2",
+            "ground_truth": "gt-2",
+            "repeat_id": 0,
+            "metadata": None,
+        },
+    ]
+    (run / "raw_results.json").write_text(json.dumps(raw_rows), encoding="utf-8")
+    return run
+
+
+def test_evaluate_saved_prefers_batch_api(monkeypatch: pytest.MonkeyPatch, deferred_run_dir: Path) -> None:
+    dataset = _RecordingDataset()
+
+    def fake_factory(*_: Any, **__: Any) -> _RecordingDataset:
+        return dataset
+
+    def fake_save_results(self: Any, records: List[Any]) -> pd.DataFrame:
+        df_rows = [{"item_id": r.item_id, "score": r.score, "error": r.error} for r in records]
+        return pd.DataFrame(df_rows)
+
+    monkeypatch.setattr(evaluate_saved, "create_dataset_from_config", fake_factory)
+    monkeypatch.setattr(evaluate_saved.EmotionExperiment, "_save_results", fake_save_results, raising=False)
+
+    df = evaluate_saved.evaluate_saved_run(deferred_run_dir, max_workers=3)
+
+    # Batch path should be used exactly once
+    assert len(dataset.batch_calls) == 1
+    assert dataset.response_calls == []
+
+    # Scores and errors should reflect the batch outputs
+    assert list(df["score"]) == [0.25, 0.75]
+    assert list(df["error"]) == ["err-one", None]
+
+    stored = json.loads((deferred_run_dir / "raw_results.json").read_text(encoding="utf-8"))
+    assert [row.get("error") for row in stored] == ["err-one", None]
+
+
+def test_evaluate_saved_logs_progress_and_errors(
+    monkeypatch: pytest.MonkeyPatch, deferred_run_dir: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    class _ChunkedDataset(_RecordingDataset):
+        def __init__(self) -> None:
+            super().__init__()
+            self._call = 0
+            self.offline_eval_chunk_size = 1
+
+        def evaluate_batch(
+            self,
+            responses: List[str],
+            ground_truths: List[Any],
+            task_names: List[str],
+            prompts: List[str],
+        ) -> List[float]:
+            if self._call == 0:
+                self._last_eval_errors = ["chunk-error"]
+                result = [float("nan")]
+            else:
+                self._last_eval_errors = [None]
+                result = [0.5]
+            self._call += 1
+            self.batch_calls.append(
+                {
+                    "responses": tuple(responses),
+                    "ground_truths": tuple(map(str, ground_truths)),
+                    "task_names": tuple(task_names),
+                    "prompts": tuple(prompts),
+                }
+            )
+            return result
+
+    dataset = _ChunkedDataset()
+
+    def fake_factory(*_: Any, **__: Any) -> _ChunkedDataset:
+        return dataset
+
+    def fake_save_results(self: Any, records: List[Any]) -> pd.DataFrame:
+        df_rows = [{"item_id": r.item_id, "score": r.score, "error": r.error} for r in records]
+        return pd.DataFrame(df_rows)
+
+    monkeypatch.setattr(evaluate_saved, "create_dataset_from_config", fake_factory)
+    monkeypatch.setattr(evaluate_saved.EmotionExperiment, "_save_results", fake_save_results, raising=False)
+
+    with caplog.at_level(logging.INFO):
+        df = evaluate_saved.evaluate_saved_run(deferred_run_dir, max_workers=2)
+
+    # Ensure progress logs were emitted for each chunk and summary includes error count
+    progress_logs = [rec.message for rec in caplog.records if "Deferred evaluation progress" in rec.message]
+    assert len(dataset.batch_calls) == 2
+    assert any(msg.startswith("[") and "]" in msg for msg in progress_logs)
+    assert any("1/2" in msg for msg in progress_logs)
+    assert any("2/2" in msg for msg in progress_logs)
+    assert any(
+        rec.message.startswith("[") and "Deferred evaluation completed" in rec.message and "errors=1" in rec.message
+        for rec in caplog.records
+    )
+
+    # DataFrame reflects chunked scoring
+    assert list(df["error"]) == ["chunk-error", None]
 
 
 def test_eval_error_is_propagated_to_results(tmp_path: Path):

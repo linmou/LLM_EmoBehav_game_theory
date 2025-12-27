@@ -1,7 +1,4 @@
-"""
-Main emotion experiment class.
-Follows the pattern from emotion_game_experiment.py but adapted for otherbenchmarks.
-"""
+"""Main emotion experiment class (model-agnostic, benchmark-agnostic)."""
 
 from __future__ import annotations
 
@@ -21,6 +18,7 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
 
 import pandas as pd
+from typing import TYPE_CHECKING
 try:
     import torch  # type: ignore
     from torch.utils.data import DataLoader  # type: ignore
@@ -28,19 +26,11 @@ except Exception:
     torch = None  # type: ignore
     class DataLoader:  # type: ignore
         pass
-try:
-    # Optional for dry-run; real import only needed for execution
-    from vllm import LLM  # type: ignore
-except Exception:
-    LLM = object  # type: ignore[assignment]
+
+if TYPE_CHECKING:
+    from vllm import LLM as VLLM_LLM  # pragma: no cover
 
 from neuro_manipulation.configs.experiment_config import get_repe_eng_config
-from neuro_manipulation.model_layer_detector import ModelLayerDetector
-from neuro_manipulation.model_utils import (
-    load_emotion_readers,
-    setup_model_and_tokenizer,
-)
-from neuro_manipulation.repe.pipelines import get_pipeline
 
 from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultRecord
 
@@ -62,7 +52,6 @@ class EmotionExperiment:
         self.repeat_runs = int(repeat_runs) if repeat_runs and repeat_runs > 0 else 1
         self.cur_repeat: int = 0
         self.repeat_seed_base = repeat_seed_base
-
         if dry_run:
             # Build real datasets for each emotion
             self.emotion_datasets = self._build_emotion_datasets()
@@ -132,13 +121,18 @@ class EmotionExperiment:
         dataset_size = len(test_dataset)
         self.logger.info(f"Benchmark contains {dataset_size} items")
 
-        # Load tokenizer using proper utility function (CPU-based, no GPU needed)
-        from neuro_manipulation.utils import load_tokenizer_only
-        self.tokenizer, _ = load_tokenizer_only(
-            model_name_or_path=config.model_path,
-            expand_vocab=False,
-            auto_load_multimodal=True,
-        )
+        # Load tokenizer (CPU-based). Fall back to direct HF load if utils imports heavy deps.
+        try:
+            from neuro_manipulation.utils import load_tokenizer_only  # type: ignore
+            self.tokenizer, _ = load_tokenizer_only(
+                model_name_or_path=config.model_path,
+                expand_vocab=False,
+                auto_load_multimodal=True,
+            )
+        except Exception:
+            # Avoid vllm import errors during dry-run by using transformers directly
+            from transformers import AutoTokenizer  # type: ignore
+            self.tokenizer = AutoTokenizer.from_pretrained(config.model_path)
 
         # Create prompt format (only needs tokenizer)
         from neuro_manipulation.prompt_formats import PromptFormat
@@ -229,6 +223,13 @@ class EmotionExperiment:
 
     def _setup_gpu_components(self, config: ExperimentConfig):
         """Setup GPU-dependent components: models, emotion readers, pipeline"""
+        # Lazy import heavy deps to keep dry-run fast and avoid optional imports
+        from neuro_manipulation.model_layer_detector import ModelLayerDetector  # type: ignore
+        from neuro_manipulation.model_utils import (  # type: ignore
+            load_emotion_readers,
+            setup_model_and_tokenizer,
+        )
+        from neuro_manipulation.repe.pipelines import get_pipeline  # type: ignore
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
         self.repe_config = get_repe_eng_config(
             config.model_path, yaml_config=config.repe_eng_config
@@ -276,13 +277,19 @@ class EmotionExperiment:
         )
 
         self.logger.info(f"Model loaded: {type(self.model)}")
-        self.is_vllm = isinstance(self.model, LLM)
-
+        try:
+            from vllm import LLM as _VLLM_LLM  # type: ignore
+        except Exception:
+            _VLLM_LLM = None  # type: ignore
+        self.is_vllm = _VLLM_LLM is not None and isinstance(self.model, _VLLM_LLM)
+        assert self.is_vllm
+        
         # Setup RepE control pipeline - using basic tokenizer for consistency
         self.rep_control_pipeline = get_pipeline(
             "rep-control-vllm" if self.is_vllm else "rep-control",
             model=self.model,
             tokenizer=self.tokenizer,  # Use basic tokenizer instead of tokenizer_temp
+            # layers=[self.hidden_layers[len(self.hidden_layers) // 2]],
             layers=self.hidden_layers[
                 len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
             ],
@@ -491,7 +498,7 @@ class EmotionExperiment:
                             )
 
                         # Add per-run RNG seed if requested
-                        if getattr(self, "repeat_seed_base", None) is not None:
+                        if getattr(self, "repeat_seed_base", None) is not None and self.is_vllm:
                             generation_params["random_seed"] = int(self.repeat_seed_base) + int(getattr(self, "cur_repeat", 0))
 
                         # Validate batch structure before accessing
@@ -614,6 +621,15 @@ class EmotionExperiment:
                 batch_results.extend(results_dict[i])
 
         worker.join()
+        if hasattr(self.dataset, "flush_predictions"):
+            try:
+                self.dataset.flush_predictions(self.output_dir)
+            except Exception as e:
+                self.logger.error(
+                    "Failed to flush predictions for dataset '%s': %s",
+                    self.config.benchmark.name,
+                    e,
+                )
         return batch_results
 
     def _post_process_batch(
@@ -700,6 +716,33 @@ class EmotionExperiment:
             current_emotion = self.cur_emotion or "unknown"
             current_intensity = self.cur_intensity or 0.0
 
+            metadata: Dict[str, Any] = {
+                "benchmark": self.config.benchmark.name,
+                "item_metadata": item.metadata or {},
+            }
+
+            if hasattr(self.dataset, "record_model_patch"):
+                try:
+                    record_fn = getattr(self.dataset, "record_model_patch")
+                    path, run_id = record_fn(
+                        item_id=item.id,
+                        model_patch=response,
+                        emotion=current_emotion,
+                        intensity=float(current_intensity),
+                        repeat_id=int(getattr(self, "cur_repeat", 0)),
+                        output_dir=self.output_dir,
+                    )
+                    if run_id:
+                        metadata["run_id"] = run_id
+                    if path is not None:
+                        metadata["predictions_path"] = str(path)
+                except Exception as e:
+                    self.logger.error(
+                        "Failed to record model patch for dataset '%s': %s",
+                        self.config.benchmark.name,
+                        e,
+                    )
+
             result = ResultRecord(
                 emotion=current_emotion,
                 intensity=current_intensity,
@@ -710,10 +753,7 @@ class EmotionExperiment:
                 ground_truth=ground_truth,
                 score=score,
                 repeat_id=getattr(self, "cur_repeat", 0),
-                metadata={
-                    "benchmark": self.config.benchmark.name,
-                    "item_metadata": item.metadata or {},
-                },
+                metadata=metadata,
                 error=eval_errors[i],
             )
             results.append(result)
@@ -832,6 +872,7 @@ class EmotionExperiment:
         self.logger.info(f"Summary results saved to {summary_filename}")
 
         choice_ratio_payload: Optional[Dict[str, Any]] = None
+        behavior_ratio_payload: Optional[Dict[str, Any]] = None
         # Compute and persist split-level metrics if the dataset exposes the hook
         try:
             dataset_obj = getattr(self, "dataset", None)
@@ -842,6 +883,10 @@ class EmotionExperiment:
                         payload = split_metrics["choice_ratio"]
                         if isinstance(payload, dict):
                             choice_ratio_payload = payload
+                    if "behavior_choice_ratio" in split_metrics:
+                        b_payload = split_metrics["behavior_choice_ratio"]
+                        if isinstance(b_payload, dict):
+                            behavior_ratio_payload = b_payload
                     sm_path = self.output_dir / "split_metrics.json"
                     with open(sm_path, "w") as f:
                         json.dump(split_metrics, f, indent=2)
@@ -938,12 +983,45 @@ class EmotionExperiment:
                 overall_rows_payload = maybe_overall
 
         if overall_rows_payload:
-            overall_df = pd.DataFrame(overall_rows_payload)
-            if not overall_df.empty:
-                ratio_overall_filename = self.output_dir / "summary_choice_ratio.csv"
-                overall_df.to_csv(ratio_overall_filename, index=False)
+                overall_df = pd.DataFrame(overall_rows_payload)
+                if not overall_df.empty:
+                    ratio_overall_filename = self.output_dir / "summary_choice_ratio.csv"
+                    overall_df.to_csv(ratio_overall_filename, index=False)
+                    self.logger.info(
+                        f"Choice ratios saved to {ratio_overall_filename}"
+                    )
+
+        # Persist behavior-level ratios if available
+        behavior_overall_rows: List[Dict[str, Any]] = []
+        if behavior_ratio_payload:
+            maybe_overall = behavior_ratio_payload.get("overall")
+            if isinstance(maybe_overall, list):
+                behavior_overall_rows = maybe_overall
+
+        if behavior_overall_rows:
+            behavior_df = pd.DataFrame(behavior_overall_rows)
+            if not behavior_df.empty:
+                behavior_ratio_filename = self.output_dir / "summary_behavior_ratio.csv"
+                behavior_df.to_csv(behavior_ratio_filename, index=False)
                 self.logger.info(
-                    f"Choice ratios saved to {ratio_overall_filename}"
+                    f"Behavior choice ratios saved to {behavior_ratio_filename}"
+                )
+
+        behavior_by_repeat_rows: List[Dict[str, Any]] = []
+        if behavior_ratio_payload:
+            maybe_by_repeat = behavior_ratio_payload.get("by_repeat")
+            if isinstance(maybe_by_repeat, list):
+                behavior_by_repeat_rows = maybe_by_repeat
+
+        if behavior_by_repeat_rows:
+            behavior_by_repeat_df = pd.DataFrame(behavior_by_repeat_rows)
+            if not behavior_by_repeat_df.empty:
+                behavior_by_repeat_filename = (
+                    self.output_dir / "summary_behavior_ratio_by_repeat.csv"
+                )
+                behavior_by_repeat_df.to_csv(behavior_by_repeat_filename, index=False)
+                self.logger.info(
+                    f"Behavior choice ratios per repeat saved to {behavior_by_repeat_filename}"
                 )
 
         # Create README explaining output files
@@ -961,6 +1039,8 @@ class EmotionExperiment:
                 "  - pooled_var: Unbiased pooled variance across all observations (law of total variance).\n"
                 "- summary_choice_ratio.csv: Per-option selection ratios grouped by emotion and intensity (present when dataset supplies choice ratios).\n"
                 "- summary_choice_ratio_by_repeat.csv: Per-option selection ratios grouped by emotion, intensity, and repeat (requires dataset-supplied choice ratios and repeat runs).\n"
+                "- summary_behavior_ratio.csv: Per-behavior selection ratios grouped by emotion and intensity (present when dataset supplies behavior ratios).\n"
+                "- summary_behavior_ratio_by_repeat.csv: Per-behavior selection ratios grouped by emotion, intensity, and repeat (requires dataset-supplied behavior ratios and repeat runs).\n"
                 "- experiment_config.json: Resolved configuration and runtime info (includes repeat settings).\n\n"
                 "Notes:\n"
                 "- For meaningful repeat variance, enable stochastic decoding (do_sample=true, nonzero temperature/top_p).\n"

@@ -13,6 +13,8 @@ from .base import BaseBenchmarkDataset
 _OPTION_LINE_PATTERN = re.compile(r"\s*Option\s*(\d+)[\.:)]\s*(.+)", re.IGNORECASE)
 _OPTION_NUMBER_PATTERN = re.compile(r"option\s*(\d+)", re.IGNORECASE)
 
+BEHAVIOR_OPTION_ORDER = {"withdraw": 1, "escalate": 2}
+
 
 class DiplomacyGradientDataset(BaseBenchmarkDataset):
     """Simple adapter for Diplomacy gradient choices (1..5 options)."""
@@ -33,21 +35,15 @@ class DiplomacyGradientDataset(BaseBenchmarkDataset):
             question_text = description or scenario
             behavior_choices = record.get("behavior_choices") or {}
             if behavior_choices:
-                ordered_labels = ["withdraw", "escalate"]
                 options_source = []
-                for idx, label in enumerate(ordered_labels, start=1):
+                for label, opt_id in sorted(BEHAVIOR_OPTION_ORDER.items(), key=lambda kv: kv[1]):
                     if label in behavior_choices:
-                        options_source.append(
-                            {"id": idx, "text": str(behavior_choices[label])}
-                        )
-                # If keys differ, append remaining entries in sorted-key order.
-                if len(options_source) < len(behavior_choices):
-                    for idx, (label, text) in enumerate(
-                        sorted(behavior_choices.items()), start=len(options_source) + 1
-                    ):
-                        options_source.append(
-                            {"id": idx, "text": str(text)}
-                        )
+                        options_source.append({"id": opt_id, "text": str(behavior_choices[label])})
+                next_id = (max(BEHAVIOR_OPTION_ORDER.values()) if BEHAVIOR_OPTION_ORDER else 0) + 1
+                for label, text in behavior_choices.items():
+                    if label not in BEHAVIOR_OPTION_ORDER:
+                        options_source.append({"id": next_id, "text": str(text)})
+                        next_id += 1
             else:
                 options_source = (
                     record.get("gradient_options")

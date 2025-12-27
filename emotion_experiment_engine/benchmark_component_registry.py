@@ -70,7 +70,7 @@ if TYPE_CHECKING:
     from .datasets.base import BaseBenchmarkDataset
 from .fantom_prompt_wrapper import FantomPromptWrapper
 from .bfcl_prompt_wrapper import BFCLPromptWrapper
-from .game_prompt_wrapper import GameBenchmarkPromptWrapper
+from .game_prompt_wrapper import GameBenchmarkPromptWrapper, GameDecisionPromptWrapper
 
 
 @dataclass
@@ -271,6 +271,11 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
     ("trustllm_truthfulness", "*"): BenchmarkSpec(
         dataset_class=TrustLLMTruthfulnessDataset,
         answer_wrapper_class=IdentityAnswerWrapper,
+    ),
+    ("game_theory_decision", "*"): BenchmarkSpec(
+        dataset_class=GameTheoryDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=GameDecisionPromptWrapper,
     ),
     ("game_theory", "*"): BenchmarkSpec(
         dataset_class=GameTheoryDataset,

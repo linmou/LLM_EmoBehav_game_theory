@@ -114,3 +114,10 @@ def test_dataset_prefers_description_and_gradient_options():
     assert len(option_texts) == 2  # behavior_choices: withdraw/escalate
     assert any("withdraw" in opt or "reduce naval activity" in opt for opt in option_texts)
     assert any("escalate" in opt or "increase naval presence" in opt for opt in option_texts)
+
+
+# Covers emotion_experiment_engine/datasets/diplomacy_gradient.py: explicit option-id mapping readability.
+def test_behavior_option_order_mapping_is_explicit():
+    from emotion_experiment_engine.datasets import diplomacy_gradient
+
+    assert diplomacy_gradient.BEHAVIOR_OPTION_ORDER == {"withdraw": 1, "escalate": 2}

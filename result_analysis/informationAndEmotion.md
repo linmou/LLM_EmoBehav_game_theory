@@ -1,0 +1,409 @@
+Last Updated: 2025-10-01
+
+I would like to study how information completeness moderates emotion impacts on the Fantom dataset.
+
+Scope Clarified (authoritative spec)
+- Tasks: include all Fantom task families (fact, answerability, infoaccessibility, belief_choice; and all binary/list, accessible/inaccessible variants).
+- Pairing: pair items by `item_id` and exact task suffix, swapping only the `short_` vs `full_` prefix; all other qualifiers must match (e.g., `short_infoaccessibility_binary_accessible` ↔ `full_infoaccessibility_binary_accessible`).
+- Score: use the `score` column only; average across `repeat_id` for each (model, emotion, intensity, item_id, task_name).
+- Intensity: filter emotion runs to `intensity == 1.5`; neutral baseline is used as provided (typically `intensity == 0.0`).
+- Models: analyze all models under `results/fantom/`; Qwen3 non-thinking runs are under `results/fantom_qwen3/no-thinking-nogen/`.
+- Baseline: use neutral as the baseline; skip items without a neutral record for the paired task.
+- Zero denominator handling: skip pairs where the averaged neutral `short_` score equals 0 (ratio undefined).
+- Statistics: report descriptive deltas vs neutral and significance tests (2×2 chi-square on correct/total). For moderation, analyze deltas stratified by information completeness bins and test differences.
+
+Definition: information_completeness(sample_i)
+- information_completeness(sample_i) = avg_score_full_neutral_i / avg_score_short_neutral_i
+- Computed per (model, task family, task qualifiers, item_id) using neutral runs only.
+- Skip if avg_score_short_neutral_i == 0.0.
+
+Where To Read Data
+- Qwen3 none-thinking runs: `results/fantom_qwen3/no-thinking-nogen/*/detailed_results.csv`
+- Other models: `results/fantom/*/detailed_results.csv`
+
+One Worked Example (Qwen3-32B, fact task)
+- Files:
+  - `results/fantom_qwen3/no-thinking-nogen/Qwen3-32B-AWQ_fantom_short_fact_20250929_111056/detailed_results.csv`
+  - `results/fantom_qwen3/no-thinking-nogen/Qwen3-32B-AWQ_fantom_full_fact_20250929_124039/detailed_results.csv`
+- Item: `fantom_txt_4`, emotion `neutral`.
+  - short_fact avg score ≈ 0.5957446808510638
+  - full_fact avg score ≈ 0.1142857142857143
+  - information_completeness(fantom_txt_4) = 0.1142857142857143 / 0.5957446808510638 ≈ 0.1918367347
+
+Emotion Impacts (model-level)
+- For each model and task variant, compute neutral-correct rate and emotion-correct rate (intensity 1.5) for every emotion.
+- Report deltas (emotion − neutral) in percentage points, alongside a 2×2 chi-square test (correct vs incorrect by condition) aggregated across items.
+- Skip items that lack either neutral or the given emotion record for the paired task.
+
+Moderation by Information Completeness
+- Compute information_completeness per item from neutral runs as defined above.
+- Stratify items by information completeness (e.g., tertiles: low/med/high) within each model+task variant.
+- Within each stratum, recompute emotion deltas vs neutral and test with chi-square; compare strata descriptively and inferentially.
+- Additionally, report correlation between per-item information_completeness and per-item delta in score (emotion − neutral) where data suffices.
+
+Output Artifacts
+- (a) One-off example: computed ratio for a specific item pair (above) to ground the definition.
+- (b) Full markdown analysis: a summary per model mirroring `result_analysis/qwen3_emotion_game_summary.md`, extended with stratified results showing how information completeness moderates emotion impacts.
+
+Implementation Notes
+- Test-first: analysis utilities and parsers live under `results/analysis/information_emotion/` with unit tests.
+- Pairing rule: `short_*` ↔ `full_*` exact suffix match; non-prefixed task_names are ignored.
+- Repeats: average over `repeat_id` within each condition before computing ratios and deltas.
+- Errors/missing: rows with parsing errors or missing fields are dropped for that computation.
+
+Next Steps
+- Build the TDD analysis pipeline in `results/analysis/information_emotion/` to: (1) read CSVs, (2) pair short/full by item and task, (3) compute information completeness ratios (neutral), (4) compute deltas and chi-square per emotion (intensity 1.5), and (5) produce a concise markdown report with stratified moderation analysis.
+
+
+Preliminary Findings (auto-generated)
+
+- Pairs evaluated (neutral short↔full): 69151; skipped (short==0): 48326
+- Llama-3.2-1B-Instruct | answerability_binary_accessible: n=229, mean_ratio=0.83, share>1=24.02%
+- Llama-3.2-1B-Instruct | answerability_binary_inaccessible: n=1520, mean_ratio=0.70, share>1=18.75%
+- Llama-3.2-1B-Instruct | answerability_list_accessible: n=2, mean_ratio=0.00, share>1=0.00%
+- Llama-3.2-1B-Instruct | answerability_list_inaccessible: n=8, mean_ratio=0.00, share>1=0.00%
+- Llama-3.2-1B-Instruct | belief_choice_accessible: n=105, mean_ratio=0.46, share>1=7.62%
+- Llama-3.2-1B-Instruct | belief_choice_inaccessible: n=125, mean_ratio=0.36, share>1=6.40%
+- Llama-3.2-1B-Instruct | fact: n=854, mean_ratio=1.07, share>1=41.10%
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_accessible: n=220, mean_ratio=0.88, share>1=23.18%
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_inaccessible: n=1514, mean_ratio=0.59, share>1=14.60%
+- Llama-3.2-3B-Instruct | answerability_binary_accessible: n=196, mean_ratio=0.39, share>1=7.14%
+- Llama-3.2-3B-Instruct | answerability_binary_inaccessible: n=1394, mean_ratio=0.89, share>1=26.90%
+- Llama-3.2-3B-Instruct | answerability_list_accessible: n=7, mean_ratio=0.07, share>1=0.00%
+- Llama-3.2-3B-Instruct | answerability_list_inaccessible: n=9, mean_ratio=0.11, share>1=0.00%
+- Llama-3.2-3B-Instruct | belief_choice_accessible: n=479, mean_ratio=1.07, share>1=21.92%
+- Llama-3.2-3B-Instruct | belief_choice_inaccessible: n=347, mean_ratio=0.75, share>1=16.43%
+- Llama-3.2-3B-Instruct | fact: n=855, mean_ratio=1.08, share>1=39.88%
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_accessible: n=317, mean_ratio=0.77, share>1=19.24%
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_inaccessible: n=2037, mean_ratio=1.01, share>1=27.00%
+- Llama-3.2-3B-Instruct | infoaccessibility_list_accessible: n=12, mean_ratio=0.33, share>1=0.00%
+- Llama-3.2-3B-Instruct | infoaccessibility_list_inaccessible: n=7, mean_ratio=0.14, share>1=0.00%
+- Phi-3.5-mini-instruct | answerability_binary_accessible: n=105, mean_ratio=0.48, share>1=10.48%
+- Phi-3.5-mini-instruct | answerability_binary_inaccessible: n=1104, mean_ratio=0.79, share>1=22.28%
+- Phi-3.5-mini-instruct | answerability_list_accessible: n=6, mean_ratio=0.33, share>1=0.00%
+- Phi-3.5-mini-instruct | answerability_list_inaccessible: n=1, mean_ratio=0.00, share>1=0.00%
+- Phi-3.5-mini-instruct | belief_choice_accessible: n=482, mean_ratio=0.97, share>1=6.64%
+- Phi-3.5-mini-instruct | belief_choice_inaccessible: n=423, mean_ratio=0.73, share>1=8.51%
+- Phi-3.5-mini-instruct | fact: n=865, mean_ratio=0.99, share>1=38.27%
+- Phi-3.5-mini-instruct | infoaccessibility_binary_accessible: n=324, mean_ratio=1.29, share>1=38.89%
+- Phi-3.5-mini-instruct | infoaccessibility_binary_inaccessible: n=1585, mean_ratio=0.88, share>1=23.66%
+- Phi-3.5-mini-instruct | infoaccessibility_list_accessible: n=17, mean_ratio=0.12, share>1=0.00%
+- Phi-4-mini-instruct | answerability_binary_accessible: n=328, mean_ratio=0.89, share>1=21.65%
+- Phi-4-mini-instruct | answerability_binary_inaccessible: n=2092, mean_ratio=0.93, share>1=23.42%
+- Phi-4-mini-instruct | answerability_list_inaccessible: n=1, mean_ratio=0.00, share>1=0.00%
+- Phi-4-mini-instruct | belief_choice_accessible: n=481, mean_ratio=0.94, share>1=13.93%
+- Phi-4-mini-instruct | belief_choice_inaccessible: n=629, mean_ratio=0.93, share>1=19.87%
+- Phi-4-mini-instruct | fact: n=857, mean_ratio=1.08, share>1=44.11%
+- Phi-4-mini-instruct | infoaccessibility_binary_accessible: n=408, mean_ratio=1.05, share>1=11.52%
+- Phi-4-mini-instruct | infoaccessibility_binary_inaccessible: n=2141, mean_ratio=0.90, share>1=15.74%
+- Qwen2.5-0.5B-Instruct | answerability_binary_accessible: n=344, mean_ratio=1.24, share>1=37.50%
+- Qwen2.5-0.5B-Instruct | answerability_binary_inaccessible: n=1901, mean_ratio=0.94, share>1=25.99%
+- Qwen2.5-0.5B-Instruct | answerability_list_accessible: n=28, mean_ratio=0.09, share>1=0.00%
+- Qwen2.5-0.5B-Instruct | answerability_list_inaccessible: n=11, mean_ratio=0.00, share>1=0.00%
+- Qwen2.5-0.5B-Instruct | belief_choice_accessible: n=402, mean_ratio=0.91, share>1=22.64%
+- Qwen2.5-0.5B-Instruct | belief_choice_inaccessible: n=482, mean_ratio=0.77, share>1=17.84%
+- Qwen2.5-0.5B-Instruct | fact: n=838, mean_ratio=1.79, share>1=42.48%
+- Qwen2.5-0.5B-Instruct | infoaccessibility_binary_accessible: n=359, mean_ratio=1.25, share>1=36.77%
+- Qwen2.5-0.5B-Instruct | infoaccessibility_binary_inaccessible: n=1871, mean_ratio=0.90, share>1=24.27%
+- Qwen2.5-0.5B-Instruct | infoaccessibility_list_accessible: n=77, mean_ratio=0.36, share>1=3.90%
+- Qwen2.5-0.5B-Instruct | infoaccessibility_list_inaccessible: n=19, mean_ratio=0.08, share>1=0.00%
+- Qwen2.5-1.5B-Instruct | answerability_binary_accessible: n=227, mean_ratio=0.53, share>1=11.45%
+- Qwen2.5-1.5B-Instruct | answerability_binary_inaccessible: n=1739, mean_ratio=0.79, share>1=20.53%
+- Qwen2.5-1.5B-Instruct | belief_choice_accessible: n=479, mean_ratio=1.04, share>1=14.41%
+- Qwen2.5-1.5B-Instruct | belief_choice_inaccessible: n=403, mean_ratio=0.77, share>1=16.38%
+- Qwen2.5-1.5B-Instruct | fact: n=839, mean_ratio=1.11, share>1=40.52%
+- Qwen2.5-1.5B-Instruct | infoaccessibility_binary_accessible: n=364, mean_ratio=1.15, share>1=32.97%
+- Qwen2.5-1.5B-Instruct | infoaccessibility_binary_inaccessible: n=2210, mean_ratio=1.01, share>1=27.78%
+- Qwen2.5-1.5B-Instruct | infoaccessibility_list_inaccessible: n=2, mean_ratio=0.00, share>1=0.00%
+- Qwen2.5-3B-Instruct | answerability_binary_accessible: n=310, mean_ratio=0.88, share>1=21.61%
+- Qwen2.5-3B-Instruct | belief_choice_accessible: n=536, mean_ratio=0.99, share>1=6.90%
+- Qwen2.5-3B-Instruct | belief_choice_inaccessible: n=252, mean_ratio=0.68, share>1=14.29%
+- Qwen2.5-3B-Instruct | fact: n=856, mean_ratio=1.19, share>1=49.30%
+- Qwen2.5-3B-Instruct | infoaccessibility_binary_accessible: n=394, mean_ratio=1.04, share>1=14.21%
+- Qwen2.5-3B-Instruct | infoaccessibility_binary_inaccessible: n=2084, mean_ratio=0.88, share>1=17.32%
+- Qwen2.5-3B-Instruct | infoaccessibility_list_inaccessible: n=1, mean_ratio=0.00, share>1=0.00%
+- Qwen3-0.6B | answerability_binary_accessible: n=338, mean_ratio=1.49, share>1=51.48%
+- Qwen3-0.6B | answerability_binary_inaccessible: n=2048, mean_ratio=1.03, share>1=32.23%
+- Qwen3-0.6B | belief_choice_accessible: n=125, mean_ratio=0.56, share>1=16.00%
+- Qwen3-0.6B | belief_choice_inaccessible: n=17, mean_ratio=1.07, share>1=23.53%
+- Qwen3-0.6B | fact: n=862, mean_ratio=0.94, share>1=38.63%
+- Qwen3-0.6B | infoaccessibility_binary_accessible: n=344, mean_ratio=1.37, share>1=42.73%
+- Qwen3-0.6B | infoaccessibility_binary_inaccessible: n=1919, mean_ratio=1.00, share>1=29.03%
+- Qwen3-1.7B | answerability_binary_accessible: n=356, mean_ratio=0.96, share>1=17.70%
+- Qwen3-1.7B | answerability_binary_inaccessible: n=2164, mean_ratio=0.93, share>1=16.08%
+- Qwen3-1.7B | belief_choice_accessible: n=489, mean_ratio=1.00, share>1=5.11%
+- Qwen3-1.7B | belief_choice_inaccessible: n=488, mean_ratio=0.75, share>1=9.84%
+- Qwen3-1.7B | fact: n=846, mean_ratio=1.04, share>1=35.58%
+- Qwen3-1.7B | infoaccessibility_binary_accessible: n=405, mean_ratio=1.02, share>1=4.44%
+- Qwen3-1.7B | infoaccessibility_binary_inaccessible: n=2083, mean_ratio=0.84, share>1=8.07%
+- Qwen3-32B-AWQ | answerability_binary_accessible: n=222, mean_ratio=0.47, share>1=11.26%
+- Qwen3-32B-AWQ | answerability_binary_inaccessible: n=1976, mean_ratio=1.05, share>1=23.48%
+- Qwen3-32B-AWQ | answerability_list_accessible: n=52, mean_ratio=0.80, share>1=23.08%
+- Qwen3-32B-AWQ | belief_choice_accessible: n=499, mean_ratio=1.01, share>1=16.63%
+- Qwen3-32B-AWQ | belief_choice_inaccessible: n=696, mean_ratio=0.97, share>1=24.28%
+- Qwen3-32B-AWQ | fact: n=861, mean_ratio=1.02, share>1=46.34%
+- Qwen3-32B-AWQ | infoaccessibility_binary_accessible: n=406, mean_ratio=1.10, share>1=13.55%
+- Qwen3-32B-AWQ | infoaccessibility_binary_inaccessible: n=2407, mean_ratio=1.08, share>1=17.99%
+- Qwen3-32B-AWQ | infoaccessibility_list_accessible: n=117, mean_ratio=1.00, share>1=8.55%
+- Qwen3-4B | answerability_binary_accessible: n=261, mean_ratio=0.63, share>1=10.34%
+- Qwen3-4B | answerability_binary_inaccessible: n=1954, mean_ratio=0.82, share>1=12.38%
+- Qwen3-4B | belief_choice_accessible: n=511, mean_ratio=0.99, share>1=3.72%
+- Qwen3-4B | belief_choice_inaccessible: n=431, mean_ratio=0.75, share>1=9.98%
+- Qwen3-4B | fact: n=862, mean_ratio=1.01, share>1=38.28%
+- Qwen3-4B | infoaccessibility_binary_accessible: n=406, mean_ratio=0.99, share>1=2.71%
+- Qwen3-4B | infoaccessibility_binary_inaccessible: n=2036, mean_ratio=0.78, share>1=3.93%
+- gemma-3-1b-it | answerability_binary_accessible: n=142, mean_ratio=0.21, share>1=5.63%
+- gemma-3-1b-it | answerability_binary_inaccessible: n=1147, mean_ratio=0.47, share>1=12.73%
+- gemma-3-1b-it | belief_choice_accessible: n=146, mean_ratio=0.06, share>1=1.37%
+- gemma-3-1b-it | belief_choice_inaccessible: n=57, mean_ratio=0.05, share>1=1.75%
+- gemma-3-1b-it | fact: n=857, mean_ratio=1.03, share>1=47.02%
+- gemma-3-1b-it | infoaccessibility_binary_accessible: n=206, mean_ratio=0.88, share>1=26.70%
+- gemma-3-1b-it | infoaccessibility_binary_inaccessible: n=1301, mean_ratio=0.65, share>1=18.37%
+
+Significant Emotion Effects (full_* tasks; p<0.05)
+- Llama-3.2-3B-Instruct | belief_choice_accessible | surprise: delta=-74.0 pp, p=7.53e-151
+- Qwen2.5-0.5B-Instruct | infoaccessibility_binary_accessible | anger: delta=-67.7 pp, p=6.11e-116
+- Llama-3.2-3B-Instruct | belief_choice_accessible | disgust: delta=-67.5 pp, p=1.02e-138
+- Qwen2.5-0.5B-Instruct | answerability_binary_accessible | anger: delta=-61.4 pp, p=5.02e-101
+- Qwen3-0.6B | answerability_binary_accessible | fear: delta=-51.2 pp, p=1.59e-66
+- Qwen3-0.6B | answerability_binary_accessible | anger: delta=-50.2 pp, p=9.97e-62
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_accessible | surprise: delta=-44.3 pp, p=1.16e-51
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_accessible | disgust: delta=-43.0 pp, p=3.64e-50
+- Qwen3-0.6B | infoaccessibility_binary_accessible | anger: delta=-41.4 pp, p=8.57e-41
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_accessible | fear: delta=-39.9 pp, p=3.18e-45
+- Llama-3.2-3B-Instruct | belief_choice_accessible | happiness: delta=-38.4 pp, p=4.35e-47
+- Llama-3.2-1B-Instruct | answerability_binary_accessible | sadness: delta=-38.2 pp, p=7.09e-44
+- Llama-3.2-1B-Instruct | answerability_binary_accessible | surprise: delta=-37.8 pp, p=7.09e-44
+- Llama-3.2-1B-Instruct | answerability_binary_accessible | happiness: delta=-37.6 pp, p=7.09e-44
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_accessible | anger: delta=-37.1 pp, p=1.35e-42
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_accessible | sadness: delta=-36.2 pp, p=6.24e-38
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_accessible | surprise: delta=-36.1 pp, p=6.24e-38
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_accessible | happiness: delta=-35.9 pp, p=6.24e-38
+- Qwen2.5-0.5B-Instruct | belief_choice_accessible | fear: delta=-34.5 pp, p=3.55e-37
+- Llama-3.2-1B-Instruct | answerability_binary_accessible | disgust: delta=-34.5 pp, p=1.34e-39
+- Phi-4-mini-instruct | answerability_binary_accessible | happiness: delta=+34.3 pp, p=3.97e-30
+- Llama-3.2-1B-Instruct | belief_choice_accessible | disgust: delta=+33.6 pp, p=1.66e-41
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_accessible | anger: delta=-32.3 pp, p=1.89e-32
+- Llama-3.2-1B-Instruct | answerability_binary_accessible | anger: delta=-30.4 pp, p=7.16e-34
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_accessible | disgust: delta=-29.7 pp, p=1.12e-27
+- Phi-4-mini-instruct | belief_choice_accessible | disgust: delta=-29.2 pp, p=1.48e-27
+- Llama-3.2-3B-Instruct | belief_choice_accessible | fear: delta=-28.5 pp, p=2.86e-25
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_inaccessible | surprise: delta=-28.3 pp, p=4.63e-100
+- Qwen2.5-0.5B-Instruct | belief_choice_accessible | anger: delta=-28.1 pp, p=5.05e-30
+- Qwen2.5-1.5B-Instruct | infoaccessibility_binary_accessible | disgust: delta=-27.8 pp, p=2.56e-24
+- Qwen2.5-3B-Instruct | infoaccessibility_binary_accessible | surprise: delta=-27.0 pp, p=3.8e-25
+- Qwen3-0.6B | answerability_binary_inaccessible | fear: delta=-26.8 pp, p=8.89e-131
+- Phi-4-mini-instruct | answerability_binary_accessible | disgust: delta=-26.7 pp, p=4.23e-18
+- Qwen3-0.6B | infoaccessibility_binary_inaccessible | anger: delta=-26.2 pp, p=1.77e-114
+- Qwen3-0.6B | infoaccessibility_binary_accessible | fear: delta=-25.9 pp, p=1.88e-20
+- Qwen2.5-0.5B-Instruct | answerability_binary_accessible | surprise: delta=+24.3 pp, p=9.3e-15
+- Qwen3-0.6B | answerability_binary_inaccessible | anger: delta=-24.1 pp, p=1.55e-110
+- Llama-3.2-1B-Instruct | fact | anger: delta=-23.5 pp, p=6.25e-12
+- Qwen2.5-0.5B-Instruct | belief_choice_accessible | happiness: delta=-23.3 pp, p=2.56e-19
+- Qwen2.5-0.5B-Instruct | belief_choice_accessible | sadness: delta=-22.7 pp, p=1.24e-22
+
+Moderation (tertiles of completeness; full_* tasks)
+- Llama-3.2-1B-Instruct | answerability_binary_accessible | anger | low: n=90, Δ=+6.7 pp
+- Llama-3.2-1B-Instruct | answerability_binary_accessible | anger | mid: n=30, Δ=-34.4 pp
+- Llama-3.2-1B-Instruct | answerability_binary_accessible | anger | high: n=109, Δ=-57.5 pp
+- Llama-3.2-1B-Instruct | answerability_binary_inaccessible | anger | low: n=666, Δ=+21.6 pp
+- Llama-3.2-1B-Instruct | answerability_binary_inaccessible | anger | mid: n=242, Δ=-18.5 pp
+- Llama-3.2-1B-Instruct | answerability_binary_inaccessible | anger | high: n=612, Δ=-47.1 pp
+- Llama-3.2-1B-Instruct | belief_choice_accessible | anger | low: n=62, Δ=+0.0 pp
+- Llama-3.2-1B-Instruct | belief_choice_accessible | anger | mid: n=7, Δ=-33.3 pp
+- Llama-3.2-1B-Instruct | belief_choice_accessible | anger | high: n=36, Δ=-50.0 pp
+- Llama-3.2-1B-Instruct | belief_choice_inaccessible | anger | low: n=81, Δ=+0.4 pp
+- Llama-3.2-1B-Instruct | belief_choice_inaccessible | anger | high: n=44, Δ=-44.7 pp
+- Llama-3.2-1B-Instruct | fact | anger | low: n=285, Δ=-16.3 pp
+- Llama-3.2-1B-Instruct | fact | anger | mid: n=283, Δ=-25.4 pp
+- Llama-3.2-1B-Instruct | fact | anger | high: n=286, Δ=-29.4 pp
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_accessible | anger | low: n=86, Δ=-2.3 pp
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_accessible | anger | mid: n=20, Δ=-41.7 pp
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_accessible | anger | high: n=114, Δ=-60.2 pp
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_inaccessible | anger | low: n=775, Δ=+17.0 pp
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_inaccessible | anger | mid: n=218, Δ=-23.2 pp
+- Llama-3.2-1B-Instruct | infoaccessibility_binary_inaccessible | anger | high: n=521, Δ=-49.6 pp
+- Llama-3.2-3B-Instruct | answerability_binary_accessible | anger | low: n=122, Δ=+3.8 pp
+- Llama-3.2-3B-Instruct | answerability_binary_accessible | anger | high: n=74, Δ=-41.4 pp
+- Llama-3.2-3B-Instruct | answerability_binary_inaccessible | anger | low: n=515, Δ=+13.2 pp
+- Llama-3.2-3B-Instruct | answerability_binary_inaccessible | anger | mid: n=203, Δ=-6.4 pp
+- Llama-3.2-3B-Instruct | answerability_binary_inaccessible | anger | high: n=676, Δ=-22.1 pp
+- Llama-3.2-3B-Instruct | answerability_list_inaccessible | anger | low: n=8, Δ=+0.0 pp
+- Llama-3.2-3B-Instruct | belief_choice_accessible | anger | low: n=374, Δ=-18.5 pp
+- Llama-3.2-3B-Instruct | belief_choice_accessible | anger | high: n=105, Δ=-37.5 pp
+- Llama-3.2-3B-Instruct | belief_choice_inaccessible | anger | low: n=124, Δ=+16.9 pp
+- Llama-3.2-3B-Instruct | belief_choice_inaccessible | anger | mid: n=55, Δ=-10.9 pp
+- Llama-3.2-3B-Instruct | belief_choice_inaccessible | anger | high: n=168, Δ=-30.0 pp
+- Llama-3.2-3B-Instruct | fact | anger | low: n=285, Δ=+2.1 pp
+- Llama-3.2-3B-Instruct | fact | anger | mid: n=284, Δ=-8.1 pp
+- Llama-3.2-3B-Instruct | fact | anger | high: n=286, Δ=-10.4 pp
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_accessible | anger | low: n=125, Δ=-3.5 pp
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_accessible | anger | mid: n=55, Δ=-45.5 pp
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_accessible | anger | high: n=137, Δ=-64.7 pp
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_inaccessible | anger | low: n=700, Δ=+26.1 pp
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_inaccessible | anger | mid: n=190, Δ=-38.2 pp
+- Llama-3.2-3B-Instruct | infoaccessibility_binary_inaccessible | anger | high: n=1147, Δ=-48.0 pp
+- Llama-3.2-3B-Instruct | infoaccessibility_list_accessible | anger | low: n=8, Δ=+8.3 pp
+- Llama-3.2-3B-Instruct | infoaccessibility_list_accessible | anger | high: n=4, Δ=-33.3 pp
+- Phi-3.5-mini-instruct | answerability_binary_accessible | anger | low: n=68, Δ=+1.5 pp
+- Phi-3.5-mini-instruct | answerability_binary_accessible | anger | high: n=37, Δ=-15.3 pp
+- Phi-3.5-mini-instruct | answerability_binary_inaccessible | anger | low: n=451, Δ=+9.3 pp
+- Phi-3.5-mini-instruct | answerability_binary_inaccessible | anger | mid: n=174, Δ=+0.6 pp
+- Phi-3.5-mini-instruct | answerability_binary_inaccessible | anger | high: n=479, Δ=-10.6 pp
+- Phi-3.5-mini-instruct | belief_choice_accessible | anger | low: n=450, Δ=+0.4 pp
+- Phi-3.5-mini-instruct | belief_choice_accessible | anger | high: n=32, Δ=-3.1 pp
+- Phi-3.5-mini-instruct | belief_choice_inaccessible | anger | low: n=147, Δ=+13.4 pp
+- Phi-3.5-mini-instruct | belief_choice_inaccessible | anger | mid: n=24, Δ=-2.8 pp
+- Phi-3.5-mini-instruct | belief_choice_inaccessible | anger | high: n=252, Δ=-4.9 pp
+- Phi-3.5-mini-instruct | fact | anger | low: n=289, Δ=+6.8 pp
+- Phi-3.5-mini-instruct | fact | anger | mid: n=287, Δ=+1.0 pp
+- Phi-3.5-mini-instruct | fact | anger | high: n=289, Δ=-3.5 pp
+- Phi-3.5-mini-instruct | infoaccessibility_binary_accessible | anger | low: n=198, Δ=+7.4 pp
+- Phi-3.5-mini-instruct | infoaccessibility_binary_accessible | anger | high: n=126, Δ=-4.0 pp
+- Phi-3.5-mini-instruct | infoaccessibility_binary_inaccessible | anger | low: n=586, Δ=+11.0 pp
+- Phi-3.5-mini-instruct | infoaccessibility_binary_inaccessible | anger | mid: n=165, Δ=+4.2 pp
+- Phi-3.5-mini-instruct | infoaccessibility_binary_inaccessible | anger | high: n=834, Δ=-6.7 pp
+- Phi-3.5-mini-instruct | infoaccessibility_list_accessible | anger | low: n=15, Δ=+4.4 pp
+- Phi-4-mini-instruct | answerability_binary_accessible | anger | low: n=115, Δ=-0.6 pp
+- Phi-4-mini-instruct | answerability_binary_accessible | anger | mid: n=55, Δ=-25.5 pp
+- Phi-4-mini-instruct | answerability_binary_accessible | anger | high: n=158, Δ=-22.4 pp
+- Phi-4-mini-instruct | answerability_binary_inaccessible | anger | low: n=732, Δ=+11.6 pp
+- Phi-4-mini-instruct | answerability_binary_inaccessible | anger | mid: n=185, Δ=-8.5 pp
+- Phi-4-mini-instruct | answerability_binary_inaccessible | anger | high: n=1175, Δ=-14.3 pp
+- Phi-4-mini-instruct | belief_choice_accessible | anger | low: n=414, Δ=-14.8 pp
+- Phi-4-mini-instruct | belief_choice_accessible | anger | high: n=67, Δ=-34.8 pp
+- Phi-4-mini-instruct | belief_choice_inaccessible | anger | low: n=229, Δ=+13.7 pp
+- Phi-4-mini-instruct | belief_choice_inaccessible | anger | high: n=400, Δ=-16.5 pp
+- Phi-4-mini-instruct | fact | anger | low: n=286, Δ=+5.5 pp
+- Phi-4-mini-instruct | fact | anger | mid: n=284, Δ=+2.1 pp
+- Phi-4-mini-instruct | fact | anger | high: n=287, Δ=-3.5 pp
+- Phi-4-mini-instruct | infoaccessibility_binary_accessible | anger | low: n=361, Δ=-7.1 pp
+- Phi-4-mini-instruct | infoaccessibility_binary_accessible | anger | high: n=47, Δ=-7.8 pp
+- Phi-4-mini-instruct | infoaccessibility_binary_inaccessible | anger | low: n=762, Δ=+5.0 pp
+- Phi-4-mini-instruct | infoaccessibility_binary_inaccessible | anger | high: n=1379, Δ=-10.3 pp
+- Qwen2.5-0.5B-Instruct | answerability_binary_accessible | anger | low: n=215, Δ=-49.9 pp
+- Qwen2.5-0.5B-Instruct | answerability_binary_accessible | anger | high: n=129, Δ=-83.5 pp
+- Qwen2.5-0.5B-Instruct | answerability_binary_inaccessible | anger | low: n=774, Δ=+47.0 pp
+- Qwen2.5-0.5B-Instruct | answerability_binary_inaccessible | anger | mid: n=140, Δ=-46.7 pp
+- Qwen2.5-0.5B-Instruct | answerability_binary_inaccessible | anger | high: n=987, Δ=-55.6 pp
+- Qwen2.5-0.5B-Instruct | answerability_list_accessible | anger | low: n=24, Δ=+0.0 pp
+- Qwen2.5-0.5B-Instruct | answerability_list_accessible | anger | high: n=4, Δ=-33.3 pp
+- Qwen2.5-0.5B-Instruct | answerability_list_inaccessible | anger | low: n=11, Δ=+0.0 pp
+- Qwen2.5-0.5B-Instruct | belief_choice_accessible | anger | low: n=151, Δ=-0.0 pp
+- Qwen2.5-0.5B-Instruct | belief_choice_accessible | anger | mid: n=31, Δ=-44.1 pp
+- Qwen2.5-0.5B-Instruct | belief_choice_accessible | anger | high: n=220, Δ=-54.7 pp
+- Qwen2.5-0.5B-Instruct | belief_choice_inaccessible | anger | low: n=167, Δ=+12.4 pp
+- Qwen2.5-0.5B-Instruct | belief_choice_inaccessible | anger | mid: n=81, Δ=-25.9 pp
+- Qwen2.5-0.5B-Instruct | belief_choice_inaccessible | anger | high: n=234, Δ=-45.6 pp
+- Qwen2.5-0.5B-Instruct | fact | anger | low: n=280, Δ=-5.7 pp
+- Qwen2.5-0.5B-Instruct | fact | anger | mid: n=278, Δ=-16.8 pp
+- Qwen2.5-0.5B-Instruct | fact | anger | high: n=280, Δ=-18.4 pp
+- Qwen2.5-0.5B-Instruct | infoaccessibility_binary_accessible | anger | low: n=227, Δ=-57.7 pp
+- Qwen2.5-0.5B-Instruct | infoaccessibility_binary_accessible | anger | high: n=132, Δ=-88.1 pp
+- Qwen2.5-0.5B-Instruct | infoaccessibility_binary_inaccessible | anger | low: n=642, Δ=+65.3 pp
+- Qwen2.5-0.5B-Instruct | infoaccessibility_binary_inaccessible | anger | mid: n=279, Δ=-21.4 pp
+- Qwen2.5-0.5B-Instruct | infoaccessibility_binary_inaccessible | anger | high: n=950, Δ=-66.1 pp
+- Qwen2.5-0.5B-Instruct | infoaccessibility_list_accessible | anger | low: n=44, Δ=+0.8 pp
+- Qwen2.5-0.5B-Instruct | infoaccessibility_list_accessible | anger | mid: n=6, Δ=-33.3 pp
+- Qwen2.5-0.5B-Instruct | infoaccessibility_list_accessible | anger | high: n=27, Δ=-44.4 pp
+- Qwen2.5-0.5B-Instruct | infoaccessibility_list_inaccessible | anger | low: n=17, Δ=+2.0 pp
+- Qwen2.5-1.5B-Instruct | answerability_binary_accessible | anger | low: n=119, Δ=+3.6 pp
+- Qwen2.5-1.5B-Instruct | answerability_binary_accessible | anger | mid: n=14, Δ=-31.0 pp
+- Qwen2.5-1.5B-Instruct | answerability_binary_accessible | anger | high: n=94, Δ=-41.1 pp
+- Qwen2.5-1.5B-Instruct | answerability_binary_inaccessible | anger | low: n=589, Δ=+8.3 pp
+- Qwen2.5-1.5B-Instruct | answerability_binary_inaccessible | anger | mid: n=386, Δ=-3.7 pp
+- Qwen2.5-1.5B-Instruct | answerability_binary_inaccessible | anger | high: n=764, Δ=-12.9 pp
+- Qwen2.5-1.5B-Instruct | belief_choice_accessible | anger | low: n=410, Δ=-1.5 pp
+- Qwen2.5-1.5B-Instruct | belief_choice_accessible | anger | high: n=69, Δ=-16.9 pp
+- Qwen2.5-1.5B-Instruct | belief_choice_inaccessible | anger | low: n=169, Δ=+25.0 pp
+- Qwen2.5-1.5B-Instruct | belief_choice_inaccessible | anger | mid: n=33, Δ=+5.1 pp
+- Qwen2.5-1.5B-Instruct | belief_choice_inaccessible | anger | high: n=201, Δ=-4.3 pp
+- Qwen2.5-1.5B-Instruct | fact | anger | low: n=280, Δ=+7.6 pp
+- Qwen2.5-1.5B-Instruct | fact | anger | mid: n=278, Δ=+0.2 pp
+- Qwen2.5-1.5B-Instruct | fact | anger | high: n=281, Δ=-0.0 pp
+- Qwen2.5-1.5B-Instruct | infoaccessibility_binary_accessible | anger | low: n=148, Δ=+14.2 pp
+- Qwen2.5-1.5B-Instruct | infoaccessibility_binary_accessible | anger | high: n=216, Δ=-14.0 pp
+- Qwen2.5-1.5B-Instruct | infoaccessibility_binary_inaccessible | anger | low: n=809, Δ=+25.1 pp
+- Qwen2.5-1.5B-Instruct | infoaccessibility_binary_inaccessible | anger | mid: n=205, Δ=-3.7 pp
+- Qwen2.5-1.5B-Instruct | infoaccessibility_binary_inaccessible | anger | high: n=1196, Δ=-12.0 pp
+- Qwen2.5-3B-Instruct | answerability_binary_accessible | anger | low: n=114, Δ=+14.3 pp
+- Qwen2.5-3B-Instruct | answerability_binary_accessible | anger | mid: n=30, Δ=-0.0 pp
+- Qwen2.5-3B-Instruct | answerability_binary_accessible | anger | high: n=166, Δ=-8.0 pp
+- Qwen2.5-3B-Instruct | belief_choice_accessible | anger | low: n=499, Δ=+1.6 pp
+- Qwen2.5-3B-Instruct | belief_choice_accessible | anger | high: n=37, Δ=-9.9 pp
+- Qwen2.5-3B-Instruct | belief_choice_inaccessible | anger | low: n=98, Δ=+17.3 pp
+- Qwen2.5-3B-Instruct | belief_choice_inaccessible | anger | mid: n=35, Δ=+3.8 pp
+- Qwen2.5-3B-Instruct | belief_choice_inaccessible | anger | high: n=119, Δ=-20.7 pp
+- Qwen2.5-3B-Instruct | fact | anger | low: n=286, Δ=+2.2 pp
+- Qwen2.5-3B-Instruct | fact | anger | mid: n=284, Δ=-2.3 pp
+- Qwen2.5-3B-Instruct | fact | anger | high: n=286, Δ=-6.1 pp
+- Qwen2.5-3B-Instruct | infoaccessibility_binary_accessible | anger | low: n=338, Δ=+7.1 pp
+- Qwen2.5-3B-Instruct | infoaccessibility_binary_accessible | anger | high: n=56, Δ=+1.2 pp
+- Qwen2.5-3B-Instruct | infoaccessibility_binary_inaccessible | anger | low: n=899, Δ=+9.9 pp
+- Qwen2.5-3B-Instruct | infoaccessibility_binary_inaccessible | anger | high: n=1185, Δ=-3.7 pp
+- Qwen3-0.6B | answerability_binary_accessible | anger | low: n=164, Δ=-38.0 pp
+- Qwen3-0.6B | answerability_binary_accessible | anger | high: n=174, Δ=-62.1 pp
+- Qwen3-0.6B | answerability_binary_inaccessible | anger | low: n=720, Δ=+17.6 pp
+- Qwen3-0.6B | answerability_binary_inaccessible | anger | mid: n=146, Δ=-31.3 pp
+- Qwen3-0.6B | answerability_binary_inaccessible | anger | high: n=1182, Δ=-50.2 pp
+- Qwen3-0.6B | belief_choice_accessible | anger | low: n=70, Δ=+1.0 pp
+- Qwen3-0.6B | belief_choice_accessible | anger | high: n=53, Δ=-48.4 pp
+- Qwen3-0.6B | belief_choice_inaccessible | anger | low: n=6, Δ=-16.7 pp
+- Qwen3-0.6B | belief_choice_inaccessible | anger | high: n=11, Δ=-63.6 pp
+- Qwen3-0.6B | fact | anger | low: n=288, Δ=+10.3 pp
+- Qwen3-0.6B | fact | anger | mid: n=286, Δ=-0.3 pp
+- Qwen3-0.6B | fact | anger | high: n=288, Δ=-5.8 pp
+- Qwen3-0.6B | infoaccessibility_binary_accessible | anger | low: n=197, Δ=-34.2 pp
+- Qwen3-0.6B | infoaccessibility_binary_accessible | anger | high: n=147, Δ=-51.7 pp
+- Qwen3-0.6B | infoaccessibility_binary_inaccessible | anger | low: n=689, Δ=+13.1 pp
+- Qwen3-0.6B | infoaccessibility_binary_inaccessible | anger | mid: n=121, Δ=-27.3 pp
+- Qwen3-0.6B | infoaccessibility_binary_inaccessible | anger | high: n=1109, Δ=-50.8 pp
+- Qwen3-1.7B | answerability_binary_accessible | anger | low: n=293, Δ=+1.7 pp
+- Qwen3-1.7B | answerability_binary_accessible | anger | high: n=63, Δ=-2.1 pp
+- Qwen3-1.7B | answerability_binary_inaccessible | anger | low: n=780, Δ=+9.1 pp
+- Qwen3-1.7B | answerability_binary_inaccessible | anger | high: n=1384, Δ=-7.8 pp
+- Qwen3-1.7B | belief_choice_accessible | anger | low: n=464, Δ=+1.0 pp
+- Qwen3-1.7B | belief_choice_accessible | anger | high: n=25, Δ=-4.0 pp
+- Qwen3-1.7B | belief_choice_inaccessible | anger | low: n=176, Δ=+10.0 pp
+- Qwen3-1.7B | belief_choice_inaccessible | anger | mid: n=37, Δ=-6.3 pp
+- Qwen3-1.7B | belief_choice_inaccessible | anger | high: n=275, Δ=-6.4 pp
+- Qwen3-1.7B | fact | anger | low: n=282, Δ=+2.1 pp
+- Qwen3-1.7B | fact | anger | mid: n=281, Δ=+0.1 pp
+- Qwen3-1.7B | fact | anger | high: n=283, Δ=-1.2 pp
+- Qwen3-1.7B | infoaccessibility_binary_accessible | anger | low: n=387, Δ=+0.3 pp
+- Qwen3-1.7B | infoaccessibility_binary_accessible | anger | high: n=18, Δ=+0.0 pp
+- Qwen3-1.7B | infoaccessibility_binary_inaccessible | anger | low: n=1915, Δ=+0.1 pp
+- Qwen3-1.7B | infoaccessibility_binary_inaccessible | anger | high: n=168, Δ=-2.4 pp
+- Qwen3-4B | answerability_binary_accessible | anger | low: n=99, Δ=+11.8 pp
+- Qwen3-4B | answerability_binary_accessible | anger | mid: n=47, Δ=+7.1 pp
+- Qwen3-4B | answerability_binary_accessible | anger | high: n=115, Δ=-5.2 pp
+- Qwen3-4B | answerability_binary_inaccessible | anger | low: n=770, Δ=+18.7 pp
+- Qwen3-4B | answerability_binary_inaccessible | anger | high: n=1184, Δ=-9.4 pp
+- Qwen3-4B | belief_choice_accessible | anger | low: n=492, Δ=+0.9 pp
+- Qwen3-4B | belief_choice_accessible | anger | high: n=19, Δ=-21.1 pp
+- Qwen3-4B | belief_choice_inaccessible | anger | low: n=147, Δ=+21.5 pp
+- Qwen3-4B | belief_choice_inaccessible | anger | mid: n=39, Δ=-15.4 pp
+- Qwen3-4B | belief_choice_inaccessible | anger | high: n=245, Δ=-21.6 pp
+- Qwen3-4B | fact | anger | low: n=288, Δ=+8.5 pp
+- Qwen3-4B | fact | anger | mid: n=286, Δ=+2.6 pp
+- Qwen3-4B | fact | anger | high: n=288, Δ=+0.2 pp
+- Qwen3-4B | infoaccessibility_binary_accessible | anger | low: n=395, Δ=+0.0 pp
+- Qwen3-4B | infoaccessibility_binary_accessible | anger | high: n=11, Δ=+0.0 pp
+- Qwen3-4B | infoaccessibility_binary_inaccessible | anger | low: n=1956, Δ=+0.6 pp
+- Qwen3-4B | infoaccessibility_binary_inaccessible | anger | high: n=80, Δ=-2.5 pp
+- gemma-3-1b-it | answerability_binary_accessible | anger | low: n=121, Δ=+3.9 pp
+- gemma-3-1b-it | answerability_binary_accessible | anger | high: n=21, Δ=-7.9 pp
+- gemma-3-1b-it | answerability_binary_inaccessible | anger | low: n=706, Δ=+6.0 pp
+- gemma-3-1b-it | answerability_binary_inaccessible | anger | high: n=441, Δ=-10.0 pp
+- gemma-3-1b-it | belief_choice_accessible | anger | low: n=134, Δ=+0.5 pp
+- gemma-3-1b-it | belief_choice_accessible | anger | high: n=12, Δ=-5.6 pp
+- gemma-3-1b-it | belief_choice_inaccessible | anger | low: n=55, Δ=+0.0 pp
+- gemma-3-1b-it | fact | anger | low: n=286, Δ=+1.7 pp
+- gemma-3-1b-it | fact | anger | mid: n=284, Δ=-0.1 pp
+- gemma-3-1b-it | fact | anger | high: n=287, Δ=-0.9 pp
+- gemma-3-1b-it | infoaccessibility_binary_accessible | anger | low: n=84, Δ=+8.3 pp
+- gemma-3-1b-it | infoaccessibility_binary_accessible | anger | mid: n=23, Δ=-0.0 pp
+- gemma-3-1b-it | infoaccessibility_binary_accessible | anger | high: n=99, Δ=-4.7 pp
+- gemma-3-1b-it | infoaccessibility_binary_inaccessible | anger | low: n=653, Δ=+4.5 pp
+- gemma-3-1b-it | infoaccessibility_binary_inaccessible | anger | mid: n=172, Δ=+2.1 pp
+- gemma-3-1b-it | infoaccessibility_binary_inaccessible | anger | high: n=476, Δ=-4.4 pp

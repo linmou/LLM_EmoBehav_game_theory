@@ -28,6 +28,8 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import math
+from datetime import datetime
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
@@ -43,7 +45,8 @@ LOGGER = logging.getLogger(__name__)
 def _load_manifest(run_dir: Path) -> dict:
     manifest_path = run_dir / "experiment_config.json"
     if not manifest_path.exists():
-        raise FileNotFoundError(
+        LOGGER.warning(f"Cannot locate experiment_config.json in {run_dir}. Did you point to a valid run directory?")
+        return FileNotFoundError(
             f"Cannot locate experiment_config.json in {run_dir}. Did you point to a valid run directory?"
         )
     return json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -103,6 +106,7 @@ def evaluate_saved_run(run_dir: Path | str, max_workers: int = 8) -> pd.DataFram
 
     run_path = Path(run_dir)
     manifest = _load_manifest(run_path)
+    if type(manifest) is not dict: return manifest
     experiment_config, benchmark_config = _reconstruct_configs(manifest)
 
     dataset = create_dataset_from_config(
@@ -132,20 +136,96 @@ def evaluate_saved_run(run_dir: Path | str, max_workers: int = 8) -> pd.DataFram
             metadata=row.get("metadata"),
             error=None,
         )
-        try:
-            record.score = dataset.evaluate_response(
-                record.response,
-                record.ground_truth,
-                record.task_name,
-                record.prompt,
-            )
-        except Exception as exc:  # pragma: no cover - defensive logging
-            LOGGER.error("Failed to evaluate response for %s: %s", record.item_id, exc)
-            record.score = None
-            record.error = str(exc)
         result_records.append(record)
 
+    total_items = len(result_records)
+    if total_items == 0:
+        raise ValueError(
+            "No raw rows found in run directory; cannot evaluate. "
+            f"Check {run_path}/raw_results.json was written and is non-empty."
+        )
+
+    chunk_size_attr = getattr(dataset, "offline_eval_chunk_size", None)
+    if isinstance(chunk_size_attr, int) and chunk_size_attr > 0:
+        chunk_size = chunk_size_attr
+    else:
+        configured = experiment_config.batch_size or max_workers or 32
+        chunk_size = configured
+    chunk_size = max(1, min(total_items, chunk_size)) if total_items else 1
+
+    evaluated = 0
+    for start in range(0, total_items, chunk_size):
+        block = result_records[start : start + chunk_size]
+        responses = [record.response for record in block]
+        ground_truths = [record.ground_truth for record in block]
+        task_names = [record.task_name for record in block]
+        prompts = [record.prompt for record in block]
+
+        try:
+            scores = dataset.evaluate_batch(responses, ground_truths, task_names, prompts)
+            eval_errors = getattr(dataset, "_last_eval_errors", None)
+        except Exception as exc:  # pragma: no cover - defensive logging
+            LOGGER.error(
+                "Batch evaluation failed for chunk starting at %d: %s; falling back to per-item scoring",
+                start,
+                exc,
+            )
+            for record in block:
+                try:
+                    score = dataset.evaluate_response(
+                        record.response,
+                        record.ground_truth,
+                        record.task_name,
+                        record.prompt,
+                    )
+                except Exception as item_exc:  # pragma: no cover - defensive logging
+                    LOGGER.error("Failed to evaluate response for %s: %s", record.item_id, item_exc)
+                    record.score = None
+                    record.error = str(item_exc)
+                else:
+                    if isinstance(score, float) and (math.isnan(score) or math.isinf(score)):
+                        score = None
+                    record.score = score
+                    record.error = None
+            evaluated += len(block)
+            percent = 0.0 if total_items == 0 else (evaluated / total_items) * 100.0
+            LOGGER.info(
+                "[%s] Deferred evaluation progress: %d/%d (%.1f%%)",
+                datetime.utcnow().isoformat(timespec="seconds") + "Z",
+                evaluated,
+                total_items,
+                percent,
+            )
+            continue
+
+        for idx, record in enumerate(block):
+            score = None
+            if idx < len(scores):
+                score = scores[idx]
+                if isinstance(score, float) and (math.isnan(score) or math.isinf(score)):
+                    score = None
+            record.score = score
+
+            if eval_errors and idx < len(eval_errors):
+                error_val = eval_errors[idx]
+                record.error = str(error_val) if error_val is not None else None
+            elif record.error:
+                # Reset any lingering error when batch succeeded and dataset provided no details.
+                record.error = None
+
+        evaluated += len(block)
+        percent = 0.0 if total_items == 0 else (evaluated / total_items) * 100.0
+        LOGGER.info(
+            "[%s] Deferred evaluation progress: %d/%d (%.1f%%)",
+            datetime.utcnow().isoformat(timespec="seconds") + "Z",
+            evaluated,
+            total_items,
+            percent,
+        )
+
     _update_raw_results(run_path, result_records)
+
+    error_count = sum(1 for record in result_records if record.error)
 
     # Reuse experiment saving utilities without loading vLLM
     stub_experiment = EmotionExperiment.__new__(EmotionExperiment)
@@ -167,7 +247,13 @@ def evaluate_saved_run(run_dir: Path | str, max_workers: int = 8) -> pd.DataFram
     stub_experiment.truncation_strategy = experiment_config.benchmark.truncation_strategy
 
     df = stub_experiment._save_results(result_records)
-    LOGGER.info("Deferred evaluation completed for %s", run_path)
+    LOGGER.info(
+        "[%s] Deferred evaluation completed for %s (items=%d, errors=%d)",
+        datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        run_path,
+        total_items,
+        error_count,
+    )
     return df
 
 

@@ -93,7 +93,10 @@ class ScenarioCreationConfig:
 
     def to_dict(self):
         """Convert configuration to dictionary"""
-        return self.__dict__
+        data = dict(self.__dict__)
+        # Avoid logging or serializing the full diplomacy_records payload
+        data.pop("diplomacy_records", None)
+        return data
 
 
 def get_existing_processed_personas(scenario_path_base: str) -> set:
@@ -221,11 +224,13 @@ async def create_scenario_with_timeout(
                     "scenario_draft": None,
                     "gradient_options": None,
                     "narrative_feedback": [],
+                    "behavior_feedback": [],
                     "preference_feedback": [],
                     "payoff_feedback": [],
                     "iteration_count": 0,
                     "final_scenario": None,
                     "narrative_converged": False,
+                    "behavior_converged": False,
                     "preference_converged": True,
                     "payoff_converged": False,
                     "all_converged": None,
@@ -306,7 +311,7 @@ async def save_scenario_and_history(
         except Exception as e:
             logger.error(f"Error saving history for {persona_job_filename}: {e}")
 
-        # Save scenario
+        # Save scenario (or salvage from history if final_scenario is missing)
         if scenario:
             scenario_path = f"{scenario_path_base}/{persona_job_filename}.json"
             with open(scenario_path, "w") as f:
@@ -314,6 +319,41 @@ async def save_scenario_and_history(
             logger.info(f"Saved scenario for {persona_job_filename}")
             return True
         else:
+            # Attempt a graceful fallback: use the latest scenario_draft from history
+            fallback_scenario = None
+            try:
+                if history:
+                    latest_state = history[-1].values
+                    draft = latest_state.get("scenario_draft")
+                    if isinstance(draft, dict):
+                        participants = latest_state.get("participants") or []
+                        label = "Player 1"
+                        if participants:
+                            p0 = participants[0]
+                            if isinstance(p0, dict):
+                                p0 = p0.get("name") or "Player 1"
+                            label = str(p0)
+                        gradient_opts = latest_state.get("gradient_options") or []
+                        fallback_scenario = {
+                            **draft,
+                            "gradient_options": gradient_opts if isinstance(gradient_opts, list) else [],
+                            "whose_option": label,
+                        }
+                        # Preserve legacy "options" mirror if gradient options exist
+                        if gradient_opts:
+                            fallback_scenario.setdefault("options", gradient_opts)
+            except Exception:
+                fallback_scenario = None
+
+            if fallback_scenario:
+                scenario_path = f"{scenario_path_base}/{persona_job_filename}.json"
+                with open(scenario_path, "w") as f:
+                    json.dump(fallback_scenario, f, indent=4)
+                logger.warning(
+                    f"No finalized scenario; saved fallback draft for {persona_job_filename}"
+                )
+                return True
+
             logger.warning(f"No scenario to save for {persona_job_filename}")
             return False
 
@@ -693,6 +733,8 @@ def configure_logging(config: ScenarioCreationConfig):
     if config.verbose:
         logger.info("Configuration:")
         for key, value in config.to_dict().items():
+            if key == "diplomacy_records":
+                continue
             logger.info(f"  {key}: {value}")
 
 
@@ -711,7 +753,11 @@ def load_persona_jobs(config: ScenarioCreationConfig) -> List[str]:
             # Stash to a temp file for retrieval in process_single_job
             tmp_path = Path(".diplomacy_records_cache.json")
             tmp_path.write_text(json.dumps(recs))
-            n = config.debug_num_records if config.debug_mode else len(recs)
+            config.diplomacy_records = recs
+            if config.debug_mode:
+                n = config.debug_num_records
+            else:
+                n = config.num_personas if config.num_personas > 0 else len(recs)
             return [f"rec_{i}" for i in range(min(n, len(recs)))]
         else:
             with open(config.persona_jobs_file, "r") as f:
@@ -723,6 +769,42 @@ def load_persona_jobs(config: ScenarioCreationConfig) -> List[str]:
     except Exception as e:
         logger.error(f"Failed to load inputs: {e}")
         raise
+
+
+def _parse_diplomacy_job_index(persona_job: str) -> Optional[int]:
+    """Extract numeric index from a diplomacy-style persona job."""
+    if not persona_job:
+        return None
+    normalized = persona_job.strip().lower()
+    parts = normalized.split("_", 1)
+    if len(parts) < 2 or parts[0] != "rec":
+        return None
+    try:
+        return int(parts[1])
+    except ValueError:
+        return None
+
+
+def resolve_diplomacy_record(
+    config: ScenarioCreationConfig, persona_job: str
+) -> Optional[Dict[str, Any]]:
+    """Resolve a raw diplomacy record for the given persona job."""
+    recs = getattr(config, "diplomacy_records", None)
+    if recs is None:
+        cache_path = Path(".diplomacy_records_cache.json")
+        if cache_path.exists():
+            try:
+                recs = json.loads(cache_path.read_text())
+            except Exception:
+                recs = None
+    if not recs:
+        return None
+
+    idx = _parse_diplomacy_job_index(persona_job)
+    if idx is None or idx < 0 or idx >= len(recs):
+        return None
+
+    return recs[idx]
 
 
 def setup_directories(config: ScenarioCreationConfig) -> Tuple[str, str]:
@@ -778,10 +860,12 @@ def build_scenario_graph(config: ScenarioCreationConfig):
         # Adjust verification nodes only if not explicitly provided
         vnodes = config.verification_nodes
         if getattr(config, "use_diplomacy_graph", False):
+            # Diplomacy graph supports a narrower set of verifiers today.
+            allowed = ("narrative", "behavior", "pay_off")
             if vnodes is None:
-                vnodes = ["narrative", "pay_off"]
+                vnodes = ["narrative", "behavior", "pay_off"]
             else:
-                vnodes = [v for v in vnodes if v in ("narrative", "pay_off")]
+                vnodes = [v for v in vnodes if v in allowed]
         scenario_graph = build_scenario_creation_graph(
             debug_mode=config.debug_mode,
             llm_config={

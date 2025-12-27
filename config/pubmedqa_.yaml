@@ -1,0 +1,45 @@
+models:
+  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
+  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct
+  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct
+  - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct
+
+benchmarks:
+  - name: pubmed_qa
+    task_type: pqa_labeled
+    base_data_dir: data/PubMedQA
+    enable_auto_truncation: false
+    truncation_strategy: right
+    preserve_ratio: 0.95
+    augmentation_config:
+        method: cot
+        instruction: "Before answering, briefly reason about the evidence. response in json format: {{'reasoning': 'brief reasoning', 'answer': 'yes/no/maybe'}}"
+
+emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
+intensities: [1.5]
+
+output_dir: results/pubmedqa_labeled
+batch_size: 200
+
+sanity_check: false
+
+loading_config:
+  enforce_eager: true
+  trust_remote_code: true
+  dtype: float16
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+generation_config:
+  temperature: 0.2
+  max_new_tokens: 256 
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+

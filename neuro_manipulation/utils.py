@@ -5,9 +5,15 @@ import json
 import os
 import pickle
 import random
+import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from emotion_experiment_engine.data_models import VLLMLoadingConfig  # pragma: no cover
+else:
+    VLLMLoadingConfig = Any  # type: ignore[misc,assignment]
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,11 +22,31 @@ from huggingface_hub import hf_hub_download
 from PIL import Image
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer, MistralForCausalLM, pipeline
-from vllm import LLM
+try:
+    from vllm import LLM  # type: ignore
+except Exception:
+    # Provide a minimal stub to avoid hard dependency during dry-runs or CPU-only envs
+    class LLM:  # type: ignore
+        pass
 
 # from neuro_manipulation.repe import repe_pipeline_registry
 # import pickle
 # repe_pipeline_registry()
+
+def _ensure_repo_root_on_pythonpath() -> None:
+    """
+    vLLM v1 uses multiprocessing workers whose CWD / sys.path may not include this repo.
+    Ensure the repo root is on PYTHONPATH so worker_extension_cls can be imported.
+    """
+    repo_root = str(Path(__file__).resolve().parent.parent)
+
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+
+    existing = os.environ.get("PYTHONPATH", "")
+    parts = [p for p in existing.split(os.pathsep) if p]
+    if repo_root not in parts:
+        os.environ["PYTHONPATH"] = os.pathsep.join([repo_root] + parts) if parts else repo_root
 
 
 def get_emotion_images(
@@ -48,7 +74,7 @@ def get_emotion_images(
         emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
 
     image_dir = Path(image_dir)
-    emotion_images = {}
+    emotion_images: Dict[str, List[Image.Image]] = {}
 
     # Supported image extensions
     image_extensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
@@ -653,6 +679,7 @@ def load_model_only(
     model = None
     if from_vllm:
         try:
+            _ensure_repo_root_on_pythonpath()
             # Use VLLMLoadingConfig.to_vllm_kwargs() method
             if loading_config and hasattr(loading_config, "to_vllm_kwargs"):
                 vllm_kwargs = loading_config.to_vllm_kwargs()
@@ -679,11 +706,16 @@ def load_model_only(
                     "seed": 42,
                     "disable_custom_all_reduce": False,
                 }
+
+            # vLLM selects attention backend via env var; allow forcing through config.
+            attention_backend = vllm_kwargs.pop("attention_backend", None)
+            if attention_backend:
+                os.environ["VLLM_ATTENTION_BACKEND"] = str(attention_backend)
+
             model = LLM(**vllm_kwargs)
 
         except Exception as e:
-            print(f"vLLM loading failed: {e}")
-            pass
+            raise RuntimeError(f"vLLM loading failed: {e}") from e
 
     if not model:
         # Check if this should be a causal LM model based on its config

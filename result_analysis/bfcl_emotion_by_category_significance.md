@@ -1,0 +1,390 @@
+# BFCL Significance by Category (paired t across repeats)
+
+Last Updated: 2025-10-01
+
+Scope
+- Grouping: per model, per category (simple/multiple/parallel/parallel_multiple).
+- Metric: Δ mean, avg t, and sig_rate across runs in each model+category.
+
+## Llama-3.2-1B-Instruct
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_simple_20250928_022825
+  - Anger: Δ=-0.39 pp, t̄=inf, sig_rate=1.00
+  - Disgust: Δ=-0.39 pp, t̄=inf, sig_rate=1.00
+  - Fear: Δ=-0.39 pp, t̄=inf, sig_rate=1.00
+  - Happiness: Δ=-0.39 pp, t̄=inf, sig_rate=1.00
+  - Sadness: Δ=-0.39 pp, t̄=inf, sig_rate=1.00
+  - Surprise: Δ=-0.39 pp, t̄=inf, sig_rate=1.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_multiple_20250927_183933
+  - Anger: Δ=-0.08 pp, t̄=-4.00, sig_rate=1.00
+  - Disgust: Δ=-0.08 pp, t̄=-4.00, sig_rate=1.00
+  - Fear: Δ=-0.08 pp, t̄=-4.00, sig_rate=1.00
+  - Happiness: Δ=-0.08 pp, t̄=-4.00, sig_rate=1.00
+  - Sadness: Δ=-0.08 pp, t̄=-4.00, sig_rate=1.00
+  - Surprise: Δ=-0.08 pp, t̄=-4.00, sig_rate=1.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_20250927_225146
+  - Anger: Δ=-5.00 pp, t̄=-4.00, sig_rate=1.00
+  - Disgust: Δ=-5.00 pp, t̄=-4.00, sig_rate=1.00
+  - Fear: Δ=-5.00 pp, t̄=-4.00, sig_rate=1.00
+  - Happiness: Δ=-5.00 pp, t̄=-4.00, sig_rate=1.00
+  - Sadness: Δ=-5.00 pp, t̄=-4.00, sig_rate=1.00
+  - Surprise: Δ=-5.00 pp, t̄=-4.00, sig_rate=1.00
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_multiple_20250927_233538
+  - Anger: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Disgust: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Fear: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Happiness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Sadness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Surprise: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+
+## Llama-3.2-3B-Instruct
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_simple_20250928_023959
+  - Anger: Δ=-25.87 pp, t̄=-43.86, sig_rate=1.00
+  - Disgust: Δ=-39.12 pp, t̄=-114.90, sig_rate=1.00
+  - Fear: Δ=-29.60 pp, t̄=-86.93, sig_rate=1.00
+  - Happiness: Δ=-20.33 pp, t̄=-43.82, sig_rate=1.00
+  - Sadness: Δ=-14.54 pp, t̄=-21.35, sig_rate=1.00
+  - Surprise: Δ=-8.75 pp, t̄=-18.86, sig_rate=1.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_multiple_20250927_191031
+  - Anger: Δ=-3.89 pp, t̄=-9.86, sig_rate=1.00
+  - Disgust: Δ=-14.25 pp, t̄=-46.71, sig_rate=1.00
+  - Fear: Δ=-9.32 pp, t̄=-23.32, sig_rate=1.00
+  - Happiness: Δ=4.59 pp, t̄=9.99, sig_rate=1.00
+  - Sadness: Δ=1.63 pp, t̄=7.74, sig_rate=1.00
+  - Surprise: Δ=-19.43 pp, t̄=-39.90, sig_rate=1.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_parallel_20250927_225522
+  - Anger: Δ=-1.25 pp, t̄=-0.53, sig_rate=0.00
+  - Disgust: Δ=-38.75 pp, t̄=-16.57, sig_rate=1.00
+  - Fear: Δ=-27.50 pp, t̄=-6.49, sig_rate=1.00
+  - Happiness: Δ=-28.75 pp, t̄=-6.78, sig_rate=1.00
+  - Sadness: Δ=-31.25 pp, t̄=-15.81, sig_rate=1.00
+  - Surprise: Δ=-28.75 pp, t̄=-11.50, sig_rate=1.00
+
+## Phi-3.5-mini-instruct
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_simple_20250928_024739
+  - Anger: Δ=-1.03 pp, t̄=-2.22, sig_rate=0.00
+  - Disgust: Δ=-0.64 pp, t̄=-1.25, sig_rate=0.00
+  - Fear: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Happiness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Sadness: Δ=-1.03 pp, t̄=-1.11, sig_rate=0.00
+  - Surprise: Δ=-1.93 pp, t̄=-8.66, sig_rate=1.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_multiple_20250927_193348
+  - Anger: Δ=0.95 pp, t̄=1.69, sig_rate=0.00
+  - Disgust: Δ=1.46 pp, t̄=1.94, sig_rate=0.00
+  - Fear: Δ=1.27 pp, t̄=1.42, sig_rate=0.00
+  - Happiness: Δ=0.51 pp, t̄=0.46, sig_rate=0.00
+  - Sadness: Δ=-0.15 pp, t̄=-0.22, sig_rate=0.00
+  - Surprise: Δ=2.79 pp, t̄=3.21, sig_rate=1.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_parallel_20250927_225922
+  - Anger: Δ=-1.25 pp, t̄=-0.53, sig_rate=0.00
+  - Disgust: Δ=-5.00 pp, t̄=-4.00, sig_rate=1.00
+  - Fear: Δ=-5.00 pp, t̄=-4.00, sig_rate=1.00
+  - Happiness: Δ=-7.50 pp, t̄=-3.21, sig_rate=1.00
+  - Sadness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Surprise: Δ=1.25 pp, t̄=1.00, sig_rate=0.00
+
+## Phi-4-mini-instruct
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_simple_20250928_025806
+  - Anger: Δ=-2.57 pp, t̄=-10.00, sig_rate=1.00
+  - Disgust: Δ=-11.20 pp, t̄=-29.00, sig_rate=1.00
+  - Fear: Δ=0.90 pp, t̄=7.00, sig_rate=1.00
+  - Happiness: Δ=2.83 pp, t̄=22.00, sig_rate=1.00
+  - Sadness: Δ=3.73 pp, t̄=14.50, sig_rate=1.00
+  - Surprise: Δ=2.57 pp, t̄=10.00, sig_rate=1.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_multiple_20250927_204952
+  - Anger: Δ=0.09 pp, t̄=0.63, sig_rate=0.00
+  - Disgust: Δ=0.27 pp, t̄=13.99, sig_rate=1.00
+  - Fear: Δ=0.17 pp, t̄=3.67, sig_rate=1.00
+  - Happiness: Δ=0.11 pp, t̄=3.21, sig_rate=1.00
+  - Sadness: Δ=0.25 pp, t̄=5.10, sig_rate=1.00
+  - Surprise: Δ=0.23 pp, t̄=3.54, sig_rate=1.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_20250927_230437
+  - Anger: Δ=10.00 pp, t̄=6.53, sig_rate=1.00
+  - Disgust: Δ=18.75 pp, t̄=5.48, sig_rate=1.00
+  - Fear: Δ=-5.00 pp, t̄=-2.14, sig_rate=0.00
+  - Happiness: Δ=-2.50 pp, t̄=-0.78, sig_rate=0.00
+  - Sadness: Δ=-3.75 pp, t̄=-1.50, sig_rate=0.00
+  - Surprise: Δ=-5.00 pp, t̄=-2.14, sig_rate=0.00
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_multiple_20250927_235857
+  - Anger: Δ=-0.61 pp, t̄=-12.55, sig_rate=1.00
+  - Disgust: Δ=0.19 pp, t̄=1.91, sig_rate=0.00
+  - Fear: Δ=0.80 pp, t̄=11.23, sig_rate=1.00
+  - Happiness: Δ=0.68 pp, t̄=4.92, sig_rate=1.00
+  - Sadness: Δ=0.57 pp, t̄=2.01, sig_rate=0.00
+  - Surprise: Δ=-0.08 pp, t̄=-1.37, sig_rate=0.00
+
+## Qwen2.5-0.5B-Instruct
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_simple_20250928_014158
+  - Anger: Δ=-10.94 pp, t̄=-17.00, sig_rate=1.00
+  - Disgust: Δ=-11.33 pp, t̄=-24.41, sig_rate=1.00
+  - Fear: Δ=-12.10 pp, t̄=-26.07, sig_rate=1.00
+  - Happiness: Δ=-9.01 pp, t̄=-19.41, sig_rate=1.00
+  - Sadness: Δ=-9.78 pp, t̄=-9.28, sig_rate=1.00
+  - Surprise: Δ=-9.65 pp, t̄=-14.43, sig_rate=1.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_multiple_20250927_163827
+  - Anger: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Disgust: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Fear: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Happiness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Sadness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Surprise: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_20250927_222411
+  - Anger: Δ=-6.25 pp, t̄=inf, sig_rate=1.00
+  - Disgust: Δ=-6.25 pp, t̄=inf, sig_rate=1.00
+  - Fear: Δ=-6.25 pp, t̄=inf, sig_rate=1.00
+  - Happiness: Δ=-6.25 pp, t̄=inf, sig_rate=1.00
+  - Sadness: Δ=-6.25 pp, t̄=inf, sig_rate=1.00
+  - Surprise: Δ=-6.25 pp, t̄=inf, sig_rate=1.00
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_multiple_20250927_231438
+  - Anger: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+  - Disgust: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+  - Fear: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+  - Happiness: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+  - Sadness: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+  - Surprise: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+
+## Qwen2.5-1.5B-Instruct
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_simple_20250928_015012
+  - Anger: Δ=0.13 pp, t̄=0.38, sig_rate=0.00
+  - Disgust: Δ=-2.70 pp, t̄=-3.03, sig_rate=0.00
+  - Fear: Δ=-4.25 pp, t̄=-9.53, sig_rate=1.00
+  - Happiness: Δ=0.26 pp, t̄=0.55, sig_rate=0.00
+  - Sadness: Δ=2.96 pp, t̄=6.38, sig_rate=1.00
+  - Surprise: Δ=-1.67 pp, t̄=-1.49, sig_rate=0.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_multiple_20250927_170318
+  - Anger: Δ=-4.14 pp, t̄=-36.08, sig_rate=1.00
+  - Disgust: Δ=0.08 pp, t̄=0.37, sig_rate=0.00
+  - Fear: Δ=-7.74 pp, t̄=-49.11, sig_rate=1.00
+  - Happiness: Δ=-3.30 pp, t̄=-16.52, sig_rate=1.00
+  - Sadness: Δ=1.59 pp, t̄=12.06, sig_rate=1.00
+  - Surprise: Δ=-5.54 pp, t̄=-24.99, sig_rate=1.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_20250927_222749
+  - Anger: Δ=7.50 pp, t̄=3.21, sig_rate=1.00
+  - Disgust: Δ=3.75 pp, t̄=2.45, sig_rate=0.00
+  - Fear: Δ=10.00 pp, t̄=6.53, sig_rate=1.00
+  - Happiness: Δ=10.00 pp, t̄=6.53, sig_rate=1.00
+  - Sadness: Δ=3.75 pp, t̄=2.45, sig_rate=0.00
+  - Surprise: Δ=-8.75 pp, t̄=-5.72, sig_rate=1.00
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_multiple_20250927_231827
+  - Anger: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+  - Disgust: Δ=-4.17 pp, t̄=inf, sig_rate=1.00
+  - Fear: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Happiness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Sadness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Surprise: Δ=4.17 pp, t̄=inf, sig_rate=1.00
+
+## Qwen2.5-3B-Instruct
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_simple_20250928_015717
+  - Anger: Δ=-4.63 pp, t̄=-7.86, sig_rate=1.00
+  - Disgust: Δ=-1.16 pp, t̄=-5.20, sig_rate=1.00
+  - Fear: Δ=0.51 pp, t̄=4.00, sig_rate=0.00
+  - Happiness: Δ=-6.82 pp, t̄=-53.00, sig_rate=1.00
+  - Sadness: Δ=-7.72 pp, t̄=-17.32, sig_rate=1.00
+  - Surprise: Δ=-3.47 pp, t̄=-15.59, sig_rate=1.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_multiple_20250927_171605
+  - Anger: Δ=-10.70 pp, t̄=-59.12, sig_rate=1.00
+  - Disgust: Δ=3.93 pp, t̄=27.54, sig_rate=1.00
+  - Fear: Δ=2.16 pp, t̄=11.21, sig_rate=1.00
+  - Happiness: Δ=-8.24 pp, t̄=-74.99, sig_rate=1.00
+  - Sadness: Δ=-5.98 pp, t̄=-31.50, sig_rate=1.00
+  - Surprise: Δ=-0.15 pp, t̄=-1.17, sig_rate=0.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_20250927_223007
+  - Anger: Δ=-10.00 pp, t̄=-6.53, sig_rate=1.00
+  - Disgust: Δ=6.25 pp, t̄=inf, sig_rate=1.00
+  - Fear: Δ=5.00 pp, t̄=4.00, sig_rate=1.00
+  - Happiness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Sadness: Δ=-18.75 pp, t̄=inf, sig_rate=1.00
+  - Surprise: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_multiple_20250927_232034
+  - Anger: Δ=-10.00 pp, t̄=-9.80, sig_rate=1.00
+  - Disgust: Δ=5.00 pp, t̄=3.21, sig_rate=1.00
+  - Fear: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Happiness: Δ=2.50 pp, t̄=2.45, sig_rate=0.00
+  - Sadness: Δ=-7.50 pp, t̄=-3.09, sig_rate=1.00
+  - Surprise: Δ=1.67 pp, t̄=1.00, sig_rate=0.00
+
+## Qwen3-0.6B
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_simple_20250928_020225
+  - Anger: Δ=-8.37 pp, t̄=-24.57, sig_rate=1.00
+  - Disgust: Δ=-4.25 pp, t̄=-19.05, sig_rate=1.00
+  - Fear: Δ=1.29 pp, t̄=10.00, sig_rate=1.00
+  - Happiness: Δ=-9.14 pp, t̄=-16.29, sig_rate=1.00
+  - Sadness: Δ=-9.40 pp, t̄=-27.59, sig_rate=1.00
+  - Surprise: Δ=-3.73 pp, t̄=-5.48, sig_rate=1.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_multiple_20250927_173130
+  - Anger: Δ=0.02 pp, t̄=0.23, sig_rate=0.00
+  - Disgust: Δ=-0.17 pp, t̄=-3.09, sig_rate=1.00
+  - Fear: Δ=3.40 pp, t̄=20.88, sig_rate=1.00
+  - Happiness: Δ=-0.78 pp, t̄=-21.92, sig_rate=1.00
+  - Sadness: Δ=-0.99 pp, t̄=-20.40, sig_rate=1.00
+  - Surprise: Δ=1.44 pp, t̄=19.00, sig_rate=1.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_20250927_223353
+  - Anger: Δ=-2.50 pp, t̄=-0.78, sig_rate=0.00
+  - Disgust: Δ=-12.50 pp, t̄=inf, sig_rate=1.00
+  - Fear: Δ=-3.75 pp, t̄=-2.45, sig_rate=0.00
+  - Happiness: Δ=17.50 pp, t̄=14.00, sig_rate=1.00
+  - Sadness: Δ=-15.00 pp, t̄=-9.80, sig_rate=1.00
+  - Surprise: Δ=-2.50 pp, t̄=-0.78, sig_rate=0.00
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_multiple_20250927_232318
+  - Anger: Δ=-11.67 pp, t̄=-14.00, sig_rate=1.00
+  - Disgust: Δ=-8.33 pp, t̄=inf, sig_rate=1.00
+  - Fear: Δ=-4.17 pp, t̄=-3.16, sig_rate=1.00
+  - Happiness: Δ=-7.50 pp, t̄=-9.00, sig_rate=1.00
+  - Sadness: Δ=-9.17 pp, t̄=-11.00, sig_rate=1.00
+  - Surprise: Δ=-6.67 pp, t̄=-6.53, sig_rate=1.00
+
+## Qwen3-1.7B
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_simple_20250928_020940
+  - Anger: Δ=-0.13 pp, t̄=-0.50, sig_rate=0.00
+  - Disgust: Δ=0.26 pp, t̄=1.00, sig_rate=0.00
+  - Fear: Δ=-1.67 pp, t̄=-13.00, sig_rate=1.00
+  - Happiness: Δ=0.13 pp, t̄=1.00, sig_rate=0.00
+  - Sadness: Δ=0.51 pp, t̄=2.00, sig_rate=0.00
+  - Surprise: Δ=1.16 pp, t̄=inf, sig_rate=1.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_multiple_20250927_175148
+  - Anger: Δ=3.76 pp, t̄=12.68, sig_rate=1.00
+  - Disgust: Δ=-5.90 pp, t̄=-22.50, sig_rate=1.00
+  - Fear: Δ=-1.97 pp, t̄=-13.60, sig_rate=1.00
+  - Happiness: Δ=0.49 pp, t̄=2.36, sig_rate=0.00
+  - Sadness: Δ=1.40 pp, t̄=3.91, sig_rate=1.00
+  - Surprise: Δ=-1.35 pp, t̄=-5.39, sig_rate=1.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_20250927_223958
+  - Anger: Δ=6.25 pp, t̄=inf, sig_rate=1.00
+  - Disgust: Δ=6.25 pp, t̄=inf, sig_rate=1.00
+  - Fear: Δ=3.75 pp, t̄=2.45, sig_rate=0.00
+  - Happiness: Δ=6.25 pp, t̄=inf, sig_rate=1.00
+  - Sadness: Δ=6.25 pp, t̄=inf, sig_rate=1.00
+  - Surprise: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_multiple_20250927_232821
+  - Anger: Δ=4.17 pp, t̄=inf, sig_rate=1.00
+  - Disgust: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+  - Fear: Δ=0.83 pp, t̄=1.00, sig_rate=0.00
+  - Happiness: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+  - Sadness: Δ=-0.83 pp, t̄=-1.00, sig_rate=0.00
+  - Surprise: Δ=4.17 pp, t̄=inf, sig_rate=1.00
+
+## Qwen3-32B-AWQ
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_simple_20250929_024031
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_022046, /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_023139
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_20250929_023557
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_multiple_20250929_023821
+
+## Qwen3-4B
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_simple_20250928_021346
+  - Anger: Δ=1.16 pp, t̄=inf, sig_rate=1.00
+  - Disgust: Δ=-2.57 pp, t̄=-20.00, sig_rate=1.00
+  - Fear: Δ=-1.29 pp, t̄=-10.00, sig_rate=1.00
+  - Happiness: Δ=0.51 pp, t̄=4.00, sig_rate=0.00
+  - Sadness: Δ=-0.64 pp, t̄=-5.00, sig_rate=1.00
+  - Surprise: Δ=1.03 pp, t̄=8.00, sig_rate=1.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_multiple_20250927_181341
+  - Anger: Δ=0.61 pp, t̄=10.67, sig_rate=1.00
+  - Disgust: Δ=-1.82 pp, t̄=-15.47, sig_rate=1.00
+  - Fear: Δ=-1.29 pp, t̄=-4.29, sig_rate=1.00
+  - Happiness: Δ=-0.80 pp, t̄=-4.73, sig_rate=1.00
+  - Sadness: Δ=-0.06 pp, t̄=-0.88, sig_rate=0.00
+  - Surprise: Δ=-1.63 pp, t̄=-12.35, sig_rate=1.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_20250927_224519
+  - Anger: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Disgust: Δ=-6.25 pp, t̄=inf, sig_rate=1.00
+  - Fear: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Happiness: Δ=6.25 pp, t̄=inf, sig_rate=1.00
+  - Sadness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Surprise: Δ=3.75 pp, t̄=2.45, sig_rate=0.00
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_multiple_20250927_233117
+  - Anger: Δ=5.00 pp, t̄=6.00, sig_rate=1.00
+  - Disgust: Δ=5.00 pp, t̄=6.00, sig_rate=1.00
+  - Fear: Δ=6.67 pp, t̄=6.53, sig_rate=1.00
+  - Happiness: Δ=0.83 pp, t̄=1.00, sig_rate=0.00
+  - Sadness: Δ=-2.50 pp, t̄=-1.50, sig_rate=0.00
+  - Surprise: Δ=-1.67 pp, t̄=-1.63, sig_rate=0.00
+
+## Qwen3-8B
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-8B_bfcl_live_simple_20250928_022005
+  - Anger: Δ=0.39 pp, t̄=inf, sig_rate=1.00
+  - Disgust: Δ=1.42 pp, t̄=4.16, sig_rate=0.00
+  - Fear: Δ=0.51 pp, t̄=1.51, sig_rate=0.00
+  - Happiness: Δ=-1.29 pp, t̄=-5.00, sig_rate=1.00
+  - Sadness: Δ=-1.16 pp, t̄=inf, sig_rate=1.00
+  - Surprise: Δ=1.03 pp, t̄=8.00, sig_rate=1.00
+
+## gemma-3-1b-it
+- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_simple_20250928_030328
+  - Anger: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Disgust: Δ=0.13 pp, t̄=1.00, sig_rate=0.00
+  - Fear: Δ=-0.26 pp, t̄=-0.55, sig_rate=0.00
+  - Happiness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Sadness: Δ=-0.51 pp, t̄=-4.00, sig_rate=0.00
+  - Surprise: Δ=-0.39 pp, t̄=-1.73, sig_rate=0.00
+- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_multiple_20250927_215130
+  - Anger: Δ=0.28 pp, t̄=3.16, sig_rate=1.00
+  - Disgust: Δ=0.06 pp, t̄=0.45, sig_rate=0.00
+  - Fear: Δ=0.17 pp, t̄=1.55, sig_rate=0.00
+  - Happiness: Δ=-0.09 pp, t̄=-0.60, sig_rate=0.00
+  - Sadness: Δ=-0.08 pp, t̄=-1.00, sig_rate=0.00
+  - Surprise: Δ=-0.00 pp, t̄=-0.00, sig_rate=0.00
+- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_20250927_230947
+  - Anger: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Disgust: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Fear: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Happiness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Sadness: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+  - Surprise: Δ=0.00 pp, t̄=0.00, sig_rate=0.00
+- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_multiple_20250928_010240
+  - Anger: Δ=0.02 pp, t̄=0.34, sig_rate=0.00
+  - Disgust: Δ=0.09 pp, t̄=1.05, sig_rate=0.00
+  - Fear: Δ=-0.00 pp, t̄=-0.00, sig_rate=0.00
+  - Happiness: Δ=-0.11 pp, t̄=-1.39, sig_rate=0.00
+  - Sadness: Δ=-0.04 pp, t̄=-0.43, sig_rate=0.00
+  - Surprise: Δ=-0.04 pp, t̄=-0.31, sig_rate=0.00
+
+
+References (run directories)
+- Base: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live
+- Llama-3.2-1B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_multiple_20250927_183933
+- Llama-3.2-1B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_20250927_225146
+- Llama-3.2-1B-Instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_multiple_20250927_233538
+- Llama-3.2-1B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_simple_20250928_022825
+- Llama-3.2-3B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_multiple_20250927_191031
+- Llama-3.2-3B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_parallel_20250927_225522
+- Llama-3.2-3B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_simple_20250928_023959
+- Phi-3.5-mini-instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_multiple_20250927_193348
+- Phi-3.5-mini-instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_parallel_20250927_225922
+- Phi-3.5-mini-instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_simple_20250928_024739
+- Phi-4-mini-instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_multiple_20250927_204952
+- Phi-4-mini-instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_20250927_230437
+- Phi-4-mini-instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_multiple_20250927_235857
+- Phi-4-mini-instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_simple_20250928_025806
+- Qwen2.5-0.5B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_multiple_20250927_163827
+- Qwen2.5-0.5B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_20250927_222411
+- Qwen2.5-0.5B-Instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_multiple_20250927_231438
+- Qwen2.5-0.5B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_simple_20250928_014158
+- Qwen2.5-1.5B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_multiple_20250927_170318
+- Qwen2.5-1.5B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_20250927_222749
+- Qwen2.5-1.5B-Instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_multiple_20250927_231827
+- Qwen2.5-1.5B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_simple_20250928_015012
+- Qwen2.5-3B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_multiple_20250927_171605
+- Qwen2.5-3B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_20250927_223007
+- Qwen2.5-3B-Instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_multiple_20250927_232034
+- Qwen2.5-3B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_simple_20250928_015717
+- Qwen3-0.6B | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_multiple_20250927_173130
+- Qwen3-0.6B | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_20250927_223353
+- Qwen3-0.6B | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_multiple_20250927_232318
+- Qwen3-0.6B | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_simple_20250928_020225
+- Qwen3-1.7B | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_multiple_20250927_175148
+- Qwen3-1.7B | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_20250927_223958
+- Qwen3-1.7B | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_multiple_20250927_232821
+- Qwen3-1.7B | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_simple_20250928_020940
+- Qwen3-32B-AWQ | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_022046
+- Qwen3-32B-AWQ | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_023139
+- Qwen3-32B-AWQ | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_20250929_023557
+- Qwen3-32B-AWQ | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_multiple_20250929_023821
+- Qwen3-32B-AWQ | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_simple_20250929_024031
+- Qwen3-4B | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_multiple_20250927_181341
+- Qwen3-4B | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_20250927_224519
+- Qwen3-4B | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_multiple_20250927_233117
+- Qwen3-4B | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_simple_20250928_021346
+- Qwen3-8B | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-8B_bfcl_live_simple_20250928_022005
+- gemma-3-1b-it | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_multiple_20250927_215130
+- gemma-3-1b-it | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_20250927_230947
+- gemma-3-1b-it | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_multiple_20250928_010240
+- gemma-3-1b-it | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_simple_20250928_030328

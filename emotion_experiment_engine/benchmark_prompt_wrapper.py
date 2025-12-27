@@ -26,6 +26,7 @@ from .mtbench101_prompt_wrapper import MTBench101PromptWrapper
 from .truthfulqa_prompt_wrapper import TruthfulQAPromptWrapper
 from .fantom_prompt_wrapper import FantomPromptWrapper
 from .bfcl_prompt_wrapper import BFCLPromptWrapper
+from .pubmedqa_prompt_wrapper import PubMedQAPromptWrapper
 
 
 def get_benchmark_prompt_wrapper(
@@ -65,6 +66,10 @@ def get_benchmark_prompt_wrapper(
     # TruthfulQA - multiple choice tasks
     if benchmark_lower == "truthfulqa":
         return TruthfulQAPromptWrapper(prompt_format, task_type)
+    
+    # PubMedQA - yes/no/maybe classification
+    if benchmark_lower == "pubmed_qa":
+        return PubMedQAPromptWrapper(prompt_format)
     
     # Fantom – use common Fantom wrapper
     if benchmark_lower == "fantom":
@@ -128,6 +133,9 @@ def get_supported_benchmarks():
         Dict mapping benchmark names to supported task types
     """
     return {
+        "pubmed_qa": [
+            "pqa_labeled"
+        ],
         "truthfulqa": [
             "mc1", "mc2"
         ],

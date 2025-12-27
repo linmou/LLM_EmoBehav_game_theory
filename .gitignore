@@ -1,3 +1,4 @@
+.DS_Store
 .env
 *.pyc
 OAI_CONFIG_LIST
@@ -7,6 +8,7 @@ results.bk/
 *.csv
 neuro_manipulation/representation_storage
 .cache/*
+cache/*/*
 groupchat/agent_groups
 merge_data_samples.py
 *.json
@@ -19,6 +21,8 @@ data_creation/scenario_creation/langgraph_creation/scenarios/*
 data_creation/scenario_creation/langgraph_creation/histories/*
 logs/*
 result_analysis/emotion_analysis_results.json
+results
+results.bk
 *.log
 results
 results.bk

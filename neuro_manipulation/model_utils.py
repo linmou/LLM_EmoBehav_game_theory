@@ -77,6 +77,7 @@ def load_emotion_readers(
     # Determine final processing mode
     experiment_mode = feasibility["mode"]
     multimodal_intent = config.get("multimodal_intent", False)
+    emotion_data_seed = int(config.get("emotion_data_seed", 0))
 
     # Auto-load processor if needed and not provided
     if experiment_mode == "multimodal" and processor is None:
@@ -102,6 +103,7 @@ def load_emotion_readers(
         "direction_method": config["direction_method"],
         "experiment_mode": experiment_mode,
         "multimodal_intent": multimodal_intent,
+        "emotion_data_seed": emotion_data_seed,
     }
 
     arg_codes = dict_to_unique_code(args)
@@ -122,6 +124,7 @@ def load_emotion_readers(
         config["data_dir"],
         model_name=config["model_name_or_path"],
         tokenizer=tokenizer,
+        seed=emotion_data_seed,
         enable_thinking=enable_thinking,
         multimodal_intent=(experiment_mode == "multimodal"),
     )

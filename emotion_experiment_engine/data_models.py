@@ -185,8 +185,18 @@ class VLLMLoadingConfig:
         if self.quantization:
             base_kwargs["quantization"] = self.quantization
 
+        # vLLM v0.11+ blocks function serialization for RPC by default; our
+        # rep-control hook uses string RPC methods implemented via this worker
+        # extension. Allow override via additional_vllm_kwargs.
+        default_worker_extension = (
+            "neuro_manipulation.repe.vllm_worker_extension.NMRepControlWorkerExtension"
+        )
+
+        additional = dict(self.additional_vllm_kwargs)
+        additional.setdefault("worker_extension_cls", default_worker_extension)
+
         # Merge with additional kwargs, allowing override
-        return {**base_kwargs, **self.additional_vllm_kwargs}
+        return {**base_kwargs, **additional}
 
 
 @dataclass
