@@ -144,6 +144,25 @@ def write_scenarios(path: Path, scenarios: Sequence[Dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(list(scenarios), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
+def load_existing_scenarios(path: Path) -> List[Dict[str, Any]]:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(raw, list):
+        scenarios = raw
+    elif isinstance(raw, dict) and isinstance(raw.get("scenarios"), list):
+        scenarios = raw["scenarios"]
+    else:
+        raise ValueError(f"Existing output {path} must be a JSON list (or {{'scenarios':[...]}})")
+
+    if not all(isinstance(x, dict) for x in scenarios):
+        raise ValueError(f"Existing output {path} must contain JSON objects")
+    _validate_scenarios_format(scenarios)
+    forbidden = ("sealed-auction", "sealed auction")
+    for i, sc in enumerate(scenarios):
+        desc = str(sc.get("description", ""))
+        if any(term in desc.lower() for term in forbidden):
+            raise ValueError(f"Existing output {path} scenario {i} contains forbidden term")
+    return list(scenarios)
+
 
 def init_gemini_model(*, api_key: str, model_name: str = DEFAULT_MODEL_NAME) -> Any:
     import google.generativeai as genai  # type: ignore[import-not-found]
@@ -231,22 +250,36 @@ def main(argv: Sequence[str] | None = None) -> None:
     p.add_argument("--concurrency", type=int, default=8)
     p.add_argument("--max_retries", type=int, default=2)
     p.add_argument("--no_progress", action="store_true")
+    p.add_argument(
+        "--resume",
+        action="store_true",
+        help="If --out exists, append up to --n total scenarios instead of overwriting.",
+    )
     args = p.parse_args(list(argv) if argv is not None else None)
 
     api_key = os.environ.get("GEMINI_API_KEY", "")
     instruction, examples = load_few_shot_examples(args.few_shot)
-    scenarios = generate_scenarios_parallel(
+    existing: List[Dict[str, Any]] = []
+    if args.resume and args.out.exists():
+        existing = load_existing_scenarios(args.out)
+
+    remaining = args.n - len(existing)
+    if remaining <= 0:
+        write_scenarios(args.out, existing[: args.n])
+        return
+
+    new_scenarios = generate_scenarios_parallel(
         api_key=api_key,
         model_name=args.model,
         instruction=instruction,
         examples=examples,
-        n=args.n,
+        n=remaining,
         batch_size=args.batch_size,
         concurrency=args.concurrency,
         max_retries=args.max_retries,
         show_progress=not args.no_progress,
     )
-    write_scenarios(args.out, scenarios)
+    write_scenarios(args.out, existing + new_scenarios)
 
 
 if __name__ == "__main__":

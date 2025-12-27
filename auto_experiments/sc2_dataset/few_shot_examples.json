@@ -1,17 +1,18 @@
 {
   "instruction": [
-    "Generate exactly 4 StarCraft commitment situations, one for each scenario type: air drop, base race, air control, gold mineral competition.",
+    "Generate exactly 12 StarCraft commitment situations: three examples for each scenario type (air drop, base race, air control, gold mineral competition).",
     "Do not restrict matchups to any specific races; participants can be any two of: Protoss, Terran, Zerg (mirror matchups allowed).",
     "Do not use any game-theory or economics language anywhere (forbidden examples: \"auction\", \"sealed-auction\", \"bid\", \"chicken\", \"Nash\", \"equilibrium\", \"all-pay\"). Use only StarCraft language.",
-    "For each example, output a single JSON object with fields: description, participants, behavior_choices.",
+    "For each example, output a single JSON object with fields: scenario, description, participants, behavior_choices.",
+    "Scenario must be a string formatted like \"<Race1>-vs-<Race2>_<ScenarioType>\", for example \"Zerg-vs-Protoss_Airdrop\".",
     "The description must start with exactly: \"You, the <Your Race> commander\" where <Your Race> matches participants[0].name.",
     "Participants must be exactly: [{\"name\":\"<Your Race>\"},{\"name\":\"<Opponent Race>\"}].",
     "Behavior_choices must be an object with keys: devote_none, devote_low, devote_high.",
-    "In description, do not use specific map names; start the map setup as: \"are playing on a map with ...\" and describe several terrain features that matter for the chosen scenario (air lanes, cliffs, dead space, watchtowers, choke points, gold-base placement, flank routes).",
-    "In description, describe the game state in qualitative terms (economy state, tech stage, key unit types, and what each side threatens), and do not use numeric digits.",
-    "In description, include the exact sentence: \"You have to make a decision about [SCENARIO_TYPE]\" where [SCENARIO_TYPE] is one of: air drop | base race | air control | gold mineral competition.",
-    "In description, clearly define the concrete objective being fought over in StarCraft terms, and state the benefits of winning it in exactly three brief natural-language points without bullet formatting.",
-    "In description, explain that both sides may commit resources at the same time without clear confirmation of the opponent’s commitment, and that over-committing can weaken another part of the map while under-committing can surrender the objective.",
+    "Do not use specific map names; start map context as: \"...are playing on a map with...\" and describe several terrain features that matter for the chosen scenario (air lanes, cliffs, dead space, watchtowers, choke points, gold-base placement, flank routes).",
+    "Describe the game state in qualitative terms (economy state, tech stage, key unit types, and what each side threatens), and do not use numeric digits.",
+    "Include the exact sentence: \"You have to make a decision about [SCENARIO_TYPE]\" where [SCENARIO_TYPE] is one of: air drop | base race | air control | gold mineral competition.",
+    "Clearly define the concrete objective being fought over (the in-game objective such as a backline air route, the ability to end production first, the central air corridor, or the gold base), and state the benefits of winning it in exactly three brief natural-language points without bullet formatting.",
+    "Explain that both sides may commit resources at the same time without clear confirmation of the opponent’s commitment, and that over-committing can weaken another part of the map while under-committing can surrender the objective.",
     "In behavior_choices, do not add leading strategy labels; write only the behavior itself.",
     "Devote_none must describe minimal/near-zero extra commitment (positioning, scouting, holding, small defensive measures), with concrete StarCraft actions.",
     "Devote_low must describe a moderate commitment (some production or tech steps, limited forces, a single coordinated attempt), with concrete StarCraft actions and implied tradeoffs.",
@@ -22,19 +23,48 @@
   ],
   "examples": [
     {
-      "description": "You, the Zerg commander, are playing on a map with deep dead space behind main bases, wide edge air lanes, and cliff rings that hide approach paths into mineral lines. The Protoss has stabilized into splash-supported ground with tight defensive positioning, while you have strong creep spread and the ability to remax quickly if trades go well. The immediate objective is a safe air route into the Protoss backline, because winning that route lets you hit workers before the army arrives, interrupt key tech and production at the source, and force the Protoss to pull units away from the front. You have to make a decision about air drop. Both sides can ramp up preparation at the same time without a clear tell, and if you commit too hard you may arrive at the next frontal fight underpowered, but if you commit too little the Protoss keeps clean positioning and shuts down the route before it ever pays off.",
+      "scenario": "Zerg-vs-Protoss_Airdrop",
+      "description": "You, the Zerg commander, are playing on a map with deep dead space behind main bases, wide edge air lanes, and cliff pockets that hide approach paths into mineral lines. The Protoss has stabilized into splash-supported ground with tight defensive positioning, while you have strong creep spread and the ability to remax quickly if trades go well. The immediate objective is a safe air route into the Protoss backline, because winning that route lets you hit workers before the army arrives, interrupt key tech and production at the source, and force the Protoss to pull units away from the front. You have to make a decision about air drop. Both sides can ramp up preparation and defense at the same time without a clear tell, and if you commit too hard you may arrive at the next frontal fight underpowered, but if you commit too little the Protoss keeps clean positioning and shuts down the route before it ever pays off.",
       "participants": [
         { "name": "Zerg" },
         { "name": "Protoss" }
       ],
       "behavior_choices": {
-        "devote_none": "Keep Overlords as scouts and spotters only; threaten run-bys into outer bases; spread creep toward key attack lanes; keep your core army grouped and ready to take a fight without allocating extra effort into drop setup.",
+        "devote_none": "Keep Overlords as scouts and spotters only; pressure outer bases with run-bys; spread creep toward key attack lanes; keep your main army grouped and ready to fight without allocating extra effort into drop setup.",
         "devote_low": "Enable Overlord drop capability and repositioning; prepare a compact payload meant to punish a mineral line or a tech corner; time the backline hit with light frontal pressure so the Protoss has to look away and reposition.",
         "devote_high": "Maintain multiple drop-ready transports and a steady stream of loaded units; coordinate repeated backline landings with continued pressure at the front; accept a leaner main army for a window in exchange for sustained disruption of workers, tech, and production."
       }
     },
     {
-      "description": "You, the Protoss commander, are playing on a map with short ground distances, narrow ramps into mains, and side lanes that enable fast counterattacks. A recent clash left both armies damaged and out of position: your surviving force is deep on the Terran side near production, while the Terran’s remaining units are threatening your core structures. The objective is collapsing the enemy’s ability to reinforce, because breaking production slows the next wave, removing tech blocks key unit types, and killing economy stops a comeback from stabilizing. You have to make a decision about base race. Both sides can commit forward damage and defense at the same time without certainty of how hard the other is committing, and pushing too far can cost your own production, but hesitating can give Terran enough time to regroup and hold.",
+      "scenario": "Terran-vs-Zerg_Airdrop",
+      "description": "You, the Terran commander, are playing on a map with long side air lanes, open naturals, and several dead-space angles that let Medivacs slip behind spore lines. The Zerg has creep spread and fast reinforcements, and their ground army is comfortable taking frontal fights, but their economy is vulnerable if you can force them to split. The objective is a reliable drop corridor into the Zerg’s outer bases, because winning that corridor lets you pick off drones without committing your main army, pull the Zerg army out of position to break creep, and open a window to take or hold a safer expansion. You have to make a decision about air drop. Both sides can add anti-air, patrol patterns, and drop pressure at the same time, and if you overcommit to drops you may lose the next head-on fight, but if you undercommit the Zerg stabilizes and your mid-game pressure stops mattering.",
+      "participants": [
+        { "name": "Terran" },
+        { "name": "Zerg" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Keep Medivacs focused on reinforcing the main army; posture near the edges to threaten without diving; use scans and spotter units to read movement; add only minimal defense at home against counterattacks.",
+        "devote_low": "Prepare one coordinated drop with a small bio payload and a clear exit path; sync it with a frontal poke that forces Zerg to choose a response; pull back quickly if spores and Queens rotate in time.",
+        "devote_high": "Commit to repeated multi-prong drops across separate edges; keep a steady stream of Medivac loads and rally units for constant backline pressure; accept that your main push is smaller for a period while you aim to keep drones dying and creep getting trimmed."
+      }
+    },
+    {
+      "scenario": "Protoss-vs-Terran_Airdrop",
+      "description": "You, the Protoss commander, are playing on a map with wide dead space behind the natural, multiple cliff entrances into mains, and long rotational paths that punish slow responses. The Terran is set up with bio, Medivacs, and defensive zones near their production, and you are moving into a strong mid-late composition with warp-in flexibility. The objective is a safe Warp Prism route into the Terran backline, because winning that route lets you snipe workers and key add-ons, force scans and defensive pulls that weaken the front, and create openings to take control of the tempo around the next engagement. You have to make a decision about air drop. Terran can increase turret coverage and keep units in reserve while you increase Prism investment, and if you overcommit you risk losing your main army timing, but if you undercommit the Terran keeps perfect posture and your threat never forces mistakes.",
+      "participants": [
+        { "name": "Protoss" },
+        { "name": "Terran" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Keep your Warp Prism as a scouting and threat tool only; maintain your main army’s strength and positioning; add vision with Observers and spotter pylons; prepare defensive warp-ins instead of drop-focused cycles.",
+        "devote_low": "Invest in a single sharp Prism window with fast reinforcement capability; load a compact payload suited to mineral-line damage or tech snipes; coordinate the hit with a frontal posture that limits Terran’s ability to chase the Prism freely.",
+        "devote_high": "Run sustained Prism pressure with repeated warp-in cycles into production and mineral lines; maintain multiple angles of entry and quick escapes; accept reduced resources for additional frontline power while you aim to keep Terran defending nonstop and losing economy and infrastructure."
+      }
+    },
+
+    {
+      "scenario": "Protoss-vs-Terran_BaseRace",
+      "description": "You, the Protoss commander, are playing on a map with short ground distance, narrow ramps into mains, and side lanes that enable fast counterattacks. A recent clash left both armies damaged and out of position: your surviving force is near the Terran’s production, while the Terran’s remaining units are threatening your core structures. The objective is collapsing the enemy’s ability to reinforce, because breaking production slows the next wave, removing tech blocks key unit types, and killing economy stops a comeback from stabilizing. You have to make a decision about base race. Both sides can keep committing forward damage and home defense at the same time without certainty of how hard the other is committing, and pushing too far can cost your own production, but hesitating can give Terran enough time to regroup and hold.",
       "participants": [
         { "name": "Protoss" },
         { "name": "Terran" }
@@ -46,7 +76,35 @@
       }
     },
     {
-      "description": "You, the Terran commander, are playing on a map with an open central air corridor, watchtower ridges that reveal rotations, and exposed outer bases that are vulnerable to fast harassment. The opposing Terran is setting up strong drop patterns and siege angles, and both sides have mobile ground forces that punish overextensions. The objective is control of the central airspace, because owning it keeps your drops safer, protects your outer bases from sudden air angles, and makes it easier to set up favorable fights around siege zones. You have to make a decision about air control. Both sides can quietly shift production and positioning at the same time without immediately revealing commitment, and leaning too hard into air can thin your ground army, but ignoring it lets the opponent dictate the pace and angles of pressure.",
+      "scenario": "Terran-vs-Protoss_BaseRace",
+      "description": "You, the Terran commander, are playing on a map with multiple short attack lanes, exposed tech pockets behind naturals, and ramps that make retreats costly once you commit. The Protoss has a powerful core army but is split defending harassment, and a chaotic engagement has opened a path for you to reach their production while their counterforce threatens your own bases. The objective is keeping your reinforcement engine alive longer than theirs, because preserving your production keeps bio and support flowing, denying their tech removes the units that punish your pushes, and forcing worker pulls breaks their ability to stabilize. You have to make a decision about base race. Protoss can choose to chase structure kills or stabilize defensively while you do the same, and if you overcommit forward you may lose your own production too quickly, but if you undercommit the Protoss survives and their tech comes back online.",
+      "participants": [
+        { "name": "Terran" },
+        { "name": "Protoss" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Fall back to defend your production and key structures; pull units back to protect add-ons and tech; focus on staying alive and trading efficiently rather than sprinting for structure kills.",
+        "devote_low": "Send a contained group to target the Protoss production edge while you keep a defensive core at home; prioritize sniping tech or warp-in infrastructure only if it is reachable; use small reinforcements and defensive positioning to avoid instantly losing your own base.",
+        "devote_high": "Commit to finishing their production core by diving deep and focusing structure kills over unit trades; rally everything forward and accept heavy losses at home; target the buildings that keep their army scaling even if your own base is burning."
+      }
+    },
+    {
+      "scenario": "Zerg-vs-Terran_BaseRace",
+      "description": "You, the Zerg commander, are playing on a map with open mains, multiple backdoor paths into production, and wide central space that makes it hard for slow armies to turn around. The Terran’s push has reached your infrastructure, but their production and economy are exposed to a flood if you commit; at the same time, your bases are under direct threat if you delay too long. The objective is ending the game by removing the Terran’s ability to rebuild, because crushing production stops sustained bio waves, surrounding their economy removes repair and unit flow, and forcing lifts breaks their defensive structure setup. You have to make a decision about base race. Terran can keep pressing and repairing while you commit units forward, and if you overcommit you may lose your own tech too quickly, but if you undercommit the Terran push finishes you before your counterpressure lands.",
+      "participants": [
+        { "name": "Zerg" },
+        { "name": "Terran" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Pull your army back to defend key tech and production; stabilize with defensive units and positioning; take trades that buy time rather than sending units deep into Terran territory.",
+        "devote_low": "Send a fast counter group through a side lane to threaten production or workers while keeping a defensive core; aim to force a partial pullback or delay repairs; switch back to defense immediately if the Terran push accelerates.",
+        "devote_high": "Commit a full surround-and-flood toward the Terran production and economy; keep rallying units forward and focus on structure kills over safe retreats; accept losing major parts of your own base if the Terran collapses first."
+      }
+    },
+
+    {
+      "scenario": "Terran-vs-Terran_AirControl",
+      "description": "You, the Terran commander, are playing on a map with an open central air corridor, watchtower ridges that reveal rotations, and exposed outer bases that are vulnerable to fast harassment. The opposing Terran is setting up strong drop patterns and siege angles, and both sides have mobile ground forces that punish overextensions. The objective is control of the central airspace, because owning it keeps your drops safer, protects your outer bases from sudden air angles, and makes it easier to take favorable fights around siege zones. You have to make a decision about air control. Both sides can quietly shift production and positioning at the same time, and leaning too hard into air can thin your ground army, but ignoring it lets the opponent dictate the pace and angles of pressure.",
       "participants": [
         { "name": "Terran" },
         { "name": "Terran" }
@@ -58,7 +116,35 @@
       }
     },
     {
-      "description": "You, the Zerg commander, are playing on a map with a central gold base protected by narrow ramps, flankable approach lanes, and open perimeter ground that invites counterattacks. Both you and the opposing Zerg have strong economies and fast remax potential, and the next advantage will snowball into map control. The objective is the gold base itself, because taking it improves your income to remax harder, accelerates upgrades and tech transitions, and denies the opponent the same tempo boost. You have to make a decision about gold mineral competition. Both sides can start fortifying or pressuring the area at the same time without a clear read on commitment, and over-focusing on the gold can expose other bases, but giving it up can leave you behind for the rest of the game.",
+      "scenario": "Protoss-vs-Zerg_AirControl",
+      "description": "You, the Protoss commander, are playing on a map with wide open mid-map air lanes, sparse dead space that makes air units visible when they move, and outer bases that are hard to defend without early warning. The Zerg has strong creep presence and can shift into heavy anti-air quickly, while you are transitioning into a composition where air positioning decides whether your army can take clean fights. The objective is owning the air lanes over the center and flanks, because it gives you earlier warning of tech switches, keeps harassment paths open without losing the harass unit immediately, and lets you take fights on terrain where your splash and range matter most. You have to make a decision about air control. Zerg can add anti-air and reposition Queens or Corruptors while you add air and support, and if you overcommit you may lack ground stability, but if you undercommit you lose vision and get pinned into defensive posture.",
+      "participants": [
+        { "name": "Protoss" },
+        { "name": "Zerg" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Keep air presence minimal and use Observers and pylons for vision; hold defensive positions near your outer bases; keep your main army compact so you can respond to sudden air switches without chasing air dominance.",
+        "devote_low": "Add a modest air package that can contest scouting and harassment lanes; keep upgrades moving but leave room for ground reinforcements; use air units to patrol key corridors and prevent free Zerg positioning around your expansions.",
+        "devote_high": "Center your plan on sustained air control with continuous air production and support tech; keep air units active over mid-map and flanks to deny movement and scouting; accept that your ground army is leaner for a window while you aim to lock the map and force awkward engagements."
+      }
+    },
+    {
+      "scenario": "Zerg-vs-Terran_AirControl",
+      "description": "You, the Zerg commander, are playing on a map with open airspace over the center, multiple attack lanes into outer bases, and cliffs that make it easy for air units to spot rotations. The Terran is leaning into harassment and siege setups, and your ground army is strong but can be dragged out of position if you lose control of the skies. The objective is denying Terran air freedom around your perimeter and mid-map, because it reduces sudden drop damage on your economy, limits siege angles that force you to retreat, and gives you cleaner paths to take and hold outside bases. You have to make a decision about air control. Terran can increase Viking presence and keep drops active while you increase anti-air and patrol patterns, and if you overcommit you may lose punch in ground fights, but if you undercommit the Terran dictates the rhythm and chips you down.",
+      "participants": [
+        { "name": "Zerg" },
+        { "name": "Terran" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Rely on Queens and static defense to cover key bases; keep creep and spotters to see Medivac movement early; stay focused on ground army strength rather than chasing air units across the map.",
+        "devote_low": "Add a controlled layer of dedicated anti-air and keep it positioned along common drop lanes; patrol likely siege angles and clear harassment routes when safe; maintain enough ground production to still take a direct fight if Terran oversteps.",
+        "devote_high": "Commit to constant denial of Terran air movement by dedicating significant resources to anti-air coverage and active patrols; pressure the air corridors so drops and siege setups become risky; accept reduced flexibility in ground engagements for a window while you aim to stabilize the map and stop the bleeding."
+      }
+    },
+
+    {
+      "scenario": "Zerg-vs-Zerg_GoldMineralCompetition",
+      "description": "You, the Zerg commander, are playing on a map with a central gold base behind narrow ramps, flankable approach lanes, and open perimeter ground that invites counterattacks. Both you and the opposing Zerg have strong economies and fast remax potential, and the next advantage can snowball into map control. The objective is the gold base itself, because taking it improves your income to remax harder, accelerates upgrades and tech transitions, and denies the opponent the same tempo boost. You have to make a decision about gold mineral competition. Both sides can start fortifying or pressuring the area at the same time, and over-focusing on the gold can expose other bases, but giving it up can leave you behind for the rest of the game.",
       "participants": [
         { "name": "Zerg" },
         { "name": "Zerg" }
@@ -67,6 +153,32 @@
         "devote_none": "Delay taking the gold; keep vision around it with creep and spotters; pressure outer bases with run-bys to punish any move-away; prioritize safer expansions and keep your main army ready to respond.",
         "devote_low": "Start the gold with measured support by positioning your army within quick reinforcement distance; add limited static defense and a reliable reinforcement path; use small counterpressure to discourage a straight cancel while still protecting your other bases.",
         "devote_high": "Fortify the gold with layered static defense and a dedicated army posture; spread creep and vision aggressively around entrances and likely flanks; commit reinforcements to hold ramps and deny entry while accepting reduced map coverage elsewhere."
+      }
+    },
+    {
+      "scenario": "Terran-vs-Protoss_GoldMineralCompetition",
+      "description": "You, the Terran commander, are playing on a map with a gold base placed near the middle, a choke-heavy approach that can be sieged from outside, and side routes that enable counterattacks into undefended production. The Protoss is comfortable in late tech and can punish slow setups, while you are looking for an economic edge that lets your bio and support scale without falling behind. The objective is securing the gold base for yourself or denying it, because holding it stabilizes your income for continuous production, it forces Protoss to respond instead of freely teching, and it creates a staging point for safer pressure on nearby expansions. You have to make a decision about gold mineral competition. Protoss can commit defensive infrastructure and a large army posture while you commit siege and guard units, and if you overcommit you may open your own bases to warp-ins, but if you undercommit Protoss takes the gold and outscales you.",
+      "participants": [
+        { "name": "Terran" },
+        { "name": "Protoss" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Ignore the gold for now and play around your safer bases; keep scans and spotters on the approaches; threaten pressure on Protoss outer bases to punish any attempt to move their army away to take gold.",
+        "devote_low": "Set up a measured contest by positioning a mobile force near the gold and preparing a siege posture that can threaten a cancel; add limited defense at home against warp-ins; take the gold only if the Protoss army is clearly out of position.",
+        "devote_high": "Make the gold the focal point by committing a strong siege setup with sustained guarding units and reinforcements; hold the approaches and deny Protoss entry while you secure the base; accept reduced map coverage and increased risk of counter-harass in exchange for locking the gold advantage."
+      }
+    },
+    {
+      "scenario": "Protoss-vs-Zerg_GoldMineralCompetition",
+      "description": "You, the Protoss commander, are playing on a map with a gold base tucked near the center, ramps that create a clear hold position, and multiple flanking paths that punish greedy forward setups. The Zerg has wide map presence and can crash into exposed positions quickly, while you have strong defensive tools and a tech path that benefits greatly from extra income. The objective is taking and holding the gold base, because it accelerates your tech transitions, it strengthens your ability to reinforce key fights, and it forces Zerg to commit units away from creep spread and map control. You have to make a decision about gold mineral competition. Zerg can commit run-bys and surround threats while you commit defense and army posture, and if you overcommit you may lose other bases to multi-prong, but if you undercommit the Zerg takes the gold and dictates the pace.",
+      "participants": [
+        { "name": "Protoss" },
+        { "name": "Zerg" }
+      ],
+      "behavior_choices": {
+        "devote_none": "Delay the gold and keep vision around it with observers and spotter pylons; strengthen your safer expansions first; posture your main army to punish a Zerg move toward the gold without planting yourself there.",
+        "devote_low": "Start the gold with measured defensive support and a quick reinforcement anchor; keep your core army close enough to stop a fast cancel; use small harassment to keep Zerg honest while you secure the first phase of mining.",
+        "devote_high": "Commit to holding the gold as a centerpiece by layering defensive infrastructure and dedicating a large army posture to deny surrounds; maintain constant reinforcement ability at the gold; accept that your map presence elsewhere is thinner while you lock in the economic and tech advantage."
       }
     }
   ]

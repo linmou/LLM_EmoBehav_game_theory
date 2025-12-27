@@ -16,6 +16,13 @@ export GEMINI_API_KEY="..."
 python generate_sc2_scenarios_with_gemini.py --n 200 --batch_size 10 --concurrency 8 --out generated_scenarios.json
 ```
 
+Resume (append until total `--n`):
+
+```bash
+export GEMINI_API_KEY="..."
+python generate_sc2_scenarios_with_gemini.py --resume --n 200 --out generated_scenarios.json
+```
+
 Disable progress bar:
 
 ```bash
