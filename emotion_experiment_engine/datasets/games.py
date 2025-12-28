@@ -450,6 +450,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 return idx
         return None
 
+
     def _choice_ratio_rows(
         self, records: List[ResultRecord], *, include_repeat: bool
     ) -> List[Dict[str, Any]]:
@@ -851,4 +852,78 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             return 0.0, 1.0
 
 
-__all__ = ["GameTheoryDataset"]
+class GameTheoryCompletionOptionIdDataset(GameTheoryDataset):
+    """Variant evaluator for base LMs emitting completion-style option ids/text."""
+
+    @staticmethod
+    def _match_option(candidate: str, options: Sequence[str]) -> Optional[int]:
+        normalized = candidate.lower().strip().strip("\"'").strip()
+        if not normalized:
+            return None
+
+        for idx, option in enumerate(options, start=1):
+            opt_norm = option.lower().strip()
+            if normalized == opt_norm:
+                return idx
+
+        matches: List[Tuple[int, int]] = []
+        for idx, option in enumerate(options, start=1):
+            opt_norm = option.lower().strip()
+            if normalized in opt_norm:
+                matches.append((idx, len(normalized)))
+            elif opt_norm in normalized:
+                matches.append((idx, len(opt_norm)))
+
+        if not matches:
+            return None
+
+        matches.sort(key=lambda x: (-x[1], x[0]))
+        best_score = matches[0][1]
+        best = [idx for idx, score in matches if score == best_score]
+        if len(best) == 1:
+            return best[0]
+        return None
+
+    @staticmethod
+    def _extract_option_from_response(
+        response: str, options: Sequence[str]
+    ) -> Optional[int]:
+        # Start with the strict JSON decision parsing from the base class.
+        choice = GameTheoryDataset._extract_option_from_response(response, options)
+        if choice is not None:
+            return choice
+
+        # Completion-style variants:
+        # 1) Leading numeric id: '2', '2.', '"2"', '2) ...'
+        match = re.match(r"\s*\"?\s*(\d+)", response)
+        if match:
+            option_id = int(match.group(1))
+            if 1 <= option_id <= len(options):
+                return option_id
+
+        # 2) Leading 'Option N. ...' or 'Option N: ...'
+        match = re.match(
+            r"\s*option\s*(\d+)(?:\s*[:\.\)\-]|$)", response, re.IGNORECASE
+        )
+        if match:
+            option_id = int(match.group(1))
+            if 1 <= option_id <= len(options):
+                return option_id
+
+        # 3) Full option line parse (captures trailing text too)
+        match = _OPTION_LINE_PATTERN.match(response)
+        if match:
+            option_id = int(match.group(1))
+            if 1 <= option_id <= len(options):
+                return option_id
+            matched = GameTheoryCompletionOptionIdDataset._match_option(
+                match.group(2), options
+            )
+            if matched is not None:
+                return matched
+
+        # 4) Plain option text (possibly truncated)
+        return GameTheoryCompletionOptionIdDataset._match_option(response, options)
+
+
+__all__ = ["GameTheoryDataset", "GameTheoryCompletionOptionIdDataset"]

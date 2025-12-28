@@ -39,6 +39,16 @@ from .data_models import (
 )
 
 
+def _ensure_openmp_shm_compat() -> None:
+    """
+    Avoid hard crashes from Intel OpenMP trying to use SHM in constrained envs.
+
+    This can otherwise abort the process with:
+      OMP: Error #179: Function Can't open SHM2 failed
+    """
+    os.environ.setdefault("KMP_USE_SHM", "0")
+
+
 class ExperimentStatus:
     PENDING = "pending"
     RUNNING = "running"
@@ -1438,6 +1448,8 @@ class MemoryExperimentSeriesRunner:
 def main():
     """Run the memory experiment series from command line"""
     import argparse
+
+    _ensure_openmp_shm_compat()
 
     parser = argparse.ArgumentParser(
         description="Run a memory experiment series with multiple benchmarks and models"
