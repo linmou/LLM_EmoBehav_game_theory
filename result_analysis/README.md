@@ -1,6 +1,6 @@
 # Result Analysis Directory
 
-Last updated: 2025-12-26 (commit 73de977)
+Last updated: 2025-12-27 (commit 4c8051b)
 
 This directory contains all post-experiment analysis scripts and results for the LLM Emotional Behavior Game Theory experiments.
 
@@ -11,6 +11,9 @@ This directory contains all post-experiment analysis scripts and results for the
 - `analyze_choice_patterns.py` - Comprehensive analysis of choice patterns across all conditions
 - `analyze_choice_differences.py` - Finds cases where choices differ between conditions
 - `generate_game_theory_impact_report.py` - Builds option/behavior impact tables vs neutral from `summary_choice_ratio.csv` / `summary_behavior_ratio.csv`
+- `postprocess_prob_argmax_from_existing_csv.py` - Postprocess existing argmax-match CSV with behavior labels + predicted argmax distributions
+- `trust_game_trustor_expected_score.py` - Report-driven Trust Game (Trustor) item-level decision shift vs neutral (trust_none=0, trust_low=1, trust_high=2)
+- `trust_game_trustee_expected_score.py` - Report-driven Trust Game (Trustee) item-level decision shift vs neutral (return_none=0, return_medium=1, return_high=2)
 - `trust_game_expected_score.py` - Shared Trust Game expected-score analysis (runs both roles by default; use `--role` to limit)
 - `ultimatum_game_expected_score.py` - Ultimatum Game expected-score analysis (runs proposer+responder by default; use `--role` to limit)
 

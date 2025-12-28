@@ -145,5 +145,40 @@ class GameDecisionPromptWrapper(GameBenchmarkPromptWrapper):
             enable_thinking=enable_thinking,
         )
 
+class GameCompletionOptionIdPromptWrapper(GameBenchmarkPromptWrapper):
+    """Completion-style prompt for base LMs that should emit an option id."""
 
-__all__ = ["GameBenchmarkPromptWrapper", "GameDecisionPromptWrapper"]
+    CHOICE_PREFIX = 'After serious consideration, you choose option "'
+
+    def __call__(
+        self,
+        *,
+        context: str | None,
+        question: str,
+        user_messages: Sequence[str] | str | None,
+        enable_thinking: bool,
+        augmentation_config: Optional[dict],
+        answer: Any,
+        emotion: Optional[str],
+        options: Optional[Sequence[Any]],
+    ) -> str:
+        del context, user_messages, enable_thinking, augmentation_config, answer, emotion  # unused
+        normalized_options = self._normalize_options(options)
+
+        system_lines = [
+            "You are an average American.",
+            "",
+            question,
+        ]
+        for idx, option in enumerate(normalized_options, start=1):
+            system_lines.append(f"Option {idx}. {option}")
+        system_lines.append("")
+        system_lines.append(self.CHOICE_PREFIX)
+        return "\n".join(system_lines)
+
+
+__all__ = [
+    "GameBenchmarkPromptWrapper",
+    "GameDecisionPromptWrapper",
+    "GameCompletionOptionIdPromptWrapper",
+]

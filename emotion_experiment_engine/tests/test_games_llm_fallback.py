@@ -5,7 +5,7 @@ import unittest
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
-from emotion_experiment_engine.data_models import BenchmarkConfig
+from emotion_experiment_engine.data_models import BenchmarkConfig, BenchmarkItem
 from emotion_experiment_engine.datasets.games import GameTheoryDataset
 
 
@@ -30,11 +30,24 @@ class TestGameTheoryDatasetGeminiFallback(unittest.TestCase):
 
         with patch(
             "emotion_experiment_engine.evaluation_utils.llm_evaluate_response"
-        ) as mock_llm_eval, patch(
-            "emotion_experiment_engine.datasets.games.oai_response"
-        ) as mock_oai_response:
+        ) as mock_llm_eval, patch.object(
+            GameTheoryDataset,
+            "_ensure_llm_client",
+            side_effect=AssertionError("OpenAI client should not be used for gemini"),
+        ) as mock_ensure_llm_client, patch.object(
+            GameTheoryDataset,
+            "_load_and_parse_data",
+            return_value=[
+                BenchmarkItem(
+                    id="stub",
+                    input_text="stub scenario",
+                    context=None,
+                    ground_truth=None,
+                    metadata={"options": [{"id": 1, "text": "Cooperate"}, {"id": 2, "text": "Defect"}]},
+                )
+            ],
+        ):
             mock_llm_eval.return_value = {"option_id": 3}
-            mock_oai_response.return_value = MagicMock()
 
             dataset = GameTheoryDataset(
                 config=config,
@@ -58,9 +71,8 @@ class TestGameTheoryDatasetGeminiFallback(unittest.TestCase):
 
             self.assertEqual(score, 3.0)
             mock_llm_eval.assert_called_once()
-            mock_oai_response.assert_not_called()
+            mock_ensure_llm_client.assert_not_called()
 
 
 if __name__ == "__main__":
     unittest.main()
-

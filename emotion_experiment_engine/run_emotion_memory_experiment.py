@@ -18,6 +18,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from .data_models import (
+    DEFAULT_VLLM_MAX_MODEL_LEN,
     BenchmarkConfig,
     BenchmarkItem,
     ExperimentConfig,
@@ -162,7 +163,7 @@ def create_experiment_config(config_dict: Dict[str, Any]) -> ExperimentConfig:
             model_path=loading_cfg.get("model_path", model_path),
             gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
             tensor_parallel_size=loading_cfg.get("tensor_parallel_size"),
-            max_model_len=loading_cfg.get("max_model_len", 32768),
+            max_model_len=loading_cfg.get("max_model_len", DEFAULT_VLLM_MAX_MODEL_LEN),
             enforce_eager=loading_cfg.get("enforce_eager", True),
             quantization=loading_cfg.get("quantization"),
             trust_remote_code=loading_cfg.get("trust_remote_code", True),
