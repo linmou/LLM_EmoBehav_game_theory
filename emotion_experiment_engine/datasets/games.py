@@ -325,6 +325,18 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 candidates.append(match.group(1).strip())
 
         for candidate in candidates:
+            # Support decisions like "Option 1" / "1" directly.
+            match = re.search(r"\boption\s*(\d+)\b", candidate, re.IGNORECASE)
+            if match:
+                option_id = int(match.group(1))
+                if 1 <= option_id <= len(options):
+                    return option_id
+            stripped = candidate.strip()
+            if stripped.isdigit():
+                option_id = int(stripped)
+                if 1 <= option_id <= len(options):
+                    return option_id
+
             option_id = GameTheoryDataset._match_option(candidate, options)
             if option_id is not None:
                 return option_id
@@ -500,6 +512,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                         "emotion": emotion,
                         "intensity": intensity,
                         "behavior_label": behavior,
+                        "count": count,
                         "ratio": count / total,
                     }
                 )
@@ -514,6 +527,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                         "intensity": intensity,
                         "repeat_id": repeat_id,
                         "behavior_label": behavior,
+                        "count": count,
                         "ratio": count / total,
                     }
                 )

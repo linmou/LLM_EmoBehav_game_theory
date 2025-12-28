@@ -60,14 +60,13 @@ def _get_summary_path(run_dir: Path) -> Path | None:
 
 
 def _has_evaluation_summary(run_dir: Path) -> bool:
-    if _get_summary_path(run_dir):
-        return True
-
-    readme = run_dir / "README.md"
-    if not readme.exists():
-        return False
-    content = readme.read_text(encoding="utf-8", errors="ignore")
-    return _DEFERRED_MARKER not in content
+    # Only trust actual summary artifacts.
+    #
+    # README.md can be rewritten during run execution (including while status is
+    # still "running"), so using it as a completion signal causes false
+    # positives where evaluate_saved_series incorrectly skips runs that still
+    # need offline scoring.
+    return _get_summary_path(run_dir) is not None
 
 
 def _check_summary_results(run_dir: Path) -> bool:

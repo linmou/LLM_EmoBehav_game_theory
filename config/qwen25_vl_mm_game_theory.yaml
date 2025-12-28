@@ -66,7 +66,8 @@ loading_config:
   additional_vllm_kwargs: {}
 
 repe_eng_config:
-  multimodal_intent: false  # force text-only stimulus on multimodal model
+  data_dir: "data/stimulus/repeng_generated_images"
+  multimodal_intent: true
   rebuild: false
 
 repeat_runs: 1
@@ -85,6 +86,6 @@ generation_config:
 
 batch_size: 500
 
-output_dir: "results/qwen25_mm_text_game_theory"
-sanity_check: true
+output_dir: "results/qwen25_vl_mm_game_theory/repeng_generated_images/shuffle_decision_only"
+sanity_check: false
 defer_evaluation: true
