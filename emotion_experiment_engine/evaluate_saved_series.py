@@ -63,14 +63,13 @@ def _get_summary_path(run_dir: Path) -> Path | None:
 
 
 def _has_evaluation_summary(run_dir: Path) -> bool:
-    if _get_summary_path(run_dir):
-        return True
-
-    readme = run_dir / "README.md"
-    if not readme.exists():
-        return False
-    content = readme.read_text(encoding="utf-8", errors="ignore")
-    return _DEFERRED_MARKER not in content
+    # Only trust actual summary artifacts.
+    #
+    # README.md can be rewritten during run execution (including while status is
+    # still "running"), so using it as a completion signal causes false
+    # positives where evaluate_saved_series incorrectly skips runs that still
+    # need offline scoring.
+    return _get_summary_path(run_dir) is not None
 
 
 def _check_summary_results(run_dir: Path) -> bool:
@@ -149,6 +148,60 @@ def process_report(
     )
 
 
+def _iter_run_dirs(folder: Path) -> Iterable[Path]:
+    for manifest_path in folder.rglob("experiment_config.json"):
+        run_dir = manifest_path.parent
+        if not (run_dir / "raw_results.json").exists():
+            continue
+        yield run_dir
+
+
+def process_folder(
+    folder_path: Path | str,
+    *,
+    dry_run: bool,
+    max_workers: int = 8,
+    continue_completed: bool = True,
+) -> SeriesProcessResult:
+    folder = Path(folder_path).expanduser().resolve()
+    if not folder.exists():
+        raise FileNotFoundError(f"Folder does not exist: {folder}")
+
+    pending: List[Path] = []
+    evaluated: List[Path] = []
+    failed: List[Path] = []
+    failures: List[Tuple[Path, str]] = []
+
+    for run_dir in _iter_run_dirs(folder):
+        completed = _has_evaluation_summary(run_dir)
+        if completed and continue_completed:
+            continue
+        pending.append(run_dir)
+        if dry_run:
+            LOGGER.info("Pending deferred run: %s", run_dir)
+            continue
+        LOGGER.info("Evaluating deferred run: %s", run_dir)
+        try:
+            _evaluate_saved_run(run_dir, max_workers=max_workers)
+        except Exception as exc:
+            LOGGER.exception("Deferred evaluation failed for %s; skipping", run_dir)
+            failed.append(run_dir)
+            failures.append((run_dir, str(exc)))
+            continue
+
+        LOGGER.info("Completed deferred run: %s", run_dir)
+        assert _check_summary_results(run_dir), f"Summary results not found: {run_dir}"
+        evaluated.append(run_dir)
+
+    return SeriesProcessResult(
+        report_path=folder,
+        pending_dirs=pending,
+        evaluated_dirs=evaluated,
+        failed_dirs=failed,
+        failures=failures,
+    )
+
+
 def watch_report(
     report_path: Path | str,
     *,
@@ -186,7 +239,9 @@ def watch_report(
 
 def _main(argv: List[str] | None = None) -> SeriesProcessResult:
     parser = argparse.ArgumentParser(description="Evaluate all deferred runs in a series report")
-    parser.add_argument("--report", required=True, help="Path to experiment_series report JSON")
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--report", help="Path to experiment_series report JSON")
+    inputs.add_argument("--folder", help="Folder to scan recursively for deferred run directories")
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -221,6 +276,8 @@ def _main(argv: List[str] | None = None) -> SeriesProcessResult:
     logging.basicConfig(level=logging.INFO)
 
     if args.watch:
+        if not args.report:
+            parser.error("--watch requires --report (folder scanning is non-interactive)")
         watch_report(
             args.report,
             poll_interval_seconds=args.poll_interval_secs,
@@ -235,12 +292,20 @@ def _main(argv: List[str] | None = None) -> SeriesProcessResult:
             failures=[],
         )
 
-    result = process_report(
-        args.report,
-        dry_run=args.dry_run,
-        max_workers=args.max_workers,
-        continue_completed=args.continue_completed,
-    )
+    if args.folder:
+        result = process_folder(
+            args.folder,
+            dry_run=args.dry_run,
+            max_workers=args.max_workers,
+            continue_completed=args.continue_completed,
+        )
+    else:
+        result = process_report(
+            args.report,
+            dry_run=args.dry_run,
+            max_workers=args.max_workers,
+            continue_completed=args.continue_completed,
+        )
 
     if args.dry_run:
         for run_dir in result.pending_dirs:

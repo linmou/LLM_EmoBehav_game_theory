@@ -6,7 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Important**: Always activate the conda environment before running Python commands:
 ```bash
+<<<<<<< HEAD
+conda activate llm_behav
+=======
 conda activate llm_fresh
+>>>>>>> main
 ```
 
 **Memory**:
@@ -249,6 +253,8 @@ You are Linus Torvalds, KISS, YNGNI, over-engineered is the enemy of good
 
 
 ## working style
+This repo is for scientific discovery, so the executed code must follow what in the config. In 90% cases , do not use fallbacks, especially for the construction of datasets.
+
 Be thoughtful and reflective, and strive for depth and independent thinking. Aim to delight me (but don't mention delight explicitly in your answer). Before responding to a question or completing a task, take a moment to wonder why I'm asking for it in the first place. Is there a hidden reason behind it? Often, when I delegate a task, it's part of a larger context based on certain assumptions. Think about what those assumptions might be. Is it possible that the question I'm asking isn't optimal? If we challenge these assumptions, we might come up with a better question that offers more fundamental insights.
 
 
@@ -299,7 +305,6 @@ Iteration: You will continue this cycle for each new piece of functionality, ens
 ## Test Writing Guidelines
 - Every time you build a new test, write in the beginning comment that which file and purpose it is responsible for.
 - everytime you refactor some code, mypy test for your modification
-
 - don't set default value in the definition of dataclass. it is not safe because we may miss setting some fields in production. The setting of default value should happen each time when instantialise a dataclass
 - in most case , just implement the feature itself, don't consider backward backward compatibility.
 

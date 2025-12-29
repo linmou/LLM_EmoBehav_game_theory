@@ -1,12 +1,28 @@
 """
-Repo-local Python startup hooks.
+sitecustomize.py
 
-KISS: vLLM currently expects `Gemma3TextConfig.sliding_window_pattern`, but some
-transformers builds expose only `_sliding_window_pattern`. Provide a tiny alias
-property so vLLM can read it.
+Python automatically imports `sitecustomize` at interpreter startup (if it is
+importable via sys.path). vLLM worker processes use `spawn`, so this is the
+most reliable place to apply tiny, opt-in runtime tweaks via environment vars.
 """
 
 from __future__ import annotations
+
+import os
+
+_VLLM_DISABLE_FLASH_ATTN_APPLIED = False
+
+if os.environ.get("VLLM_DISABLE_FLASH_ATTN", "0") == "1":
+    try:
+        import transformers.utils as _tutils
+        import transformers.utils.import_utils as _iu
+
+        _tutils.is_flash_attn_2_available = lambda: False  # type: ignore[assignment]
+        _iu.is_flash_attn_2_available = lambda: False  # type: ignore[assignment]
+        _VLLM_DISABLE_FLASH_ATTN_APPLIED = True
+    except Exception:
+        # Best effort: do not crash interpreter startup.
+        _VLLM_DISABLE_FLASH_ATTN_APPLIED = False
 
 
 def _patch_gemma3_sliding_window_pattern() -> None:

@@ -13,6 +13,13 @@ class WrappedBlock(torch.nn.Module):
         self.token_pos = None
         self.normalize = False
 
+    def __getattr__(self, name: str):
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            block = super().__getattr__("block")
+            return getattr(block, name)
+
     def forward(self, *args, **kwargs):
         output = self.block(*args, **kwargs)
 

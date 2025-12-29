@@ -16,7 +16,9 @@ from emotion_experiment_engine.benchmark_component_registry import (
 from emotion_experiment_engine.data_models import BenchmarkConfig
 from emotion_experiment_engine.datasets.games import GameTheoryDataset
 from games.game_configs import get_game_config
+from games.trust_game import TrustGameTrustorScenario
 from games.trust_game import TrustGameTrusteeScenario
+from games.ultimatum_game import UltimatumGameProposerScenario
 from games.ultimatum_game import UltimatumGameResponderScenario
 from neuro_manipulation.datasets.game_scenario_dataset import GameScenarioDataset
 
@@ -254,6 +256,104 @@ def test_trustee_previous_actions_visible(monkeypatch: pytest.MonkeyPatch) -> No
     assert previous_actions, "Expected previous actions metadata to be populated"
     assert previous_actions[0][0] == "Alex"
     assert "Invest a smaller amount" in previous_actions[0][1]
+
+
+def test_trustor_previous_actions_not_bound_method(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Test for games/trust_game.TrustGameTrustorScenario: previous_actions renders as a value, not a bound method.
+    scenario_record = {
+        "id": "trustor-1",
+        "scenario": "Trust payoff opening round",
+        "description": "Alex decides how much to invest with Casey.",
+        "participants": [
+            {"role": "Trustor", "name": "Alex", "profile": "Investor"},
+            {"role": "Trustee", "name": "Casey", "profile": "Caretaker"},
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "Do not invest",
+            "trust_low": "Invest a smaller amount",
+            "trust_high": "Invest everything",
+        },
+        "trustee_behavior_choices": {
+            "return_none": "Keep all funds",
+            "return_medium": "Return half of funds",
+            "return_high": "Return full amount",
+        },
+        "previous_actions_length": 0,
+    }
+
+    stub_config = {
+        "scenario_class": TrustGameTrustorScenario,
+        "payoff_matrix": {},
+        "scenarios": [scenario_record],
+    }
+
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.get_game_config",
+        lambda _: stub_config,
+    )
+
+    config = BenchmarkConfig(
+        name="game_theory",
+        task_type="Trust_Game_Trustor",
+        data_path=None,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=1.0,
+        llm_eval_config=None,
+    )
+
+    dataset = GameTheoryDataset(config=config, prompt_wrapper=None, answer_wrapper=None)
+    item = dataset[0]["item"]
+
+    assert "<bound method" not in item.input_text
+    assert "Previous Actions:" not in item.input_text
+
+
+def test_ultimatum_previous_actions_is_property_contract() -> None:
+    # Test for games/ultimatum_game.py: `previous_actions` must be a property, not a callable method.
+    proposer = UltimatumGameProposerScenario(
+        scenario="Task split",
+        description="Alex proposes a split to Casey.",
+        participants=[
+            {"role": "Proposer", "name": "Alex", "profile": "Manager"},
+            {"role": "Responder", "name": "Casey", "profile": "Member"},
+        ],
+        proposer_behavior_choices={
+            "offer_low": "Offer 10%",
+            "offer_medium": "Offer 40%",
+            "offer_high": "Offer 50%",
+        },
+        responder_behavior_choices={"accept": "Accept", "reject": "Reject"},
+        previous_actions_length=0,
+        payoff_matrix={},
+    )
+    assert not callable(proposer.previous_actions)
+    assert proposer.previous_actions == []
+    assert "Previous Actions:" in str(proposer)
+
+    responder = UltimatumGameResponderScenario(
+        scenario="Task split",
+        description="Alex proposes a split to Casey.",
+        participants=[
+            {"role": "Proposer", "name": "Alex", "profile": "Manager"},
+            {"role": "Responder", "name": "Casey", "profile": "Member"},
+        ],
+        proposer_behavior_choices={
+            "offer_low": "Offer 10%",
+            "offer_medium": "Offer 40%",
+            "offer_high": "Offer 50%",
+        },
+        responder_behavior_choices={"accept": "Accept", "reject": "Reject"},
+        previous_actions_length=1,
+        previous_offer_level=1,
+        payoff_matrix={},
+    )
+    assert not callable(responder.previous_actions)
+    assert responder.previous_actions == [("Alex", "Offer 40%")]
+    assert "Previous Actions:" in str(responder)
 
 
 @pytest.mark.parametrize(

@@ -30,7 +30,57 @@ AutoConfig = None  # type: ignore
 
 # Defer heavy imports (torch/vLLM) to runtime when needed
 
-from .data_models import BenchmarkConfig, ExperimentConfig, VLLMLoadingConfig
+from .data_models import (
+    DEFAULT_VLLM_MAX_MODEL_LEN,
+    DEFAULT_VLLM_MAX_NUM_SEQS_CAP,
+    BenchmarkConfig,
+    ExperimentConfig,
+    VLLMLoadingConfig,
+)
+
+
+def _ensure_openmp_shm_compat() -> None:
+    """
+    Avoid hard crashes from Intel OpenMP trying to use SHM in constrained envs.
+
+    This can otherwise abort the process with:
+      OMP: Error #179: Function Can't open SHM2 failed
+    """
+    os.environ.setdefault("KMP_USE_SHM", "0")
+
+
+def _apply_vllm_env_overrides(loading_config: VLLMLoadingConfig) -> None:
+    """
+    Apply vLLM configuration that must be set before importing vLLM.
+
+    vLLM caches environment variables after initialization; setting these too late
+    (e.g., inside model-loading helpers) may not take effect for worker processes.
+    """
+    attn_backend = loading_config.additional_vllm_kwargs.get("attention_backend")
+    if attn_backend:
+        if str(attn_backend).upper() == "TORCH_SDPA":
+            raise ValueError(
+                "VLLM_ATTENTION_BACKEND=TORCH_SDPA is not valid for LLM attention in vLLM."
+            )
+        os.environ["VLLM_ATTENTION_BACKEND"] = str(attn_backend)
+
+    mm_encoder_attn_backend = loading_config.additional_vllm_kwargs.get(
+        "mm_encoder_attn_backend"
+    )
+    if mm_encoder_attn_backend and str(mm_encoder_attn_backend).upper() != "FLASH_ATTN":
+        # vLLM's ViT attention currently auto-upgrades to FlashAttention on CUDA
+        # if Transformers reports flash_attn is available. We disable that when
+        # the user explicitly requests a different ViT backend.
+        os.environ["VLLM_DISABLE_FLASH_ATTN"] = "1"
+        # Ensure `sitecustomize.py` in the repo root is importable in vLLM worker
+        # processes (spawn). This is required for VLLM_DISABLE_FLASH_ATTN to take
+        # effect reliably across workers.
+        repo_root = str(Path(__file__).resolve().parents[1])
+        old_pp = os.environ.get("PYTHONPATH", "")
+        if repo_root not in old_pp.split(os.pathsep):
+            os.environ["PYTHONPATH"] = (
+                repo_root if not old_pp else f"{repo_root}{os.pathsep}{old_pp}"
+            )
 
 
 class ExperimentStatus:
@@ -441,6 +491,43 @@ class MemoryExperimentSeriesRunner:
                 config_changed=False,
             )
 
+        self._apply_early_vllm_env_from_base_config()
+
+    def _apply_early_vllm_env_from_base_config(self) -> None:
+        """
+        Apply env vars that must be set before importing vLLM.
+
+        This runner imports RepE pipelines (which import vLLM) during CLI startup.
+        vLLM snapshots environment variables at import time, so we must set these
+        as early as possible after reading config.
+        """
+        loading_cfg = self.base_config.get("loading_config", {}) or {}
+        loading_config = VLLMLoadingConfig(
+            model_path=loading_cfg.get("model_path", "unknown"),
+            gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
+            tensor_parallel_size=loading_cfg.get("tensor_parallel_size", 1),
+            max_model_len=loading_cfg.get("max_model_len", 32768),
+            enforce_eager=loading_cfg.get("enforce_eager", True),
+            quantization=loading_cfg.get("quantization"),
+            trust_remote_code=loading_cfg.get("trust_remote_code", True),
+            dtype=loading_cfg.get("dtype", "float16"),
+            seed=loading_cfg.get("seed", 42),
+            disable_custom_all_reduce=loading_cfg.get(
+                "disable_custom_all_reduce", False
+            ),
+            additional_vllm_kwargs=loading_cfg.get("additional_vllm_kwargs", {}) or {},
+        )
+
+        _apply_vllm_env_overrides(loading_config)
+
+        if self.base_config.get("repe_eng_config") is not None:
+            os.environ.setdefault("VLLM_ALLOW_INSECURE_SERIALIZATION", "1")
+
+    def register_pipelines(self) -> None:
+        from neuro_manipulation.repe.pipelines import repe_pipeline_registry
+
+        repe_pipeline_registry()
+
     def _load_config(self) -> None:
         """Load configuration from YAML file"""
         assert self.config_path is not None
@@ -677,12 +764,14 @@ class MemoryExperimentSeriesRunner:
         # Create VLLMLoadingConfig directly from base config
         loading_cfg = self.base_config["loading_config"]
         additional_vllm_kwargs = dict(loading_cfg.get("additional_vllm_kwargs", {}) or {})
-        additional_vllm_kwargs.setdefault("max_num_seqs", batch_size)
+        additional_vllm_kwargs.setdefault(
+            "max_num_seqs", min(batch_size, DEFAULT_VLLM_MAX_NUM_SEQS_CAP)
+        )
         loading_config = VLLMLoadingConfig(
             model_path=loading_cfg.get("model_path", model_name),
             gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
             tensor_parallel_size=loading_cfg.get("tensor_parallel_size"),
-            max_model_len=loading_cfg.get("max_model_len", 32768),
+            max_model_len=loading_cfg.get("max_model_len", DEFAULT_VLLM_MAX_MODEL_LEN),
             enforce_eager=loading_cfg.get("enforce_eager", True),
             quantization=loading_cfg.get("quantization"),
             trust_remote_code=loading_cfg.get("trust_remote_code", True),
@@ -713,6 +802,7 @@ class MemoryExperimentSeriesRunner:
         )
 
         # Import and create experiment with dry_run parameter
+        _apply_vllm_env_overrides(loading_config)
         from .experiment import EmotionExperiment
 
         # Allow configuring repeat runs and seed base from config. Support both
@@ -1431,6 +1521,8 @@ def main():
     """Run the memory experiment series from command line"""
     import argparse
 
+    _ensure_openmp_shm_compat()
+
     parser = argparse.ArgumentParser(
         description="Run a memory experiment series with multiple benchmarks and models"
     )
@@ -1453,11 +1545,6 @@ def main():
     )
 
     args = parser.parse_args()
-
-    # Register pipelines only when not dry-run (avoids torch dependency during validation)
-    if not args.dry_run:
-        from neuro_manipulation.repe.pipelines import repe_pipeline_registry
-        repe_pipeline_registry()
     if not args.resume and not args.config:
         parser.error("either --config or --resume must be provided")
 
@@ -1467,6 +1554,8 @@ def main():
         resume=args.resume,
         dry_run=args.dry_run,
     )
+    if not args.dry_run:
+        runner.register_pipelines()
     runner.run_experiment_series()
 
 

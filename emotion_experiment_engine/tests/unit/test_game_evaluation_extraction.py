@@ -4,7 +4,10 @@
 import pytest
 
 from emotion_experiment_engine.data_models import BenchmarkConfig, BenchmarkItem
-from emotion_experiment_engine.datasets.games import GameTheoryDataset
+from emotion_experiment_engine.datasets.games import (
+    GameTheoryCompletionOptionIdDataset,
+    GameTheoryDataset,
+)
 
 
 @pytest.fixture()
@@ -51,6 +54,34 @@ def dataset(monkeypatch, benchmark_config) -> GameTheoryDataset:
     )
 
 
+@pytest.fixture()
+def completion_dataset(monkeypatch, benchmark_config) -> GameTheoryCompletionOptionIdDataset:
+    monkeypatch.setattr(
+        GameTheoryCompletionOptionIdDataset,
+        "_load_and_parse_data",
+        lambda self: [
+            BenchmarkItem(
+                id="pd-1",
+                input_text="Prisoners dilemma event",
+                context=None,
+                ground_truth=None,
+                metadata={
+                    "options": [
+                        {"id": 1, "text": "Cooperate"},
+                        {"id": 2, "text": "Defect"},
+                    ]
+                },
+            )
+        ],
+    )
+
+    return GameTheoryCompletionOptionIdDataset(
+        config=benchmark_config,
+        prompt_wrapper=None,
+        answer_wrapper=None,
+    )
+
+
 def test_evaluate_response_regex_only(dataset: GameTheoryDataset):
     prompt = (
         "Scenario: Prisoners dilemma\n"
@@ -70,16 +101,13 @@ def test_evaluate_response_regex_only(dataset: GameTheoryDataset):
 
 
 def test_evaluate_response_llm_fallback(monkeypatch, dataset: GameTheoryDataset):
-    captured = {}
+    captured = {"called": False}
 
-    def _fake_oai(prompt, client=None, model=None, response_format=None):
-        captured["response_format"] = response_format
-        return dataset._ExtractionSchema(option_id=1, rationale="", decision="")
+    def _fake_fallback(*args, **kwargs):
+        captured["called"] = True
+        return 1
 
-    monkeypatch.setattr(
-        "emotion_experiment_engine.datasets.games.oai_response",
-        _fake_oai,
-    )
+    monkeypatch.setattr(GameTheoryDataset, "_fallback_option_via_llm", _fake_fallback)
 
     prompt = (
         "Scenario: Prisoners dilemma\n"
@@ -96,19 +124,16 @@ def test_evaluate_response_llm_fallback(monkeypatch, dataset: GameTheoryDataset)
     )
 
     assert choice == pytest.approx(1.0)
-    assert captured["response_format"] is dataset._ExtractionSchema
+    assert captured["called"] is True
 
 
 def test_evaluate_response_parses_option_number_json(monkeypatch, dataset: GameTheoryDataset):
     """If the model returns a JSON decision like 'Option 1', use it directly without LLM."""
 
-    def _fail_oai(*args, **kwargs):  # pragma: no cover - should never be called
+    def _fail_fallback(*args, **kwargs):  # pragma: no cover - should never be called
         raise AssertionError("LLM fallback should not be invoked for JSON decision")
 
-    monkeypatch.setattr(
-        "emotion_experiment_engine.datasets.games.oai_response",
-        _fail_oai,
-    )
+    monkeypatch.setattr(GameTheoryDataset, "_fallback_option_via_llm", _fail_fallback)
 
     prompt = (
         "Scenario: Prisoners dilemma\n"
@@ -171,3 +196,170 @@ def test_evaluate_response_uses_gemini_client(monkeypatch, dataset: GameTheoryDa
     assert "gemini" in captured["config"]["client"]
     assert "Available options" in captured["query"]
     assert "Option 1" in captured["query"] or "Option 2" in captured["query"]
+
+
+def test_completion_dataset_parses_leading_digit_without_json(monkeypatch, completion_dataset: GameTheoryCompletionOptionIdDataset):
+    """Completion dataset should parse a bare option id without calling LLM fallback."""
+
+    def _fail_fallback(*args, **kwargs):  # pragma: no cover - should never be called
+        raise AssertionError("LLM fallback should not be invoked for leading-digit choice")
+
+    monkeypatch.setattr(GameTheoryCompletionOptionIdDataset, "_fallback_option_via_llm", _fail_fallback)
+
+    prompt = (
+        "Scenario: Prisoners dilemma\n"
+        "Option 1. Cooperate\n"
+        "Option 2. Defect\n"
+        'After serious consideration, you choose option "'
+    )
+    response = ' 2"'
+
+    choice = completion_dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Prisoners_Dilemma",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(2.0)
+
+
+def test_evaluate_response_ambiguous_truncated_text_falls_back(monkeypatch, completion_dataset: GameTheoryCompletionOptionIdDataset):
+    """When a truncated response matches multiple options, avoid guessing and fall back."""
+
+    captured = {"called": False}
+
+    def _fake_fallback(*args, **kwargs):
+        captured["called"] = True
+        return 2
+
+    monkeypatch.setattr(GameTheoryCompletionOptionIdDataset, "_fallback_option_via_llm", _fake_fallback)
+
+    prompt = (
+        "Scenario: Ambiguous options\n"
+        "Option 1. Alpha beta\n"
+        "Option 2. Alpha gamma\n"
+    )
+    response = "Alpha"  # matches both options; should not pick arbitrarily
+
+    choice = completion_dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Escalation_Game",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(2.0)
+    assert captured["called"] is True
+
+
+def test_evaluate_response_parses_plain_option_prefix_without_json(monkeypatch, dataset: GameTheoryDataset):
+    """Base LMs may emit 'Option 2: ...' without any JSON wrapper."""
+
+    captured = {"called": False}
+
+    def _fallback(*args, **kwargs):
+        captured["called"] = True
+        return 2
+
+    monkeypatch.setattr(GameTheoryDataset, "_fallback_option_via_llm", _fallback)
+
+    prompt = (
+        "Scenario: Escalation\n"
+        "Option 1. Keep the current coffee selection and menu.\n"
+        "Option 2. Upgrade to premium coffee beans and introduce specialty drinks.\n"
+        'After serious consideration, you choose option "'
+    )
+    response = "Option 2: Upgrade to premium coffee beans"
+
+    choice = dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Escalation_Game",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(2.0)
+    assert captured["called"] is True
+
+
+def test_completion_dataset_parses_plain_option_prefix_without_json(monkeypatch, completion_dataset: GameTheoryCompletionOptionIdDataset):
+    """Completion dataset should parse 'Option 2: ...' without calling LLM fallback."""
+
+    def _fail_fallback(*args, **kwargs):  # pragma: no cover - should never be called
+        raise AssertionError("LLM fallback should not be invoked for plain Option-N responses")
+
+    monkeypatch.setattr(GameTheoryCompletionOptionIdDataset, "_fallback_option_via_llm", _fail_fallback)
+
+    prompt = (
+        "Scenario: Escalation\n"
+        "Option 1. Keep the current coffee selection and menu.\n"
+        "Option 2. Upgrade to premium coffee beans and introduce specialty drinks.\n"
+        'After serious consideration, you choose option "'
+    )
+    response = "Option 2: Upgrade to premium coffee beans"
+
+    choice = completion_dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Escalation_Game",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(2.0)
+
+
+def test_evaluate_response_parses_plain_option_text_without_json(monkeypatch, dataset: GameTheoryDataset):
+    """Base LMs may emit only the option text; match it against the presented option list."""
+
+    captured = {"called": False}
+
+    def _fallback(*args, **kwargs):
+        captured["called"] = True
+        return 2
+
+    monkeypatch.setattr(GameTheoryDataset, "_fallback_option_via_llm", _fallback)
+
+    prompt = (
+        "Scenario: Escalation\n"
+        "Option 1. Keep the current coffee selection and menu.\n"
+        "Option 2. Upgrade to premium coffee beans and introduce specialty drinks.\n"
+        'After serious consideration, you choose option "'
+    )
+    response = "Upgrade to premium coffee beans"
+
+    choice = dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Escalation_Game",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(2.0)
+    assert captured["called"] is True
+
+
+def test_completion_dataset_parses_plain_option_text_without_json(monkeypatch, completion_dataset: GameTheoryCompletionOptionIdDataset):
+    """Completion dataset should match plain option text without calling LLM fallback."""
+
+    def _fail_fallback(*args, **kwargs):  # pragma: no cover - should never be called
+        raise AssertionError("LLM fallback should not be invoked for plain option-text responses")
+
+    monkeypatch.setattr(GameTheoryCompletionOptionIdDataset, "_fallback_option_via_llm", _fail_fallback)
+
+    prompt = (
+        "Scenario: Escalation\n"
+        "Option 1. Keep the current coffee selection and menu.\n"
+        "Option 2. Upgrade to premium coffee beans and introduce specialty drinks.\n"
+        'After serious consideration, you choose option "'
+    )
+    response = "Upgrade to premium coffee beans"
+
+    choice = completion_dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Escalation_Game",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(2.0)

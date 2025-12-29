@@ -98,11 +98,12 @@ benchmarks:
     sample_limit: 800
 
 loading_config:
-  gpu_memory_utilization: 0.9
+  gpu_memory_utilization: 0.79
   enforce_eager: true
   quantization: null
+  max_model_len: 8192
   trust_remote_code: true
-  dtype: "float16"
+  dtype: "bfloat16"
   seed: 1
   disable_custom_all_reduce: false
   additional_vllm_kwargs: {}

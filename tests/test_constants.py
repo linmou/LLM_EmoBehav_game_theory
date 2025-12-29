@@ -131,6 +131,7 @@ class TestGameNames(unittest.TestCase):
             "Duopolistic_Competition",
             "Stag_Hunt",
             "Escalation_Game",
+            "Diplomacy_Escalation_Game",
             "Monopoly_Game",
             "Hot_Cold_Game",
             "Draco_Game",

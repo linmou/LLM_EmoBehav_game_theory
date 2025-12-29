@@ -86,6 +86,11 @@ class GameNames(Enum):
 
     # Sequential Games
     ESCALATION_GAME = ("Escalation_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)
+    #DIPLOMACY_ESCALATION_GAME = (
+    #    "Diplomacy_Escalation_Game",
+    #    GameType.SEQUENTIAL,
+    #    SymmetryType.SYMMETRIC,
+    #)
     MONOPOLY_GAME = ("Monopoly_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)
     HOT_COLD_GAME = ("Hot_Cold_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)
     DRACO_GAME = ("Draco_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)
