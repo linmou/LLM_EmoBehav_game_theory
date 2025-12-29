@@ -261,3 +261,51 @@ def test_evaluate_saved_series_skips_error_and_records_failure(tmp_path: Path) -
 
     assert good_run.resolve() in result.evaluated_dirs
     assert bad_run.resolve() in result.failed_dirs
+
+
+def test_evaluate_saved_series_process_folder_recursively_filters_pending_runs(tmp_path: Path) -> None:
+    # Tests for emotion_experiment_engine.evaluate_saved_series.process_folder recursively locating run dirs.
+    nested = tmp_path / "nested" / "runs"
+    nested.mkdir(parents=True)
+
+    evaluated = _make_run_dir(nested, "evaluated_run", evaluated=True)
+    pending = _make_run_dir(nested, "pending_run", evaluated=False)
+
+    with patch(
+        "emotion_experiment_engine.evaluate_saved_series._evaluate_saved_run"
+    ) as mock_eval:
+        def _fake_eval(run_dir: Path, max_workers: int = 8) -> MagicMock:
+            (run_dir / "summary_results.csv").write_text("score\n", encoding="utf-8")
+            (run_dir / "README.md").write_text("# Evaluation Completed\n", encoding="utf-8")
+            return MagicMock()
+
+        mock_eval.side_effect = _fake_eval
+
+        import emotion_experiment_engine.evaluate_saved_series as evaluate_saved_series
+
+        result = evaluate_saved_series.process_folder(tmp_path, dry_run=False)
+
+    assert pending.resolve() in result.pending_dirs
+    assert evaluated.resolve() not in result.pending_dirs
+    mock_eval.assert_called_once_with(pending.resolve(), max_workers=8)
+
+
+def test_evaluate_saved_series_cli_accepts_folder_argument(tmp_path: Path) -> None:
+    # Tests for emotion_experiment_engine.evaluate_saved_series CLI wiring for --folder.
+    pending = _make_run_dir(tmp_path, "pending_run", evaluated=False)
+
+    with patch(
+        "emotion_experiment_engine.evaluate_saved_series._evaluate_saved_run"
+    ) as mock_eval:
+        def _fake_eval(run_dir: Path, max_workers: int = 8) -> MagicMock:
+            (run_dir / "summary_results.csv").write_text("score\n", encoding="utf-8")
+            (run_dir / "README.md").write_text("# Evaluation Completed\n", encoding="utf-8")
+            return MagicMock()
+
+        mock_eval.side_effect = _fake_eval
+
+        import emotion_experiment_engine.evaluate_saved_series as evaluate_saved_series
+
+        evaluate_saved_series._main(["--folder", str(tmp_path)])
+
+    mock_eval.assert_called_once_with(pending.resolve(), max_workers=8)
