@@ -3,13 +3,18 @@ description: "Dry-run config for Sealed_Auction via game_theory benchmark"
 version: "1.0.0"
 
 models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
   - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
 
 emotions: ["anger", "happiness", "sadness", "surprise", "fear", "disgust"]
 intensities: [1.5]
 
 benchmarks:
-  - name: "game_theory"
+  - name: "game_theory_decision"
     task_type: "Sealed_Auction"
     augmentation_config:
       shuffle_options: true
@@ -17,11 +22,12 @@ benchmarks:
     truncation_strategy: "right"
     preserve_ratio: 1.0
     llm_eval_config:
-      model: "gpt-4o-mini"
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
       temperature: 0.0
 
 loading_config:
-  gpu_memory_utilization: 0.9
+  gpu_memory_utilization: 0.8
   enforce_eager: true
   quantization: null
   trust_remote_code: true
@@ -44,5 +50,7 @@ generation_config:
   frequency_penalty: 0.0
   enable_thinking: false
 
-batch_size: 8
-output_dir: "results_sealed_auction_game_theory"
+batch_size: 600
+output_dir: "results/sc2_sealed_auction/decision_only"
+defer_evaluation: true
+sanity_check: false
