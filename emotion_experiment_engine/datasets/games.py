@@ -355,11 +355,8 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         if choice_id is not None:
             return float(choice_id)
 
-        if os.environ.get("DISABLE_LLM_JUDGE") == "1":
-            return -1.0
-
         logger.warning("Failed to extract option id for response: %s", response)
-        return math.nan
+        return -1.0
 
     def get_task_metrics(self, task_name: str) -> List[str]:
         del task_name

@@ -54,3 +54,28 @@ def test_evaluate_response_returns_minus_one_when_llm_fallback_disabled(monkeypa
     score = dataset.evaluate_response(response, None, "Prisoners_Dilemma", prompt)
     assert score == -1.0
 
+
+def test_evaluate_response_returns_minus_one_when_choice_unparseable(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Responsible file: emotion_experiment_engine/datasets/games.py
+    Purpose: unparseable choices should be counted as option_id=-1 (not NaN) so ratios include failures.
+    """
+
+    monkeypatch.delenv("DISABLE_LLM_JUDGE", raising=False)
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.GameTheoryDataset._load_and_parse_data",
+        lambda self: [],
+    )
+    dataset = GameTheoryDataset(config=_stub_config(), prompt_wrapper=None, answer_wrapper=None)
+
+    monkeypatch.setattr(dataset, "_fallback_option_via_llm", lambda response, options: None)
+
+    prompt = "\n".join(
+        [
+            "Scenario: test",
+            "Option 1. Cooperate",
+            "Option 2. Defect",
+        ]
+    )
+    response = '{"decision":"Not an option"}'
+    score = dataset.evaluate_response(response, None, "Prisoners_Dilemma", prompt)
+    assert score == -1.0
