@@ -3,6 +3,7 @@ import copy
 
 from jinja2.exceptions import TemplateError
 from transformers import AutoTokenizer
+from typing import Optional
 
 
 class ClassPropertyDescriptor:
@@ -612,6 +613,31 @@ class PromptFormat:
         except ValueError:
             return None
 
+    def _build_plain_prompt(
+        self,
+        system_prompt: Optional[str],
+        user_messages: list,
+        assistant_messages: list,
+    ) -> str:
+        assert len(user_messages), f" user_messages: {user_messages} should not empty"
+        assert len(user_messages) - len(assistant_messages) in [
+            0,
+            1,
+        ], f" user_messages: {user_messages} and assistant_messages: {assistant_messages} should have the same length or assistant_messages should have one less element"
+
+        parts: list[str] = []
+        if system_prompt:
+            parts.append(str(system_prompt).strip())
+
+        for user_message, assistant_message in zip(user_messages, assistant_messages):
+            parts.append(str(user_message))
+            parts.append(str(assistant_message))
+
+        if len(user_messages) > len(assistant_messages):
+            parts.append(str(user_messages[-1]))
+
+        return "\n\n".join([p for p in parts if p != ""]).strip() + "\n"
+
     def build(
         self,
         system_prompt,
@@ -658,6 +684,29 @@ class PromptFormat:
                     adjusted_user_messages[0] = f"{first_msg}\n/think"
                 else:
                     adjusted_user_messages[0] = f"{first_msg}\n/no_think"
+
+        if not getattr(self.tokenizer, "chat_template", None):
+            manual_format = self._get_manual_format()
+            if manual_format and manual_format is not DefaultInstFormat:
+                if (
+                    hasattr(manual_format.build, "__code__")
+                    and "enable_thinking" in manual_format.build.__code__.co_varnames
+                ):
+                    return manual_format.build(
+                        system_prompt,
+                        adjusted_user_messages,
+                        assistant_messages,
+                        enable_thinking=enable_thinking,
+                    )
+                return manual_format.build(
+                    system_prompt, adjusted_user_messages, assistant_messages
+                )
+
+            return self._build_plain_prompt(
+                system_prompt,
+                adjusted_user_messages,
+                assistant_messages,
+            )
 
         chat = []
 
@@ -838,6 +887,7 @@ ManualPromptFormat.format_ls = [
     MistralInstFormat,
     RWKVsFormat,
     QwenVLInstFormat,
+    Qwen3InstFormat,
     Gemma3InstFormat,
     DefaultInstFormat,  # Fallback format - should be last
 ]
