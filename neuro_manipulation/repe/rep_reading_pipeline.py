@@ -1,4 +1,5 @@
 from typing import List, Union, Optional, Dict, Any
+import inspect
 from transformers import Pipeline
 import torch
 import numpy as np
@@ -333,7 +334,11 @@ class RepReadingPipeline(Pipeline):
                 decoder_input = self.tokenizer(decoder_start_token, return_tensors="pt").input_ids.to(device)
                 model_inputs['decoder_input_ids'] = decoder_input
             
-            outputs = self.model(**model_inputs, output_hidden_states=True)
+            model_kwargs = dict(model_inputs)
+            if "use_cache" in inspect.signature(self.model.forward).parameters:
+                model_kwargs["use_cache"] = False
+
+            outputs = self.model(**model_kwargs, output_hidden_states=True)
             
             # MEMORY OPTIMIZATION: Extract hidden states immediately and clear outputs
             hidden_states = self._get_hidden_states(outputs, rep_token, hidden_layers, which_hidden_states)

@@ -7,6 +7,10 @@ This file verifies two things:
 2) The EmotionCheckDataset can parse the academic scales JSONL schema located at
    data/emotion_scales/emotion_check_academic_scales.jsonl and produce items
    whose ground truth is adapted by the EmotionAnswerWrapper to the active emotion.
+
+This file also guards against a regression where model responses wrapped in
+markdown code fences (```json ... ```) were not parsed, causing option mapping
+to fail and downstream scores to become NaN.
 """
 
 import unittest
@@ -191,7 +195,47 @@ class TestEmotionCheckAcademicScaleTask(unittest.TestCase):
         # Ensure we actually encountered at least one of each
         self.assertTrue(saw_4 or saw_5)
 
-    
+    def test_evaluate_response_accepts_markdown_fenced_json(self):
+        """I am starting with a failing test. This is the Red phase.
+
+        Real model outputs often wrap JSON in ```json fences. Evaluation should
+        still extract the choice text and score without throwing.
+        """
+        cfg = BenchmarkConfig(
+            name="emotion_check",
+            task_type="academic_scale",
+            data_path=self.data_file,
+            base_data_dir=str(self.data_file.parent),
+            sample_limit=1,
+            augmentation_config=None,
+            enable_auto_truncation=False,
+            truncation_strategy="right",
+            preserve_ratio=0.8,
+            llm_eval_config=None,
+        )
+
+        prompt_format = DummyPromptFormat()
+        _, _, dataset = create_benchmark_components(
+            benchmark_name=cfg.name,
+            task_type=cfg.task_type,
+            config=cfg,
+            prompt_format=prompt_format,
+            emotion="anger",
+        )
+
+        sample = dataset[0]
+        gt = sample["ground_truth"]
+        self.assertIsInstance(gt, dict)
+        self.assertGreaterEqual(len(gt.get("options") or []), 2)
+
+        fenced = "```json\n{'response': 'Strongly Agree'}\n```"
+        score = dataset.evaluate_response(fenced, gt, "academic_scale", sample["prompt"])
+
+        self.assertIsInstance(score, float)
+        self.assertGreaterEqual(score, 0.0)
+        self.assertLessEqual(score, 1.0)
+
+
 
 
 if __name__ == "__main__":

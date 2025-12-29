@@ -178,3 +178,18 @@ def test_round_trip_options_and_decision_metadata(monkeypatch: pytest.MonkeyPatc
 
     assert reconstructed_behavior is not None
     assert reconstructed_behavior == chosen_behavior
+
+
+def test_dataset_preserves_scenario_text_in_metadata(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ensure GameTheoryDataset exposes scenario contents in item.metadata for raw_results.json auditing."""
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.get_game_config",
+        lambda task_type: _stub_game_config_with_scenario(),
+    )
+
+    cfg = _make_benchmark_config()
+    dataset = GameTheoryDataset(config=cfg, prompt_wrapper=None, answer_wrapper=None)
+
+    item = dataset.items[0]
+    assert item.metadata.get("scenario") == "Dummy scenario"
+    assert item.metadata.get("description") == "Dummy description"

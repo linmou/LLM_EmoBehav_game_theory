@@ -110,6 +110,7 @@ class TrustGameScenario(SequentialGameScenario):
 
         return self
 
+    @property
     def previous_actions(self) -> list:  # type: ignore[override]
         assert (
             self.previous_actions_length == 0
@@ -134,12 +135,16 @@ class TrustGameScenario(SequentialGameScenario):
 
     def __str__(self):
         info = self.get_scenario_info()
+        previous_actions = self.previous_actions
+        previous_actions_line = (
+            f"\n        Previous Actions: {previous_actions}" if previous_actions else ""
+        )
         return f"""
         Scenario: {info.get('scenario', 'Unnamed')}
         Description: {info.get('description', 'No description')}
         Participants: {self.get_participants()}
         Behavior Choices: {self.get_behavior_choices().get_choices()}
-        Previous Actions: {self.previous_actions}
+        {previous_actions_line}
         """
 
     @staticmethod

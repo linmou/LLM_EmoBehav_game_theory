@@ -24,3 +24,23 @@ if os.environ.get("VLLM_DISABLE_FLASH_ATTN", "0") == "1":
         # Best effort: do not crash interpreter startup.
         _VLLM_DISABLE_FLASH_ATTN_APPLIED = False
 
+
+def _patch_gemma3_sliding_window_pattern() -> None:
+    try:
+        from transformers.models.gemma3.configuration_gemma3 import Gemma3TextConfig  # type: ignore
+    except Exception:
+        return
+
+    if hasattr(Gemma3TextConfig, "sliding_window_pattern"):
+        return
+
+    def _get(self):  # type: ignore[no-untyped-def]
+        return getattr(self, "_sliding_window_pattern", None)
+
+    def _set(self, value):  # type: ignore[no-untyped-def]
+        setattr(self, "_sliding_window_pattern", value)
+
+    Gemma3TextConfig.sliding_window_pattern = property(_get, _set)  # type: ignore[attr-defined]
+
+
+_patch_gemma3_sliding_window_pattern()

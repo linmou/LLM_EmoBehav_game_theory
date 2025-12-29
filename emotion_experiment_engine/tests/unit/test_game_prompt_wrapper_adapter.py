@@ -6,6 +6,7 @@ from typing import Any, List
 import pytest
 
 from emotion_experiment_engine.game_prompt_wrapper import GameBenchmarkPromptWrapper
+from emotion_experiment_engine.game_prompt_wrapper import GameCompletionOptionIdPromptWrapper
 from emotion_experiment_engine.game_prompt_wrapper import GameDecisionPromptWrapper
 
 
@@ -110,3 +111,26 @@ def test_decision_wrapper_includes_decide_now_instruction(patch_game_config):
     assert "Option 1." in system_prompt
     assert "Option 2." in system_prompt
     assert prompt  # final prompt text should be non-empty
+
+
+def test_completion_wrapper_ignores_chat_template_and_ends_with_option_quote(patch_game_config):
+    """Base-model wrapper should emit a raw completion prompt that ends with the choice prefix."""
+
+    fmt = _DummyPromptFormat()
+    wrapper = GameCompletionOptionIdPromptWrapper(fmt, "Prisoners_Dilemma")
+
+    prompt = wrapper(
+        context=None,
+        question="Scenario: Prisoners_Dilemma\nYou and Bob are deciding.",
+        user_messages=None,
+        enable_thinking=False,
+        augmentation_config=None,
+        answer=None,
+        emotion=None,
+        options=[{"id": 1, "text": "Cooperate"}, {"id": 2, "text": "Defect"}],
+    )
+
+    assert fmt.records == [], "completion wrapper must not call prompt_format.build"
+    assert "Option 1." in prompt
+    assert "Option 2." in prompt
+    assert prompt.endswith('you choose option "')

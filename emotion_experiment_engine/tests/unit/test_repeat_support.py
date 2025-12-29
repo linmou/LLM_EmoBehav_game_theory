@@ -8,6 +8,7 @@ Responsible files:
 """
 
 import tempfile
+import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -43,6 +44,24 @@ class CapturePipeline:
         return [{"generated_text": p + " out"} for p in prompts]
 
 
+def _stub_neuro_manipulation_modules() -> None:
+    fake_utils_module = type(sys)("neuro_manipulation.utils")
+
+    def _fake_load_tokenizer_only(*args, **kwargs):
+        return (_make_dummy_tokenizer(), None)
+
+    fake_utils_module.load_tokenizer_only = _fake_load_tokenizer_only  # type: ignore[attr-defined]
+    sys.modules["neuro_manipulation.utils"] = fake_utils_module
+
+    fake_prompt_formats_module = type(sys)("neuro_manipulation.prompt_formats")
+    fake_prompt_formats_module.PromptFormat = lambda tok: MagicMock()  # type: ignore[attr-defined]
+    sys.modules["neuro_manipulation.prompt_formats"] = fake_prompt_formats_module
+
+    fake_repe_module = type(sys)("neuro_manipulation.repe")
+    fake_repe_module.repe_pipeline_registry = lambda: None  # type: ignore[attr-defined]
+    sys.modules["neuro_manipulation.repe"] = fake_repe_module
+
+
 def test_repeat_aggregation_and_readme():
     with tempfile.TemporaryDirectory() as tmpdir:
         out_dir = Path(tmpdir)
@@ -76,10 +95,11 @@ def test_repeat_aggregation_and_readme():
             defer_evaluation=False,
         )
 
-        with patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(_make_dummy_tokenizer(), None)), \
-             patch("emotion_experiment_engine.experiment.create_benchmark_components", return_value=(None, None, [])), \
-             patch.object(EmotionExperiment, "_build_emotion_datasets", return_value={}), \
-             patch("neuro_manipulation.prompt_formats.PromptFormat", lambda tok: MagicMock()):
+        _stub_neuro_manipulation_modules()
+        with patch(
+            "emotion_experiment_engine.experiment.create_benchmark_components",
+            return_value=(None, None, []),
+        ), patch.object(EmotionExperiment, "_build_emotion_datasets", return_value={}):
             exp = EmotionExperiment(cfg, dry_run=True)
 
         # Prepare two repeats
@@ -127,6 +147,8 @@ def test_repeat_aggregation_and_readme():
 def test_cli_passes_repeat_runs_and_seed_to_experiment(tmp_path: Path):
     data_file = tmp_path / "dummy.jsonl"
     data_file.write_text("{}\n")
+
+    _stub_neuro_manipulation_modules()
 
     cfg = {
         "model": {"model_path": "/mock/model"},
@@ -194,12 +216,14 @@ def test_per_run_seed_passed_in_generation_kwargs(tmp_path: Path):
         defer_evaluation=False,
     )
 
-    with patch("neuro_manipulation.utils.load_tokenizer_only", return_value=(_make_dummy_tokenizer(), None)), \
-         patch("emotion_experiment_engine.experiment.create_benchmark_components", return_value=(None, None, [])), \
-         patch("neuro_manipulation.prompt_formats.PromptFormat", lambda tok: MagicMock()):
+    _stub_neuro_manipulation_modules()
+    with patch(
+        "emotion_experiment_engine.experiment.create_benchmark_components",
+        return_value=(None, None, []),
+    ):
         exp = EmotionExperiment(cfg, dry_run=True, repeat_runs=1)
 
-    exp.is_vllm = False
+    exp.is_vllm = True
     exp.rep_control_pipeline = CapturePipeline()
     exp.dataset = MagicMock()
     exp.dataset.evaluate_batch.return_value = [0.0, 0.0]
@@ -282,3 +306,142 @@ def test_series_runner_passes_repeat_and_seed(tmp_path: Path):
 
     assert captured["repeat_runs"] == 4
     assert captured["repeat_seed_base"] == 777
+
+
+def test_series_runner_sets_vllm_max_num_seqs_default(tmp_path: Path):
+    """
+    Responsible files:
+    - emotion_experiment_engine/emotion_experiment_series_runner.py
+
+    Purpose:
+    vLLM preallocates KV-cache based on max_num_seqs/max_model_len; if max_num_seqs
+    is left at vLLM defaults (often 256), small experiments can OOM unexpectedly.
+    The series runner should default max_num_seqs to a safe value tied to batch_size.
+    """
+    cfg = {
+        "models": ["/mock/model"],
+        "emotions": ["anger"],
+        "intensities": [1.0],
+        "benchmarks": [
+            {
+                "name": "emotion_check",
+                "task_type": "academic_scale",
+                "data_path": "data/emotion_scales/emotion_check_academic_scales.jsonl",
+                "sample_limit": 1,
+                "enable_auto_truncation": False,
+                "truncation_strategy": "right",
+                "preserve_ratio": 0.8,
+            }
+        ],
+        "output_dir": str(tmp_path / "out"),
+        "batch_size": 7,
+        "loading_config": {
+            "model_path": "/mock/model",
+            "gpu_memory_utilization": 0.8,
+            "tensor_parallel_size": 1,
+            "max_model_len": 1024,
+            "enforce_eager": True,
+            "quantization": None,
+            "trust_remote_code": True,
+            "dtype": "bfloat16",
+            "seed": 42,
+            "disable_custom_all_reduce": False,
+            "additional_vllm_kwargs": {},
+        },
+    }
+
+    cfg_path = tmp_path / "series.yaml"
+    cfg_path.write_text(yaml.dump(cfg))
+
+    captured = {}
+
+    class DummyExp:
+        def __init__(self, exp_config, dry_run=False, repeat_runs=1, repeat_seed_base=None):
+            captured["max_num_seqs"] = exp_config.loading_config.additional_vllm_kwargs.get(
+                "max_num_seqs"
+            )
+            self.output_dir = tmp_path / "out" / "dummy"
+            self.emotion_datasets = {}
+
+        def run_experiment(self):
+            return None
+
+    with patch("emotion_experiment_engine.experiment.EmotionExperiment", DummyExp):
+        from emotion_experiment_engine.emotion_experiment_series_runner import (
+            MemoryExperimentSeriesRunner,
+        )
+
+        runner = MemoryExperimentSeriesRunner(str(cfg_path), dry_run=True)
+        bench = cfg["benchmarks"][0]
+        _ = runner.setup_experiment(bench, cfg["models"][0])
+
+    assert captured["max_num_seqs"] == 7
+
+
+def test_series_runner_defaults_max_model_len_when_missing(tmp_path: Path):
+    """
+    Responsible files:
+    - emotion_experiment_engine/emotion_experiment_series_runner.py
+
+    Purpose:
+    When `loading_config.max_model_len` is omitted, the series runner must not
+    silently fall back to extremely large context lengths (e.g. 32768) that can
+    fail vLLM KV-cache allocation on common GPUs. Use a conservative default.
+    """
+    cfg = {
+        "models": ["/mock/model"],
+        "emotions": ["anger"],
+        "intensities": [1.0],
+        "benchmarks": [
+            {
+                "name": "emotion_check",
+                "task_type": "academic_scale",
+                "data_path": "data/emotion_scales/emotion_check_academic_scales.jsonl",
+                "sample_limit": 1,
+                "enable_auto_truncation": False,
+                "truncation_strategy": "right",
+                "preserve_ratio": 0.8,
+            }
+        ],
+        "output_dir": str(tmp_path / "out"),
+        "batch_size": 7,
+        "loading_config": {
+            "model_path": "/mock/model",
+            "gpu_memory_utilization": 0.8,
+            "tensor_parallel_size": 1,
+            "enforce_eager": True,
+            "quantization": None,
+            "trust_remote_code": True,
+            "dtype": "bfloat16",
+            "seed": 42,
+            "disable_custom_all_reduce": False,
+            "additional_vllm_kwargs": {},
+        },
+    }
+
+    cfg_path = tmp_path / "series.yaml"
+    cfg_path.write_text(yaml.dump(cfg))
+
+    captured = {}
+
+    class DummyExp:
+        def __init__(
+            self, exp_config, dry_run=False, repeat_runs=1, repeat_seed_base=None
+        ):
+            captured["max_model_len"] = exp_config.loading_config.max_model_len
+            self.output_dir = tmp_path / "out" / "dummy"
+            self.emotion_datasets = {}
+
+        def run_experiment(self):
+            return None
+
+    with patch("emotion_experiment_engine.experiment.EmotionExperiment", DummyExp):
+        from emotion_experiment_engine.emotion_experiment_series_runner import (
+            MemoryExperimentSeriesRunner,
+        )
+
+        runner = MemoryExperimentSeriesRunner(str(cfg_path), dry_run=True)
+        bench = cfg["benchmarks"][0]
+        _ = runner.setup_experiment(bench, cfg["models"][0])
+
+    assert captured["max_model_len"] == 8192

@@ -408,6 +408,15 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
         if not response:
             return ""
         t = response.strip()
+
+        # Strip markdown code fences (common in model outputs)
+        if "```" in t:
+            m = re.search(
+                r"```(?:json)?\s*(.*?)\s*```", t, flags=re.IGNORECASE | re.DOTALL
+            )
+            if m:
+                t = m.group(1).strip()
+
         if t.startswith("{") and t.endswith("}"):
             # Try strict JSON
             try:
@@ -427,7 +436,6 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
                             return val.strip()
                 except Exception:
                     # Regex fallback to capture 'response': '...'
-                    import re
                     m = re.search(r"['\"]response['\"]\s*:\s*['\"]([^'\"]+)['\"]", t, flags=re.IGNORECASE)
                     if m:
                         return m.group(1).strip()

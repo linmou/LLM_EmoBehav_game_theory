@@ -1,3 +1,4 @@
+import re
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -27,7 +28,8 @@ class ReactionPromptWrapper(PromptWrapper):
     
         
 class GameReactPromptWrapper(PromptWrapper):
-    system_prompt_format = "You are Alice. You are in the following situation: {event}. "
+    system_prompt_format = "You are {persona}. You are in the following situation: {event}. "
+    _scenario_re = re.compile(r"\bScenario:\s*(\S+)")
     
     def __init__(self, prompt_format: "PromptFormat", response_format: "GameDecision"):
         super().__init__(prompt_format)
@@ -35,7 +37,11 @@ class GameReactPromptWrapper(PromptWrapper):
         assert hasattr(response_format, 'example') and callable(getattr(response_format, 'example')), f"response_format should have an example method"
         
     def system_prompt(self, event, options):
-        return self.system_prompt_format.format(event=event) + "\n" + \
+        persona = "Alice"
+        m = self._scenario_re.search(event)
+        if m and m.group(1).startswith("Diplomacy_"):
+            persona = "a commander who needs to make the decision"
+        return self.system_prompt_format.format(persona=persona, event=event) + "\n" + \
     "\n".join([f" Option {i+1}. {option}" if not option.startswith('Option') else option for i, option in enumerate(options)]) + \
     "\n" + self.format_instruction()
     
