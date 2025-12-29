@@ -179,6 +179,7 @@ def primary_emotions_concept_dataset(
     system_prompt=None,
     seed=0,
     multimodal_intent=False,
+    image_base_path=None,
     enable_thinking=False,
     emotions=None,
 ):
@@ -206,7 +207,6 @@ def primary_emotions_concept_dataset(
     import os
     import random
 
-    import numpy as np
     from transformers import AutoTokenizer
 
     from neuro_manipulation.prompt_formats import ManualPromptFormat, PromptFormat
@@ -273,7 +273,8 @@ def primary_emotions_concept_dataset(
         emotion_file = os.path.join(data_dir, f"{emotion}.json")
         if os.path.exists(emotion_file):
             with open(emotion_file, "r", encoding="utf-8") as file:
-                raw_data[emotion] = list(set(json.load(file)))
+                loaded = json.load(file)
+                raw_data[emotion] = loaded if isinstance(loaded, list) else []
 
     formatted_data = {}
     for emotion in emotions:
@@ -286,7 +287,10 @@ def primary_emotions_concept_dataset(
         if not other_emotions_data:
             continue  # Skip if no other emotions have data
 
-        c_e, o_e = raw_data[emotion], np.concatenate(other_emotions_data)
+        c_e = list(raw_data[emotion])
+        o_e = []
+        for v in other_emotions_data:
+            o_e.extend(v)
         random.shuffle(o_e)
 
         pairs = [[c, o] for c, o in zip(c_e, o_e)]
@@ -299,23 +303,42 @@ def primary_emotions_concept_dataset(
             random.shuffle(p)
             train_labels.append([s == true_s for s in p])
 
-        try:
-            flat_train = np.concatenate(pairs).tolist()
-            data_ = np.concatenate([[c, o] for c, o in zip(c_e, o_e)]).tolist()
-        except ValueError:
-            # Safeguard for empty concat edge cases
-            continue
+        flat_train = [x for pair in pairs for x in pair]
+        data_ = [x for pair in zip(c_e, o_e) for x in pair]
 
         # Helper function to format a single scenario
         def format_scenario(scenario):
             if should_use_multimodal and is_multimodal_data:
-                # Scenario is an image path - load the image relative to data_dir
                 try:
-                    full_image_path = Path(data_dir) / scenario
+                    image_path = None
+                    extra_text = None
+
+                    if isinstance(scenario, dict):
+                        image_path = (
+                            scenario.get("image")
+                            or scenario.get("image_path")
+                            or (scenario.get("images", [None])[0] if isinstance(scenario.get("images"), list) else None)
+                        )
+                        extra_text = (
+                            scenario.get("text")
+                            or scenario.get("prompt")
+                            or scenario.get("caption")
+                        )
+                    elif isinstance(scenario, str):
+                        image_path = scenario
+
+                    if not isinstance(image_path, str) or not image_path:
+                        raise ValueError(f"Invalid multimodal scenario (missing image path): {scenario!r}")
+
+                    base = Path(image_base_path) if image_base_path is not None else Path(data_dir)
+                    image_path_obj = Path(image_path)
+                    full_image_path = image_path_obj if image_path_obj.is_absolute() else (base / image_path_obj)
+
                     if full_image_path.exists():
                         pil_image = Image.open(full_image_path).convert("RGB")
-                        # Keep text simple; adapters will apply the correct chat template
-                        user_message = "Consider the emotion of the following scenario:"
+                        user_message = "Consider the emotion of the following scenario:\n[IMAGE]"
+                        if extra_text:
+                            user_message = f"{user_message}\n{extra_text}"
                         return {"images": [pil_image], "text": user_message}
                     else:
                         print(f"⚠️  Image not found: {full_image_path}")
@@ -325,6 +348,8 @@ def primary_emotions_concept_dataset(
                     return None
             else:
                 # Text-only processing (scenario is text content)
+                if isinstance(scenario, dict):
+                    scenario = scenario.get("text") or scenario.get("prompt") or str(scenario)
                 user_message = f"Consider the emotion of the following scenario:\nScenario: {scenario}\nAnswer:"
 
                 # Format text prompt
@@ -711,7 +736,6 @@ def load_model_only(
     Returns:
         model: Loaded model (vLLM LLM or HuggingFace model)
     """
-    model = None
     if from_vllm:
         try:
             # Use VLLMLoadingConfig.to_vllm_kwargs() method
@@ -744,83 +768,118 @@ def load_model_only(
             name_lower = str(model_name_or_path).lower()
             if "gemma-3" in name_lower:
                 vllm_kwargs["dtype"] = "bfloat16"
-            model = LLM(**vllm_kwargs)
+
+            # Allow forcing vLLM attention backend via config without relying on shell env.
+            # vLLM reads this from the env var (see vllm.envs.VLLM_ATTENTION_BACKEND).
+            attn_backend = vllm_kwargs.pop("attention_backend", None)
+            if attn_backend:
+                if str(attn_backend).upper() == "TORCH_SDPA":
+                    raise ValueError(
+                        "VLLM_ATTENTION_BACKEND=TORCH_SDPA is not a valid choice for LLM attention in vLLM; "
+                        "use XFORMERS or TRITON_ATTN instead."
+                    )
+                os.environ["VLLM_ATTENTION_BACKEND"] = str(attn_backend)
+
+            return LLM(**vllm_kwargs)
 
         except Exception as e:
-            print(f"vLLM loading failed: {e}")
-            pass
+            if isinstance(e, ValueError):
+                raise
+            hint = ""
+            msg = str(e)
+            if "headdim not being a multiple of 32" in msg:
+                hint = (
+                    " (Hint: set loading_config.additional_vllm_kwargs.attention_backend "
+                    "to TRITON_ATTN (or XFORMERS) to avoid FlashAttention limits.)"
+                )
+            raise RuntimeError(
+                f"vLLM loading failed for {model_name_or_path}: {e}{hint}"
+            ) from e
 
-    if not model:
-        # Check if this should be a causal LM model based on its config
-        from transformers import AutoConfig, AutoModelForCausalLM
+    # Check if this should be a causal LM / vision2seq model based on its config
+    from transformers import AutoConfig, AutoModelForCausalLM
+    try:
+        from transformers import AutoModelForVision2Seq
+    except Exception:  # pragma: no cover - older transformers
+        AutoModelForVision2Seq = None  # type: ignore
 
-        # Determine HF torch dtype, defaulting to float16 when unspecified
-        hf_torch_dtype = torch.float16
-        if loading_config is not None:
-            if isinstance(loading_config, dict):
-                dtype_value = loading_config.get("dtype")
-            else:
-                dtype_value = getattr(loading_config, "dtype", None)
+    # Determine HF torch dtype, defaulting to float16 when unspecified
+    hf_torch_dtype = torch.float16
+    if loading_config is not None:
+        if isinstance(loading_config, dict):
+            dtype_value = loading_config.get("dtype")
+        else:
+            dtype_value = getattr(loading_config, "dtype", None)
 
-            if isinstance(dtype_value, torch.dtype):
-                hf_torch_dtype = dtype_value
-            elif isinstance(dtype_value, str):
-                dtype_key = dtype_value.lower()
-                if dtype_key in {"bfloat16", "bf16"}:
-                    hf_torch_dtype = torch.bfloat16
-                elif dtype_key in {"float32", "fp32"}:
-                    hf_torch_dtype = torch.float32
-                elif dtype_key in {"float16", "fp16"}:
-                    hf_torch_dtype = torch.float16
-        try:
-            config = AutoConfig.from_pretrained(
-                model_name_or_path, token=True, trust_remote_code=True
-            )
-            # GLM-Edge: prefer single-GPU placement to avoid cross-device image/text tensors
-            name_lower = str(model_name_or_path).lower()
-            single_gpu_map = {"": 0} if ("glm-edge" in name_lower) else "auto"
+        if isinstance(dtype_value, torch.dtype):
+            hf_torch_dtype = dtype_value
+        elif isinstance(dtype_value, str):
+            dtype_key = dtype_value.lower()
+            if dtype_key in {"bfloat16", "bf16"}:
+                hf_torch_dtype = torch.bfloat16
+            elif dtype_key in {"float32", "fp32"}:
+                hf_torch_dtype = torch.float32
+            elif dtype_key in {"float16", "fp16"}:
+                hf_torch_dtype = torch.float16
+    try:
+        config = AutoConfig.from_pretrained(
+            model_name_or_path, token=True, trust_remote_code=True
+        )
+        # GLM-Edge: prefer single-GPU placement to avoid cross-device image/text tensors
+        name_lower = str(model_name_or_path).lower()
+        single_gpu_map = {"": 0} if ("glm-edge" in name_lower) else "auto"
 
-            # DTYPE POLICY: Prefer bfloat16 for Gemma-3 to avoid NaNs; float16 otherwise
-            preferred_dtype = torch.bfloat16 if ("gemma-3" in name_lower) else torch.float16
-            # Check if the model has architectures that suggest it's a causal LM
-            if hasattr(config, "architectures") and config.architectures:
-                # If any architecture name contains "ForCausalLM", use AutoModelForCausalLM
-                if any("ForCausalLM" in arch for arch in config.architectures):
-                    model = AutoModelForCausalLM.from_pretrained(
-                        model_name_or_path,
-                        torch_dtype=preferred_dtype,
-                        device_map=single_gpu_map,
-                        token=True,
-                        trust_remote_code=True,
-                    ).eval()
-                else:
-                    model = AutoModel.from_pretrained(
-                        model_name_or_path,
-                        torch_dtype=preferred_dtype,
-                        device_map=single_gpu_map,
-                        token=True,
-                        trust_remote_code=True,
-                    ).eval()
-            else:
-                # Fallback to AutoModel if we can't determine
-                model = AutoModel.from_pretrained(
+        # DTYPE POLICY: Prefer bfloat16 for Gemma-3 to avoid NaNs; float16 otherwise
+        preferred_dtype = torch.bfloat16 if ("gemma-3" in name_lower) else torch.float16
+        # Check if the model has architectures that suggest it's a causal LM / vision2seq
+        if hasattr(config, "architectures") and config.architectures:
+            if any(
+                ("ForConditionalGeneration" in arch) or ("ForVision2Seq" in arch)
+                for arch in config.architectures
+            ) and AutoModelForVision2Seq is not None:
+                return AutoModelForVision2Seq.from_pretrained(
                     model_name_or_path,
                     torch_dtype=preferred_dtype,
                     device_map=single_gpu_map,
                     token=True,
                     trust_remote_code=True,
                 ).eval()
-        except:
-            # If config loading fails, fallback to AutoModel
-            model = AutoModel.from_pretrained(
+            # If any architecture name contains "ForCausalLM", use AutoModelForCausalLM
+            if any("ForCausalLM" in arch for arch in config.architectures):
+                return AutoModelForCausalLM.from_pretrained(
+                    model_name_or_path,
+                    torch_dtype=preferred_dtype,
+                    device_map=single_gpu_map,
+                    token=True,
+                    trust_remote_code=True,
+                ).eval()
+            return AutoModel.from_pretrained(
                 model_name_or_path,
-                torch_dtype=hf_torch_dtype,
-                device_map="auto",
+                torch_dtype=preferred_dtype,
+                device_map=single_gpu_map,
                 token=True,
                 trust_remote_code=True,
             ).eval()
 
-    return model
+        # Fallback to AutoModel if we can't determine
+        return AutoModel.from_pretrained(
+            model_name_or_path,
+            torch_dtype=preferred_dtype,
+            device_map=single_gpu_map,
+            token=True,
+            trust_remote_code=True,
+        ).eval()
+    except:
+        # If config loading fails, fallback to AutoModel
+        return AutoModel.from_pretrained(
+            model_name_or_path,
+            torch_dtype=hf_torch_dtype,
+            device_map="auto",
+            token=True,
+            trust_remote_code=True,
+        ).eval()
+
+    raise AssertionError("Unreachable")
 
 
 def load_model_tokenizer(
@@ -910,7 +969,7 @@ def detect_emotion_data_type(data_dir, emotions=None):
             # Sample first few items to determine data type
             sample_items = data[: min(3, len(data))]
 
-            # Check if items look like file paths (contain common image extensions or path separators)
+            # Check if items look like image paths / multimodal objects.
             image_indicators = [
                 ".jpg",
                 ".jpeg",
@@ -921,16 +980,24 @@ def detect_emotion_data_type(data_dir, emotions=None):
                 "/",
                 "\\",
             ]
-            looks_like_paths = 0
+            looks_like_image = 0
 
             for item in sample_items:
                 if isinstance(item, str):
                     item_lower = item.lower()
                     if any(indicator in item_lower for indicator in image_indicators):
-                        looks_like_paths += 1
+                        looks_like_image += 1
+                elif isinstance(item, dict):
+                    image_field = (
+                        item.get("image")
+                        or item.get("image_path")
+                        or (item.get("images", [None])[0] if isinstance(item.get("images"), list) else None)
+                    )
+                    if isinstance(image_field, str) and image_field:
+                        looks_like_image += 1
 
             # Determine data type for this emotion
-            if looks_like_paths >= len(sample_items) * 0.7:  # 70% threshold
+            if looks_like_image >= len(sample_items) * 0.7:  # 70% threshold
                 emotion_data_type = "image"
             else:
                 emotion_data_type = "text"

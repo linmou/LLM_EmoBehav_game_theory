@@ -279,7 +279,7 @@ class EmotionExperiment:
 
         self.logger.info(f"Model loaded: {type(self.model)}")
         self.is_vllm = isinstance(self.model, LLM)
-        assert self.is_vllm
+        assert self.is_vllm, "vLLM model is required; HF fallback is not allowed."
         
         # Setup RepE control pipeline - using basic tokenizer for consistency
         self.rep_control_pipeline = get_pipeline(
