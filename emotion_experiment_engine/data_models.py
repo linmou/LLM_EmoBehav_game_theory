@@ -195,6 +195,19 @@ class VLLMLoadingConfig:
         additional = dict(self.additional_vllm_kwargs)
         additional.setdefault("worker_extension_cls", default_worker_extension)
 
+        # vLLM currently attempts to query HF Hub safetensors metadata even when
+        # `model` is a filesystem path; HF Hub validators reject local paths.
+        # For local models, pre-fill a config dtype via hf_overrides so vLLM
+        # doesn't need to probe weights metadata during dtype inference.
+        if Path(self.model_path).exists() and str(self.dtype).lower() != "auto":
+            hf_overrides = additional.get("hf_overrides")
+            if hf_overrides is None:
+                additional["hf_overrides"] = {"dtype": self.dtype}
+            elif isinstance(hf_overrides, dict):
+                merged = dict(hf_overrides)
+                merged.setdefault("dtype", self.dtype)
+                additional["hf_overrides"] = merged
+
         # Merge with additional kwargs, allowing override
         return {**base_kwargs, **additional}
 

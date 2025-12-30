@@ -142,6 +142,8 @@ def load_emotion_readers(
         print("✓ Creating text-only rep-reading pipeline")
         rep_reading_pipeline = pipeline("rep-reading", model=model, tokenizer=tokenizer)
 
+    rep_reading_batch_size = int(config.get("rep_reading_batch_size", 32))
+
     return all_emotion_rep_reader(
         data,
         config["emotions"],
@@ -152,4 +154,5 @@ def load_emotion_readers(
         config["direction_method"],
         read_args=args,
         save_path=cache_filename,
+        batch_size=rep_reading_batch_size,
     )

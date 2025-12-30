@@ -463,6 +463,13 @@ class RepControlVLLMHook:
         ):
             self.tp_size = self.model.llm_engine.parallel_config.tensor_parallel_size
             logger.info(f"Stored Tensor Parallel Size during init: {self.tp_size}")
+        elif hasattr(self.model.llm_engine, "vllm_config") and hasattr(
+            self.model.llm_engine.vllm_config, "parallel_config"
+        ) and hasattr(self.model.llm_engine.vllm_config.parallel_config, "tensor_parallel_size"):
+            self.tp_size = self.model.llm_engine.vllm_config.parallel_config.tensor_parallel_size
+            logger.info(
+                f"Stored Tensor Parallel Size during init (vllm_config): {self.tp_size}"
+            )
         else:
             logger.warning(
                 "Could not detect tensor_parallel_size from engine's parallel_config during init. Assuming tp_size=1."

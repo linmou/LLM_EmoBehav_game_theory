@@ -53,7 +53,10 @@ class ModelLayerDetector:
             module_name = name.lower()
             if any(
                 vision_keyword in module_name
-                for vision_keyword in ["vision", "visual", "image", "patch", "embed"]
+                # NOTE: do not match plain "embed" here: text-only models almost
+                # always have embeddings (e.g., "embed_tokens"), which would
+                # create a false-positive multimodal classification.
+                for vision_keyword in ["vision", "visual", "image", "patch", "patch_embed"]
             ):
                 has_vision_components = True
                 break
@@ -121,27 +124,7 @@ class ModelLayerDetector:
         Raises:
             ValueError: If no transformer layers could be detected
         """
-        # Check if this is a multimodal model
         is_multimodal = ModelLayerDetector.is_multimodal_model(model)
-
-        if is_multimodal:
-            logger.debug(
-                "Detected potential multimodal model, using enhanced layer detection"
-            )
-            multimodal_info = ModelLayerDetector.get_multimodal_layer_info(model)
-
-            # For multimodal models, prioritize text/language layers for emotion extraction
-            # since these are where final emotion processing typically occurs
-            if multimodal_info["text_layers"] is not None:
-                logger.info(
-                    f"Using text layers for multimodal model: {multimodal_info['text_layers'][0]}"
-                )
-                return multimodal_info["text_layers"][1]
-            elif multimodal_info["fusion_layers"] is not None:
-                logger.info(
-                    f"Using fusion layers for multimodal model: {multimodal_info['fusion_layers'][0]}"
-                )
-                return multimodal_info["fusion_layers"][1]
 
         # Characteristics that likely indicate transformer layers
         def is_transformer_layer(module):
@@ -164,9 +147,14 @@ class ModelLayerDetector:
                 ]
             )
 
+            # State-space / mamba style blocks: no attention, no mlp, but a mixer/ssm
+            has_state_space_components = any(
+                attr in dir(module) for attr in ["mamba", "mixer", "ssm"]
+            )
+
             # Return True if module has attention OR other transformer components
             # The OR condition helps with models that don't use explicit attention
-            return has_attention  # or has_transformer_components
+            return has_attention or has_transformer_components or has_state_space_components
 
         # Helper to check if a ModuleList is likely transformer layers
         def is_transformer_layers(module_list):
@@ -204,7 +192,7 @@ class ModelLayerDetector:
             ):
                 if is_transformer_layers(module.layers):
                     transformer_layers_candidates.append(
-                        (f"{path}.layers", module.layers)
+                        (f"{path}.layers" if path else "layers", module.layers)
                     )
 
             # Queue named children for BFS traversal
@@ -217,10 +205,54 @@ class ModelLayerDetector:
                 if is_transformer_layers(module):
                     transformer_layers_candidates.append((path, module))
 
-        # Process candidates, preferring ones named 'layers'
-        # Sort by priority: 1) has 'layers' in name 2) path length (shorter is better)
+        if is_multimodal:
+            multimodal_info = ModelLayerDetector.get_multimodal_layer_info(model)
+            for key in ["text_layers", "fusion_layers", "vision_layers"]:
+                if multimodal_info.get(key) is not None:
+                    name, module_list = multimodal_info[key]
+                    transformer_layers_candidates.append((name, module_list))
+
+        def candidate_score(path: str, module_list: nn.ModuleList) -> int:
+            path_lower = path.lower()
+            score = 0
+
+            if ".layers" in path_lower or path_lower.endswith("layers"):
+                score += 200
+            if path_lower.endswith(".h") or path_lower.endswith("blocks") or path_lower.endswith(".block"):
+                score += 100
+
+            if is_multimodal:
+                if any(k in path_lower for k in ["language", "text", "lm", "decoder"]):
+                    score += 300
+                if any(k in path_lower for k in ["vision", "visual", "image", "patch", "encoder"]):
+                    score -= 300
+
+            if any(
+                bad in path_lower
+                for bad in [
+                    "adapter",
+                    "lora",
+                    "peft",
+                    "fusion",
+                    "cross",
+                ]
+            ):
+                score -= 500
+
+            elem_type = type(module_list[0]).__name__.lower() if len(module_list) else ""
+            if any(good in elem_type for good in ["layer", "block", "decoder", "mamba", "hybrid"]):
+                score += 80
+            if any(bad in elem_type for bad in ["adapter", "embedding", "norm"]):
+                score -= 200
+
+            score -= len([p for p in path.split(".") if p])
+            return score
+
         transformer_layers_candidates.sort(
-            key=lambda x: (0 if "layers" in x[0] else 1, len(x[0].split(".")))
+            key=lambda x: (
+                -candidate_score(x[0], x[1]),
+                len([p for p in x[0].split(".") if p]),
+            )
         )
 
         if transformer_layers_candidates:

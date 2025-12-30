@@ -20,7 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from huggingface_hub import hf_hub_download
 from PIL import Image
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore[import-untyped]
 from neuro_manipulation.threading_env import ensure_mkl_threading_layer
 try:
     ensure_mkl_threading_layer()
@@ -409,12 +409,12 @@ def test_direction(
         batch_size=batch_size,
     )
 
-    results = {layer: {} for layer in hidden_layers}
-    rep_readers_means = {layer: 0 for layer in hidden_layers}
+    results: Dict[int, float] = {}
+    rep_readers_means: Dict[int, float] = {}
 
     for layer in hidden_layers:
         H_test = [H[layer] for H in H_tests]
-        rep_readers_means[layer] = np.mean(H_test)
+        rep_readers_means[layer] = float(np.mean(H_test))
         H_test = [H_test[i : i + 2] for i in range(0, len(H_test), 2)]
 
         sign = rep_reader.direction_signs[layer]
@@ -422,7 +422,7 @@ def test_direction(
         eval_func = min if sign == -1 else max
         cors = np.mean([eval_func(H) == H[0] for H in H_test])
 
-        results[layer] = cors
+        results[layer] = float(cors)
 
     return results, rep_readers_means
 
@@ -453,6 +453,7 @@ def get_rep_reader(
         rep_reader=rep_reader,
         test_data=test_data,
         rep_token=rep_token,
+        batch_size=batch_size,
     )
     print(result)
 
@@ -636,6 +637,7 @@ def load_tokenizer_only(
                - processor_or_none: AutoProcessor for multimodal models, None for text-only
     """
     from transformers import AutoTokenizer  # type: ignore
+    from pathlib import Path
 
     # Load tokenizer (same logic as in load_model_tokenizer)
     tokenizer_kwargs = dict(
@@ -644,14 +646,60 @@ def load_tokenizer_only(
         token=True,
         trust_remote_code=True,
     )
+
+    tokenizer_source = model_name_or_path
+    local_files_only = False
+    model_dir = Path(str(model_name_or_path))
+    if model_dir.exists() and model_dir.is_dir():
+        local_files_only = True
+        has_tokenizer_files = any(
+            (model_dir / filename).exists()
+            for filename in (
+                "tokenizer.json",
+                "tokenizer.model",
+                "vocab.json",
+                "merges.txt",
+            )
+        )
+        if not has_tokenizer_files:
+            # Some local model directories (notably certain Mamba2 downloads) may
+            # contain only weights + config, without tokenizer artifacts.
+            # In that case, fall back to a sibling Mamba tokenizer if present.
+            for sibling_name in (
+                "mamba-790m-hf",
+                "mamba-370m-hf",
+                "mamba-1.4b-hf",
+                "mamba-2.8b-hf",
+            ):
+                candidate = model_dir.parent / sibling_name
+                if any(
+                    (candidate / filename).exists()
+                    for filename in ("tokenizer.json", "tokenizer.model")
+                ):
+                    tokenizer_source = str(candidate)
+                    print(
+                        f"⚠️  No tokenizer files in {model_dir}; using tokenizer from {candidate}"
+                    )
+                    break
+
     try:
         tokenizer = AutoTokenizer.from_pretrained(
-            model_name_or_path, use_fast=True, **tokenizer_kwargs
+            tokenizer_source,
+            use_fast=True,
+            local_files_only=local_files_only,
+            **tokenizer_kwargs,
         )
     except Exception:
         tokenizer = AutoTokenizer.from_pretrained(
-            model_name_or_path, use_fast=False, **tokenizer_kwargs
+            tokenizer_source,
+            use_fast=False,
+            local_files_only=local_files_only,
+            **tokenizer_kwargs,
         )
+    try:
+        tokenizer.name_or_path = str(model_name_or_path)
+    except Exception:
+        pass
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = 0
 
@@ -699,6 +747,11 @@ def load_model_only(
     if from_vllm:
         try:
             _ensure_repo_root_on_pythonpath()
+            # vLLM's CLI entrypoints force workers to use `spawn` because the
+            # default `fork` is not CUDA-safe after torch has initialized CUDA.
+            # We load a HF model on CUDA first (for rep-reader extraction) and
+            # then start vLLM, so force the safe default here too.
+            os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
             # Use VLLMLoadingConfig.to_vllm_kwargs() method
             if loading_config and hasattr(loading_config, "to_vllm_kwargs"):
                 vllm_kwargs = loading_config.to_vllm_kwargs()
@@ -737,8 +790,22 @@ def load_model_only(
             raise RuntimeError(f"vLLM loading failed: {e}") from e
 
     if not model:
-        # Check if this should be a causal LM model based on its config
-        from transformers import AutoConfig, AutoModel, AutoModelForCausalLM  # type: ignore
+        # Check if this should be a causal LM model based on its config.
+        #
+        # NOTE: Some state-spaces Mamba/Mamba2 checkpoints ship a non-Transformers
+        # config.json (e.g. `d_model`, `n_layer`) which Transformers will otherwise
+        # interpret using default Mamba(2)Config values, causing state_dict shape
+        # mismatches. For local paths, translate that config to a proper
+        # Transformers config object before loading.
+        from transformers import (  # type: ignore
+            AutoConfig,
+            AutoModel,
+            AutoModelForCausalLM,
+            MambaConfig,
+            Mamba2Config,
+            MambaForCausalLM,
+            Mamba2ForCausalLM,
+        )
 
         # Determine HF torch dtype, defaulting to float16 when unspecified
         hf_torch_dtype = torch.float16
@@ -758,48 +825,177 @@ def load_model_only(
                     hf_torch_dtype = torch.float32
                 elif dtype_key in {"float16", "fp16"}:
                     hf_torch_dtype = torch.float16
+
+        model_dir: Optional[Path] = None
+        local_files_only = False
         try:
-            config = AutoConfig.from_pretrained(
-                model_name_or_path, token=True, trust_remote_code=True
-            )
-            # Check if the model has architectures that suggest it's a causal LM
-            if hasattr(config, "architectures") and config.architectures:
-                # If any architecture name contains "ForCausalLM", use AutoModelForCausalLM
-                if any("ForCausalLM" in arch for arch in config.architectures):
-                    model = AutoModelForCausalLM.from_pretrained(
-                        model_name_or_path,
-                        torch_dtype=hf_torch_dtype,
-                        device_map="auto",
-                        token=True,
-                        trust_remote_code=True,
-                    ).eval()
-                else:
-                    model = AutoModel.from_pretrained(
-                        model_name_or_path,
-                        torch_dtype=hf_torch_dtype,
-                        device_map="auto",
-                        token=True,
-                        trust_remote_code=True,
-                    ).eval()
-            else:
-                # Fallback to AutoModel if we can't determine
-                model = AutoModel.from_pretrained(
-                    model_name_or_path,
+            p = Path(model_name_or_path)
+            if p.exists() and p.is_dir():
+                model_dir = p
+                local_files_only = True
+        except Exception:
+            model_dir = None
+            local_files_only = False
+
+        hf_common_kwargs: Dict[str, Any] = {
+            "trust_remote_code": True,
+            "local_files_only": local_files_only,
+        }
+        if not local_files_only:
+            hf_common_kwargs["token"] = True
+
+        def _translate_state_spaces_ssm_config(
+            directory: Optional[Path],
+        ) -> Optional[Dict[str, Any]]:
+            if directory is None:
+                return None
+            cfg_path = directory / "config.json"
+            if not cfg_path.exists():
+                return None
+            try:
+                raw = json.loads(cfg_path.read_text(encoding="utf-8"))
+            except Exception:
+                return None
+
+            ssm_cfg = raw.get("ssm_cfg")
+            if not isinstance(ssm_cfg, dict):
+                return None
+            layer = ssm_cfg.get("layer")
+            if layer not in {"Mamba", "Mamba2"}:
+                return None
+
+            d_model = raw.get("d_model")
+            n_layer = raw.get("n_layer")
+            vocab_size = raw.get("vocab_size")
+            if not isinstance(d_model, int) or not isinstance(n_layer, int):
+                return None
+
+            def _load_checkpoint_shapes() -> Dict[str, Any]:
+                ckpt_path = directory / "pytorch_model.bin"
+                if not ckpt_path.exists():
+                    return {}
+                try:
+                    state_dict = torch.load(str(ckpt_path), map_location="cpu")
+                except Exception:
+                    return {}
+                if (
+                    isinstance(state_dict, dict)
+                    and "state_dict" in state_dict
+                    and isinstance(state_dict["state_dict"], dict)
+                ):
+                    state_dict = state_dict["state_dict"]
+                if not isinstance(state_dict, dict):
+                    return {}
+                return state_dict
+
+            common = {
+                "hidden_size": d_model,
+                "num_hidden_layers": n_layer,
+            }
+            if isinstance(vocab_size, int):
+                common["vocab_size"] = vocab_size
+
+            state_dict = _load_checkpoint_shapes()
+
+            if layer == "Mamba2":
+                # Prefer checkpoint-derived padded vocab size when available.
+                emb = state_dict.get("backbone.embedding.weight")
+                if hasattr(emb, "shape") and len(getattr(emb, "shape", ())) == 2:
+                    common["vocab_size"] = int(emb.shape[0])
+
+                # Transformers Mamba2Config requires: hidden_size * expand == num_heads * head_dim.
+                # state-spaces checkpoints store per-head tensors with length = num_heads (e.g. dt_bias).
+                dt = state_dict.get("backbone.layers.0.mixer.dt_bias")
+                if hasattr(dt, "numel"):
+                    num_heads = int(dt.numel())
+                    expand = 2
+                    common["num_heads"] = num_heads
+                    common["expand"] = expand
+                    head_dim = (d_model * expand) // max(num_heads, 1)
+                    common["head_dim"] = int(head_dim)
+
+                conv_w = state_dict.get("backbone.layers.0.mixer.conv1d.weight")
+                if (
+                    hasattr(conv_w, "shape")
+                    and len(getattr(conv_w, "shape", ())) == 3
+                    and hasattr(conv_w.shape[0], "__int__")
+                ):
+                    conv_dim = int(conv_w.shape[0])
+                    intermediate_size = int(common.get("expand", 2) * d_model)
+                    if conv_dim >= intermediate_size and (conv_dim - intermediate_size) % 2 == 0:
+                        group_state_prod = (conv_dim - intermediate_size) // 2
+                        # Prefer the common state_size=128 when it fits; otherwise keep product intact.
+                        if group_state_prod % 128 == 0:
+                            common["state_size"] = 128
+                            common["n_groups"] = int(group_state_prod // 128)
+                        else:
+                            common["state_size"] = int(group_state_prod)
+                            common["n_groups"] = 1
+
+                if isinstance(raw.get("rms_norm"), bool):
+                    common["rms_norm"] = raw["rms_norm"]
+                if isinstance(raw.get("residual_in_fp32"), bool):
+                    common["residual_in_fp32"] = raw["residual_in_fp32"]
+                if isinstance(raw.get("tie_embeddings"), bool):
+                    common["tie_word_embeddings"] = raw["tie_embeddings"]
+                return {"config": Mamba2Config(**common), "state_dict": state_dict}
+
+            # layer == "Mamba"
+            if isinstance(raw.get("residual_in_fp32"), bool):
+                common["residual_in_fp32"] = raw["residual_in_fp32"]
+            if isinstance(raw.get("tie_embeddings"), bool):
+                common["tie_word_embeddings"] = raw["tie_embeddings"]
+            return {"config": MambaConfig(**common), "state_dict": state_dict}
+
+        translated = _translate_state_spaces_ssm_config(model_dir)
+        config = translated["config"] if translated else None
+        state_dict = translated.get("state_dict") if translated else None
+
+        if config is None:
+            config = AutoConfig.from_pretrained(model_name_or_path, **hf_common_kwargs)
+            state_dict = None
+
+        if isinstance(state_dict, dict):
+            # state-spaces checkpoints use `backbone.embedding.weight` while Transformers uses `backbone.embeddings.weight`.
+            if "backbone.embedding.weight" in state_dict and "backbone.embeddings.weight" not in state_dict:
+                state_dict = dict(state_dict)
+                state_dict["backbone.embeddings.weight"] = state_dict.pop("backbone.embedding.weight")
+
+        def _load_with_config(model_cls):  # type: ignore[no-untyped-def]
+            if state_dict is not None:
+                # Transformers disallows passing `state_dict` together with a model path.
+                return model_cls.from_pretrained(
+                    None,
+                    config=config,
+                    state_dict=state_dict,
                     torch_dtype=hf_torch_dtype,
                     device_map="auto",
-                    token=True,
-                    trust_remote_code=True,
                 ).eval()
-        except:
-            # If config loading fails, fallback to AutoModel
 
-            model = AutoModel.from_pretrained(
+            return model_cls.from_pretrained(
                 model_name_or_path,
+                config=config,
                 torch_dtype=hf_torch_dtype,
                 device_map="auto",
-                token=True,
-                trust_remote_code=True,
+                **hf_common_kwargs,
             ).eval()
+
+        model_type = getattr(config, "model_type", None)
+        if model_type in {"mamba", "mamba2"}:
+            if model_type == "mamba2":
+                model = _load_with_config(Mamba2ForCausalLM)
+            else:
+                model = _load_with_config(MambaForCausalLM)
+        elif hasattr(config, "architectures") and getattr(config, "architectures"):
+            if any(
+                isinstance(arch, str) and "ForCausalLM" in arch
+                for arch in config.architectures
+            ):
+                model = _load_with_config(AutoModelForCausalLM)
+            else:
+                model = _load_with_config(AutoModel)
+        else:
+            model = _load_with_config(AutoModel)
 
     return model
 
@@ -1087,6 +1283,7 @@ def all_emotion_rep_reader(
     direction_method,
     save_path="exp_records/emotion_rep_reader.pkl",
     read_args=None,
+    batch_size: int = 32,
 ):
 
     # args = {
@@ -1103,7 +1300,7 @@ def all_emotion_rep_reader(
     #             if emotion_rep_readers['args'] == args:
     #                 return emotion_rep_readers
 
-    emotion_rep_readers = {"layer_acc": {}}
+    emotion_rep_readers: Dict[str, Any] = {"layer_acc": {}}
     for emotion in tqdm(emotions):
         train_data = data[emotion]["train"]
         test_data = data[emotion]["test"]
@@ -1115,6 +1312,7 @@ def all_emotion_rep_reader(
             rep_token=rep_token,
             n_difference=n_difference,
             direction_method=direction_method,
+            batch_size=batch_size,
         )
 
         emotion_rep_readers[emotion] = rep_reader

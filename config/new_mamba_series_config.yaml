@@ -1,32 +1,105 @@
-experiment_name: "game_theory_mamba_pd"
-description: "Mamba series Prisoners Dilemma config in new benchmark schema"
+experiment_name: "game_theory_mamba"
+description: "Mamba config in new benchmark schema"
 version: "1.0.0"
 
 models:
-  - "/home/jjl7137/huggingface_models/Zyphra/Zamba2-1.2B-Instruct"
-    #  - "/data/home/jjl7137/huggingface_models/state-spaces/mamba-790m-hf"
+    - "/data/home/jjl7137/huggingface_models/Zyphra/Zamba2-1.2B-Instruct"
+    - "/data/home/jjl7137/huggingface_models/Zyphra/Zamba2-2.7B-Instruct"
+    #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba-790m-hf"
+    #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba-1.4b-hf"
+    #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba-2.7b-hf"
 
-emotions: ["anger", "happiness"]
-intensities:
-  - 1.5
+    # - "/data/home/jjl7137/huggingface_models/state-spaces/mamba2-780m"
+
+emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
+intensities: [0.6, 0.8, 1.0, 1.2, 1.5] 
+
+# RepE reader extraction can be far more memory-hungry than the 1.2B weights.
+# Keep this tiny for Zamba2 to avoid huge intermediate activations.
+repe_eng_config:
+  rep_reading_batch_size: 3
 
 benchmarks:
+  #  - name: "game_theory"
+  #  task_type: "Prisoners_Dilemma"
+  #  augmentation_config:
+  #    shuffle_options: true
+  #  llm_eval_config:
+  #    client: "gemini"
+  #    model: "gemini-2.5-flash-lite"
+  #    temperature: 0.0
+  #  sample_limit: 800
   - name: "game_theory"
-    task_type: "Prisoners_Dilemma"
-    sample_limit: 36
+    task_type: "Stag_Hunt"
     augmentation_config:
+      shuffle_options: true
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Escalation_Game"
+    augmentation_config:
+      shuffle_options: true
       previous_actions_length: 0
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Trust_Game_Trustor"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 0
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Trust_Game_Trustee"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 1
+      previous_trust_level: 1
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Ultimatum_Game_Proposer"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 0
+      previous_offer_level: 1
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+    sample_limit: 800
+  - name: "game_theory"
+    task_type: "Ultimatum_Game_Responder"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 1
+      previous_offer_level: 2
     enable_auto_truncation: false
     truncation_strategy: "right"
     preserve_ratio: 1.0
     llm_eval_config:
-      model: "gpt-4o-mini"
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
       temperature: 0.0
+    sample_limit: 800
 
 loading_config:
-  gpu_memory_utilization: 0.9
+  # Keep this conservative so vLLM can start even if some VRAM is already in use.
+  gpu_memory_utilization: 0.4
   tensor_parallel_size: null
-  max_model_len: 328
+  max_model_len: 512
   enforce_eager: true
   quantization: null
   trust_remote_code: true
@@ -38,9 +111,9 @@ loading_config:
 repeat_runs: 1
 
 generation_config:
-  temperature: 0.7
-  max_new_tokens: 440
-  do_sample: true
+  temperature: 0.6
+  max_new_tokens: 128
+  do_sample: false
   top_p: 0.95
   repetition_penalty: 1.0
   top_k: -1
@@ -49,7 +122,8 @@ generation_config:
   frequency_penalty: 0.0
   enable_thinking: false
 
-batch_size: 50
+batch_size: 1000
 
-output_dir: "results/Mamba_Series_Prisoners_Dilemma"
-sanity_check: ture
+output_dir: "results/game_theory_non_transformer"
+sanity_check: false
+defer_evaluation: true

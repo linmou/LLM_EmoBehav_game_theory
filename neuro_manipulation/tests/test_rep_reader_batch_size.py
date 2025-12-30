@@ -52,3 +52,35 @@ class TestRepReaderBatchSize(unittest.TestCase):
 
         _, kwargs = rep_reading_pipeline.get_directions.call_args
         self.assertEqual(kwargs["batch_size"], 32)
+
+    def test_all_emotion_rep_reader_can_override_train_batch_size(self):
+        # Responsible file: neuro_manipulation/utils.py
+        # Purpose: allow shrinking rep-reader training batch size to avoid GPU OOMs.
+        from neuro_manipulation import utils as nm_utils
+
+        rep_reading_pipeline = MagicMock()
+        rep_reading_pipeline.get_directions.return_value = MagicMock(direction_signs={-1: 1})
+        rep_reading_pipeline.return_value = [{-1: 0}]
+
+        data = {
+            "anger": {
+                "train": {"data": ["x"], "labels": [[1, 0]]},
+                "test": {"data": ["x"], "labels": [[1, 0]]},
+            }
+        }
+
+        nm_utils.all_emotion_rep_reader(
+            data=data,
+            emotions=["anger"],
+            rep_reading_pipeline=rep_reading_pipeline,
+            hidden_layers=[-1],
+            rep_token=-1,
+            n_difference=1,
+            direction_method="pca",
+            save_path=None,
+            read_args=None,
+            batch_size=1,
+        )
+
+        _, kwargs = rep_reading_pipeline.get_directions.call_args
+        self.assertEqual(kwargs["batch_size"], 1)
