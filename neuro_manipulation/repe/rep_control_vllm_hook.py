@@ -97,25 +97,27 @@ def hook_fn_rep_control(module, args, output):
         norm_pre = torch.norm(modified, dim=-1, keepdim=True) if normalize else None
 
         # Ensure mask is on the correct device and dtype
-        if mask is not None and isinstance(mask, torch.Tensor):
-            mask = mask.to(modified.device, dtype=modified.dtype)
-        elif mask is None and "position_ids" in state.get(
-            "kwargs", {}
-        ):  # Check if kwargs were passed
-            # Basic mask handling if position_ids available (less robust than original)
-            pos = state["kwargs"]["position_ids"]
-            zero_indices = (pos == 0).cumsum(1).argmax(1, keepdim=True)
-            col_indices = torch.arange(pos.size(1), device=pos.device).unsqueeze(0)
-            target_shape = modified.shape
-            mask = (
-                (col_indices >= zero_indices)
-                .float()
-                .reshape(target_shape[0], target_shape[1], 1)
-            )
-            mask = mask.to(modified.dtype)
-            logger.debug(f"Rank {rank} - Generated mask from position_ids.")
+        if mask is None:
+            if "position_ids" in state.get("kwargs", {}):  # Check if kwargs were passed
+                # Basic mask handling if position_ids available (less robust than original)
+                pos = state["kwargs"]["position_ids"]
+                zero_indices = (pos == 0).cumsum(1).argmax(1, keepdim=True)
+                col_indices = torch.arange(pos.size(1), device=pos.device).unsqueeze(0)
+                target_shape = modified.shape
+                mask = (
+                    (col_indices >= zero_indices)
+                    .float()
+                    .reshape(target_shape[0], target_shape[1], 1)
+                )
+                mask = mask.to(modified.dtype)
+                logger.debug(f"Rank {rank} - Generated mask from position_ids.")
+            else:
+                mask = 1.0  # Default mask
         else:
-            mask = 1.0  # Default mask
+            if isinstance(mask, (list, tuple, np.ndarray)):
+                mask = torch.as_tensor(mask)
+            if isinstance(mask, torch.Tensor):
+                mask = mask.to(modified.device, dtype=modified.dtype)
 
         # --- Conditional Tensor Parallel Slicing Logic --- Start
         full_controller = full_controller.to(modified.device, dtype=modified.dtype)
