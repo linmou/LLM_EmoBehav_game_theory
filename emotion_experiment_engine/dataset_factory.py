@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Type
 
 from .data_models import (
+    DEFAULT_VLLM_MAX_MODEL_LEN,
     BenchmarkConfig,
     ExperimentConfig,
     VLLMLoadingConfig,
@@ -238,7 +239,7 @@ def create_vllm_config_from_dict(
         model_path=loading_cfg_dict.get("model_path", model_path),
         gpu_memory_utilization=loading_cfg_dict.get("gpu_memory_utilization", 0.90),
         tensor_parallel_size=loading_cfg_dict.get("tensor_parallel_size"),
-        max_model_len=loading_cfg_dict.get("max_model_len", 32768),
+        max_model_len=loading_cfg_dict.get("max_model_len", DEFAULT_VLLM_MAX_MODEL_LEN),
         enforce_eager=loading_cfg_dict.get("enforce_eager", True),
         quantization=loading_cfg_dict.get("quantization"),
         trust_remote_code=loading_cfg_dict.get("trust_remote_code", True),

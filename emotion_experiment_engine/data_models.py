@@ -9,6 +9,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+DEFAULT_VLLM_MAX_MODEL_LEN = 8192
+DEFAULT_VLLM_MAX_NUM_SEQS_CAP = 32
+
 
 @dataclass
 class ResultRecord:

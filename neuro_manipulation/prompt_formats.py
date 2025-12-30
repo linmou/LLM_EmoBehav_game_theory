@@ -192,6 +192,7 @@ class Llama3InstFormat(ModelPromptFormat):
     __user_tag = "<|start_header_id|>user<|end_header_id|>"
     __assistant_tag = "<|start_header_id|>assistant<|end_header_id|>"
     __end_of_turn = "<|eot_id|>"
+    __system_end = "<|eot_id|>"
 
     @classproperty
     def begin_of_text(cls):
@@ -200,6 +201,10 @@ class Llama3InstFormat(ModelPromptFormat):
     @classproperty
     def system_begin(cls):
         return cls.__system_begin
+
+    @classproperty
+    def system_end(cls):
+        return cls.__system_end
 
     @classproperty
     def user_tag(cls):

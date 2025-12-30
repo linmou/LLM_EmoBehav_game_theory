@@ -27,7 +27,10 @@ from emotion_experiment_engine.memory_prompt_wrapper import (
     LongContextQAPromptWrapper,
     LongbenchRetrievalPromptWrapper,
 )
-from emotion_experiment_engine.game_prompt_wrapper import GameDecisionPromptWrapper
+from emotion_experiment_engine.game_prompt_wrapper import (
+    GameCompletionOptionIdPromptWrapper,
+    GameDecisionPromptWrapper,
+)
 
 
 class DummyPromptFormat:
@@ -175,6 +178,19 @@ class TestRegistryPromptWrapperRouting(unittest.TestCase):
         )
         wrapper = _extract_wrapper_instance_from_partial(prompt_partial)
         self.assertIsInstance(wrapper, GameDecisionPromptWrapper)
+        mock_factory.assert_not_called()
+
+    @patch("emotion_experiment_engine.benchmark_component_registry.get_benchmark_prompt_wrapper")
+    def test_game_theory_completion_option_id_uses_completion_wrapper(self, mock_factory):
+        cfg = self._mk_cfg("game_theory_completion_option_id", "Prisoners_Dilemma")
+        prompt_partial, _, _ = create_benchmark_components(
+            benchmark_name=cfg.name,
+            task_type=cfg.task_type,
+            config=cfg,
+            prompt_format=self.prompt_format,
+        )
+        wrapper = _extract_wrapper_instance_from_partial(prompt_partial)
+        self.assertIsInstance(wrapper, GameCompletionOptionIdPromptWrapper)
         mock_factory.assert_not_called()
 
 
