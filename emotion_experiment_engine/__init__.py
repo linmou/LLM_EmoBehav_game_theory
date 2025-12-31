@@ -72,5 +72,4 @@ __all__ = [
     # "get_adapter" removed in smart dataset refactoring
     "load_emotion_memory_config",
     "EmotionMemoryConfigLoader",
-    "swebench_evaluation",
 ]

@@ -2,6 +2,7 @@ from typing import Union
 
 from constants import GameNames
 from games.battle_of_sexes import BattleOfSexesDecision, BattleOfSexesScenario
+from games.beauty_contest import BeautyContestDecision, BeautyContestScenario
 from games.duopolistic_competition import (
     DuopolisticCompetitionDecision,
     DuopolisticCompetitionScenario,
@@ -71,6 +72,13 @@ GAME_CONFIGS = {
         "decision_class": EscalationGameDecision,
         "payoff_matrix": ALL_GAME_PAYOFF[GameNames.ESCALATION_GAME],
         "data_path": data_path_format.format(GameNames.ESCALATION_GAME.value),
+    },
+    GameNames.BEAUTY_CONTEST: {
+        "game_name": GameNames.BEAUTY_CONTEST.value,
+        "scenario_class": BeautyContestScenario,
+        "decision_class": BeautyContestDecision,
+        "payoff_matrix": dict(),
+        "data_path": data_path_format.format(GameNames.BEAUTY_CONTEST.value),
     },
     GameNames.DIPLOMACY_ESCALATION_GAME: {
         "game_name": GameNames.DIPLOMACY_ESCALATION_GAME.value,
