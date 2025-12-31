@@ -34,6 +34,16 @@ def replace_reducer(existing_value, new_value):
     return new_value
 
 
+def _format_fewshot_examples(examples: Optional[Sequence[dict]]) -> str:
+    if not examples:
+        return ""
+    return (
+        "\nFew-shot examples (style reference only, do not copy text directly):\n"
+        + json.dumps(list(examples), indent=2)
+        + "\n"
+    )
+
+
 # State definition
 class ScenarioCreationState(TypedDict):
     # Input requirements
@@ -157,6 +167,9 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         payoff_matrix=game_cfg["payoff_matrix"],
     )
     example_scenario = game.example_scenario
+    fewshot_section = _format_fewshot_examples(
+        _global_llm_config.get("fewshot_examples")
+    )
     payoff_description = ""
     if isinstance(game.payoff_matrix, PayoffMatrix):
         payoff_description = game.payoff_matrix.get_natural_language_description(
@@ -198,6 +211,7 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         
         You should follow this example format, note that when writing payoff_matrix_description, you should first use digital payoff, then write the natural language description of the payoff in this scenario.
         {json.dumps(example_scenario, indent=2)}
+        {fewshot_section}
                     
         When you design the behavior choices, keys should strictly follow the example format, don't use other keys.
         When you create the behavior choices, do not use ambiguous words like 'collaberate, cooperate' or 'defect', please provide specific behavior and more details settings in the scenario to make the behavior -> outcome causal chain robust and reasonable.
@@ -223,6 +237,7 @@ def propose_scenario(state: ScenarioCreationState) -> ScenarioCreationState:
         
         Follow this example format:
         {json.dumps(example_scenario, indent=2)}
+        {fewshot_section}
         
         Return the improved scenario as a valid JSON object.
         """

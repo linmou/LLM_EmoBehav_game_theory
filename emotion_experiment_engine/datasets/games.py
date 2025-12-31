@@ -16,7 +16,6 @@ from scipy import stats
 
 from games.game import SequentialGameScenario
 from games.game_configs import get_game_config
-from neuro_manipulation.utils import oai_response
 from pydantic import BaseModel
 
 from .. import evaluation_utils
@@ -572,6 +571,8 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         )
 
         try:
+            from neuro_manipulation.utils import oai_response  # type: ignore
+
             result = oai_response(
                 prompt,
                 client=client,
