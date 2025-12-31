@@ -8,16 +8,12 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
-from copy import deepcopy
-from typing import List
 
-try:
-    # Prefer real torch Dataset when available
-    from torch.utils.data import Dataset  # type: ignore
-except Exception:
-    # Minimal stub to allow running in environments without torch
-    class Dataset:  # type: ignore
-        pass
+# NOTE: Do not import torch at module import time.
+# Some environments ship a torch build that aborts the interpreter on import.
+# Datasets only need the duck-typed Dataset interface (__len__/__getitem__).
+class Dataset:  # type: ignore
+    pass
 
 from ..data_models import BenchmarkConfig, BenchmarkItem
 
