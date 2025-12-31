@@ -148,8 +148,6 @@ class GameDecisionPromptWrapper(GameBenchmarkPromptWrapper):
 class GameCompletionOptionIdPromptWrapper(GameBenchmarkPromptWrapper):
     """Completion-style prompt for base LMs that should emit an option id."""
 
-    CHOICE_PREFIX = 'After serious consideration, you choose option "'
-
     def __call__(
         self,
         *,
@@ -164,6 +162,20 @@ class GameCompletionOptionIdPromptWrapper(GameBenchmarkPromptWrapper):
     ) -> str:
         del context, user_messages, enable_thinking, augmentation_config, answer, emotion  # unused
         normalized_options = self._normalize_options(options)
+        n_options = len(normalized_options)
+        if n_options <= 0:
+            raise ValueError("Expected non-empty options for completion_option_id prompt")
+
+        if n_options <= 9:
+            if n_options == 1:
+                choice_hint = "1"
+            elif n_options == 2:
+                choice_hint = "1 or 2"
+            else:
+                choice_hint = f"{', '.join(str(i) for i in range(1, n_options))}, or {n_options}"
+            instruction = f"Output exactly one character: {choice_hint}."
+        else:
+            instruction = f"Output only the option number (1-{n_options})."
 
         system_lines = [
             "You are an average American.",
@@ -173,7 +185,7 @@ class GameCompletionOptionIdPromptWrapper(GameBenchmarkPromptWrapper):
         for idx, option in enumerate(normalized_options, start=1):
             system_lines.append(f"Option {idx}. {option}")
         system_lines.append("")
-        system_lines.append(self.CHOICE_PREFIX)
+        system_lines.append(instruction)
         return "\n".join(system_lines)
 
 
