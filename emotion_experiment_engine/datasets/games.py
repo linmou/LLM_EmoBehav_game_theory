@@ -673,7 +673,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         )
 
         try:
-            from neuro_manipulation.utils import oai_response
+            from neuro_manipulation.utils import oai_response  # type: ignore
 
             result = oai_response(
                 prompt,

@@ -81,14 +81,20 @@ def test_generate_shuffle_choice_impact_report_selects_latest_and_renames_output
     out = generate_game_theory_impact_report(root=root)
     assert out.option_csv_path.name == "option_impacted_by_emo_vs_neutral_latest.csv"
     assert out.behavior_csv_path.name == "behavior_impacted_emo_vs_neutral_latest.csv"
+    assert out.option_intensity_csv_path.name == "option_intensity_impacted_by_emo_vs_neutral_latest.csv"
+    assert out.behavior_intensity_csv_path.name == "behavior_intensity_impacted_emo_vs_neutral_latest.csv"
     assert out.report_path.name == "game_theory_impact_report.md"
 
     option_text = out.option_csv_path.read_text(encoding="utf-8")
     behavior_text = out.behavior_csv_path.read_text(encoding="utf-8")
+    option_intensity_text = out.option_intensity_csv_path.read_text(encoding="utf-8")
+    behavior_intensity_text = out.behavior_intensity_csv_path.read_text(encoding="utf-8")
     md = out.report_path.read_text(encoding="utf-8")
 
     assert "FooModel" in option_text
     assert "FooModel" in behavior_text
+    assert "FooModel" in option_intensity_text
+    assert "FooModel" in behavior_intensity_text
     assert "summary_choice_ratio.csv" in md
     assert "summary_behavior_ratio.csv" in md
     assert "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101" in md
@@ -113,6 +119,152 @@ def test_generate_shuffle_choice_impact_report_selects_latest_and_renames_output
     assert len(cooperate) == 1
     assert cooperate[0][idx_best] == "anger"
     assert float(cooperate[0][idx_best_delta]) == pytest.approx(-0.2, abs=1e-6)
+
+
+def test_generate_shuffle_choice_impact_report_includes_intensity_deltas(tmp_path: Path) -> None:
+    """Ensure intensity-aware output preserves per-intensity deltas (vs neutral mean)."""
+    root = tmp_path / "results" / "new_game_theory_decision" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 0.1, 1, 0.4],
+            ["neutral", 1.5, 1, 0.4],
+            ["anger", 0.1, 1, 0.0],  # delta -0.4
+            ["anger", 1.5, 1, 0.8],  # delta +0.4
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root)
+    text = out.option_intensity_csv_path.read_text(encoding="utf-8").strip().splitlines()
+    header = text[0].split(",")
+    idx_task = header.index("task")
+    idx_model = header.index("model")
+    idx_option = header.index("option_id")
+    idx_emotion = header.index("emotion")
+    idx_delta_range = header.index("delta_range_across_intensity")
+    idx_deltas = header.index("deltas_by_intensity")
+
+    rows = [l.split(",") for l in text[1:]]
+    matches = [
+        r
+        for r in rows
+        if r[idx_task] == "Prisoners_Dilemma"
+        and r[idx_model] == "FooModel"
+        and r[idx_option] == "1"
+        and r[idx_emotion] == "anger"
+    ]
+    assert len(matches) == 1
+    assert float(matches[0][idx_delta_range]) == pytest.approx(0.8, abs=1e-6)
+    # stable ordering by intensity asc
+    assert matches[0][idx_deltas] == "0.1:-0.400000;1.5:+0.400000"
+
+
+def test_generate_report_falls_back_when_significance_map_empty(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: avoid blank per-game delta cells when sig extraction fails."""
+    root = tmp_path / "results" / "new_game_theory" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_TestGame_20250102_010101"
+
+    # Summary ratios are present and should drive non-empty deltas.
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior", "ratio"],
+        [
+            ["neutral", 1.0, "offer_high", 0.8],
+            ["anger", 1.0, "offer_high", 0.2],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 1.0, 1, 0.8],
+            ["anger", 1.0, 1, 0.2],
+        ],
+    )
+
+    # raw_results.json exists but is intentionally unparsable for *neutral*,
+    # causing an empty significance map (before the fallback fix).
+    raw = [
+        {
+            "emotion": "neutral",
+            "item_id": 1,
+            "repeat_id": 1,
+            "metadata": {
+                "item_metadata": {
+                    "options": [
+                        {"id": 1, "text": "A", "behavior": "offer_high"},
+                    ]
+                }
+            },
+            "response": "NOT_AN_OPTION",
+        },
+        {
+            "emotion": "anger",
+            "item_id": 1,
+            "repeat_id": 1,
+            "metadata": {
+                "item_metadata": {
+                    "options": [
+                        {"id": 1, "text": "A", "behavior": "offer_high"},
+                    ]
+                }
+            },
+            "response": "A",
+        },
+    ]
+    import json
+
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "raw_results.json").write_text(json.dumps(raw), encoding="utf-8")
+
+    out = generate_game_theory_impact_report(root=root)
+    behavior_csv = out.behavior_csv_path.read_text(encoding="utf-8")
+    assert "offer_high" in behavior_csv
+    # Ensure the "all_emotion_deltas_vs_neutral" cell is not blank.
+    assert "anger:" in behavior_csv
+    md = out.report_path.read_text(encoding="utf-8")
+    assert "| FooModel | offer_high |" in md
+    assert "anger:" in md
+
+
+def test_generate_report_writes_heatmaps_when_enabled(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: write heatmap PNGs when requested."""
+    root = tmp_path / "results" / "new_game_theory" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_TestGame_20250102_010101"
+
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 1.0, 1, 0.8],
+            ["neutral", 1.0, 2, 0.2],
+            ["anger", 1.0, 1, 0.2],
+            ["anger", 1.0, 2, 0.8],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior", "ratio"],
+        [
+            ["neutral", 1.0, "offer_high", 0.8],
+            ["neutral", 1.0, "offer_low", 0.2],
+            ["anger", 1.0, "offer_high", 0.2],
+            ["anger", 1.0, "offer_low", 0.8],
+        ],
+    )
+
+    out_dir = tmp_path / "out"
+    out = generate_game_theory_impact_report(root=root, out_dir=out_dir, write_heatmaps=True)
+    assert out.heatmaps_dir is not None
+    assert out.heatmaps_dir.exists()
+
+    # Expect at least one option + one behavior heatmap.
+    heatmaps = sorted(p.name for p in out.heatmaps_dir.glob("*.png"))
+    assert any("option" in name for name in heatmaps)
+    assert any("behavior" in name for name in heatmaps)
 
 
 def test_report_per_game_tables_not_truncated_by_default(tmp_path: Path) -> None:
