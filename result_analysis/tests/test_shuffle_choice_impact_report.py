@@ -231,7 +231,7 @@ def test_generate_report_falls_back_when_significance_map_empty(tmp_path: Path) 
 
 
 def test_generate_report_writes_heatmaps_when_enabled(tmp_path: Path) -> None:
-    """result_analysis/generate_game_theory_impact_report.py: write heatmap PNGs when requested."""
+    """result_analysis/generate_game_theory_impact_report.py: write behavior-change heatmap PDFs when requested."""
     root = tmp_path / "results" / "new_game_theory" / "shuffle_choices"
     run_dir = root / "FooModel_game_theory_TestGame_20250102_010101"
 
@@ -249,10 +249,10 @@ def test_generate_report_writes_heatmaps_when_enabled(tmp_path: Path) -> None:
         run_dir / "summary_behavior_ratio.csv",
         ["emotion", "intensity", "behavior", "ratio"],
         [
-            ["neutral", 1.0, "offer_high", 0.8],
-            ["neutral", 1.0, "offer_low", 0.2],
-            ["anger", 1.0, "offer_high", 0.2],
-            ["anger", 1.0, "offer_low", 0.8],
+            ["neutral", 1.0, "cooperate", 0.8],
+            ["neutral", 1.0, "defect", 0.2],
+            ["anger", 1.0, "cooperate", 0.2],
+            ["anger", 1.0, "defect", 0.8],
         ],
     )
 
@@ -261,10 +261,64 @@ def test_generate_report_writes_heatmaps_when_enabled(tmp_path: Path) -> None:
     assert out.heatmaps_dir is not None
     assert out.heatmaps_dir.exists()
 
-    # Expect at least one option + one behavior heatmap.
-    heatmaps = sorted(p.name for p in out.heatmaps_dir.glob("*.png"))
-    assert any("option" in name for name in heatmaps)
-    assert any("behavior" in name for name in heatmaps)
+    heatmaps = sorted(p.name for p in out.heatmaps_dir.glob("*.pdf"))
+    assert heatmaps == ["behavior_change_heatmap__TestGame.pdf"]
+
+
+def test_generate_report_filters_high_unknown_by_intensity(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: drop (emotion,intensity) when unknown ratio > threshold."""
+    root = tmp_path / "results" / "new_game_theory" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_TestGame_20250102_010101"
+
+    # Neutral baseline: defect=0.2 at both intensities.
+    # Anger: intensity=0.6 defect=0.2; intensity=1.5 defect=0.9 but unknown=0.2 (too high) => drop 1.5 slice.
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior", "ratio"],
+        [
+            ["neutral", 0.6, "defect", 0.2],
+            ["neutral", 0.6, "unknown", 0.0],
+            ["neutral", 1.5, "defect", 0.2],
+            ["neutral", 1.5, "unknown", 0.0],
+            ["anger", 0.6, "defect", 0.2],
+            ["anger", 0.6, "unknown", 0.0],
+            ["anger", 1.5, "defect", 0.9],
+            ["anger", 1.5, "unknown", 0.2],
+        ],
+    )
+    # Minimal choice csv to satisfy report generation.
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 0.6, 1, 1.0],
+            ["neutral", 1.5, 1, 1.0],
+            ["anger", 0.6, 1, 1.0],
+            ["anger", 1.5, 1, 1.0],
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root, unknown_threshold=0.10)
+    text = out.behavior_intensity_csv_path.read_text(encoding="utf-8").strip().splitlines()
+    header = text[0].split(",")
+    idx_task = header.index("task")
+    idx_model = header.index("model")
+    idx_behavior = header.index("behavior_label")
+    idx_emotion = header.index("emotion")
+    idx_deltas = header.index("deltas_by_intensity")
+
+    rows = [l.split(",") for l in text[1:]]
+    matches = [
+        r
+        for r in rows
+        if r[idx_task] == "TestGame"
+        and r[idx_model] == "FooModel"
+        and r[idx_behavior] == "defect"
+        and r[idx_emotion] == "anger"
+    ]
+    assert len(matches) == 1
+    # Intensity 1.5 slice should be removed due to unknown=0.2 (>0.10).
+    assert matches[0][idx_deltas] == "0.6:+0.000000"
 
 
 def test_report_per_game_tables_not_truncated_by_default(tmp_path: Path) -> None:

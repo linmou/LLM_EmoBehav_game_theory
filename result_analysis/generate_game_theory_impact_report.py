@@ -37,7 +37,13 @@ from pathlib import Path
 from statistics import mean
 from typing import Dict, Iterable, List, Optional, Tuple
 
-from result_analysis.game_theory_impact_heatmaps import write_delta_heatmaps
+from result_analysis.game_theory_impact_heatmaps import write_behavior_change_heatmap_pdf
+from result_analysis.game_theory_ratio_loading import (
+    collapse_behavior_over_intensity,
+    collapse_choice_over_intensity,
+    load_behavior_by_intensity,
+    load_choice_by_intensity,
+)
 
 
 _RUN_DIR_RE = re.compile(
@@ -488,67 +494,14 @@ def _format_all_emotions_cell(sig_by_emotion: Dict[str, SigEntry]) -> str:
 def _format_intensity_series(vals: List[Tuple[float, float]]) -> str:
     vals = sorted(vals, key=lambda x: x[0])
     return ";".join(f"{intensity:g}:{val:+.6f}" for intensity, val in vals)
-
-
-def _load_choice_ratios_by_intensity(path: Path) -> Dict[str, Dict[float, Dict[int, float]]]:
-    acc: Dict[str, Dict[float, Dict[int, List[float]]]] = {}
-    with path.open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            emotion = str(row["emotion"])
-            intensity = float(row["intensity"])
-            option_id = int(float(row["option_id"]))
-            ratio = float(row["ratio"])
-            acc.setdefault(emotion, {}).setdefault(intensity, {}).setdefault(option_id, []).append(ratio)
-    return {
-        emo: {i: {opt: mean(vals) for opt, vals in m.items()} for i, m in per_int.items()} for emo, per_int in acc.items()
-    }
-
-
-def _load_behavior_ratios_by_intensity(path: Path) -> Dict[str, Dict[float, Dict[str, float]]]:
-    acc: Dict[str, Dict[float, Dict[str, List[float]]]] = {}
-    with path.open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            emotion = str(row["emotion"])
-            intensity = float(row["intensity"])
-            behavior = row.get("behavior")
-            if behavior in (None, "", "nan", "NaN"):
-                behavior = row.get("behavior_label")
-            if behavior in (None, ""):
-                raise KeyError("Expected CSV column 'behavior' or 'behavior_label'")
-            ratio = float(row["ratio"])
-            acc.setdefault(emotion, {}).setdefault(intensity, {}).setdefault(str(behavior), []).append(ratio)
-    return {
-        emo: {i: {b: mean(vals) for b, vals in m.items()} for i, m in per_int.items()} for emo, per_int in acc.items()
-    }
 def _load_collapsed_choice_ratios(path: Path) -> Dict[str, Dict[int, float]]:
-    acc: Dict[str, Dict[int, List[float]]] = {}
-    with path.open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            emotion = str(row["emotion"])
-            option_id = int(float(row["option_id"]))
-            ratio = float(row["ratio"])
-            acc.setdefault(emotion, {}).setdefault(option_id, []).append(ratio)
-    return {emo: {opt: mean(vals) for opt, vals in m.items()} for emo, m in acc.items()}
+    collapsed, _ = collapse_choice_over_intensity(path, unknown_threshold=None)
+    return collapsed
 
 
 def _load_collapsed_behavior_ratios(path: Path) -> Dict[str, Dict[str, float]]:
-    acc: Dict[str, Dict[str, List[float]]] = {}
-    with path.open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            emotion = str(row["emotion"])
-            behavior = row.get("behavior")
-            if behavior in (None, "", "nan", "NaN"):
-                behavior = row.get("behavior_label")
-            if behavior in (None, ""):
-                raise KeyError("Expected CSV column 'behavior' or 'behavior_label'")
-            behavior = str(behavior)
-            ratio = float(row["ratio"])
-            acc.setdefault(emotion, {}).setdefault(behavior, []).append(ratio)
-    return {emo: {b: mean(vals) for b, vals in m.items()} for emo, m in acc.items()}
+    collapsed, _ = collapse_behavior_over_intensity(path, unknown_threshold=None)
+    return collapsed
 
 
 def _impact_rows_for_choice(
@@ -556,8 +509,9 @@ def _impact_rows_for_choice(
     csv_path: Path,
     *,
     option_sig: Optional[Dict[int, Dict[str, SigEntry]]] = None,
+    collapsed_override: Optional[Dict[str, Dict[int, float]]] = None,
 ) -> Tuple[List[Dict[str, object]], bool]:
-    collapsed = _load_collapsed_choice_ratios(csv_path)
+    collapsed = collapsed_override if collapsed_override is not None else _load_collapsed_choice_ratios(csv_path)
     if "neutral" not in collapsed:
         return [], True
     options = sorted({o for emo in collapsed for o in collapsed[emo]})
@@ -604,8 +558,9 @@ def _impact_rows_for_behavior(
     csv_path: Path,
     *,
     behavior_sig: Optional[Dict[str, Dict[str, SigEntry]]] = None,
+    collapsed_override: Optional[Dict[str, Dict[str, float]]] = None,
 ) -> Tuple[List[Dict[str, object]], bool]:
-    collapsed = _load_collapsed_behavior_ratios(csv_path)
+    collapsed = collapsed_override if collapsed_override is not None else _load_collapsed_behavior_ratios(csv_path)
     if "neutral" not in collapsed:
         return [], True
     behaviors = sorted({b for emo in collapsed for b in collapsed[emo]})
@@ -647,8 +602,13 @@ def _impact_rows_for_behavior(
     return rows, False
 
 
-def _intensity_rows_for_choice(run: RunRef, csv_path: Path) -> Tuple[List[Dict[str, object]], bool]:
-    by_intensity = _load_choice_ratios_by_intensity(csv_path)
+def _intensity_rows_for_choice(
+    run: RunRef,
+    csv_path: Path,
+    *,
+    by_intensity_override: Optional[Dict[str, Dict[float, Dict[int, float]]]] = None,
+) -> Tuple[List[Dict[str, object]], bool]:
+    by_intensity = by_intensity_override if by_intensity_override is not None else load_choice_by_intensity(csv_path, unknown_threshold=None)[0]
     if "neutral" not in by_intensity:
         return [], True
 
@@ -697,8 +657,15 @@ def _intensity_rows_for_choice(run: RunRef, csv_path: Path) -> Tuple[List[Dict[s
     return rows, False
 
 
-def _intensity_rows_for_behavior(run: RunRef, csv_path: Path) -> Tuple[List[Dict[str, object]], bool]:
-    by_intensity = _load_behavior_ratios_by_intensity(csv_path)
+def _intensity_rows_for_behavior(
+    run: RunRef,
+    csv_path: Path,
+    *,
+    by_intensity_override: Optional[Dict[str, Dict[float, Dict[str, float]]]] = None,
+) -> Tuple[List[Dict[str, object]], bool]:
+    by_intensity = (
+        by_intensity_override if by_intensity_override is not None else load_behavior_by_intensity(csv_path, unknown_threshold=None)[0]
+    )
     if "neutral" not in by_intensity:
         return [], True
 
@@ -926,6 +893,9 @@ def generate_game_theory_impact_report(
     top_n: int = 20,
     per_game_n: int = 0,
     write_heatmaps: bool = False,
+    unknown_threshold: Optional[float] = None,
+    heatmap_norm: str = "symlog",
+    heatmap_symlog_linthresh: float = 0.01,
 ) -> ReportOutputs:
     runs = _discover_latest_runs(root)
     if not runs:
@@ -941,20 +911,28 @@ def generate_game_theory_impact_report(
         choice_csv = run.dir_path / "summary_choice_ratio.csv"
         behavior_csv = run.dir_path / "summary_behavior_ratio.csv"
         if choice_csv.exists():
-            rows, missing_neutral = _impact_rows_for_choice(run, choice_csv, option_sig=option_sig or None)
+            collapsed, _ = collapse_choice_over_intensity(choice_csv, unknown_threshold=unknown_threshold)
+            by_intensity, _ = load_choice_by_intensity(choice_csv, unknown_threshold=unknown_threshold)
+            rows, missing_neutral = _impact_rows_for_choice(
+                run, choice_csv, option_sig=option_sig or None, collapsed_override=collapsed
+            )
             option_rows.extend(rows)
             if missing_neutral:
                 skipped_missing_neutral.append(choice_csv)
-            rows, missing_neutral = _intensity_rows_for_choice(run, choice_csv)
+            rows, missing_neutral = _intensity_rows_for_choice(run, choice_csv, by_intensity_override=by_intensity)
             option_intensity_rows.extend(rows)
             if missing_neutral:
                 skipped_missing_neutral.append(choice_csv)
         if behavior_csv.exists():
-            rows, missing_neutral = _impact_rows_for_behavior(run, behavior_csv, behavior_sig=behavior_sig or None)
+            collapsed_b, _ = collapse_behavior_over_intensity(behavior_csv, unknown_threshold=unknown_threshold)
+            by_intensity_b, _ = load_behavior_by_intensity(behavior_csv, unknown_threshold=unknown_threshold)
+            rows, missing_neutral = _impact_rows_for_behavior(
+                run, behavior_csv, behavior_sig=behavior_sig or None, collapsed_override=collapsed_b
+            )
             behavior_rows.extend(rows)
             if missing_neutral:
                 skipped_missing_neutral.append(behavior_csv)
-            rows, missing_neutral = _intensity_rows_for_behavior(run, behavior_csv)
+            rows, missing_neutral = _intensity_rows_for_behavior(run, behavior_csv, by_intensity_override=by_intensity_b)
             behavior_intensity_rows.extend(rows)
             if missing_neutral:
                 skipped_missing_neutral.append(behavior_csv)
@@ -980,15 +958,19 @@ def generate_game_theory_impact_report(
         _write_csv(behavior_intensity_rows, behavior_intensity_out)
 
     if heatmaps_dir is not None:
+        by_task: Dict[str, Dict[str, Path]] = {}
         for run in runs:
-            choice_csv = run.dir_path / "summary_choice_ratio.csv"
             behavior_csv = run.dir_path / "summary_behavior_ratio.csv"
-            write_delta_heatmaps(
-                model=run.model,
-                task=run.task,
-                choice_csv=choice_csv if choice_csv.exists() else None,
-                behavior_csv=behavior_csv if behavior_csv.exists() else None,
+            if behavior_csv.exists():
+                by_task.setdefault(run.task, {})[run.model] = behavior_csv
+        for task, model_map in sorted(by_task.items()):
+            write_behavior_change_heatmap_pdf(
+                task=task,
+                model_to_behavior_csv=model_map,
                 out_dir=heatmaps_dir,
+                unknown_threshold=unknown_threshold,
+                heatmap_norm=heatmap_norm,
+                symlog_linthresh=heatmap_symlog_linthresh,
             )
 
     report_out.write_text(
@@ -1037,7 +1019,26 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     )
     parser.add_argument("--top_n", type=int, default=20)
     parser.add_argument("--per_game_n", type=int, default=0, help="0 means include all models")
-    parser.add_argument("--write_heatmaps", action="store_true", help="Write Δ vs neutral heatmap PNGs under out_dir/heatmaps")
+    parser.add_argument("--write_heatmaps", action="store_true", help="Write behavior-change heatmap PDFs under out_dir/heatmaps")
+    parser.add_argument(
+        "--unknown_threshold",
+        type=float,
+        default=None,
+        help="If set, drop (emotion,intensity) slices with unknown ratio > threshold (behavior: behavior=='unknown'; choice: option_id==-1).",
+    )
+    parser.add_argument(
+        "--heatmap_norm",
+        type=str,
+        default="symlog",
+        choices=["linear", "symlog"],
+        help="Heatmap normalization (only used with --write_heatmaps).",
+    )
+    parser.add_argument(
+        "--heatmap_symlog_linthresh",
+        type=float,
+        default=0.01,
+        help="Symlog linthresh for heatmaps (only used when --heatmap_norm symlog).",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
     generate_game_theory_impact_report(
         root=args.root,
@@ -1045,6 +1046,9 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         top_n=args.top_n,
         per_game_n=args.per_game_n,
         write_heatmaps=args.write_heatmaps,
+        unknown_threshold=args.unknown_threshold,
+        heatmap_norm=args.heatmap_norm,
+        heatmap_symlog_linthresh=args.heatmap_symlog_linthresh,
     )
     return 0
 

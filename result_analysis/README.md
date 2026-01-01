@@ -1,6 +1,6 @@
 # Result Analysis Directory
 
-Last updated: 2025-12-27 (commit 4c8051b)
+Last updated: 2026-01-01 (commit 2fa692a)
 
 This directory contains all post-experiment analysis scripts and results for the LLM Emotional Behavior Game Theory experiments.
 
@@ -10,7 +10,7 @@ This directory contains all post-experiment analysis scripts and results for the
 - `analyze_switches_detailed.py` - Analyzes switching patterns between activation_only and context_and_activation conditions
 - `analyze_choice_patterns.py` - Comprehensive analysis of choice patterns across all conditions
 - `analyze_choice_differences.py` - Finds cases where choices differ between conditions
-- `generate_game_theory_impact_report.py` - Builds option/behavior impact tables vs neutral from `summary_choice_ratio.csv` / `summary_behavior_ratio.csv`
+- `generate_game_theory_impact_report.py` - Builds option/behavior impact tables vs neutral (plus intensity tables, filtering, and heatmaps)
 - `postprocess_prob_argmax_from_existing_csv.py` - Postprocess existing argmax-match CSV with behavior labels + predicted argmax distributions
 - `trust_game_trustor_expected_score.py` - Report-driven Trust Game (Trustor) item-level decision shift vs neutral (trust_none=0, trust_low=1, trust_high=2)
 - `trust_game_trustee_expected_score.py` - Report-driven Trust Game (Trustee) item-level decision shift vs neutral (return_none=0, return_medium=1, return_high=2)
@@ -123,7 +123,7 @@ This keeps analysis in pure Python (no new dependencies) and matches the dataset
 
 ## Game-Theory Impact Report (vs neutral)
 
-This aggregates per-game choice/behavior ratios and reports emotion deltas vs `neutral`, collapsing over intensity.
+This aggregates per-game choice/behavior ratios and reports emotion deltas vs `neutral`, collapsing over intensity (with intensity-aware tables too).
 
 ```bash
 # Shuffle-choice decision benchmark (choice + behavior ratios)
@@ -138,7 +138,16 @@ python -m result_analysis.generate_game_theory_impact_report \
 This writes into the `--root` folder:
 - `option_impacted_by_emo_vs_neutral_latest.csv`
 - `behavior_impacted_emo_vs_neutral_latest.csv` (only if `summary_behavior_ratio.csv` exists)
+- `option_intensity_impacted_by_emo_vs_neutral_latest.csv`
+- `behavior_intensity_impacted_emo_vs_neutral_latest.csv` (only if `summary_behavior_ratio.csv` exists)
 - `game_theory_impact_report.md` (includes which runs were used + any skipped runs missing `neutral`)
+
+Optional:
+- Use `--out_dir` when `--root` is not writable (writes outputs to `--out_dir` but still scans `--root`).
+- Use `--unknown_threshold 0.10` to drop `(emotion,intensity)` slices with high unknown ratio (behavior: `behavior=="unknown"`, choice: `option_id==-1`).
+- Use `--write_heatmaps` to write one behavior-change heatmap PDF per game setting under `out_dir/heatmaps/`.
+  - Heatmap cells are peak-`|Δ|` across intensities per `(model, emotion)` for a target “direction” behavior (binary: `defect/escalation`; otherwise: `offer_none/reject`).
+  - Default heatmap normalization is symmetric-log; tune with `--heatmap_symlog_linthresh` or override via `--heatmap_norm linear`.
 
 ## Original Experiment Results Location
 
