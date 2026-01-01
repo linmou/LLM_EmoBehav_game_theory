@@ -56,7 +56,6 @@ from .data_models import (
     ExperimentConfig,
     ResultRecord,
 )
-
 __version__ = "1.0.0"
 
 

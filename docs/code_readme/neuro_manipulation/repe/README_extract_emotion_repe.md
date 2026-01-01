@@ -100,3 +100,30 @@ The `RepReadingPipeline` provides the mechanism to access the model's hidden sta
     *   Saves the collected readers and metadata to a file if `save_path` is provided.
 
 This process yields a set of vectors, one per layer per emotion, representing the direction in activation space associated with that emotion. These directions can then be used for analysis or manipulation of model behavior. 
+
+## Visualize Stored RepE Directions (2D)
+
+If you already have cached emotion readers saved under `neuro_manipulation/representation_storage/` (the `emotion_rep_reader_<hash>.pkl` files created/loaded by `neuro_manipulation/model_utils.py:load_emotion_readers`), you can visualize the **stored per-layer direction vectors** in 2D without recomputing them.
+
+The script:
+- Infers the **exact RepE cache hash** the `emotion_experiment_engine` runner would use (from your series config + RepE defaults/overrides).
+- Loads the cached `emotion_rep_reader_<hash>.pkl` (and prints the exact file used).
+- Projects all `(emotion, layer, component)` direction vectors to 2D with PCA and saves a plot + JSONL points.
+
+Run:
+```bash
+# Make sure conda env llm_fresh is active
+python result_analysis/repe/plot_emotion_rep_directions_2d.py \
+  --config config/new_game_theory_config.yaml
+```
+
+If the exact hash-derived cache file is missing (e.g., your stored readers were generated with different RepE defaults), you can let it scan `neuro_manipulation/representation_storage/` and pick the newest cached reader per model:
+```bash
+python result_analysis/repe/plot_emotion_rep_directions_2d.py \
+  --config config/new_game_theory_config.yaml \
+  --fallback-scan
+```
+
+Outputs (default):
+- Plots: `neuro_manipulation/representation_storage/<model>_emotion_rep_directions_pca2d.png`
+- Points: `neuro_manipulation/representation_storage/<model>_emotion_rep_directions_pca2d.jsonl`

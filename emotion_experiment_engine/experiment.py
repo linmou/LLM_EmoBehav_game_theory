@@ -825,6 +825,32 @@ class EmotionExperiment:
         # Convert to DataFrame
         results_data = []
         for result in results:
+            chosen_behavior = None
+            try:
+                item_md = (result.metadata or {}).get("item_metadata") or {}
+                options = item_md.get("options")
+                score_val = result.score
+                if isinstance(options, list) and score_val is not None:
+                    score_float = float(score_val)
+                    if score_float == score_float:
+                        option_id = int(score_float)
+                        if float(option_id) == score_float:
+                            for opt in options:
+                                if not isinstance(opt, dict):
+                                    continue
+                                try:
+                                    opt_id = int(opt.get("id"))
+                                except Exception:
+                                    continue
+                                if opt_id == option_id:
+                                    behavior = opt.get("behavior")
+                                    if isinstance(behavior, str) and behavior.strip():
+                                        chosen_behavior = behavior
+                                    else:
+                                        chosen_behavior = opt.get("text")
+                                    break
+            except Exception:
+                chosen_behavior = None
             results_data.append(
                 {
                     "emotion": result.emotion,
@@ -834,6 +860,7 @@ class EmotionExperiment:
                     "response": result.response,
                     "ground_truth": str(result.ground_truth),
                     "score": result.score,
+                    "chosen_behavior": chosen_behavior,
                     "benchmark": (result.metadata or {}).get("benchmark", ""),
                     "repeat_id": getattr(result, "repeat_id", None),
                     "error": getattr(result, "error", None),
@@ -1000,11 +1027,35 @@ class EmotionExperiment:
 
         if behavior_overall_rows:
             behavior_df = pd.DataFrame(behavior_overall_rows)
+            if "behavior_label" in behavior_df.columns and "behavior" not in behavior_df.columns:
+                behavior_df = behavior_df.rename(columns={"behavior_label": "behavior"})
             if not behavior_df.empty:
                 behavior_ratio_filename = self.output_dir / "summary_behavior_ratio.csv"
                 behavior_df.to_csv(behavior_ratio_filename, index=False)
                 self.logger.info(
                     f"Behavior choice ratios saved to {behavior_ratio_filename}"
+                )
+                summary = behavior_df.sort_values(
+                    ["emotion", "intensity", "behavior"], kind="stable"
+                )
+
+        behavior_by_repeat_rows: List[Dict[str, Any]] = []
+        if behavior_ratio_payload:
+            maybe_by_repeat = behavior_ratio_payload.get("by_repeat")
+            if isinstance(maybe_by_repeat, list):
+                behavior_by_repeat_rows = maybe_by_repeat
+
+        if behavior_by_repeat_rows:
+            behavior_by_repeat_df = pd.DataFrame(behavior_by_repeat_rows)
+            if "behavior_label" in behavior_by_repeat_df.columns and "behavior" not in behavior_by_repeat_df.columns:
+                behavior_by_repeat_df = behavior_by_repeat_df.rename(columns={"behavior_label": "behavior"})
+            if not behavior_by_repeat_df.empty:
+                behavior_by_repeat_filename = (
+                    self.output_dir / "summary_behavior_ratio_by_repeat.csv"
+                )
+                behavior_by_repeat_df.to_csv(behavior_by_repeat_filename, index=False)
+                self.logger.info(
+                    f"Behavior choice ratios per repeat saved to {behavior_by_repeat_filename}"
                 )
 
         # Create README explaining output files
@@ -1022,6 +1073,8 @@ class EmotionExperiment:
                 "  - pooled_var: Unbiased pooled variance across all observations (law of total variance).\n"
                 "- summary_choice_ratio.csv: Per-option selection ratios grouped by emotion and intensity (present when dataset supplies choice ratios).\n"
                 "- summary_choice_ratio_by_repeat.csv: Per-option selection ratios grouped by emotion, intensity, and repeat (requires dataset-supplied choice ratios and repeat runs).\n"
+                "- summary_behavior_ratio.csv: Per-behavior selection ratios grouped by emotion and intensity (present when dataset supplies behavior ratios).\n"
+                "- summary_behavior_ratio_by_repeat.csv: Per-behavior selection ratios grouped by emotion, intensity, and repeat (requires dataset-supplied behavior ratios and repeat runs).\n"
                 "- experiment_config.json: Resolved configuration and runtime info (includes repeat settings).\n\n"
                 "Notes:\n"
                 "- For meaningful repeat variance, enable stochastic decoding (do_sample=true, nonzero temperature/top_p).\n"
@@ -1034,7 +1087,10 @@ class EmotionExperiment:
 
         # Print summary
         self.logger.info("\n=== EXPERIMENT RESULTS SUMMARY ===")
-        self.logger.info(f"\n{summary}")
+        if isinstance(summary, pd.DataFrame):
+            self.logger.info("\n%s", summary.to_string(index=False))
+        else:
+            self.logger.info(f"\n{summary}")
 
         return df
 

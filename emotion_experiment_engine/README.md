@@ -1,7 +1,7 @@
 # Emotion Memory Experiments
-<!-- Updated: 2025-12-20 | Commit: a5cad74 -->
+<!-- Updated: 2025-12-29 | Commit: 5dfa39c -->
 
-Updated: 2025-12-20 · commit: a5cad74
+Updated: 2025-12-29 · commit: 5dfa39c
 
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
@@ -214,6 +214,11 @@ python -m emotion_experiment_engine.evaluate_saved_series \
 python -m emotion_experiment_engine.evaluate_saved_series \
   --report results/memory_experiments/<series_report>.json \
   --dry-run
+
+# Scan a folder recursively (no series report needed)
+python -m emotion_experiment_engine.evaluate_saved_series \
+  --folder results/memory_experiments \
+  --max-workers 16
 ```
 
 LLM-based evaluation (`llm_eval_config`) accepts a `client` key. Supported

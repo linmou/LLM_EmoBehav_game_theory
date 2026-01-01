@@ -113,8 +113,8 @@ def test_decision_wrapper_includes_decide_now_instruction(patch_game_config):
     assert prompt  # final prompt text should be non-empty
 
 
-def test_completion_wrapper_ignores_chat_template_and_ends_with_option_quote(patch_game_config):
-    """Base-model wrapper should emit a raw completion prompt that ends with the choice prefix."""
+def test_completion_wrapper_ignores_chat_template_and_demands_single_token_choice(patch_game_config):
+    """Base-model wrapper should emit a raw completion prompt that forces a single numeric token."""
 
     fmt = _DummyPromptFormat()
     wrapper = GameCompletionOptionIdPromptWrapper(fmt, "Prisoners_Dilemma")
@@ -127,10 +127,36 @@ def test_completion_wrapper_ignores_chat_template_and_ends_with_option_quote(pat
         augmentation_config=None,
         answer=None,
         emotion=None,
-        options=[{"id": 1, "text": "Cooperate"}, {"id": 2, "text": "Defect"}],
+        options=[
+            {"id": 1, "text": "Cooperate"},
+            {"id": 2, "text": "Defect"},
+            {"id": 3, "text": "Stay silent"},
+        ],
     )
 
     assert fmt.records == [], "completion wrapper must not call prompt_format.build"
     assert "Option 1." in prompt
     assert "Option 2." in prompt
-    assert prompt.endswith('you choose option "')
+    assert "you choose option" not in prompt
+    assert "Output exactly one character: 1, 2, or 3." in prompt
+    assert prompt.strip().endswith("Answer:")
+
+
+def test_completion_wrapper_adapts_numeric_range_for_many_options(patch_game_config):
+    fmt = _DummyPromptFormat()
+    wrapper = GameCompletionOptionIdPromptWrapper(fmt, "Prisoners_Dilemma")
+
+    options = [{"id": idx, "text": f"Choice {idx}"} for idx in range(1, 13)]
+    prompt = wrapper(
+        context=None,
+        question="Scenario: Prisoners_Dilemma\nPick one.",
+        user_messages=None,
+        enable_thinking=False,
+        augmentation_config=None,
+        answer=None,
+        emotion=None,
+        options=options,
+    )
+
+    assert "Output only the option number (1-12)." in prompt
+    assert prompt.strip().endswith("Answer:")

@@ -179,7 +179,10 @@ def test_save_results_writes_behavior_ratio_csv(tmp_path: Path, tmp_benchmark_co
                 {"emotion": "anger", "intensity": 0.1, "behavior": "cooperate", "ratio": 0.4},
                 {"emotion": "anger", "intensity": 0.1, "behavior": "defect", "ratio": 0.6},
             ],
-            "by_repeat": [],
+            "by_repeat": [
+                {"emotion": "anger", "intensity": 0.1, "repeat_id": 0, "behavior": "cooperate", "ratio": 1.0},
+                {"emotion": "anger", "intensity": 0.1, "repeat_id": 1, "behavior": "defect", "ratio": 1.0},
+            ],
         },
     }
 
@@ -222,6 +225,15 @@ def test_save_results_writes_behavior_ratio_csv(tmp_path: Path, tmp_benchmark_co
     ratios = behavior_df["ratio"].tolist()
     assert ratios == pytest.approx([0.4, 0.6])
 
+    behavior_ratio_repeat_path = tmp_path / "summary_behavior_ratio_by_repeat.csv"
+    assert behavior_ratio_repeat_path.exists()
+    repeat_df = pd.read_csv(behavior_ratio_repeat_path)
+    assert set(repeat_df.columns) == {"emotion", "intensity", "repeat_id", "behavior", "ratio"}
+    assert len(repeat_df) == 2
+    repeat_df = repeat_df.sort_values(["repeat_id", "behavior"])
+    repeat_ratios = repeat_df["ratio"].tolist()
+    assert repeat_ratios == pytest.approx([1.0, 1.0])
+
     # raw_results.json should retain the enriched metadata, including options.
     raw_path = tmp_path / "raw_results.json"
     assert raw_path.exists()
@@ -233,3 +245,101 @@ def test_save_results_writes_behavior_ratio_csv(tmp_path: Path, tmp_benchmark_co
     opts = item_md.get("options")
     assert isinstance(opts, list) and opts
     assert {opt["behavior"] for opt in opts} == {"cooperate", "defect"}
+
+
+def test_save_results_adds_chosen_behavior_column(tmp_path: Path, tmp_benchmark_config: BenchmarkConfig) -> None:
+    """Test for emotion_experiment_engine/experiment.py: chosen_behavior saved in detailed_results.csv."""
+
+    dataset = _ChoiceRatioDataset(payload={})
+
+    experiment_config = ExperimentConfig(
+        model_path="/dev/null",
+        emotions=["anger"],
+        intensities=[0.1],
+        benchmark=tmp_benchmark_config,
+        output_dir=str(tmp_path),
+        batch_size=1,
+        generation_config=None,
+        loading_config=None,
+        repe_eng_config=None,
+        max_evaluation_workers=1,
+        pipeline_queue_size=1,
+        defer_evaluation=False,
+    )
+
+    experiment = EmotionExperiment.__new__(EmotionExperiment)
+    experiment.config = experiment_config
+    experiment.logger = logging.getLogger("test-chosen-behavior")
+    experiment.logger.addHandler(logging.NullHandler())
+    experiment.output_dir = tmp_path
+    experiment.dataset = dataset
+    experiment._save_experiment_config = lambda: None
+
+    df = experiment._save_results(_build_results())
+    assert "chosen_behavior" in df.columns
+    assert df["chosen_behavior"].tolist() == ["cooperate", "defect"]
+
+    detailed_df = pd.read_csv(tmp_path / "detailed_results.csv")
+    assert "chosen_behavior" in detailed_df.columns
+    assert detailed_df["chosen_behavior"].tolist() == ["cooperate", "defect"]
+
+
+def test_save_results_behavior_ratio_renamed_and_logged(
+    tmp_path: Path,
+    tmp_benchmark_config: BenchmarkConfig,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test for emotion_experiment_engine/experiment.py: behavior ratios use unknown bucket + are shown in summary log."""
+
+    payload = {
+        "behavior_choice_ratio": {
+            "overall": [
+                {"emotion": "anger", "intensity": 0.1, "behavior_label": "cooperate", "ratio": 0.5},
+                {"emotion": "anger", "intensity": 0.1, "behavior_label": "unknown", "ratio": 0.5},
+            ],
+            "by_repeat": [
+                {"emotion": "anger", "intensity": 0.1, "repeat_id": 0, "behavior_label": "cooperate", "ratio": 1.0},
+                {"emotion": "anger", "intensity": 0.1, "repeat_id": 1, "behavior_label": "unknown", "ratio": 1.0},
+            ],
+        }
+    }
+    dataset = _ChoiceRatioDataset(payload)
+
+    experiment_config = ExperimentConfig(
+        model_path="/dev/null",
+        emotions=["anger"],
+        intensities=[0.1],
+        benchmark=tmp_benchmark_config,
+        output_dir=str(tmp_path),
+        batch_size=1,
+        generation_config=None,
+        loading_config=None,
+        repe_eng_config=None,
+        max_evaluation_workers=1,
+        pipeline_queue_size=1,
+        defer_evaluation=False,
+    )
+
+    experiment = EmotionExperiment.__new__(EmotionExperiment)
+    experiment.config = experiment_config
+    experiment.output_dir = tmp_path
+    experiment.dataset = dataset
+    experiment._save_experiment_config = lambda: None
+
+    logger = logging.getLogger("test-behavior-summary-log")
+    logger.handlers.clear()
+    logger.propagate = True
+    experiment.logger = logger
+
+    caplog.set_level(logging.INFO)
+    experiment._save_results(_build_results())
+
+    behavior_ratio_path = tmp_path / "summary_behavior_ratio.csv"
+    assert behavior_ratio_path.exists()
+    behavior_df = pd.read_csv(behavior_ratio_path)
+    assert set(behavior_df.columns) == {"emotion", "intensity", "behavior", "ratio"}
+    assert "unknown" in set(behavior_df["behavior"].astype(str))
+
+    # Shuffled games: score mean is meaningless; log the behavior ratio summary instead.
+    assert "=== EXPERIMENT RESULTS SUMMARY ===" in caplog.text
+    assert "unknown" in caplog.text

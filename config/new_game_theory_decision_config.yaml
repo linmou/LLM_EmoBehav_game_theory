@@ -86,7 +86,7 @@ benchmarks:
       temperature: 0.0
 
 loading_config:
-  gpu_memory_utilization: 0.88
+  gpu_memory_utilization: 0.7
   enforce_eager: true
   quantization: null
   max_model_len: 4096
@@ -114,4 +114,4 @@ batch_size: 1000
 
 output_dir: "results/new_game_theory_decision/shuffle_choices"
 defer_evaluation: true
-sanity_check: false
+sanity_check: true

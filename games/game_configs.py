@@ -22,6 +22,7 @@ from games.ultimatum_game import (
     UltimatumGameResponderScenario,
 )
 from games.wait_go_game import WaitGoDecision, WaitGoScenario
+from games.sealed_auction import SealedAuctionDecision, SealedAuctionScenario
 
 # data_path_format = "groupchat/scenarios/{}_all_data_samples.json"  # data path is json containing all data samples
 data_path_format = (
@@ -79,6 +80,13 @@ GAME_CONFIGS = {
         "decision_class": BeautyContestDecision,
         "payoff_matrix": dict(),
         "data_path": data_path_format.format(GameNames.BEAUTY_CONTEST.value),
+    },
+    GameNames.SEALED_AUCTION: {
+        "game_name": GameNames.SEALED_AUCTION.value,
+        "scenario_class": SealedAuctionScenario,
+        "decision_class": SealedAuctionDecision,
+        "payoff_matrix": dict(),
+        "data_path": "data_creation/scenario_creation/langgraph_creation/Diplomacy_Sealed_Auction_all_data_samples.json",
     },
     GameNames.DIPLOMACY_ESCALATION_GAME: {
         "game_name": GameNames.DIPLOMACY_ESCALATION_GAME.value,

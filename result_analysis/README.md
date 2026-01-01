@@ -15,6 +15,7 @@ This directory contains all post-experiment analysis scripts and results for the
 - `trust_game_trustor_expected_score.py` - Report-driven Trust Game (Trustor) item-level decision shift vs neutral (trust_none=0, trust_low=1, trust_high=2)
 - `trust_game_trustee_expected_score.py` - Report-driven Trust Game (Trustee) item-level decision shift vs neutral (return_none=0, return_medium=1, return_high=2)
 - `trust_game_expected_score.py` - Shared Trust Game expected-score analysis (runs both roles by default; use `--role` to limit)
+- `ultimatum_game_expected_score.py` - Ultimatum Game expected-score analysis (runs proposer+responder by default; use `--role` to limit)
 
 ### Debug/Utility Scripts
 - `debug_data_structure.py` - Utility to inspect data structure and verify scenario matching
@@ -59,30 +60,6 @@ python -m result_analysis.trust_game_expected_score \
   --out_dir results/.../shuffle_decision_only
 
 This writes both `trustor_*` and `trustee_*` outputs when the report contains both benchmarks.
-
-# Trust Game (Trustor) expected-score deltas from a series report (wrapper)
-python -m result_analysis.trust_game_trustor_expected_score \
-  --report results/.../memory_experiment_series_..._memory_experiment_report.json \
-  --out_dir results/.../shuffle_decision_only
-
-This writes:
-- `trustor_item_expected_score_delta_vs_neutral.csv`
-- `trustor_item_expected_score_max_delta_summary.csv` (deterministic tie-break: delta desc, then intensity asc, then emotion asc)
-- `trustor_expected_score_delta_aggregate_by_emotion_intensity.csv`
-- `trustor_expected_score_delta_aggregate_by_emotion.csv`
-- `trustor_item_expected_score_delta_report.md`
-
-# Trust Game (Trustee) expected-score deltas from a series report (wrapper)
-python -m result_analysis.trust_game_trustee_expected_score \
-  --report results/.../memory_experiment_series_..._memory_experiment_report.json \
-  --out_dir results/.../shuffle_decision_only
-
-This writes:
-- `trustee_item_expected_score_delta_vs_neutral.csv`
-- `trustee_item_expected_score_max_delta_summary.csv` (deterministic tie-break: delta desc, then intensity asc, then emotion asc)
-- `trustee_expected_score_delta_aggregate_by_emotion_intensity.csv`
-- `trustee_expected_score_delta_aggregate_by_emotion.csv`
-- `trustee_item_expected_score_delta_report.md`
 
 # Inspecting Individual Decisions from Aggregated Ratios
 

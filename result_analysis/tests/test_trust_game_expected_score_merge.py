@@ -48,8 +48,10 @@ def test_trust_game_expected_score_filters_by_benchmark_name(tmp_path: Path) -> 
 
     trustor_run = tmp_path / "trustor_run"
     trustee_run = tmp_path / "trustee_run"
+    pending_run = tmp_path / "pending_run"
     trustor_run.mkdir()
     trustee_run.mkdir()
+    pending_run.mkdir()
     _write_raw_results(trustor_run / "raw_results.json", role="trustor")
     _write_raw_results(trustee_run / "raw_results.json", role="trustee")
 
@@ -59,11 +61,20 @@ def test_trust_game_expected_score_filters_by_benchmark_name(tmp_path: Path) -> 
                 "benchmark_name": "X_Trust_Game_Trustor_Y",
                 "output_dir": str(trustor_run),
                 "model_name": "/models/m",
+                "status": "completed",
             },
             "t2": {
                 "benchmark_name": "X_Trust_Game_Trustee_Y",
                 "output_dir": str(trustee_run),
                 "model_name": "/models/m",
+                "status": "completed",
+            },
+            # Unfinished experiments must be ignored (may not have raw_results.json yet).
+            "t3": {
+                "benchmark_name": "X_Trust_Game_Trustor_Y",
+                "output_dir": str(pending_run),
+                "model_name": "/models/m",
+                "status": "pending",
             },
         }
     }

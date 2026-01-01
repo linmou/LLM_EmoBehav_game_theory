@@ -46,6 +46,14 @@ from result_analysis.game_theory_ratio_loading import (
 )
 
 
+_EXPECTED_SCORE_SPECS: Dict[str, Dict[str, float]] = {
+    "Trust_Game_Trustor": {"trust_none": 0.0, "trust_low": 1.0, "trust_high": 2.0},
+    "Trust_Game_Trustee": {"return_none": 0.0, "return_medium": 1.0, "return_high": 2.0},
+    "Ultimatum_Game_Proposer": {"offer_low": 0.0, "offer_medium": 1.0, "offer_high": 2.0},
+    "Ultimatum_Game_Responder": {"reject": 0.0, "accept": 1.0},
+}
+
+
 _RUN_DIR_RE = re.compile(
     r"^(?P<model>.+)_game_theory(_decision)?_(?P<task>.+)_(?P<ts>\d{8}_\d{6})$"
 )
@@ -608,7 +616,11 @@ def _intensity_rows_for_choice(
     *,
     by_intensity_override: Optional[Dict[str, Dict[float, Dict[int, float]]]] = None,
 ) -> Tuple[List[Dict[str, object]], bool]:
-    by_intensity = by_intensity_override if by_intensity_override is not None else load_choice_by_intensity(csv_path, unknown_threshold=None)[0]
+    by_intensity = (
+        by_intensity_override
+        if by_intensity_override is not None
+        else load_choice_by_intensity(csv_path, unknown_threshold=None)[0]
+    )
     if "neutral" not in by_intensity:
         return [], True
 
@@ -664,7 +676,9 @@ def _intensity_rows_for_behavior(
     by_intensity_override: Optional[Dict[str, Dict[float, Dict[str, float]]]] = None,
 ) -> Tuple[List[Dict[str, object]], bool]:
     by_intensity = (
-        by_intensity_override if by_intensity_override is not None else load_behavior_by_intensity(csv_path, unknown_threshold=None)[0]
+        by_intensity_override
+        if by_intensity_override is not None
+        else load_behavior_by_intensity(csv_path, unknown_threshold=None)[0]
     )
     if "neutral" not in by_intensity:
         return [], True
@@ -964,14 +978,14 @@ def generate_game_theory_impact_report(
             if behavior_csv.exists():
                 by_task.setdefault(run.task, {})[run.model] = behavior_csv
         for task, model_map in sorted(by_task.items()):
-            write_behavior_change_heatmap_pdf(
-                task=task,
-                model_to_behavior_csv=model_map,
-                out_dir=heatmaps_dir,
-                unknown_threshold=unknown_threshold,
-                heatmap_norm=heatmap_norm,
-                symlog_linthresh=heatmap_symlog_linthresh,
-            )
+	            write_behavior_change_heatmap_pdf(
+	                task=task,
+	                model_to_behavior_csv=model_map,
+	                out_dir=heatmaps_dir,
+	                unknown_threshold=unknown_threshold,
+	                heatmap_norm=heatmap_norm,
+	                symlog_linthresh=heatmap_symlog_linthresh,
+	            )
 
     report_out.write_text(
         _render_markdown(
