@@ -21,7 +21,11 @@ MODELS=(
   "Zyphra/Zamba2-1.2B-Instruct"
   "Zyphra/Zamba2-2.7B-Instruct"
   "Zyphra/Zamba2-7B-Instruct"
-  
+
+  # current gemma
+  "google/recurrentgemma-2b"
+  "google/recurrentgemma-2b-it"
+
   # Bamba (IBM's latest SSM-transformer hybrid)
   "ibm-ai-platform/Bamba-9B-v2"
 

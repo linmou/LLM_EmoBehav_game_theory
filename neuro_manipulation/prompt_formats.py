@@ -250,7 +250,7 @@ class Llama3InstFormat(ModelPromptFormat):
 
     @staticmethod
     def name_pattern(model_name):
-        return "llama-3" in model_name.lower() and "instruct" in model_name.lower()
+        return "llama-3" in model_name.lower()
 
 
 class MistralInstFormat(ModelPromptFormat):

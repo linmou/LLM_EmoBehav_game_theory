@@ -1,5 +1,7 @@
 # Prompt Format System
 
+<!-- Updated: 2025-12-28 | Commit: pending -->
+
 ## Overview
 
 The prompt format system in this project provides a way to format prompts for various language models in a consistent way. The system supports different model formats including Llama-2, Llama-3, and Mistral.
@@ -41,7 +43,7 @@ The `ManualPromptFormat` class is the original implementation that manually form
 The system also includes model-specific format classes that define the format for each model type:
 
 - `Llama2InstFormat`: Format for Llama-2 models
-- `Llama3InstFormat`: Format for Llama-3 models
+- `Llama3InstFormat`: Format for Llama-3 models, covering both Instruct and base releases such as `meta-llama/Llama-3.2-1B`
 - `MistralInstFormat`: Format for Mistral models
 - `RWKVsFormat`: Format for RWKV models
 
