@@ -29,6 +29,7 @@ import json
 import math
 import random
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean
@@ -299,6 +300,8 @@ def _extract_choice_and_behavior(record: Dict[str, object]) -> Tuple[Optional[in
         return None, None
     opt_id = chosen.get("id")
     behavior = chosen.get("behavior")
+    if behavior in (None, ""):
+        behavior = chosen.get("behavior_label")
     if not isinstance(opt_id, int) or not isinstance(behavior, str):
         return None, None
     return opt_id, behavior
@@ -316,7 +319,11 @@ def _sig_maps_for_run(run: RunRef) -> Tuple[Dict[int, Dict[str, SigEntry]], Dict
     if not raw_path.exists():
         return {}, {}
 
-    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    try:
+        raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        print(f"WARNING: skipping significance for invalid JSON: {raw_path} ({e})", file=sys.stderr)
+        return {}, {}
     if not isinstance(raw, list):
         return {}, {}
 
@@ -487,7 +494,12 @@ def _load_collapsed_behavior_ratios(path: Path) -> Dict[str, Dict[str, float]]:
         reader = csv.DictReader(handle)
         for row in reader:
             emotion = str(row["emotion"])
-            behavior = str(row["behavior"])
+            behavior = row.get("behavior")
+            if behavior in (None, "", "nan", "NaN"):
+                behavior = row.get("behavior_label")
+            if behavior in (None, ""):
+                raise KeyError("Expected CSV column 'behavior' or 'behavior_label'")
+            behavior = str(behavior)
             ratio = float(row["ratio"])
             acc.setdefault(emotion, {}).setdefault(behavior, []).append(ratio)
     return {emo: {b: mean(vals) for b, vals in m.items()} for emo, m in acc.items()}
