@@ -10,6 +10,7 @@ from data_creation.beauty_contest_generator import (
     load_persona_jobs,
     normalize_behavior_choices,
     normalize_participants,
+    trim_records,
     read_processed_jobs,
     render_progress,
     parse_model_output,
@@ -104,6 +105,14 @@ def test_normalize_behavior_choices_maps_option_low_medium_high():
     assert bc["commit_1"] == "L"
     assert bc["commit_2"] == "M"
     assert bc["commit_3"] == "H"
+
+
+def test_trim_records_keeps_last_n():
+    records = [{"job": f"job{i}"} for i in range(10)]
+
+    trimmed = trim_records(records, max_keep=5)
+
+    assert trimmed == [{"job": f"job{i}"} for i in range(5, 10)]
 
 
 def test_parse_model_output_accepts_json():

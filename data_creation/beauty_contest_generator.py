@@ -194,6 +194,14 @@ def write_json(path: Path, records: list[dict]) -> None:
     tmp_path.replace(path)
 
 
+def trim_records(records: list[dict], max_keep: int) -> list[dict]:
+    if max_keep <= 0:
+        return records
+    if len(records) <= max_keep:
+        return records
+    return records[-max_keep:]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate Beauty Contest scenarios.")
     parser.add_argument(
@@ -217,6 +225,12 @@ def main() -> None:
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--api_key", type=str, default=None)
+    parser.add_argument(
+        "--max-keep",
+        type=int,
+        default=500,
+        help="Keep only the most recent N records in --output (0 disables).",
+    )
     args = parser.parse_args()
 
     fewshot = load_fewshot_examples(args.fewshot)
@@ -233,7 +247,7 @@ def main() -> None:
         pending = pending[: args.num]
 
     if not pending:
-        write_json(args.output, normalized_existing)
+        write_json(args.output, trim_records(normalized_existing, args.max_keep))
         return
 
     api_key = args.api_key
@@ -292,7 +306,10 @@ def main() -> None:
     if _is_tty():
         sys.stderr.write("\n")
 
-    write_json(args.output, normalized_existing + results)
+    write_json(
+        args.output,
+        trim_records(normalized_existing + results, args.max_keep),
+    )
 
 
 if __name__ == "__main__":
