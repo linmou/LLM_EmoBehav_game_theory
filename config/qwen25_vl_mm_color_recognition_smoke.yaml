@@ -1,0 +1,56 @@
+experiment_name: "qwen25_vl_mm_color_recognition_smoke"
+description: "Smoke test: Qwen2.5-VL should recognize red/blue square images and choose the matching option"
+version: "1.0.0"
+
+models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+
+emotions: ["anger"]
+intensities: [1.0]
+
+benchmarks:
+  - name: "game_theory_mm"
+    task_type: "Prisoners_Dilemma"
+    data_path: "data/pseudo/game_theory_mm/pseudo_prisoners_dilemma_mm_color.json"
+    augmentation_config:
+      shuffle_options: false
+      previous_actions_length: 0
+
+loading_config:
+  gpu_memory_utilization: 0.3
+  max_model_len: 16384
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 1
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs:
+    attention_backend: "TRITON_ATTN"
+    mm_encoder_attn_backend: "TORCH_SDPA"
+
+repe_eng_config:
+  data_dir: "data/stimulus/repeng_generated_images_with_text"
+  multimodal_intent: true
+  emotions: ["anger", "happiness"]
+  rebuild: true
+
+repeat_runs: 1
+
+generation_config:
+  temperature: 0.0
+  max_new_tokens: 32
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 2
+
+output_dir: "results/qwen25_vl_mm_color_recognition_smoke"
+sanity_check: false
+defer_evaluation: true
