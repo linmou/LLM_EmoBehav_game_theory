@@ -181,6 +181,26 @@ class EmotionExperiment:
         self._force_evaluate = False
         self._defer_logged = False
 
+    def _require_emotion_readers(self) -> None:
+        if self.neutral_only:
+            return
+        if not isinstance(self.emotion_rep_readers, dict):
+            raise ValueError("Emotion readers not initialized")
+        requested = list(self.config.emotions or [])
+        missing = [e for e in requested if e not in self.emotion_rep_readers]
+        if not missing:
+            return
+        available = sorted(
+            k for k in self.emotion_rep_readers.keys() if isinstance(k, str)
+        )
+        raise ValueError(
+            f"Missing emotion readers for requested emotions: {missing}. "
+            f"Available: {available}. "
+            "Likely causes: `repe_eng_config.data_dir` lacks usable stimulus data for those emotions, "
+            "or dataset generation produced empty train splits. "
+            "If you want a neutral-only run (no RepE activation), set `emotions: []` in the experiment config."
+        )
+
     def _create_dataset_for_emotion(self, emotion: str):
         """Create dataset for a specific emotion using registry-based component assembly"""
         # Use registry to get all three components in one call
@@ -264,6 +284,7 @@ class EmotionExperiment:
                 processor,
                 self.enable_thinking,
             )
+            self._require_emotion_readers()
         del self.model  # Save memory
 
         # Load vLLM model for inference with loading config
@@ -465,86 +486,75 @@ class EmotionExperiment:
         def pipeline_worker():
             try:
                 for i, batch in enumerate(data_loader):
-                    try:
-                        # Process batch prompts
-                        start_time = time.time()
-                        # Pass all generation parameters from config
-                        generation_params = {
-                            "temperature": self.generation_config.get(
-                                "temperature", 0.1
-                            ),
-                            "max_new_tokens": self.generation_config.get(
-                                "max_new_tokens", 100
-                            ),
-                            "do_sample": self.generation_config.get("do_sample", False),
-                            "top_p": self.generation_config.get("top_p", 0.9),
-                            "repetition_penalty": self.generation_config.get(
-                                "repetition_penalty", 1.0
-                            ),
-                        }
+                    # Pass all generation parameters from config
+                    generation_params = {
+                        "temperature": self.generation_config.get("temperature", 0.1),
+                        "max_new_tokens": self.generation_config.get(
+                            "max_new_tokens", 100
+                        ),
+                        "do_sample": self.generation_config.get("do_sample", False),
+                        "top_p": self.generation_config.get("top_p", 0.9),
+                        "repetition_penalty": self.generation_config.get(
+                            "repetition_penalty", 1.0
+                        ),
+                    }
 
-                        # Add optional parameters if they exist and are not default
-                        if self.generation_config.get("top_k", -1) != -1:
-                            generation_params["top_k"] = self.generation_config["top_k"]
-                        if self.generation_config.get("min_p", 0.0) != 0.0:
-                            generation_params["min_p"] = self.generation_config["min_p"]
-                        if self.generation_config.get("presence_penalty", 0.0) != 0.0:
-                            generation_params["presence_penalty"] = (
-                                self.generation_config["presence_penalty"]
-                            )
-                        if self.generation_config.get("frequency_penalty", 0.0) != 0.0:
-                            generation_params["frequency_penalty"] = (
-                                self.generation_config["frequency_penalty"]
-                            )
+                    # Add optional parameters if they exist and are not default
+                    if self.generation_config.get("top_k", -1) != -1:
+                        generation_params["top_k"] = self.generation_config["top_k"]
+                    if self.generation_config.get("min_p", 0.0) != 0.0:
+                        generation_params["min_p"] = self.generation_config["min_p"]
+                    if self.generation_config.get("presence_penalty", 0.0) != 0.0:
+                        generation_params["presence_penalty"] = (
+                            self.generation_config["presence_penalty"]
+                        )
+                    if self.generation_config.get("frequency_penalty", 0.0) != 0.0:
+                        generation_params["frequency_penalty"] = (
+                            self.generation_config["frequency_penalty"]
+                        )
 
-                        # Add per-run RNG seed if requested
-                        if getattr(self, "repeat_seed_base", None) is not None and self.is_vllm:
-                            generation_params["random_seed"] = int(self.repeat_seed_base) + int(getattr(self, "cur_repeat", 0))
+                    # Add per-run RNG seed if requested
+                    if getattr(self, "repeat_seed_base", None) is not None and self.is_vllm:
+                        seed = int(self.repeat_seed_base) + int(
+                            getattr(self, "cur_repeat", 0)
+                        )
+                        generation_params["random_seed"] = seed
+                        generation_params["seed"] = seed
 
-                        # Validate batch structure before accessing
-                        if "prompts" not in batch:
+                    # Validate batch structure before accessing
+                    if "prompts" not in batch:
+                        raise ValueError(
+                            f"Batch missing required 'prompts' key. Available keys: {list(batch.keys())}"
+                        )
+
+                    pipeline_inputs = batch["prompts"]
+                    if self.is_vllm and "images" in batch and batch["images"] is not None:
+                        batch_images = batch["images"]
+                        if len(batch_images) != len(pipeline_inputs):
                             raise ValueError(
-                                f"Batch missing required 'prompts' key. Available keys: {list(batch.keys())}"
+                                f"Batch size mismatch for multimodal inputs: prompts={len(pipeline_inputs)} images={len(batch_images)}"
                             )
+                        mm_inputs = []
+                        for prompt, images in zip(pipeline_inputs, batch_images):
+                            if isinstance(images, list):
+                                image_payload = images[0] if len(images) == 1 else images
+                            else:
+                                image_payload = images
+                            mm_inputs.append(
+                                {
+                                    "prompt": prompt,
+                                    "multi_modal_data": {"image": image_payload},
+                                }
+                            )
+                        pipeline_inputs = mm_inputs
 
-                        control_outputs = self.rep_control_pipeline(
-                            batch["prompts"],  # Use formatted prompts from dataset
-                            activations=activations,
-                            batch_size=self.batch_size,
-                            **generation_params,
-                        )
-                        end_time = time.time()
-                        pipeline_queue.put((i, batch, control_outputs))
-
-                    except Exception as batch_error:
-                        # Handle errors for individual batch processing
-                        # This catches AssertionError from benchmark_prompt_wrapper augmentation
-                        # and other batch-level errors, ensuring the pipeline continues
-                        import traceback
-
-                        error_trace = traceback.format_exc()
-                        self.logger.error(
-                            f"🚨 BATCH ERROR in pipeline worker for batch {i}: {str(batch_error)}\n{error_trace}"
-                        )
-
-                        # Create an error batch result to maintain sequence integrity
-                        error_batch = {
-                            "prompts": [
-                                f"ERROR: Batch {i} failed - {str(batch_error)}"
-                            ],
-                            "items": [MagicMock(id=f"error_{i}")],
-                            "ground_truths": ["ERROR"],
-                        }
-                        error_outputs = [
-                            {"generated_text": f"ERROR: {str(batch_error)}"}
-                        ]
-
-                        pipeline_queue.put((i, error_batch, error_outputs))
-
-                        # Continue with next batch instead of crashing the worker thread
-                        self.logger.info(
-                            f"🔄 Continuing pipeline worker with next batch after error in batch {i}"
-                        )
+                    control_outputs = self.rep_control_pipeline(
+                        pipeline_inputs,
+                        activations=activations,
+                        batch_size=self.batch_size,
+                        **generation_params,
+                    )
+                    pipeline_queue.put((i, batch, control_outputs))
 
             except Exception as worker_error:
                 # Handle catastrophic worker thread errors
@@ -573,6 +583,7 @@ class EmotionExperiment:
             max_workers=workers, thread_name_prefix="PostProc"
         ) as post_proc_executor:
             active_post_proc_tasks = 0
+            fatal_error: Exception | None = None
             while True:
                 item = pipeline_queue.get()
 
@@ -589,9 +600,7 @@ class EmotionExperiment:
                     self.logger.error(
                         f"🚨 PIPELINE WORKER FAILED: {error_msg}\n{error_trace}"
                     )
-                    self.logger.info(
-                        "🔄 Main thread continuing despite worker thread failure"
-                    )
+                    fatal_error = RuntimeError(error_msg)
                     break  # Exit main processing loop but don't crash experiment
 
                 batch_idx, batch, control_outputs = item
@@ -611,16 +620,17 @@ class EmotionExperiment:
                     active_post_proc_tasks -= 1
                     results_dict[batch_idx] = result
                 except Exception as e:
-                    self.logger.error(
-                        f"Post-processing failed for batch {batch_idx}: {e}"
-                    )
-                    results_dict[batch_idx] = []  # Store empty list on error
+                    fatal_error = e
+                    break
 
             # Combine results in order
-            for i in sorted(results_dict.keys()):
-                batch_results.extend(results_dict[i])
+            if fatal_error is None:
+                for i in sorted(results_dict.keys()):
+                    batch_results.extend(results_dict[i])
 
         worker.join()
+        if fatal_error is not None:
+            raise fatal_error
         if hasattr(self.dataset, "flush_predictions"):
             try:
                 self.dataset.flush_predictions(self.output_dir)
@@ -1218,9 +1228,12 @@ class EmotionExperiment:
         if model is not None:
             if self.is_vllm and hasattr(model, "llm_engine"):
                 llm_engine = model.llm_engine
-                shutdown_fn = getattr(llm_engine, "shutdown", None)
-                if callable(shutdown_fn):
-                    _call_with_timeout(shutdown_fn, "vLLM engine shutdown()")
+                # vLLM v1 uses an EngineCoreClient that owns the worker proc(s).
+                # LLMEngine itself may not expose shutdown(), so shut down the core directly.
+                engine_core = getattr(llm_engine, "engine_core", None)
+                engine_core_shutdown = getattr(engine_core, "shutdown", None)
+                if callable(engine_core_shutdown):
+                    _call_with_timeout(engine_core_shutdown, "vLLM engine_core.shutdown()")
                 executor = getattr(llm_engine, "engine_executor", None)
                 executor_shutdown = getattr(executor, "shutdown", None)
                 if callable(executor_shutdown):
@@ -1232,6 +1245,13 @@ class EmotionExperiment:
             shutdown_fn = getattr(model, "shutdown", None)
             if callable(shutdown_fn):
                 _call_with_timeout(shutdown_fn, "model.shutdown()")
+
+            # Ensure distributed process group is cleaned up between experiments.
+            try:
+                if torch.distributed.is_available() and torch.distributed.is_initialized():
+                    torch.distributed.destroy_process_group()
+            except Exception:
+                pass
 
             self.model = None
 

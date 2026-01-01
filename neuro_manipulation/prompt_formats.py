@@ -836,6 +836,106 @@ class Gemma3InstFormat(ModelPromptFormat):
         return prompt
 
 
+class PhiVisionInstFormat(ModelPromptFormat):
+    """
+    Prompt format for Microsoft Phi vision/multimodal models.
+
+    We keep the prompt text-only and let the runtime (AutoProcessor/vLLM multimodal
+    wiring) handle the image payload.
+    """
+
+    @staticmethod
+    def supports_multimodal():
+        return True
+
+    @staticmethod
+    def name_pattern(model_name):
+        model_lower = model_name.lower()
+        return ("phi" in model_lower) and (
+            "vision" in model_lower or "multimodal" in model_lower
+        )
+
+    @staticmethod
+    def validate_tokenizer(tokenizer):
+        return True
+
+    @staticmethod
+    def build(
+        system_prompt,
+        user_messages: list,
+        assistant_messages: list = [],
+        images: list = None,
+    ):
+        def _turn(role: str, content: str) -> str:
+            return f"<|{role}|>\n{content}<|end|>\n"
+
+        prompt = ""
+        if system_prompt:
+            prompt += _turn("system", system_prompt)
+
+        if images:
+            placeholders = "\n".join(f"<|image_{i+1}|>" for i in range(len(images)))
+        else:
+            placeholders = ""
+
+        for i, user_msg in enumerate(user_messages):
+            content = user_msg
+            if i == 0 and placeholders:
+                content = f"{placeholders}\n{user_msg}" if user_msg else placeholders
+
+            prompt += _turn("user", content)
+            if i < len(assistant_messages):
+                prompt += _turn("assistant", assistant_messages[i])
+
+        prompt += "<|assistant|>\n"
+        return prompt
+
+
+class InternVLInstFormat(ModelPromptFormat):
+    """
+    Prompt format for InternVL models.
+
+    Like other HF VLMs, we keep the prompt text-only and rely on the multimodal
+    pipeline to attach images out-of-band.
+    """
+
+    @staticmethod
+    def supports_multimodal():
+        return True
+
+    @staticmethod
+    def name_pattern(model_name):
+        return "internvl" in model_name.lower()
+
+    @staticmethod
+    def validate_tokenizer(tokenizer):
+        return True
+
+    @staticmethod
+    def build(
+        system_prompt,
+        user_messages: list,
+        assistant_messages: list = [],
+        images: list = None,
+    ):
+        prompt = ""
+        if system_prompt:
+            prompt += f"<start_of_turn>system\n{system_prompt}<end_of_turn>\n"
+
+        has_images = bool(images)
+        for i, user_msg in enumerate(user_messages):
+            if i == 0 and has_images:
+                user_msg = f"<image>\n{user_msg}" if user_msg else "<image>"
+            prompt += f"<start_of_turn>user\n{user_msg}<end_of_turn>\n"
+            if i < len(assistant_messages):
+                prompt += (
+                    f"<start_of_turn>model\n{assistant_messages[i]}<end_of_turn>\n"
+                )
+
+        prompt += "<start_of_turn>model\n"
+        return prompt
+
+
 # Define format list after all classes are defined
 ManualPromptFormat.format_ls = [
     Llama2InstFormat,
@@ -844,5 +944,7 @@ ManualPromptFormat.format_ls = [
     RWKVsFormat,
     QwenVLInstFormat,
     Gemma3InstFormat,
+    PhiVisionInstFormat,
+    InternVLInstFormat,
     DefaultInstFormat,  # Fallback format - should be last
 ]

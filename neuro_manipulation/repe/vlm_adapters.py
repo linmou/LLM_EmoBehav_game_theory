@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
+from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple, Union, Any
 
 import torch
+from PIL import Image
 
 
 @dataclass
@@ -260,6 +263,113 @@ class PhiTextAdapter(BaseVLMAdapter):
         return tokenizer(text, return_tensors="pt", padding=True, **tokenizer_kwargs)
 
 
+class PhiVisionAdapter(BaseVLMAdapter):
+    """Adapter for Phi vision/multimodal processors.
+
+    Some Phi processors expose `apply_chat_template` but do not define
+    `chat_template`, so we must avoid chat-template paths and call the processor
+    directly with `text` + `images`.
+    """
+
+    def matches(self, name_or_path: str) -> bool:
+        low = (name_or_path or "").lower()
+        return ("phi" in low) and (("vision" in low) or ("multimodal" in low))
+
+    def process_multimodal(
+        self,
+        text: str,
+        images: Optional[List[Any]],
+        ctx: AdapterContext,
+        **tokenizer_kwargs,
+    ) -> Dict[str, torch.Tensor]:
+        processor = ctx.processor
+        if images:
+            # Phi-3.5-vision and Phi-4-multimodal require explicit image placeholder
+            # tokens in the prompt text to align images with image tokens.
+            if "<|image_" not in text and "<|endoftext10|>" not in text:
+                placeholders = "\n".join(f"<|image_{i+1}|>" for i in range(len(images)))
+                text = f"{placeholders}\n{text}" if text else placeholders
+        return processor(
+            text=text,
+            images=images if images else None,
+            padding=True,
+            return_tensors="pt",
+            **tokenizer_kwargs,
+        )
+
+
+@lru_cache(maxsize=8)
+def _internvl_image_processor(name_or_path: str):
+    from transformers import AutoImageProcessor
+
+    return AutoImageProcessor.from_pretrained(name_or_path, trust_remote_code=True)
+
+
+class InternVLAdapter(BaseVLMAdapter):
+    MATCH_KEYWORDS = ("internvl",)
+
+    def optimal_layers(self) -> List[int]:
+        return [-3, -4, -5]
+
+    def process_multimodal(
+        self,
+        text: str,
+        images: Optional[List[Any]],
+        ctx: AdapterContext,
+        **tokenizer_kwargs,
+    ) -> Dict[str, torch.Tensor]:
+        tokenizer = ctx.tokenizer
+        if tokenizer is None:
+            raise ValueError("InternVLAdapter requires a tokenizer")
+
+        if not images:
+            return tokenizer(text or "", return_tensors="pt", padding=True, **tokenizer_kwargs)
+
+        normalized_images: List[Any] = []
+        for img in images:
+            if isinstance(img, (str, Path)):
+                normalized_images.append(Image.open(img).convert("RGB"))
+            else:
+                normalized_images.append(img)
+
+        if ctx.model is None or not hasattr(ctx.model, "num_image_token"):
+            raise ValueError("InternVLAdapter requires ctx.model.num_image_token for multimodal prompts")
+
+        if getattr(ctx.model, "img_context_token_id", None) is None:
+            if not hasattr(tokenizer, "convert_tokens_to_ids"):
+                raise ValueError("InternVLAdapter requires tokenizer.convert_tokens_to_ids")
+            ctx.model.img_context_token_id = tokenizer.convert_tokens_to_ids("<IMG_CONTEXT>")
+
+        num_image_token = int(getattr(ctx.model, "num_image_token"))
+        if num_image_token <= 0:
+            raise ValueError(f"Invalid ctx.model.num_image_token={num_image_token}")
+
+        # InternVL expects IMG_CONTEXT tokens inside <img>...</img> to align vision features.
+        image_tokens = "<img>" + ("<IMG_CONTEXT>" * (num_image_token * len(normalized_images))) + "</img>"
+        prompt = text or ""
+        if "<image>" not in prompt:
+            prompt = f"<image>\n{prompt}" if prompt else "<image>"
+        prompt = prompt.replace("<image>", image_tokens, 1)
+        text_inputs = tokenizer(prompt, return_tensors="pt", padding=True, **tokenizer_kwargs)
+
+        image_processor = _internvl_image_processor(getattr(tokenizer, "name_or_path", ""))
+        image_inputs = image_processor(images=normalized_images, return_tensors="pt")
+        if ctx.model is not None and "pixel_values" in image_inputs:
+            try:
+                model_dtype = next(ctx.model.parameters()).dtype
+                pv = image_inputs["pixel_values"]
+                if isinstance(pv, torch.Tensor) and pv.dtype != model_dtype:
+                    image_inputs["pixel_values"] = pv.to(dtype=model_dtype)
+            except Exception:
+                pass
+        # InternVL forward expects `image_flags` when `pixel_values` is provided.
+        # For our RepE rep-reading usage we use one image per sample, so mark all
+        # items as having an image (shape [batch, 1]).
+        batch = int(image_inputs["pixel_values"].shape[0]) if "pixel_values" in image_inputs else 1
+        image_flags = torch.ones(batch, 1, dtype=torch.long)
+        return {**text_inputs, **image_inputs, "image_flags": image_flags}
+
+
 class GenericTextAdapter(BaseVLMAdapter):
     MATCH_KEYWORDS = ()
 
@@ -278,7 +388,9 @@ class AdapterRegistry:
             QwenVLAdapter(),
             MiniCPMV4Adapter(),
             GLMEdgeV2bAdapter(),
+            InternVLAdapter(),
             GemmaTextAdapter(),
+            PhiVisionAdapter(),
             PhiTextAdapter(),
         ]
 
@@ -298,4 +410,3 @@ class AdapterRegistry:
                 return adapter
         # Fallback to generic
         return GenericTextAdapter()
-

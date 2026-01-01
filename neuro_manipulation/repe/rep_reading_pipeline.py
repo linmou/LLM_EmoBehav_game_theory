@@ -318,20 +318,52 @@ class RepReadingPipeline(Pipeline):
         """
         # get model hidden states and optionally transform them with a RepReader
         with torch.no_grad():
-            # Ensure inputs are on the same device as model
-            if hasattr(self.model, 'device'):
-                device = self.model.device
-            else:
-                device = next(self.model.parameters()).device
-            
-            # Move inputs to model device
-            for key, value in model_inputs.items():
-                if isinstance(value, torch.Tensor):
-                    model_inputs[key] = value.to(device)
+            # For accelerate-sharded models (hf_device_map), forcing inputs to a single
+            # device breaks multimodal forward passes (vision on one GPU, flags/tokens on another).
+            # Leave tensors on their original devices and let accelerate handle placement.
+            uses_device_map = bool(getattr(self.model, "hf_device_map", None))
+
+            # InternVL-style models require `pixel_values` and `image_flags` to be on the
+            # same device as the vision module output for boolean indexing.
+            if uses_device_map and isinstance(model_inputs, dict):
+                if "pixel_values" in model_inputs and "image_flags" in model_inputs:
+                    try:
+                        vision_device = None
+                        if hasattr(self.model, "vision_model"):
+                            vision_device = next(self.model.vision_model.parameters()).device
+                        if (vision_device is None) or (str(vision_device) == "meta"):
+                            dm = getattr(self.model, "hf_device_map", None) or {}
+                            if "vision_model" in dm:
+                                v = dm["vision_model"]
+                                vision_device = (
+                                    torch.device(f"cuda:{int(v)}") if isinstance(v, int) else torch.device(str(v))
+                                )
+                        if vision_device is None:
+                            raise RuntimeError("Could not resolve vision device")
+                        if isinstance(model_inputs.get("pixel_values"), torch.Tensor):
+                            model_inputs["pixel_values"] = model_inputs["pixel_values"].to(vision_device)
+                        if isinstance(model_inputs.get("image_flags"), torch.Tensor):
+                            model_inputs["image_flags"] = model_inputs["image_flags"].to(vision_device)
+                    except Exception:
+                        pass
+
+            if not uses_device_map:
+                # Ensure inputs are on the same device as model
+                if hasattr(self.model, 'device'):
+                    device = self.model.device
+                else:
+                    device = next(self.model.parameters()).device
+                
+                # Move inputs to model device
+                for key, value in model_inputs.items():
+                    if isinstance(value, torch.Tensor):
+                        model_inputs[key] = value.to(device)
             
             if hasattr(self.model, "encoder") and hasattr(self.model, "decoder"):
                 decoder_start_token = [self.tokenizer.pad_token] * model_inputs['input_ids'].size(0)
-                decoder_input = self.tokenizer(decoder_start_token, return_tensors="pt").input_ids.to(device)
+                decoder_input = self.tokenizer(decoder_start_token, return_tensors="pt").input_ids
+                if not uses_device_map:
+                    decoder_input = decoder_input.to(device)
                 model_inputs['decoder_input_ids'] = decoder_input
             
             model_kwargs = dict(model_inputs)

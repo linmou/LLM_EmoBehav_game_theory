@@ -85,8 +85,25 @@ def load_emotion_readers(
 
         processor = auto_load_processor(config["model_name_or_path"])
         if processor is None:
-            print("⚠️  Multimodal mode requested but processor unavailable; falling back to text-only mode")
-            experiment_mode = "text_only"
+            model_lower = str(config.get("model_name_or_path", "")).lower()
+            if "internvl" in model_lower:
+                # InternVL AutoProcessor is often tokenizer-only, but we can still build
+                # `pixel_values` via AutoImageProcessor in the InternVL adapter.
+                # Also provide an image processor to transformers Pipeline so batching
+                # can pad `pixel_values` without crashing.
+                from transformers import AutoImageProcessor
+
+                processor = AutoImageProcessor.from_pretrained(
+                    config["model_name_or_path"], trust_remote_code=True
+                )
+                print(
+                    "⚠️  InternVL detected: AutoProcessor unavailable; proceeding in multimodal mode "
+                    "using AutoImageProcessor-based adapter."
+                )
+            else:
+                raise ValueError(
+                    "Multimodal mode requested but AutoProcessor is unavailable for this model."
+                )
 
     print(f"✓ Experiment mode: {experiment_mode}")
     for reason in feasibility["reasons"]:

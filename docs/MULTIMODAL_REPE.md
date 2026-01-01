@@ -215,6 +215,26 @@ Example config: `config/qwen25_vl_mm_stimulus_image_text_smoke.yaml`
 bash -c "source /usr/local/anaconda3/etc/profile.d/conda.sh && conda activate llm_fresh && CUDA_VISIBLE_DEVICES=0,1 python -m emotion_experiment_engine.emotion_experiment_series_runner --config config/qwen25_vl_mm_stimulus_image_text_smoke.yaml"
 ```
 
+## Multimodal Game-Theory Benchmark Dataset (JSON + images)
+
+To run a **multimodal** game-theory benchmark dataset (where each scenario has image(s) attached), use the dedicated benchmark name `game_theory_mm` so the registry selects `GameTheoryMultimodalDataset`.
+
+### Data Sample Contract
+
+Each record must be a valid game-theory scenario for the `task_type` (same as the text-only game-theory JSON), plus at least one image path.
+
+Required (same as game-theory dataset; exact fields depend on `task_type`’s scenario model):
+- `scenario` / `description` / `participants` / `behavior_choices` (and any other fields your game’s scenario class expects)
+
+Required (multimodal addition):
+- One of:
+  - `image_path`: string path to one image
+  - `image`: string path to one image
+  - `images`: list of string paths (>= 1)
+
+Path rule:
+- If an image path is relative, it’s resolved relative to the repo root (not `repe_eng_config.data_dir`).
+
 ## vLLM Notes / Troubleshooting
 
 - **No HF fallback**: the codepath is vLLM-only; vLLM init failures should raise.

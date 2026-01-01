@@ -16,7 +16,15 @@ class _DummyPromptFormat:
     def __init__(self) -> None:
         self.records: List[Any] = []
 
-    def build(self, system_prompt: str, user_messages: List[str], enable_thinking: bool = False):
+    def build(
+        self,
+        system_prompt: str,
+        user_messages: List[str],
+        assistant_messages: Any = None,
+        images: Any = None,
+        enable_thinking: bool = False,
+    ):
+        del assistant_messages, images
         self.records.append((system_prompt, user_messages, enable_thinking))
         return f"PROMPT::{enable_thinking}"
 

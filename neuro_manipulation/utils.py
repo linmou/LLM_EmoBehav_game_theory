@@ -705,7 +705,9 @@ def load_tokenizer_only(
                - processor_or_none: AutoProcessor for multimodal models, None for text-only
     """
     # Load tokenizer (same logic as in load_model_tokenizer)
-    use_fast_tokenizer = False
+    # Some VLM tokenizers can fail in slow mode (e.g., missing merges/vocab_file), so prefer fast.
+    model_lower = str(model_name_or_path).lower()
+    use_fast_tokenizer = ("phi" in model_lower) or ("internvl" in model_lower)
     tokenizer = AutoTokenizer.from_pretrained(
         model_name_or_path,
         use_fast=use_fast_tokenizer,
@@ -731,8 +733,12 @@ def load_tokenizer_only(
             if processor:
                 print(f"✓ Detected multimodal model: {model_name_or_path}")
             else:
-                raise Exception(
-                    f"Multimodal model detected but processor loading failed: {model_name_or_path}"
+                # Some multimodal models (e.g., InternVL) may not expose an
+                # image-capable AutoProcessor in HuggingFace metadata. We can
+                # still run by relying on vLLM's multimodal input handling.
+                print(
+                    f"⚠️  Multimodal model detected but processor unavailable: {model_name_or_path} "
+                    "(will rely on vLLM multimodal preprocessing)"
                 )
         else:
             print(f"✓ Detected text-only model: {model_name_or_path}")
@@ -760,6 +766,18 @@ def load_model_only(
     if from_vllm:
         try:
             _ensure_repo_root_on_pythonpath()
+            # vLLM uses NCCL process groups internally; make sure we don't carry
+            # an old one across sequential model loads.
+            try:
+                if torch.distributed.is_available() and torch.distributed.is_initialized():
+                    torch.distributed.destroy_process_group()
+            except Exception:
+                pass
+            # vLLM uses multiprocessing; if CUDA has already been initialized in this
+            # process (e.g., from HF model loading for RepE readers), forking will
+            # crash with "Cannot re-initialize CUDA in forked subprocess".
+            # Force vLLM to use spawn workers to avoid that failure.
+            os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
             # Use VLLMLoadingConfig.to_vllm_kwargs() method
             if loading_config and hasattr(loading_config, "to_vllm_kwargs"):
                 vllm_kwargs = loading_config.to_vllm_kwargs()
@@ -801,6 +819,27 @@ def load_model_only(
                         "use XFORMERS or TRITON_ATTN instead."
                     )
                 os.environ["VLLM_ATTENTION_BACKEND"] = str(attn_backend)
+
+            # vLLM enforces gpu_memory_utilization <= (free_vram / total_vram) on startup.
+            # HF model loading for RepE readers may reserve VRAM before vLLM starts, so clamp.
+            try:
+                if (
+                    torch.cuda.is_available()
+                    and isinstance(vllm_kwargs.get("gpu_memory_utilization"), (float, int))
+                ):
+                    requested = float(vllm_kwargs["gpu_memory_utilization"])
+                    free_fracs = []
+                    for i in range(max(1, int(torch.cuda.device_count()))):
+                        free, total = torch.cuda.mem_get_info(i)
+                        if total:
+                            free_fracs.append(float(free) / float(total))
+                    if free_fracs:
+                        # Keep a small margin to avoid fluctuations during init.
+                        max_util = max(0.05, min(free_fracs) - 0.02)
+                        if requested > max_util:
+                            vllm_kwargs["gpu_memory_utilization"] = max_util
+            except Exception:
+                pass
 
             return LLM(**vllm_kwargs)
 
@@ -847,9 +886,11 @@ def load_model_only(
         config = AutoConfig.from_pretrained(
             model_name_or_path, token=True, trust_remote_code=True
         )
-        # GLM-Edge: prefer single-GPU placement to avoid cross-device image/text tensors
+        # Some multimodal HF models break when sharded across GPUs because they
+        # assume all multimodal tensors live on one device (e.g., InternVL uses
+        # boolean indexing between vision outputs and `image_flags`).
         name_lower = str(model_name_or_path).lower()
-        single_gpu_map = {"": 0} if ("glm-edge" in name_lower) else "auto"
+        single_gpu_map = {"": 0} if (("glm-edge" in name_lower) or ("internvl" in name_lower)) else "auto"
 
         # DTYPE POLICY: Prefer bfloat16 for Gemma-3 to avoid NaNs; float16 otherwise
         preferred_dtype = torch.bfloat16 if ("gemma-3" in name_lower) else torch.float16
@@ -893,10 +934,12 @@ def load_model_only(
         ).eval()
     except:
         # If config loading fails, fallback to AutoModel
+        name_lower = str(model_name_or_path).lower()
+        fallback_device_map = {"": 0} if (("glm-edge" in name_lower) or ("internvl" in name_lower)) else "auto"
         return AutoModel.from_pretrained(
             model_name_or_path,
             torch_dtype=hf_torch_dtype,
-            device_map="auto",
+            device_map=fallback_device_map,
             token=True,
             trust_remote_code=True,
         ).eval()
