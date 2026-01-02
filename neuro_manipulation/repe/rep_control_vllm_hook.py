@@ -17,6 +17,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+_CAPTURE_STORE = {}
+
 
 # --- Hook Function ---
 def hook_fn_rep_control(module, args, output):
@@ -244,6 +246,54 @@ def hook_fn_rep_control(module, args, output):
         return output
 
 
+def _maybe_get_tensor_from_output(output):
+    if isinstance(output, torch.Tensor):
+        return output
+    if isinstance(output, tuple) and output and isinstance(output[0], torch.Tensor):
+        return output[0]
+    return None
+
+
+def hook_fn_rep_control_with_capture(module, args, output):
+    """
+    Wrapper around hook_fn_rep_control that also stores pre/post activations
+    for the last token when capture_id and layer_id are provided in state.
+    """
+    tensor = _maybe_get_tensor_from_output(output)
+    state = getattr(module, "_rep_control_state", None)
+    if state is None:
+        return output
+
+    capture_id = state.get("capture_id")
+    layer_id = state.get("layer_id")
+
+    pre_vec = None
+    if capture_id is not None and layer_id is not None and tensor is not None:
+        pre_vec = tensor[:, -1, :].detach().to("cpu")
+
+    result = hook_fn_rep_control(module, args, output)
+
+    if (
+        capture_id is not None
+        and layer_id is not None
+        and pre_vec is not None
+    ):
+        post_tensor = _maybe_get_tensor_from_output(result)
+        if post_tensor is not None:
+            post_vec = post_tensor[:, -1, :].detach().to("cpu")
+            rank = dist.get_rank() if dist.is_initialized() else 0
+            _CAPTURE_STORE.setdefault(capture_id, []).append(
+                {
+                    "capture_id": capture_id,
+                    "layer_id": int(layer_id),
+                    "rank": int(rank) if isinstance(rank, int) else 0,
+                    "pre": pre_vec,
+                    "post": post_vec,
+                }
+            )
+    return result
+
+
 # --- RPC Functions ---
 def _get_nested_module(model, module_path):
     """Helper to get a nested module by path."""
@@ -402,6 +452,27 @@ def _reset_controller_state_on_worker_rpc(worker_self, layer_index, block_name):
         return False
 
 
+def _collect_captures_on_worker_rpc(worker_self, capture_id=None):
+    """
+    RPC helper to fetch and clear captured activations stored on a worker.
+    If capture_id is provided, only entries for that id are returned.
+    """
+    if capture_id is not None:
+        entries = list(_CAPTURE_STORE.get(capture_id, []))
+        _CAPTURE_STORE.pop(capture_id, None)
+        return entries
+
+    entries = []
+    for items in _CAPTURE_STORE.values():
+        entries.extend(items)
+    _CAPTURE_STORE.clear()
+    return entries
+
+
+def _reset_capture_store_for_tests():
+    _CAPTURE_STORE.clear()
+
+
 # --- Main Class ---
 class RepControlVLLMHook:
     def __init__(
@@ -412,6 +483,7 @@ class RepControlVLLMHook:
         block_name: str,
         control_method: str,
         tensor_parallel_size: int = 1,
+        hook_fn=hook_fn_rep_control,
     ):
         """
         Initializes RepControlVLLMHook.
@@ -435,6 +507,7 @@ class RepControlVLLMHook:
             {}
         )  # Store handles locally if needed, but primary management is RPC
         self.tp_size = tensor_parallel_size  # Use the passed value
+        self._hook_fn = hook_fn
 
         if control_method != "reading_vec":
             raise ValueError(f"Control method '{control_method}' not supported yet.")
@@ -471,7 +544,7 @@ class RepControlVLLMHook:
                 args=(
                     layer_id,
                     self.block_name,
-                    hook_fn_rep_control,
+                    self._hook_fn,
                 ),  # Pass hook fn directly
             )
             logger.info(
@@ -645,6 +718,44 @@ class RepControlVLLMHook:
         #     )
         #     logger.info(f"RPC hook removal results for layer {layer_id}: {rpc_results}")
         pass  # Placeholder
+
+
+class RepControlVLLMCaptureHook(RepControlVLLMHook):
+    """
+    Variant of RepControlVLLMHook that captures pre/post activations per layer.
+    """
+
+    def __init__(
+        self,
+        model: LLM,
+        tokenizer,
+        layers: list[int],
+        block_name: str,
+        control_method: str,
+        tensor_parallel_size: int = 1,
+    ):
+        super().__init__(
+            model=model,
+            tokenizer=tokenizer,
+            layers=layers,
+            block_name=block_name,
+            control_method=control_method,
+            tensor_parallel_size=tensor_parallel_size,
+            hook_fn=hook_fn_rep_control_with_capture,
+        )
+
+    def collect_captures(self, capture_id=None):
+        """
+        Collect and clear captured activations across workers.
+        """
+        results = self.model.llm_engine.collective_rpc(
+            _collect_captures_on_worker_rpc, args=(capture_id,)
+        )
+        merged = []
+        for part in results:
+            if part:
+                merged.extend(part)
+        return merged
 
 
 # --- Example Usage (requires CUDA and vLLM installation) ---

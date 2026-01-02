@@ -2,6 +2,15 @@
 
 This module provides the `RepControlVLLMHook` class, designed to apply representation control techniques (specifically `reading_vec` for now) to models running within the vLLM framework by leveraging forward hooks and Remote Procedure Calls (RPC).
 
+## Capture Variant
+
+For debugging and analysis, `rep_control_vllm_hook.py` also provides `RepControlVLLMCaptureHook`, which behaves like `RepControlVLLMHook` but additionally captures **pre/post activations** (currently the **last token** hidden state) for each hooked layer.
+
+Mechanics:
+- Set `capture_id` and `layer_id` in the module `_rep_control_state` (this is done via the same RPC state-setting path).
+- The capture hook stores `pre` and `post` tensors on each worker in an in-memory store keyed by `capture_id`.
+- Call `RepControlVLLMCaptureHook.collect_captures(capture_id=...)` to fetch-and-clear captures from all workers.
+
 ## Overview
 
 Instead of wrapping model layers (as in `rep_control_reading_vec.py`), this approach injects control by registering PyTorch forward hooks directly onto the target layers (or submodules like `mlp`, `self_attn`) of the model running on each vLLM worker process. This avoids modifying the model structure itself but relies on vLLM's `collective_rpc` mechanism to manage the hooks and their associated state.
