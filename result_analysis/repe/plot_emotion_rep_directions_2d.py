@@ -49,8 +49,9 @@ def _num_hidden_layers(model_path: str) -> int:
     raise ValueError(f"Cannot determine num hidden layers for {model_path} (config={type(cfg)})")
 
 
-def _plot_and_save(vectors, meta, out_png: Path, out_jsonl: Path, title: str) -> None:
-    coords = reduce_vectors_to_2d(vectors, method="pca")
+def _plot_and_save_with_coords(
+    coords, meta, out_png: Path, out_jsonl: Path, title: str, method_label: str
+) -> None:
     emotions = sorted({m["emotion"] for m in meta})
 
     fig, ax = plt.subplots(figsize=(9, 7))
@@ -61,8 +62,8 @@ def _plot_and_save(vectors, meta, out_png: Path, out_jsonl: Path, title: str) ->
         ax.scatter(xs, ys, s=14, alpha=0.85, label=emo)
 
     ax.set_title(title)
-    ax.set_xlabel("PC1")
-    ax.set_ylabel("PC2")
+    ax.set_xlabel(f"{method_label}1")
+    ax.set_ylabel(f"{method_label}2")
     ax.legend(loc="best", fontsize=9)
     fig.tight_layout()
     out_png.parent.mkdir(parents=True, exist_ok=True)
@@ -95,6 +96,40 @@ def main() -> int:
         help="If the exact hash-derived cache file is missing, scan storage-dir and use the newest cache for that model.",
     )
     ap.add_argument(
+        "--model-filter",
+        type=str,
+        default=None,
+        help="Only process models whose path contains this substring.",
+    )
+    ap.add_argument(
+        "--tag",
+        type=str,
+        default="",
+        help="Optional suffix added to output filenames so you can run multiple settings without overwriting.",
+    )
+    ap.add_argument(
+        "--method",
+        choices=["pca", "tsne", "umap"],
+        default="pca",
+        help="2D reduction method applied to stored direction vectors.",
+    )
+    ap.add_argument(
+        "--metric",
+        type=str,
+        default="euclidean",
+        help="Distance metric for tsne/umap (common: euclidean, cosine).",
+    )
+    ap.add_argument(
+        "--normalize",
+        choices=["none", "l2"],
+        default="none",
+        help="Optional pre-normalization of direction vectors before 2D reduction.",
+    )
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--perplexity", type=float, default=30.0, help="t-SNE perplexity")
+    ap.add_argument("--n-neighbors", type=int, default=15, help="UMAP n_neighbors")
+    ap.add_argument("--min-dist", type=float, default=0.1, help="UMAP min_dist")
+    ap.add_argument(
         "--out-dir",
         type=Path,
         default=None,
@@ -110,6 +145,8 @@ def main() -> int:
         raise ValueError(f"No models list found in {args.config}")
 
     for model_path in model_paths:
+        if args.model_filter and args.model_filter not in model_path:
+            continue
         pkl_path = None
         repe_cfg = infer_repe_config_for_model(model_path, cfg)
         hidden_layers = list(range(-1, -_num_hidden_layers(model_path) - 1, -1))
@@ -153,12 +190,29 @@ def main() -> int:
         vectors, meta = collect_direction_points(emotion_rep_readers, model_id=model_name)
         out_png = args.out_dir / f"{model_name}_emotion_rep_directions_pca2d.png"
         out_jsonl = args.out_dir / f"{model_name}_emotion_rep_directions_pca2d.jsonl"
-        _plot_and_save(
+        coords = reduce_vectors_to_2d(
             vectors,
+            method=args.method,
+            seed=args.seed,
+            perplexity=args.perplexity,
+            n_neighbors=args.n_neighbors,
+            min_dist=args.min_dist,
+            metric=args.metric,
+            normalize=args.normalize,
+        )
+        out_png = out_png.with_name(out_png.name.replace("_pca2d", f"_{args.method}2d"))
+        out_jsonl = out_jsonl.with_name(out_jsonl.name.replace("_pca2d", f"_{args.method}2d"))
+        if args.tag:
+            out_png = out_png.with_name(out_png.stem + f"_{args.tag}" + out_png.suffix)
+            out_jsonl = out_jsonl.with_name(out_jsonl.stem + f"_{args.tag}" + out_jsonl.suffix)
+        method_label = {"pca": "PC", "tsne": "tSNE", "umap": "UMAP"}[args.method]
+        _plot_and_save_with_coords(
+            coords,
             meta,
             out_png=out_png,
             out_jsonl=out_jsonl,
-            title=f"{model_name}: emotion direction vectors (layers×components)",
+            title=f"{model_name}: emotion direction vectors ({args.method})",
+            method_label=method_label,
         )
         print(f"[ok] {model_name}: {out_png}")
 

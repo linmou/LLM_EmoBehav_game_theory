@@ -23,7 +23,7 @@ intensities:
 
 benchmarks:
   - name: "game_theory"
-    task_type: "Prisoners_Dilemma"
+    task_type: "Sealed_Auction"
     augmentation_config:
       shuffle_options: true
     llm_eval_config:
@@ -31,75 +31,13 @@ benchmarks:
       model: "gemini-2.5-flash-lite"
       temperature: 0.0
     sample_limit: 800
-  - name: "game_theory"
-    task_type: "Stag_Hunt"
-    augmentation_config:
-      shuffle_options: true
-    llm_eval_config:
-      client: "gemini"
-      model: "gemini-2.5-flash-lite"
-      temperature: 0.0
-    sample_limit: 800
-  - name: "game_theory"
-    task_type: "Escalation_Game"
-    augmentation_config:
-      shuffle_options: true
-      previous_actions_length: 0
-    llm_eval_config:
-      client: "gemini"
-      model: "gemini-2.5-flash-lite"
-      temperature: 0.0
-    sample_limit: 800
-  - name: "game_theory"
-    task_type: "Trust_Game_Trustor"
-    augmentation_config:
-      shuffle_options: true
-      previous_actions_length: 0
-    llm_eval_config:
-      client: "gemini"
-      model: "gemini-2.5-flash-lite"
-      temperature: 0.0
-    sample_limit: 800
-  - name: "game_theory"
-    task_type: "Trust_Game_Trustee"
-    augmentation_config:
-      shuffle_options: true
-      previous_actions_length: 1
-      previous_trust_level: 1
-    llm_eval_config:
-      client: "gemini"
-      model: "gemini-2.5-flash-lite"
-      temperature: 0.0
-    sample_limit: 800
-  - name: "game_theory"
-    task_type: "Ultimatum_Game_Proposer"
-    augmentation_config:
-      shuffle_options: true
-      previous_actions_length: 0
-      previous_offer_level: 1
-    llm_eval_config:
-      client: "gemini"
-      model: "gemini-2.5-flash-lite"
-      temperature: 0.0
-    sample_limit: 800
-  - name: "game_theory"
-    task_type: "Ultimatum_Game_Responder"
-    augmentation_config:
-      shuffle_options: true
-    enable_auto_truncation: false
-    truncation_strategy: "right"
-    preserve_ratio: 1.0
-    llm_eval_config:
-      client: "gemini"
-      model: "gemini-2.5-flash-lite"
-      temperature: 0.0
-    sample_limit: 800
+  
 
 loading_config:
   gpu_memory_utilization: 0.79
   enforce_eager: true
   quantization: null
-  max_model_len: 8192
+  max_model_len: 2192
   trust_remote_code: true
   dtype: "bfloat16"
   seed: 1
@@ -125,6 +63,6 @@ batch_size: 800
 repe_eng_config:
   data_dir: "data/stimulus/crowd-enVent_textlike"
 
-output_dir: "results/new_game_theory/shuffle_800_samples"
-sanity_check: false
+output_dir: "results/new_game_theory/="
+sanity_check: true
 defer_evaluation: true

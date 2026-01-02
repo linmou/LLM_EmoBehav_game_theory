@@ -86,7 +86,7 @@ GAME_CONFIGS = {
         "scenario_class": SealedAuctionScenario,
         "decision_class": SealedAuctionDecision,
         "payoff_matrix": dict(),
-        "data_path": "data_creation/scenario_creation/langgraph_creation/Diplomacy_Sealed_Auction_all_data_samples.json",
+        "data_path": data_path_format.format(GameNames.SEALED_AUCTION.value),
     },
     GameNames.DIPLOMACY_ESCALATION_GAME: {
         "game_name": GameNames.DIPLOMACY_ESCALATION_GAME.value,
