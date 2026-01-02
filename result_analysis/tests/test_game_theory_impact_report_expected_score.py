@@ -1,13 +1,13 @@
-# Tests for `result_analysis/generate_game_theory_impact_report.py`: expected-score deltas from raw_results.json.
+"""Tests for `result_analysis/generate_game_theory_impact_report.py`.
+
+This repository's local version does not compute expected-score deltas from `raw_results.json` in the
+game-theory impact report. Raw JSON should not crash the report, but it is ignored.
+"""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
-
-import csv
-
-import pytest
 
 from result_analysis.generate_game_theory_impact_report import generate_game_theory_impact_report
 
@@ -93,7 +93,7 @@ def _write_raw_results_trustor(path: Path) -> None:
     path.write_text(json.dumps(rows), encoding="utf-8")
 
 
-def test_expected_score_section_writes_csv_and_mentions_in_md(tmp_path: Path) -> None:
+def test_raw_results_json_is_ignored_by_report(tmp_path: Path) -> None:
     root = tmp_path / "results" / "new_game_theory_decision" / "shuffle_choices"
     run_dir = root / "FooModel_game_theory_decision_Trust_Game_Trustor_20250102_010101"
 
@@ -118,22 +118,5 @@ def test_expected_score_section_writes_csv_and_mentions_in_md(tmp_path: Path) ->
     out = generate_game_theory_impact_report(root=root)
 
     md = out.report_path.read_text(encoding="utf-8")
-    assert "Expected-Score Effects" in md
-    assert "expected_score_delta_vs_neutral_by_emotion_intensity_latest.csv" in md
-
-    expected_csv = root / "expected_score_delta_vs_neutral_by_emotion_intensity_latest.csv"
-    assert expected_csv.exists()
-
-    with expected_csv.open(newline="", encoding="utf-8") as f:
-        rows = list(csv.DictReader(f))
-
-    # Two intensities for anger.
-    anger = [r for r in rows if r["task"] == "Trust_Game_Trustor" and r["emotion"] == "anger"]
-    assert {float(r["intensity"]) for r in anger} == {1.0, 2.0}
-
-    row_1 = next(r for r in anger if float(r["intensity"]) == 1.0)
-    assert float(row_1["delta_mean"]) == pytest.approx(1.0, abs=1e-9)
-
-    row_2 = next(r for r in anger if float(r["intensity"]) == 2.0)
-    assert float(row_2["delta_mean"]) == pytest.approx(1.5, abs=1e-9)
-
+    assert "Expected-Score Effects" not in md
+    assert not (root / "expected_score_delta_vs_neutral_by_emotion_intensity_latest.csv").exists()

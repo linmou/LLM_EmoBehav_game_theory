@@ -42,14 +42,20 @@ Example Usage:
     results = experiment.run_experiment()
 """
 
-# Keep package import cheap and robust.
-# Some environments (e.g., sandboxed /dev/shm) will SIGABRT when importing GPU-heavy deps
-# like vLLM / torch via OpenMP initialization. Import those lazily on attribute access.
-
+# Import EmotionMemoryExperiment conditionally to avoid vllm dependency during imports
+try:
+    from .experiment import EmotionExperiment
+except Exception:
+    # vllm not available, EmotionMemoryExperiment will be None
+    EmotionExperiment = None
 # Adapters replaced by smart datasets in refactoring
 from .config_loader import EmotionMemoryConfigLoader, load_emotion_memory_config
-from .data_models import DEFAULT_GENERATION_CONFIG, BenchmarkConfig, ExperimentConfig, ResultRecord
-
+from .data_models import (
+    DEFAULT_GENERATION_CONFIG,
+    BenchmarkConfig,
+    ExperimentConfig,
+    ResultRecord,
+)
 __version__ = "1.0.0"
 
 

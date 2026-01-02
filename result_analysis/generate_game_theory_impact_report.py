@@ -18,6 +18,8 @@ Method:
 Outputs (written under root):
 - option_impacted_by_emo_vs_neutral_latest.csv
 - behavior_impacted_emo_vs_neutral_latest.csv (only if behavior inputs exist)
+- option_intensity_impacted_by_emo_vs_neutral_latest.csv
+- behavior_intensity_impacted_emo_vs_neutral_latest.csv (only if behavior inputs exist)
 - game_theory_impact_report.md
 """
 
@@ -34,6 +36,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean
 from typing import Dict, Iterable, List, Optional, Tuple
+
+from result_analysis.game_theory_impact_heatmaps import write_behavior_change_heatmap_pdf
+from result_analysis.game_theory_ratio_loading import (
+    collapse_behavior_over_intensity,
+    collapse_choice_over_intensity,
+    load_behavior_by_intensity,
+    load_choice_by_intensity,
+)
 
 
 _EXPECTED_SCORE_SPECS: Dict[str, Dict[str, float]] = {
@@ -64,6 +74,9 @@ class RunRef:
 class ReportOutputs:
     option_csv_path: Path
     behavior_csv_path: Optional[Path]
+    option_intensity_csv_path: Path
+    behavior_intensity_csv_path: Optional[Path]
+    heatmaps_dir: Optional[Path]
     report_path: Path
 
 
@@ -484,33 +497,19 @@ def _format_all_emotions_cell(sig_by_emotion: Dict[str, SigEntry]) -> str:
         parts.append((emo, e.delta, part))
     parts.sort(key=lambda x: (-x[1], x[0]))
     return "; ".join(p for _, _, p in parts)
+
+
+def _format_intensity_series(vals: List[Tuple[float, float]]) -> str:
+    vals = sorted(vals, key=lambda x: x[0])
+    return ";".join(f"{intensity:g}:{val:+.6f}" for intensity, val in vals)
 def _load_collapsed_choice_ratios(path: Path) -> Dict[str, Dict[int, float]]:
-    acc: Dict[str, Dict[int, List[float]]] = {}
-    with path.open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            emotion = str(row["emotion"])
-            option_id = int(float(row["option_id"]))
-            ratio = float(row["ratio"])
-            acc.setdefault(emotion, {}).setdefault(option_id, []).append(ratio)
-    return {emo: {opt: mean(vals) for opt, vals in m.items()} for emo, m in acc.items()}
+    collapsed, _ = collapse_choice_over_intensity(path, unknown_threshold=None)
+    return collapsed
 
 
 def _load_collapsed_behavior_ratios(path: Path) -> Dict[str, Dict[str, float]]:
-    acc: Dict[str, Dict[str, List[float]]] = {}
-    with path.open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        for row in reader:
-            emotion = str(row["emotion"])
-            behavior = row.get("behavior")
-            if behavior in (None, "", "nan", "NaN"):
-                behavior = row.get("behavior_label")
-            if behavior in (None, ""):
-                raise KeyError("Expected CSV column 'behavior' or 'behavior_label'")
-            behavior = str(behavior)
-            ratio = float(row["ratio"])
-            acc.setdefault(emotion, {}).setdefault(behavior, []).append(ratio)
-    return {emo: {b: mean(vals) for b, vals in m.items()} for emo, m in acc.items()}
+    collapsed, _ = collapse_behavior_over_intensity(path, unknown_threshold=None)
+    return collapsed
 
 
 def _impact_rows_for_choice(
@@ -518,8 +517,9 @@ def _impact_rows_for_choice(
     csv_path: Path,
     *,
     option_sig: Optional[Dict[int, Dict[str, SigEntry]]] = None,
+    collapsed_override: Optional[Dict[str, Dict[int, float]]] = None,
 ) -> Tuple[List[Dict[str, object]], bool]:
-    collapsed = _load_collapsed_choice_ratios(csv_path)
+    collapsed = collapsed_override if collapsed_override is not None else _load_collapsed_choice_ratios(csv_path)
     if "neutral" not in collapsed:
         return [], True
     options = sorted({o for emo in collapsed for o in collapsed[emo]})
@@ -537,7 +537,7 @@ def _impact_rows_for_choice(
             continue
         best = max(deltas, key=lambda x: x[1])
         worst = min(deltas, key=lambda x: x[1])
-        if option_sig is not None and o in option_sig:
+        if option_sig is not None and o in option_sig and option_sig[o]:
             all_deltas = _format_all_emotions_cell(option_sig[o])
         else:
             all_deltas = _format_ranked_deltas(deltas)
@@ -566,8 +566,9 @@ def _impact_rows_for_behavior(
     csv_path: Path,
     *,
     behavior_sig: Optional[Dict[str, Dict[str, SigEntry]]] = None,
+    collapsed_override: Optional[Dict[str, Dict[str, float]]] = None,
 ) -> Tuple[List[Dict[str, object]], bool]:
-    collapsed = _load_collapsed_behavior_ratios(csv_path)
+    collapsed = collapsed_override if collapsed_override is not None else _load_collapsed_behavior_ratios(csv_path)
     if "neutral" not in collapsed:
         return [], True
     behaviors = sorted({b for emo in collapsed for b in collapsed[emo]})
@@ -585,7 +586,7 @@ def _impact_rows_for_behavior(
             continue
         best = max(deltas, key=lambda x: x[1])
         worst = min(deltas, key=lambda x: x[1])
-        if behavior_sig is not None and b in behavior_sig:
+        if behavior_sig is not None and b in behavior_sig and behavior_sig[b]:
             all_deltas = _format_all_emotions_cell(behavior_sig[b])
         else:
             all_deltas = _format_ranked_deltas(deltas)
@@ -594,7 +595,7 @@ def _impact_rows_for_behavior(
                 "task": run.task,
                 "model": run.model,
                 "timestamp": run.timestamp,
-                "behavior": b,
+                "behavior_label": b,
                 "neutral_ratio": round(neutral_ratio, 6),
                 "best_emotion": best[0],
                 "best_delta_vs_neutral": round(best[1], 6),
@@ -609,98 +610,120 @@ def _impact_rows_for_behavior(
     return rows, False
 
 
-def _expected_score_rows_for_run(run: RunRef, raw_path: Path) -> Tuple[List[Dict[str, object]], bool]:
-    spec = _EXPECTED_SCORE_SPECS.get(run.task)
-    if spec is None:
-        return [], False
-    data = json.loads(raw_path.read_text(encoding="utf-8"))
-    if not isinstance(data, list):
-        return [], False
-
-    # Parse record -> (item_id, emotion, intensity, score)
-    parsed: List[Tuple[object, str, float, float]] = []
-    for rec in data:
-        if not isinstance(rec, dict):
-            continue
-        if rec.get("error"):
-            continue
-        emotion = rec.get("emotion")
-        intensity = rec.get("intensity")
-        item_id = rec.get("item_id")
-        if not isinstance(emotion, str) or intensity is None:
-            continue
-        try:
-            intensity_f = float(intensity)
-        except Exception:
-            continue
-        score_raw = rec.get("score")
-        if score_raw is None:
-            continue
-        try:
-            option_id = int(float(score_raw))
-        except Exception:
-            continue
-        options = rec.get("metadata", {}).get("item_metadata", {}).get("options", [])
-        if not isinstance(options, list):
-            continue
-        behavior = None
-        for opt in options:
-            if not isinstance(opt, dict):
-                continue
-            if int(opt.get("id", -1)) == option_id:
-                behavior = opt.get("behavior")
-                break
-        if not isinstance(behavior, str):
-            continue
-        if behavior not in spec:
-            continue
-        parsed.append((item_id, emotion, intensity_f, float(spec[behavior])))
-
-    # Neutral baselines per item.
-    neutral_by_item: Dict[object, float] = {}
-    neutrals: Dict[object, List[float]] = {}
-    for item_id, emotion, _intensity, score in parsed:
-        if emotion == "neutral":
-            neutrals.setdefault(item_id, []).append(score)
-    for item_id, vals in neutrals.items():
-        neutral_by_item[item_id] = mean(vals)
-
-    # Deltas per (emotion,intensity) for items that have neutral baseline.
-    by_ei: Dict[Tuple[str, float], List[float]] = {}
-    by_ei_scores: Dict[Tuple[str, float], List[float]] = {}
-    by_ei_neutral: Dict[Tuple[str, float], List[float]] = {}
-    for item_id, emotion, intensity, score in parsed:
-        if emotion == "neutral":
-            continue
-        if item_id not in neutral_by_item:
-            continue
-        base = neutral_by_item[item_id]
-        key = (emotion, intensity)
-        by_ei.setdefault(key, []).append(score - base)
-        by_ei_scores.setdefault(key, []).append(score)
-        by_ei_neutral.setdefault(key, []).append(base)
-
-    if not by_ei:
+def _intensity_rows_for_choice(
+    run: RunRef,
+    csv_path: Path,
+    *,
+    by_intensity_override: Optional[Dict[str, Dict[float, Dict[int, float]]]] = None,
+) -> Tuple[List[Dict[str, object]], bool]:
+    by_intensity = (
+        by_intensity_override
+        if by_intensity_override is not None
+        else load_choice_by_intensity(csv_path, unknown_threshold=None)[0]
+    )
+    if "neutral" not in by_intensity:
         return [], True
 
-    rows: List[Dict[str, object]] = []
-    for (emotion, intensity), deltas in sorted(by_ei.items(), key=lambda x: (x[0][0], x[0][1])):
-        scores = by_ei_scores[(emotion, intensity)]
-        bases = by_ei_neutral[(emotion, intensity)]
-        rows.append(
-            {
-                "task": run.task,
-                "model": run.model,
-                "timestamp": run.timestamp,
-                "emotion": emotion,
-                "intensity": intensity,
-                "delta_mean": round(mean(deltas), 6),
-                "score_mean": round(mean(scores), 6),
-                "neutral_score_mean": round(mean(bases), 6),
-                "n_items": len(deltas),
-            }
-        )
+    # baseline neutral per option = mean over all neutral intensities present
+    neutral_ints = sorted(by_intensity["neutral"])
+    options = sorted({o for emo in by_intensity for i in by_intensity[emo] for o in by_intensity[emo][i]})
+    for i in neutral_ints:
+        for o in options:
+            by_intensity["neutral"][i].setdefault(o, 0.0)
+    neutral_base: Dict[int, float] = {o: mean([by_intensity["neutral"][i][o] for i in neutral_ints]) for o in options}
 
+    rows: List[Dict[str, object]] = []
+    for emo in sorted(e for e in by_intensity if e != "neutral"):
+        emo_ints = sorted(by_intensity[emo])
+        for i in emo_ints:
+            for o in options:
+                by_intensity[emo][i].setdefault(o, 0.0)
+
+        for o in options:
+            neutral_ratio = neutral_base[o]
+            deltas = [(i, by_intensity[emo][i][o] - neutral_ratio) for i in emo_ints]
+            ratios = [(i, by_intensity[emo][i][o]) for i in emo_ints]
+            best_i, best_delta = max(deltas, key=lambda x: x[1])
+            worst_i, worst_delta = min(deltas, key=lambda x: x[1])
+            best_ratio = by_intensity[emo][best_i][o]
+            worst_ratio = by_intensity[emo][worst_i][o]
+            rows.append(
+                {
+                    "task": run.task,
+                    "model": run.model,
+                    "timestamp": run.timestamp,
+                    "option_id": o,
+                    "emotion": emo,
+                    "neutral_ratio": round(neutral_ratio, 6),
+                    "best_intensity": best_i,
+                    "best_delta_vs_neutral": round(best_delta, 6),
+                    "best_ratio": round(best_ratio, 6),
+                    "worst_intensity": worst_i,
+                    "worst_delta_vs_neutral": round(worst_delta, 6),
+                    "worst_ratio": round(worst_ratio, 6),
+                    "delta_range_across_intensity": round(best_delta - worst_delta, 6),
+                    "deltas_by_intensity": _format_intensity_series(deltas),
+                    "ratios_by_intensity": _format_intensity_series([(i, r) for i, r in ratios]),
+                }
+            )
+    return rows, False
+
+
+def _intensity_rows_for_behavior(
+    run: RunRef,
+    csv_path: Path,
+    *,
+    by_intensity_override: Optional[Dict[str, Dict[float, Dict[str, float]]]] = None,
+) -> Tuple[List[Dict[str, object]], bool]:
+    by_intensity = (
+        by_intensity_override
+        if by_intensity_override is not None
+        else load_behavior_by_intensity(csv_path, unknown_threshold=None)[0]
+    )
+    if "neutral" not in by_intensity:
+        return [], True
+
+    neutral_ints = sorted(by_intensity["neutral"])
+    behaviors = sorted({b for emo in by_intensity for i in by_intensity[emo] for b in by_intensity[emo][i]})
+    for i in neutral_ints:
+        for b in behaviors:
+            by_intensity["neutral"][i].setdefault(b, 0.0)
+    neutral_base: Dict[str, float] = {b: mean([by_intensity["neutral"][i][b] for i in neutral_ints]) for b in behaviors}
+
+    rows: List[Dict[str, object]] = []
+    for emo in sorted(e for e in by_intensity if e != "neutral"):
+        emo_ints = sorted(by_intensity[emo])
+        for i in emo_ints:
+            for b in behaviors:
+                by_intensity[emo][i].setdefault(b, 0.0)
+
+        for b in behaviors:
+            neutral_ratio = neutral_base[b]
+            deltas = [(i, by_intensity[emo][i][b] - neutral_ratio) for i in emo_ints]
+            ratios = [(i, by_intensity[emo][i][b]) for i in emo_ints]
+            best_i, best_delta = max(deltas, key=lambda x: x[1])
+            worst_i, worst_delta = min(deltas, key=lambda x: x[1])
+            best_ratio = by_intensity[emo][best_i][b]
+            worst_ratio = by_intensity[emo][worst_i][b]
+            rows.append(
+                {
+                    "task": run.task,
+                    "model": run.model,
+                    "timestamp": run.timestamp,
+                    "behavior_label": b,
+                    "emotion": emo,
+                    "neutral_ratio": round(neutral_ratio, 6),
+                    "best_intensity": best_i,
+                    "best_delta_vs_neutral": round(best_delta, 6),
+                    "best_ratio": round(best_ratio, 6),
+                    "worst_intensity": worst_i,
+                    "worst_delta_vs_neutral": round(worst_delta, 6),
+                    "worst_ratio": round(worst_ratio, 6),
+                    "delta_range_across_intensity": round(best_delta - worst_delta, 6),
+                    "deltas_by_intensity": _format_intensity_series(deltas),
+                    "ratios_by_intensity": _format_intensity_series([(i, r) for i, r in ratios]),
+                }
+            )
     return rows, False
 
 
@@ -721,13 +744,16 @@ def _render_markdown(
     runs: List[RunRef],
     option_csv: Path,
     behavior_csv: Optional[Path],
-    expected_score_csv: Optional[Path],
+    option_intensity_csv: Path,
+    behavior_intensity_csv: Optional[Path],
     option_rows: List[Dict[str, object]],
     behavior_rows: List[Dict[str, object]],
-    expected_score_rows: List[Dict[str, object]],
+    option_intensity_rows: List[Dict[str, object]],
+    behavior_intensity_rows: List[Dict[str, object]],
     skipped_missing_neutral: List[Path],
     top_n: int,
     per_game_n: int,
+    heatmaps_dir: Optional[Path],
 ) -> str:
     lines: List[str] = []
     lines.append("# Game-Theory Decision Impact Report (vs neutral)")
@@ -744,6 +770,7 @@ def _render_markdown(
     lines.append("- Collapse intensity by averaging `ratio` over all intensities present.")
     lines.append("- Compute `delta_vs_neutral = ratio(emotion) - ratio(neutral)` for each option/behavior.")
     lines.append("- Summarize best/worst emotion deltas and `delta_range = best - worst`.")
+    lines.append("- Additionally, compute per-emotion `delta_range_across_intensity` with per-intensity deltas (vs neutral mean).")
     lines.append("- In per-game tables, show deltas for all emotions (vs neutral), ranked by Δ descending.")
     lines.append("- When `raw_results.json` is available, annotate each emotion as `emo:Δ{sig}[ci_low,ci_high]`.")
     lines.append("  - `{sig}` is `! / !! / !!!` based on Benjamini–Hochberg FDR per game-setting (within Option table / Behavior table).")
@@ -754,10 +781,13 @@ def _render_markdown(
         lines.append(f"- Behavior CSV: `{behavior_csv}`")
     else:
         lines.append("- Behavior CSV: (not generated)")
-    if expected_score_csv is not None:
-        lines.append(f"- Expected-score CSV: [`{expected_score_csv}`]({expected_score_csv})")
+    lines.append(f"- Option-by-intensity CSV: `{option_intensity_csv}`")
+    if behavior_intensity_csv is not None:
+        lines.append(f"- Behavior-by-intensity CSV: `{behavior_intensity_csv}`")
     else:
-        lines.append("- Expected-score CSV: (not generated)")
+        lines.append("- Behavior-by-intensity CSV: (not generated)")
+    if heatmaps_dir is not None:
+        lines.append(f"- Heatmaps: `{heatmaps_dir}`")
     lines.append("")
 
     def _table(rows: List[Dict[str, object]], *, key_col: str, label: str) -> None:
@@ -829,40 +859,37 @@ def _render_markdown(
     _table(option_rows, key_col="option_id", label="Option")
 
     if behavior_rows:
-        _table(behavior_rows, key_col="behavior", label="Behavior")
+        _table(behavior_rows, key_col="behavior_label", label="Behavior")
     else:
         lines.append("## Behavior Effects")
         lines.append("No behavior ratio inputs found (`summary_behavior_ratio.csv`).")
         lines.append("")
 
-    if expected_score_rows:
-        lines.append("## Expected-Score Effects (item-traced, vs neutral)")
-        lines.append(
-            "- Computed from `raw_results.json` by mapping chosen option -> behavior -> numeric score, then taking per-item delta vs neutral."
-        )
-        lines.append("- Reported per `(emotion, intensity)` (no collapsing across intensities).")
-        lines.append("")
-        lines.append("| game_setting | model | emotion | intensity | Δ mean | neutral mean | score mean | n_items |")
-        lines.append("|---|---|---|---:|---:|---:|---:|---:|")
-        top = sorted(expected_score_rows, key=lambda r: abs(float(r["delta_mean"])), reverse=True)[:top_n]
+    def _intensity_table(rows: List[Dict[str, object]], *, key_col: str, label: str) -> None:
+        lines.append(f"## {label} Intensity Sensitivity (Top {top_n} by delta_range_across_intensity)")
+        lines.append(f"| game_setting | model | emotion | {key_col} | best (intensity, Δ) | worst (intensity, Δ) | range |")
+        lines.append("|---|---|---|---|---|---|---:|")
+        top = sorted(rows, key=lambda r: float(r["delta_range_across_intensity"]), reverse=True)[:top_n]
         for r in top:
             lines.append(
-                "| {task} | {model} | {emo} | {intensity:.3f} | {delta:+.3f} | {neutral:.3f} | {score:.3f} | {n} |".format(
+                "| {task} | {model} | {emo} | {k} | {best_i:g} ({best_delta:+.3f}) | {worst_i:g} ({worst_delta:+.3f}) | {rng:.3f} |".format(
                     task=r["task"],
                     model=r["model"],
                     emo=r["emotion"],
-                    intensity=float(r["intensity"]),
-                    delta=float(r["delta_mean"]),
-                    neutral=float(r["neutral_score_mean"]),
-                    score=float(r["score_mean"]),
-                    n=int(float(r["n_items"])),
+                    k=r[key_col],
+                    best_i=float(r["best_intensity"]),
+                    best_delta=float(r["best_delta_vs_neutral"]),
+                    worst_i=float(r["worst_intensity"]),
+                    worst_delta=float(r["worst_delta_vs_neutral"]),
+                    rng=float(r["delta_range_across_intensity"]),
                 )
             )
         lines.append("")
-    else:
-        lines.append("## Expected-Score Effects")
-        lines.append("No expected-score inputs found (`raw_results.json` for supported games).")
-        lines.append("")
+
+    if option_intensity_rows:
+        _intensity_table(option_intensity_rows, key_col="option_id", label="Option")
+    if behavior_intensity_rows:
+        _intensity_table(behavior_intensity_rows, key_col="behavior_label", label="Behavior")
 
     if skipped_missing_neutral:
         lines.append("## Skipped runs (missing neutral)")
@@ -879,6 +906,10 @@ def generate_game_theory_impact_report(
     out_dir: Optional[Path] = None,
     top_n: int = 20,
     per_game_n: int = 0,
+    write_heatmaps: bool = False,
+    unknown_threshold: Optional[float] = None,
+    heatmap_norm: str = "symlog",
+    heatmap_symlog_linthresh: float = 0.01,
 ) -> ReportOutputs:
     runs = _discover_latest_runs(root)
     if not runs:
@@ -886,28 +917,39 @@ def generate_game_theory_impact_report(
 
     option_rows: List[Dict[str, object]] = []
     behavior_rows: List[Dict[str, object]] = []
-    expected_score_rows: List[Dict[str, object]] = []
+    option_intensity_rows: List[Dict[str, object]] = []
+    behavior_intensity_rows: List[Dict[str, object]] = []
     skipped_missing_neutral: List[Path] = []
     for run in runs:
         option_sig, behavior_sig = _sig_maps_for_run(run)
         choice_csv = run.dir_path / "summary_choice_ratio.csv"
         behavior_csv = run.dir_path / "summary_behavior_ratio.csv"
-        raw_json = run.dir_path / "raw_results.json"
         if choice_csv.exists():
-            rows, missing_neutral = _impact_rows_for_choice(run, choice_csv, option_sig=option_sig or None)
+            collapsed, _ = collapse_choice_over_intensity(choice_csv, unknown_threshold=unknown_threshold)
+            by_intensity, _ = load_choice_by_intensity(choice_csv, unknown_threshold=unknown_threshold)
+            rows, missing_neutral = _impact_rows_for_choice(
+                run, choice_csv, option_sig=option_sig or None, collapsed_override=collapsed
+            )
             option_rows.extend(rows)
             if missing_neutral:
                 skipped_missing_neutral.append(choice_csv)
+            rows, missing_neutral = _intensity_rows_for_choice(run, choice_csv, by_intensity_override=by_intensity)
+            option_intensity_rows.extend(rows)
+            if missing_neutral:
+                skipped_missing_neutral.append(choice_csv)
         if behavior_csv.exists():
-            rows, missing_neutral = _impact_rows_for_behavior(run, behavior_csv, behavior_sig=behavior_sig or None)
+            collapsed_b, _ = collapse_behavior_over_intensity(behavior_csv, unknown_threshold=unknown_threshold)
+            by_intensity_b, _ = load_behavior_by_intensity(behavior_csv, unknown_threshold=unknown_threshold)
+            rows, missing_neutral = _impact_rows_for_behavior(
+                run, behavior_csv, behavior_sig=behavior_sig or None, collapsed_override=collapsed_b
+            )
             behavior_rows.extend(rows)
             if missing_neutral:
                 skipped_missing_neutral.append(behavior_csv)
-        if raw_json.exists():
-            rows, missing_neutral = _expected_score_rows_for_run(run, raw_json)
-            expected_score_rows.extend(rows)
+            rows, missing_neutral = _intensity_rows_for_behavior(run, behavior_csv, by_intensity_override=by_intensity_b)
+            behavior_intensity_rows.extend(rows)
             if missing_neutral:
-                skipped_missing_neutral.append(raw_json)
+                skipped_missing_neutral.append(behavior_csv)
 
     if not option_rows:
         raise ValueError(f"No usable summary_choice_ratio.csv found under {root} (need neutral)")
@@ -915,13 +957,35 @@ def generate_game_theory_impact_report(
     out_base = out_dir if out_dir is not None else root
     option_out = out_base / "option_impacted_by_emo_vs_neutral_latest.csv"
     behavior_out = out_base / "behavior_impacted_emo_vs_neutral_latest.csv" if behavior_rows else None
+    option_intensity_out = out_base / "option_intensity_impacted_by_emo_vs_neutral_latest.csv"
+    behavior_intensity_out = (
+        out_base / "behavior_intensity_impacted_emo_vs_neutral_latest.csv" if behavior_intensity_rows else None
+    )
+    heatmaps_dir = out_base / "heatmaps" if write_heatmaps else None
     report_out = out_base / "game_theory_impact_report.md"
 
     _write_csv(option_rows, option_out)
     if behavior_out is not None:
         _write_csv(behavior_rows, behavior_out)
-    if expected_out is not None:
-        _write_csv(expected_score_rows, expected_out)
+    _write_csv(option_intensity_rows, option_intensity_out)
+    if behavior_intensity_out is not None:
+        _write_csv(behavior_intensity_rows, behavior_intensity_out)
+
+    if heatmaps_dir is not None:
+        by_task: Dict[str, Dict[str, Path]] = {}
+        for run in runs:
+            behavior_csv = run.dir_path / "summary_behavior_ratio.csv"
+            if behavior_csv.exists():
+                by_task.setdefault(run.task, {})[run.model] = behavior_csv
+        for task, model_map in sorted(by_task.items()):
+	            write_behavior_change_heatmap_pdf(
+	                task=task,
+	                model_to_behavior_csv=model_map,
+	                out_dir=heatmaps_dir,
+	                unknown_threshold=unknown_threshold,
+	                heatmap_norm=heatmap_norm,
+	                symlog_linthresh=heatmap_symlog_linthresh,
+	            )
 
     report_out.write_text(
         _render_markdown(
@@ -929,18 +993,28 @@ def generate_game_theory_impact_report(
             runs=runs,
             option_csv=option_out,
             behavior_csv=behavior_out,
-            expected_score_csv=expected_out,
+            option_intensity_csv=option_intensity_out,
+            behavior_intensity_csv=behavior_intensity_out,
             option_rows=option_rows,
             behavior_rows=behavior_rows,
-            expected_score_rows=expected_score_rows,
+            option_intensity_rows=option_intensity_rows,
+            behavior_intensity_rows=behavior_intensity_rows,
             skipped_missing_neutral=skipped_missing_neutral,
             top_n=top_n,
             per_game_n=per_game_n,
+            heatmaps_dir=heatmaps_dir,
         ),
         encoding="utf-8",
     )
 
-    return ReportOutputs(option_csv_path=option_out, behavior_csv_path=behavior_out, report_path=report_out)
+    return ReportOutputs(
+        option_csv_path=option_out,
+        behavior_csv_path=behavior_out,
+        option_intensity_csv_path=option_intensity_out,
+        behavior_intensity_csv_path=behavior_intensity_out,
+        heatmaps_dir=heatmaps_dir,
+        report_path=report_out,
+    )
 
 
 def main(argv: Optional[Iterable[str]] = None) -> int:
@@ -959,9 +1033,36 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     )
     parser.add_argument("--top_n", type=int, default=20)
     parser.add_argument("--per_game_n", type=int, default=0, help="0 means include all models")
+    parser.add_argument("--write_heatmaps", action="store_true", help="Write behavior-change heatmap PDFs under out_dir/heatmaps")
+    parser.add_argument(
+        "--unknown_threshold",
+        type=float,
+        default=None,
+        help="If set, drop (emotion,intensity) slices with unknown ratio > threshold (behavior: behavior=='unknown'; choice: option_id==-1).",
+    )
+    parser.add_argument(
+        "--heatmap_norm",
+        type=str,
+        default="symlog",
+        choices=["linear", "symlog"],
+        help="Heatmap normalization (only used with --write_heatmaps).",
+    )
+    parser.add_argument(
+        "--heatmap_symlog_linthresh",
+        type=float,
+        default=0.01,
+        help="Symlog linthresh for heatmaps (only used when --heatmap_norm symlog).",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
     generate_game_theory_impact_report(
-        root=args.root, out_dir=args.out_dir, top_n=args.top_n, per_game_n=args.per_game_n
+        root=args.root,
+        out_dir=args.out_dir,
+        top_n=args.top_n,
+        per_game_n=args.per_game_n,
+        write_heatmaps=args.write_heatmaps,
+        unknown_threshold=args.unknown_threshold,
+        heatmap_norm=args.heatmap_norm,
+        heatmap_symlog_linthresh=args.heatmap_symlog_linthresh,
     )
     return 0
 
