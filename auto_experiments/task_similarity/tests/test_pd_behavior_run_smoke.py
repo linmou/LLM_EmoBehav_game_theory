@@ -99,7 +99,7 @@ class _DummyDataset:
                 "Item",
                 (),
                 {
-                    "id": f"pd-{i}",
+                    "id": f"{i}",
                     "input_text": "Prisoners dilemma event",
                     "context": None,
                     "ground_truth": None,
@@ -207,42 +207,31 @@ def test_run_pd_behavior_smoke(tmp_path: Path, monkeypatch) -> None:
         encoding="utf-8",
     )
 
-    # Prepare activation spec and vector file
-    pd_result_dir = tmp_path / "pd_run"
-    pd_result_dir.mkdir(parents=True, exist_ok=True)
-    vec_path = pd_result_dir / "best_vector.npy"
-    np.save(vec_path, np.ones(4, dtype=np.float32))
+    vectors_dir = tmp_path / "vectors"
+    vectors_dir.mkdir(parents=True, exist_ok=True)
+    np.save(vectors_dir / "layer_0.npy", np.ones(4, dtype=np.float32))
 
-    spec_path = tmp_path / "activation_spec.json"
-    spec = {
-        "pd_result_dir": str(pd_result_dir),
-        "layer": 0,
-        "vector_path": "best_vector.npy",
-        "span_mode": "option",
-        "pd_best_layer": 0,
-        "pd_best_accuracy": 0.75,
-    }
-    spec_path.write_text(json.dumps(spec), encoding="utf-8")
+    split_manifest = tmp_path / "split_manifest.json"
+    split_manifest.write_text(json.dumps({"test_indices": [0, 1, 2]}), encoding="utf-8")
 
-    out_dir = tmp_path / "pd_behavior_out"
-
-    result = mod.run(
+    cfg = mod.BehaviorConfig(
         model_path="dummy-model",
-        benchmark_config_path=cfg_path,
-        activation_spec_path=spec_path,
-        output_dir=out_dir,
+        benchmark_config=cfg_path,
+        vectors_dir=vectors_dir,
+        split_manifest=split_manifest,
         intensities=[0.0, 1.0],
         max_length=64,
         batch_size=2,
         seed=0,
+        steering_mode="single",
+        single_layer=0,
     )
+    result = mod.run(cfg)
 
     # Structural checks
     assert result["model_path"] == "dummy-model"
     assert result["benchmark_name"] == "game_theory"
     assert result["task_type"] == "Prisoners_Dilemma"
-    assert result["pd_best_layer"] == 0
-    assert result["pd_best_accuracy"] == 0.75
     assert result["n_items"] == 3
 
     ratios = result["defect_ratio"]
@@ -252,6 +241,6 @@ def test_run_pd_behavior_smoke(tmp_path: Path, monkeypatch) -> None:
     assert ratios[0.0] == 0.0
     assert ratios[1.0] == 1.0
 
-    # Summary JSON should be written under output_dir
-    summaries = list(out_dir.glob("*.json"))
+    # Summary JSON should be written under vectors_dir.parent/behavior by default
+    summaries = list((vectors_dir.parent / "behavior").glob("*.json"))
     assert summaries, "Expected at least one behavior summary JSON file"

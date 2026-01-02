@@ -1,1 +1,1 @@
-# Package init for task-similarity auto experiments.
+# Package init for task_similarity auto experiments.

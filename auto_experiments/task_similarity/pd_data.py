@@ -1,5 +1,5 @@
 """
-Responsible: auto_experiments/task-similarity/pd_data.py
+Responsible: auto_experiments/task_similarity/pd_data.py
 Purpose: Load Prisoner's Dilemma scenarios and build paired prompts for RepReader training/validation.
 """
 

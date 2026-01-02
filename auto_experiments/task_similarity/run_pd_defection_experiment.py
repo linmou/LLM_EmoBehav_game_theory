@@ -1,5 +1,5 @@
 """
-Responsible: auto_experiments/task-similarity/run_pd_defection_experiment.py
+Responsible: auto_experiments/task_similarity/run_pd_defection_experiment.py
 Purpose: Train contrastive defection activation vectors on Prisoner's Dilemma
          data, validate per layer, and evaluate behavior shift.
 """
@@ -50,7 +50,7 @@ def _decision_rate(
         build_inference_prompt(p.meta.description, p.meta.opt_a, p.meta.opt_b) for p in pairs
     ]
     labels = [p.meta.defect_label for p in pairs]
-    wins = 0
+    wins = 0.0
     total = 0
     for start in range(0, len(prompts), batch_size):
         batch_prompts = prompts[start : start + batch_size]
@@ -66,7 +66,9 @@ def _decision_rate(
         enc = {k: v.to(device) for k, v in enc.items()}
         with torch.no_grad():
             logits = model(**enc).logits
-        last_logits = logits[:, -1, :]
+        lengths = enc["attention_mask"].sum(dim=1) - 1
+        lengths = lengths.clamp(min=0)
+        last_logits = logits[torch.arange(logits.size(0), device=device), lengths]
         a_scores = last_logits[:, label_to_token["A"]]
         b_scores = last_logits[:, label_to_token["B"]]
         for idx, label in enumerate(batch_labels):
@@ -226,6 +228,7 @@ def run(
 ) -> Dict:
     torch.manual_seed(seed)
     np.random.seed(seed)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     dataset_path = Path(
         "data_creation/scenario_creation/langgraph_creation/Prisoners_Dilemma_all_data_samples.json"
@@ -295,7 +298,7 @@ def run(
     )
 
     # Persist split manifest and per-layer vectors under a model-specific root.
-    model_root = output_dir / Path(model_path).name / datetime.now().strftime("%Y%m%d_%H%M%S") / f"seed_{seed}"
+    model_root = output_dir / Path(model_path).name / timestamp / f"seed_{seed}"
     model_root.mkdir(parents=True, exist_ok=True)
 
     # Reconstruct train/test indices relative to original dataset entries
@@ -330,7 +333,7 @@ def run(
     vectors_dir.mkdir(parents=True, exist_ok=True)
     for layer_idx, vec in layer_vectors.items():
         np.save(vectors_dir / f"layer_{layer_idx}.npy", vec)
-    with open(output_dir / "layer_metrics.json", "w", encoding="utf-8") as f:
+    with open(model_root / "layer_metrics.json", "w", encoding="utf-8") as f:
         json.dump(
             {
                 "layer_accuracies": {int(k): float(v) for k, v in layer_acc.items()},
@@ -367,10 +370,6 @@ def run(
             per_intensity[float(inten)] = rate
         per_layer_behavior[layer_idx] = per_intensity
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_dir = output_dir / f"{Path(model_path).name}_{timestamp}"
-    run_dir.mkdir(parents=True, exist_ok=True)
-
     result = {
         "model_path": model_path,
         "timestamp": timestamp,
@@ -381,29 +380,31 @@ def run(
         "best_accuracy": float(best_accuracy),
         "layer_accuracies": {int(k): float(v) for k, v in layer_acc.items()},
         "base_defect_rate": base_rate,
+        # TODO: Redesign steered_defect_rate so it cannot silently fall back to base_rate
+        # when intensity is not included in behavior_intensities; unify these configs.
         "steered_defect_rate": per_layer_behavior.get(best_layer, {}).get(intensity, base_rate),
         "intensity": intensity,
         "middle_third_only": middle_third_only,
         "behavior_defect_rates": per_layer_behavior,
         "intensities_tested": [float(x) for x in intensities],
     }
-    with open(run_dir / "result.json", "w", encoding="utf-8") as f:
+    with open(model_root / "result.json", "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2)
-    np.save(run_dir / "best_vector.npy", layer_vectors[best_layer])
+    np.save(model_root / "best_vector.npy", layer_vectors[best_layer])
     return result
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True)
-    parser.add_argument("--output_dir", default="auto_experiments/task-similarity/results")
+    parser.add_argument("--output_dir", default="auto_experiments/task_similarity/results")
     parser.add_argument("--max_length", type=int, default=256)
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--intensity", type=float, default=1.0)
     parser.add_argument("--max_pairs", type=int, default=None)
     parser.add_argument("--middle_third_only", action="store_true")
-    parser.add_argument("--behavior_intensities", type=str, default="0.5,1.0,1.5,2.0")
+    parser.add_argument("--behavior_intensities", type=str, default="1.5")
     args = parser.parse_args()
 
     if not logging.getLogger().handlers:

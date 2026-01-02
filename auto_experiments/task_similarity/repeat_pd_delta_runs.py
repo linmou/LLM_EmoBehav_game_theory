@@ -1,5 +1,5 @@
 """
-Responsible: auto_experiments/task-similarity/repeat_pd_delta_runs.py
+Responsible: auto_experiments/task_similarity/repeat_pd_delta_runs.py
 Purpose: Run compute_pd_delta multiple times with sequential seeds."""
 
 from __future__ import annotations

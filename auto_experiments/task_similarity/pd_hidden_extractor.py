@@ -1,5 +1,5 @@
 """
-Responsible: auto_experiments/task-similarity/pd_hidden_extractor.py
+Responsible: auto_experiments/task_similarity/pd_hidden_extractor.py
 Purpose: Extract mean-pooled hidden states over the assistant answer span
          for Prisoner's Dilemma prompts.
 

@@ -82,6 +82,7 @@
   ```
 
   This iteration is **planning-only**; code and actual behavior metrics will be added in subsequent iterations (Iter 10+), each with its own commit and concrete results.
+- Iter 10 (2025-12-04): Cross-task similarity between PD steering deltas and emotion delta activations (intensity 1.5) **without seed overlap**. Procedure: (i) build PD matrix from all steering deltas under `auto_experiments/task_similarity/results/delta/Qwen2.5-0.5B-steering_vectors_midthird` (105 samples), compute PD PC1 (var explained ≈0.9729); (ii) for each emotion in `results/delta_activations/chat/Qwen2.5-0.5B-Instruct_20251204_*` (50 seeds), compute top-3 PCs; (iii) measure subspace cosine ‖proj(PD_PC1 onto span{emotion PC1..PC3})‖₂ and per-PC cosines. Results (subspace_cos; pc cosines; per-PC var): happiness 0.2005 ([-0.1349, 0.0577, -0.1367]; [0.407, 0.487, 0.334]); anger 0.1870 ([-0.1214, 0.0876, -0.1120]; [0.545, 0.369, 0.362]); fear 0.1260 ([-0.0244, 0.0704, 0.1017]; [0.544, 0.521, 0.401]); surprise 0.1199 ([-0.0260, -0.0951, 0.0681]; [0.577, 0.471, 0.504]); disgust 0.1045 ([-0.0346, -0.0815, -0.0554]; [0.480, 0.504, 0.342]); sadness 0.0319 ([0.0167, 0.0023, 0.0271]; [0.509, 0.531, 0.276]). Interpretation: PD defection direction lies only weakly inside any emotion’s top-3 subspace; slight overlap with happiness/anger, otherwise largely independent directions.
 
 ## Current Reproduction Commands
 

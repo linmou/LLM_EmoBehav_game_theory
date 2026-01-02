@@ -1,5 +1,5 @@
 """
-Responsible: auto_experiments/task-similarity/pd_prompt_builder.py
+Responsible: auto_experiments/task_similarity/pd_prompt_builder.py
 Purpose: Build Prisoner's Dilemma prompts with randomized option ordering and paired assistant labels.
 """
 

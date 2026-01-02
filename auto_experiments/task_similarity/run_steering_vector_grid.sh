@@ -16,7 +16,7 @@ export CUDA_VISIBLE_DEVICES=1,2
 
 OUTPUT_DIR="auto_experiments/task_similarity/results/steering_vectors"
 MAX_LENGTH=512
-BATCH_SIZE=64
+BATCH_SIZE=16
 
 # Qwen2.5 model paths
 MODELS=(
@@ -25,10 +25,10 @@ MODELS=(
   "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
 )
 
-INTENSITIES=(1.0 1.5 2.0)
+INTENSITIES=(1.5)
 
 for MODEL in "${MODELS[@]}"; do
-  for SEED in $(seq 0 29); do
+  for SEED in $(seq 20 29); do
     for INTEN in "${INTENSITIES[@]}"; do
       echo "=== Running steering vector experiment ==="
       echo "Model:      ${MODEL}"

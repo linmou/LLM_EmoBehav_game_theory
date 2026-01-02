@@ -3,10 +3,10 @@ Responsible: auto_experiments/task_similarity/emotion_delta_similarity.py
 Purpose: Compare PD delta activations with emotion delta activations via PCA-based global direction similarity.
 
 The core workflow:
-- Load per-seed PD delta vectors from a directory of runs.
-- Load per-seed emotion delta vectors (per emotion) from chat delta runs.
-- For a shared set of seeds, compute PCA on PD and each emotion to obtain
-  their first principal components.
+- Load all PD delta vectors from a directory of runs.
+- Load all emotion delta vectors (per emotion) from chat delta runs.
+- Compute PCA on pooled PD vectors and on each emotion to obtain their first
+  principal components.
 - Measure cosine similarity between PD PC1 and each emotion's PC1.
 
 This module is intentionally file-format-focused and stateless. All paths and
@@ -27,6 +27,7 @@ import numpy as np
 @dataclass
 class EmotionPCASummary:
     pc1_cosine: float
+    projection_similarity: float
     pd_variance_explained: float
     emotion_variance_explained: float
 
@@ -78,57 +79,60 @@ def compute_pca_first_component(matrix: np.ndarray) -> Tuple[np.ndarray, float]:
 
 
 def compute_pca_similarity(
-    pd_vectors: Mapping[int, np.ndarray],
-    emotion_vectors: Mapping[int, Mapping[str, np.ndarray]],
-    seeds: Sequence[int],
+    pd_vectors: Sequence[np.ndarray],
+    emotion_vectors: Mapping[str, Sequence[np.ndarray]],
 ) -> Dict[str, EmotionPCASummary]:
     """
     Compute PCA-based global direction similarity between PD deltas and emotion deltas.
 
     Args:
-        pd_vectors: mapping seed -> PD delta vector (1D).
-        emotion_vectors: mapping seed -> {emotion -> delta vector (1D)}.
-        seeds: list of seeds to include (must exist in both mappings).
+        pd_vectors: sequence of PD delta vectors (1D).
+        emotion_vectors: mapping emotion -> sequence of delta vectors (1D).
 
     Returns:
         Dict mapping emotion -> EmotionPCASummary.
     """
-    if not seeds:
-        raise ValueError("seeds must be non-empty")
+    if not pd_vectors:
+        raise ValueError("pd_vectors must be non-empty")
+    if not emotion_vectors:
+        raise ValueError("emotion_vectors must be non-empty")
 
-    # Ensure seed coverage.
-    for seed in seeds:
-        if seed not in pd_vectors:
-            raise KeyError(f"Missing PD vector for seed {seed}")
-        if seed not in emotion_vectors:
-            raise KeyError(f"Missing emotion vectors for seed {seed}")
+    # Validate shapes and shared dimensionality.
+    pd_dim = None
+    for vec in pd_vectors:
+        arr = np.asarray(vec, dtype=np.float32)
+        if arr.ndim != 1:
+            raise ValueError(f"PD vector must be 1D, got shape {arr.shape}")
+        if pd_dim is None:
+            pd_dim = arr.shape[0]
+        elif arr.shape[0] != pd_dim:
+            raise ValueError("All PD vectors must have the same dimensionality")
+    assert pd_dim is not None
 
-    # Build PD matrix.
-    pd_mat = np.stack([np.asarray(pd_vectors[seed], dtype=np.float32) for seed in seeds], axis=0)
+    def _validate_emotion_vectors(vectors: Sequence[np.ndarray], emotion: str) -> np.ndarray:
+        rows = []
+        for vec in vectors:
+            arr = np.asarray(vec, dtype=np.float32)
+            if arr.ndim != 1:
+                raise ValueError(f"Emotion '{emotion}' vector must be 1D, got shape {arr.shape}")
+            if arr.shape[0] != pd_dim:
+                raise ValueError(f"Dimension mismatch between PD vectors and emotion '{emotion}' vectors")
+            rows.append(arr)
+        if not rows:
+            raise ValueError(f"No vectors provided for emotion '{emotion}'")
+        return np.stack(rows, axis=0)
+
+    pd_mat = np.stack([np.asarray(vec, dtype=np.float32) for vec in pd_vectors], axis=0)
     pd_pc1, pd_var_ratio = compute_pca_first_component(pd_mat)
 
-    # Emotions set: require consistency across seeds.
-    first_seed = seeds[0]
-    first_emotions = set(emotion_vectors[first_seed].keys())
-    if not first_emotions:
-        raise ValueError("No emotions found for first seed")
-
-    for seed in seeds[1:]:
-        emo_keys = set(emotion_vectors[seed].keys())
-        if emo_keys != first_emotions:
-            raise ValueError(f"Inconsistent emotion set for seed {seed}: {emo_keys} vs {first_emotions}")
-
     result: Dict[str, EmotionPCASummary] = {}
-    for emo in sorted(first_emotions):
-        emo_mat = np.stack(
-            [np.asarray(emotion_vectors[seed][emo], dtype=np.float32) for seed in seeds],
-            axis=0,
-        )
+    for emo in sorted(emotion_vectors.keys()):
+        emo_mat = _validate_emotion_vectors(emotion_vectors[emo], emo)
         emo_pc1, emo_var_ratio = compute_pca_first_component(emo_mat)
-        # Both PCs are unit vectors after compute_pca_first_component.
         cos = float(np.dot(pd_pc1, emo_pc1))
         result[emo] = EmotionPCASummary(
             pc1_cosine=cos,
+            projection_similarity=abs(cos),
             pd_variance_explained=pd_var_ratio,
             emotion_variance_explained=emo_var_ratio,
         )
@@ -145,109 +149,106 @@ def _iter_model_run_dirs(root: Path, model_prefix: str) -> Iterable[Path]:
         yield entry
 
 
-def load_pd_seed_vectors(
+def load_pd_vectors(
     pd_root: Path,
     model_prefix: str,
-    seed_min: int,
-    seed_max: int,
-) -> Dict[int, np.ndarray]:
+) -> List[np.ndarray]:
     """
-    Load PD delta vectors from a directory of runs.
+    Load all PD delta vectors from a directory of runs.
 
     Assumes each run dir contains:
-      - metadata.json with a "seed" field
-      - delta.npz containing exactly one 1D array (e.g., keyed by measurement_layer)
+      - metadata.json
+      - delta.npz containing one or more 1D arrays:
+          - legacy: a single measurement_layer key
+          - current: one key per layer (e.g. "0","1",...,"N-1")
     """
-    if seed_min > seed_max:
-        raise ValueError(f"seed_min {seed_min} cannot be greater than seed_max {seed_max}")
+    vectors: List[np.ndarray] = []
+    expected_dim: int | None = None
 
-    seed_to_dir: Dict[int, Path] = {}
     for run_dir in _iter_model_run_dirs(pd_root, model_prefix):
         meta_path = run_dir / "metadata.json"
         delta_path = run_dir / "delta.npz"
         if not meta_path.exists() or not delta_path.exists():
             continue
-        meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        if "seed" not in meta:
-            raise KeyError(f"metadata.json at {meta_path} missing 'seed'")
-        seed = int(meta["seed"])
-        if seed < seed_min or seed > seed_max:
-            continue
-        existing = seed_to_dir.get(seed)
-        # Keep the lexicographically latest run for each seed.
-        if existing is None or existing.name < run_dir.name:
-            seed_to_dir[seed] = run_dir
+        _ = json.loads(meta_path.read_text(encoding="utf-8"))
 
-    seed_to_vec: Dict[int, np.ndarray] = {}
-    for seed, run_dir in seed_to_dir.items():
-        arr = np.load(run_dir / "delta.npz")
+        arr = np.load(delta_path)
         keys = list(arr.files)
-        if len(keys) != 1:
-            raise ValueError(f"Expected single key in delta.npz at {run_dir}, found {keys}")
-        vec = arr[keys[0]]
-        if vec.ndim != 1:
-            raise ValueError(f"Expected 1D delta vector at {run_dir}, got shape {vec.shape}")
-        seed_to_vec[seed] = np.asarray(vec, dtype=np.float32)
+        if not keys:
+            continue
 
-    return seed_to_vec
+        def _key_sort(k: str) -> tuple[int, str]:
+            try:
+                return (0, f"{int(k):08d}")
+            except Exception:
+                return (1, str(k))
+
+        for key in sorted(keys, key=_key_sort):
+            vec = arr[key]
+            if vec.ndim != 1:
+                raise ValueError(f"Expected 1D delta vector at {run_dir} key={key}, got shape {vec.shape}")
+            vec = np.asarray(vec, dtype=np.float32)
+            if expected_dim is None:
+                expected_dim = vec.shape[0]
+            elif vec.shape[0] != expected_dim:
+                raise ValueError(f"Inconsistent PD vector dimension at {run_dir}")
+            vectors.append(vec)
+
+    if not vectors:
+        raise ValueError("No PD delta vectors found")
+
+    return vectors
 
 
-def load_chat_seed_emotion_vectors(
+def load_chat_emotion_vectors(
     chat_root: Path,
     model_prefix: str,
     intensity: float,
-    seed_min: int,
-    seed_max: int,
-) -> Tuple[Dict[int, Dict[str, np.ndarray]], List[str]]:
+) -> Tuple[Dict[str, List[np.ndarray]], List[str]]:
     """
     Load emotion delta vectors from chat delta_activations runs.
 
-    For each seed, keeps only the lexicographically latest run directory.
     Assumes each selected run contains:
-      - metadata.json with job_config.loading_config.seed, emotions, intensities
+      - metadata.json with emotions and intensities fields
       - deltas/emotion=<emo>_int=<intensity>.npz with a 'vector' 1D array
     """
-    if seed_min > seed_max:
-        raise ValueError(f"seed_min {seed_min} cannot be greater than seed_max {seed_max}")
+    run_dirs = list(_iter_model_run_dirs(chat_root, model_prefix))
+    if not run_dirs:
+        raise ValueError("No matching chat runs found")
 
-    seed_to_dir: Dict[int, Path] = {}
-    for run_dir in _iter_model_run_dirs(chat_root, model_prefix):
+    emotions: List[str] | None = None
+    vectors: Dict[str, List[np.ndarray]] = {}
+    expected_dim: int | None = None
+
+    for run_dir in run_dirs:
         meta_path = run_dir / "metadata.json"
         if not meta_path.exists():
             continue
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
         job_cfg = meta.get("job_config")
         if not isinstance(job_cfg, dict):
-            raise KeyError(f"metadata.json at {meta_path} missing 'job_config'")
-        loading_cfg = job_cfg.get("loading_config")
-        if not isinstance(loading_cfg, dict) or "seed" not in loading_cfg:
-            raise KeyError(f"metadata.json at {meta_path} missing loading_config.seed")
-        seed = int(loading_cfg["seed"])
-        if seed < seed_min or seed > seed_max:
+            # Older or incompatible formats are ignored.
             continue
-        existing = seed_to_dir.get(seed)
-        if existing is None or existing.name < run_dir.name:
-            seed_to_dir[seed] = run_dir
 
-    if not seed_to_dir:
-        raise ValueError("No matching chat runs found")
+        run_emotions = list(meta.get("emotions") or [])
+        if not run_emotions:
+            raise ValueError(f"No 'emotions' field found in metadata.json at {meta_path}")
 
-    # Use the first selected run to infer emotions and intensities.
-    first_dir = next(iter(seed_to_dir.values()))
-    first_meta = json.loads((first_dir / "metadata.json").read_text(encoding="utf-8"))
-    emotions = list(first_meta.get("emotions") or [])
-    if not emotions:
-        raise ValueError(f"No 'emotions' field found in metadata.json at {first_dir}")
-    intensities_raw = first_meta.get("intensities")
-    if intensities_raw is None:
-        raise ValueError(f"No 'intensities' field found in metadata.json at {first_dir}")
-    intensities = [float(x) for x in intensities_raw]
-    if float(intensity) not in intensities:
-        raise ValueError(f"Requested intensity {intensity} not in available intensities {intensities}")
+        intensities_raw = meta.get("intensities")
+        if intensities_raw is None:
+            raise ValueError(f"No 'intensities' field found in metadata.json at {meta_path}")
+        run_intensities = [float(x) for x in intensities_raw]
+        if float(intensity) not in run_intensities:
+            # Skip runs that do not contain the requested intensity.
+            continue
 
-    seed_to_vectors: Dict[int, Dict[str, np.ndarray]] = {}
-    for seed, run_dir in seed_to_dir.items():
-        emo_map: Dict[str, np.ndarray] = {}
+        if emotions is None:
+            emotions = run_emotions
+            vectors = {emo: [] for emo in emotions}
+        else:
+            if set(run_emotions) != set(emotions):
+                raise ValueError(f"Inconsistent emotions between runs: {run_emotions} vs {emotions}")
+
         deltas_dir = run_dir / "deltas"
         for emo in emotions:
             fname = f"emotion={emo}_int={float(intensity)}.npz"
@@ -260,10 +261,18 @@ def load_chat_seed_emotion_vectors(
             vec = arr["vector"]
             if vec.ndim != 1:
                 raise ValueError(f"Expected 1D emotion delta vector at {path}, got shape {vec.shape}")
-            emo_map[emo] = np.asarray(vec, dtype=np.float32)
-        seed_to_vectors[seed] = emo_map
+            vec = np.asarray(vec, dtype=np.float32)
+            if expected_dim is None:
+                expected_dim = vec.shape[0]
+            elif vec.shape[0] != expected_dim:
+                raise ValueError(f"Inconsistent emotion vector dimension at {path}")
+            vectors[emo].append(vec)
 
-    return seed_to_vectors, emotions
+    if not vectors:
+        raise ValueError("No emotion delta vectors found for requested intensity")
+    assert emotions is not None
+
+    return vectors, emotions
 
 
 def compute_pca_similarity_from_roots(
@@ -272,24 +281,17 @@ def compute_pca_similarity_from_roots(
     pd_model_prefix: str,
     chat_model_prefix: str,
     intensity: float,
-    seed_min: int,
-    seed_max: int,
 ) -> Dict[str, EmotionPCASummary]:
     """
     Convenience wrapper: load PD and emotion vectors from roots and compute PCA similarity.
     """
-    pd_vectors = load_pd_seed_vectors(pd_root, pd_model_prefix, seed_min=seed_min, seed_max=seed_max)
-    chat_vectors, _ = load_chat_seed_emotion_vectors(
+    pd_vectors = load_pd_vectors(pd_root, pd_model_prefix)
+    chat_vectors, _ = load_chat_emotion_vectors(
         chat_root,
         chat_model_prefix,
         intensity=intensity,
-        seed_min=seed_min,
-        seed_max=seed_max,
     )
-    seeds = sorted(set(pd_vectors.keys()) & set(chat_vectors.keys()))
-    if not seeds:
-        raise ValueError("No overlapping seeds between PD and emotion runs")
-    return compute_pca_similarity(pd_vectors, chat_vectors, seeds=seeds)
+    return compute_pca_similarity(pd_vectors, chat_vectors)
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -301,18 +303,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--pd_model_prefix", required=True, help="Prefix of PD run directories to include.")
     parser.add_argument("--chat_model_prefix", required=True, help="Prefix of chat run directories to include.")
     parser.add_argument("--intensity", type=float, default=1.5, help="Emotion intensity to compare (e.g., 1.5).")
-    parser.add_argument(
-        "--seed_min",
-        type=int,
-        default=0,
-        help="Minimum seed (inclusive) for runs to include.",
-    )
-    parser.add_argument(
-        "--seed_max",
-        type=int,
-        default=99,
-        help="Maximum seed (inclusive) for runs to include.",
-    )
     return parser.parse_args(argv)
 
 
@@ -327,16 +317,15 @@ def main(argv: Sequence[str] | None = None) -> None:
         pd_model_prefix=args.pd_model_prefix,
         chat_model_prefix=args.chat_model_prefix,
         intensity=args.intensity,
-        seed_min=args.seed_min,
-        seed_max=args.seed_max,
     )
 
     # Print a simple ranked table by PC1 cosine.
     items = sorted(result.items(), key=lambda kv: kv[1].pc1_cosine, reverse=True)
-    print("emotion,pc1_cosine,pd_var_explained,emotion_var_explained")
+    print("emotion,pc1_cosine,projection_similarity,pd_var_explained,emotion_var_explained")
     for emo, summary in items:
         print(
-            f"{emo},{summary.pc1_cosine:.6f},{summary.pd_variance_explained:.6f},{summary.emotion_variance_explained:.6f}"
+            f"{emo},{summary.pc1_cosine:.6f},{summary.projection_similarity:.6f},"
+            f"{summary.pd_variance_explained:.6f},{summary.emotion_variance_explained:.6f}"
         )
 
 

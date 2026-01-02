@@ -1,0 +1,98 @@
+openapi: 3.1.0
+info:
+  title: Prisoners Dilemma Emotion Steering Similarity API
+  version: 0.1.0
+  description: >
+    Conceptual contract for running PD emotion steering similarity analysis.
+    The actual implementation may be a CLI tool; this schema documents the
+    logical inputs and outputs for automation or future service wrapping.
+
+paths:
+  /pd-steering-similarity/run:
+    post:
+      summary: Run PD emotion steering similarity analysis
+      description: >
+        Launches a similarity analysis run over the PD game-theory benchmark
+        using a specified YAML configuration and outputs similarity metrics.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                config_path:
+                  type: string
+                  description: Absolute path to the YAML config describing model, benchmark, emotions, and intensities.
+              required:
+                - config_path
+      responses:
+        "200":
+          description: Analysis accepted and completed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_id:
+                    type: string
+                    description: Logical identifier for the analysis run.
+                  output_dir:
+                    type: string
+                    description: Filesystem path where similarity artifacts are written.
+                  status:
+                    type: string
+                    enum: ["completed"]
+                    description: Final status of the run.
+
+  /pd-steering-similarity/runs/{run_id}/summary:
+    get:
+      summary: Fetch aggregated similarity summary for a run
+      parameters:
+        - in: path
+          name: run_id
+          required: true
+          schema:
+            type: string
+          description: Identifier returned by the run endpoint.
+      responses:
+        "200":
+          description: Aggregated similarity metrics for switchers and non-switchers.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run_id:
+                    type: string
+                  emotions:
+                    type: array
+                    items:
+                      type: string
+                  intensities:
+                    type: array
+                    items:
+                      type: number
+                  layers:
+                    type: array
+                    items:
+                      type: integer
+                  group_summaries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        steering_condition_id:
+                          type: string
+                        layer_index:
+                          type: integer
+                        group_label:
+                          type: string
+                          enum: ["switcher", "non-switcher"]
+                        mean_similarity_delta:
+                          type: number
+                        std_similarity_delta:
+                          type: number
+                        n_samples:
+                          type: integer
+

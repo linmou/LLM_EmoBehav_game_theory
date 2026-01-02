@@ -1,0 +1,15 @@
+model:
+  name: test-model
+  path: /models/test
+benchmark:
+  name: game_theory
+  task: Prisoners_Dilemma
+  raw_results_path: fixtures/raw_results_switchers.json
+steering:
+  emotions: ["anger"]
+  intensities: [1.0]
+  loader: emotion_experiment_engine.experiment.EmotionExperiment
+pd_defection_vectors:
+  dir: fixtures/pd_vectors
+output:
+  dir: /tmp/output

@@ -1,5 +1,5 @@
 """
-Responsible: auto_experiments/task-similarity/compute_pd_delta.py
+Responsible: auto_experiments/task_similarity/compute_pd_delta.py
 Purpose: Compute delta activations for PD defection vectors using delta_activation_engine probes.
 """
 
@@ -79,12 +79,12 @@ def _collect_final_token_hidden(
     model,
     tokenizer,
     prompts: Sequence[str],
-    measurement_layer: int,
+    layers: Sequence[int],
     batch_size: int = 8,
     max_length: int = 256,
-) -> np.ndarray:
+) -> Dict[int, np.ndarray]:
     device = next(model.parameters()).device
-    outs: List[torch.Tensor] = []
+    outs: Dict[int, List[torch.Tensor]] = {int(layer): [] for layer in layers}
     for start in range(0, len(prompts), batch_size):
         batch_prompts = prompts[start : start + batch_size]
         enc = tokenizer(
@@ -98,12 +98,14 @@ def _collect_final_token_hidden(
         enc = {k: v.to(device) for k, v in enc.items()}
         with torch.no_grad():
             outputs = model(**enc, output_hidden_states=True)
-        hs = outputs.hidden_states[measurement_layer + 1]
         lengths = enc["attention_mask"].sum(dim=1) - 1
         lengths = lengths.clamp(min=0)
-        final = hs[torch.arange(hs.size(0), device=hs.device), lengths]
-        outs.append(final.detach().cpu().float())
-    return torch.cat(outs, dim=0).mean(dim=0).numpy()
+        for layer in layers:
+            hs = outputs.hidden_states[int(layer) + 1]
+            final = hs[torch.arange(hs.size(0), device=hs.device), lengths]
+            outs[int(layer)].append(final.detach().cpu().float())
+
+    return {k: torch.cat(v, dim=0).mean(dim=0).numpy() for k, v in outs.items()}
 
 
 def _register_control_hook(layer_module, vec: np.ndarray, intensity: float):
@@ -164,10 +166,10 @@ def run_delta(
     if num_layers is None:
         raise ValueError("Model config missing num_hidden_layers")
     control_layers = resolve_control_layers(num_layers, layer, use_middle_third)
+    measurement_layers = list(range(num_layers))
 
-    measurement_layer = num_layers - 1
-    baseline_vec = _collect_final_token_hidden(
-        model, tokenizer, prompts, measurement_layer, batch_size=batch_size, max_length=max_length
+    baseline = _collect_final_token_hidden(
+        model, tokenizer, prompts, measurement_layers, batch_size=batch_size, max_length=max_length
     )
 
     vector_map = _load_vectors(vector_path, control_layers)
@@ -180,16 +182,14 @@ def run_delta(
                 raise RuntimeError(f"Cannot locate layer {lyr} on model") from exc
             vec = vector_map[lyr]
             handles.append(_register_control_hook(target_layer, vec, intensity))
-        steered_vec = _collect_final_token_hidden(
-            model, tokenizer, prompts, measurement_layer, batch_size=batch_size, max_length=max_length
+        steered = _collect_final_token_hidden(
+            model, tokenizer, prompts, measurement_layers, batch_size=batch_size, max_length=max_length
         )
     finally:
         for h in handles:
             h.remove()
 
-    baseline = {measurement_layer: baseline_vec}
-    steered = {measurement_layer: steered_vec}
-    delta = {measurement_layer: compute_delta(baseline_vec, steered_vec)}
+    delta = {k: compute_delta(baseline[k], steered[k]) for k in measurement_layers}
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_dir = output_dir / f"{Path(model_path).name}_{timestamp}"
@@ -202,7 +202,7 @@ def run_delta(
         "model_path": model_path,
         "vector_path": str(vector_path),
         "control_layers": control_layers,
-        "measurement_layer": measurement_layer,
+        "measurement_layers": measurement_layers,
         "intensity": intensity,
         "seed": seed,
         "timestamp": timestamp,
@@ -220,7 +220,7 @@ def main():
     parser.add_argument("--layer", type=int, default=None, help="Target layer. If omitted with --middle_third, use middle third.")
     parser.add_argument("--middle_third", action="store_true", help="Apply vector to middle third of layers.")
     parser.add_argument("--intensity", type=float, default=1.5)
-    parser.add_argument("--output_dir", default="auto_experiments/task-similarity/results/delta")
+    parser.add_argument("--output_dir", default="auto_experiments/task_similarity/results/delta")
     parser.add_argument("--max_length", type=int, default=256)
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--seed", type=int, default=0)
