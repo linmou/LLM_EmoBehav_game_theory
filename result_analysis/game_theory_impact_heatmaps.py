@@ -12,8 +12,10 @@ Target behavior is chosen by convention:
 
 from __future__ import annotations
 
+import csv
+import math
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from result_analysis.game_theory_ratio_loading import load_behavior_by_intensity
 
@@ -52,6 +54,7 @@ def _render_heatmap_pdf(
     row_labels: List[str],
     col_labels: List[str],
     values: List[List[float]],
+    annotations: Optional[List[List[str]]],
     norm_mode: str,
     symlog_linthresh: float,
 ) -> None:
@@ -77,6 +80,12 @@ def _render_heatmap_pdf(
     ax.set_xticklabels(col_labels, rotation=45, ha="right")
     ax.set_yticks(list(range(len(row_labels))))
     ax.set_yticklabels(row_labels)
+    if annotations:
+        for r in range(len(row_labels)):
+            for c in range(len(col_labels)):
+                text = annotations[r][c] if r < len(annotations) and c < len(annotations[r]) else ""
+                if text:
+                    ax.text(c, r, text, ha="center", va="center", fontsize=8, color="black")
     fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04, label="Δ vs neutral (target share)")
     fig.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -115,6 +124,9 @@ def write_behavior_change_heatmap_pdf(
     models, emotions, values, _ = compute_peak_behavior_change_matrix(
         task=task, model_to_behavior_csv=model_to_behavior_csv, unknown_threshold=unknown_threshold
     )
+    _, _, _, annotations = compute_peak_behavior_change_annotation_matrix(
+        task=task, model_to_behavior_csv=model_to_behavior_csv, unknown_threshold=unknown_threshold
+    )
     if not models or not emotions:
         return None
 
@@ -125,6 +137,7 @@ def write_behavior_change_heatmap_pdf(
         row_labels=models,
         col_labels=emotions,
         values=values,
+        annotations=annotations,
         norm_mode=heatmap_norm,
         symlog_linthresh=symlog_linthresh,
     )
@@ -189,3 +202,138 @@ def compute_peak_behavior_change_matrix(
         values.append(row)
 
     return models, emotions, values, chosen
+
+
+def _mcnemar_exact_p(n01: int, n10: int) -> float:
+    n = n01 + n10
+    if n <= 0:
+        return 1.0
+    k = min(n01, n10)
+    total = 0.0
+    for i in range(0, k + 1):
+        total += math.comb(n, i)
+    return min(1.0, 2.0 * total / (2.0**n))
+
+
+def _bh_fdr(p_values: List[Tuple[Tuple[str, str], float]]) -> Dict[Tuple[str, str], float]:
+    m = len(p_values)
+    if m == 0:
+        return {}
+    ranked = sorted(p_values, key=lambda x: x[1])
+    q_raw: List[Tuple[Tuple[str, str], float]] = []
+    for i, (k, p) in enumerate(ranked, start=1):
+        q_raw.append((k, min(1.0, p * m / i)))
+    q: Dict[Tuple[str, str], float] = {}
+    prev = 1.0
+    for k, qv in reversed(q_raw):
+        prev = min(prev, qv)
+        q[k] = prev
+    return q
+
+
+def _stars(q_value: float) -> str:
+    if q_value < 0.001:
+        return "***"
+    if q_value < 0.01:
+        return "**"
+    if q_value < 0.05:
+        return "*"
+    return ""
+
+
+def _load_chosen_behavior_from_detailed_csv(path: Path) -> List[Tuple[str, float, int, int, str]]:
+    out: List[Tuple[str, float, int, int, str]] = []
+    if not path.exists():
+        return out
+    with path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            emo = str(row.get("emotion", "")).strip()
+            if not emo:
+                continue
+            try:
+                intensity = float(row.get("intensity", "0"))
+                item_id = int(float(row.get("item_id", "0")))
+                repeat_id = int(float(row.get("repeat_id", "0")))
+            except Exception:
+                continue
+            beh = row.get("chosen_behavior")
+            if not isinstance(beh, str) or not beh:
+                continue
+            out.append((emo, float(intensity), item_id, repeat_id, beh))
+    return out
+
+
+def compute_peak_behavior_change_annotation_matrix(
+    *,
+    task: str,
+    model_to_behavior_csv: Dict[str, Path],
+    unknown_threshold: Optional[float],
+) -> tuple[list[str], list[str], list[list[float]], list[list[str]]]:
+    models, emotions, values, chosen = compute_peak_behavior_change_matrix(
+        task=task, model_to_behavior_csv=model_to_behavior_csv, unknown_threshold=unknown_threshold
+    )
+    if not models or not emotions:
+        return models, emotions, values, []
+
+    pvals: List[Tuple[Tuple[str, str], float]] = []
+    raw_p: Dict[Tuple[str, str], float] = {}
+    for model in models:
+        detailed = model_to_behavior_csv[model].parent / "detailed_results.csv"
+        rows = _load_chosen_behavior_from_detailed_csv(detailed)
+        if not rows:
+            continue
+        neutral_by_key: Dict[Tuple[int, int], str] = {}
+        emo_by_int_key: Dict[Tuple[str, float, int, int], str] = {}
+        for emo, intensity, item_id, repeat_id, beh in rows:
+            key = (item_id, repeat_id)
+            if emo == "neutral" and key not in neutral_by_key:
+                neutral_by_key[key] = beh
+            elif emo != "neutral":
+                emo_by_int_key[(emo, float(intensity), item_id, repeat_id)] = beh
+
+        # infer target from the behavior ratio CSV itself (same rule as compute_peak_behavior_change_matrix)
+        by_intensity, _ = load_behavior_by_intensity(model_to_behavior_csv[model], unknown_threshold=unknown_threshold)
+        all_behaviors: set[str] = set()
+        for emo_map in by_intensity.values():
+            for per_int in emo_map.values():
+                all_behaviors |= {str(b) for b in per_int}
+        targets = _choose_target_behaviors(sorted(all_behaviors))
+        if not targets:
+            continue
+
+        for emo in emotions:
+            intensity = chosen.get((model, emo))
+            if intensity is None:
+                continue
+            n01 = 0
+            n10 = 0
+            n_pairs = 0
+            for (item_id, repeat_id), neutral_beh in neutral_by_key.items():
+                emo_beh = emo_by_int_key.get((emo, float(intensity), item_id, repeat_id))
+                if emo_beh is None:
+                    continue
+                n_pairs += 1
+                n_i = 1 if neutral_beh in targets else 0
+                e_i = 1 if emo_beh in targets else 0
+                if n_i == 0 and e_i == 1:
+                    n01 += 1
+                elif n_i == 1 and e_i == 0:
+                    n10 += 1
+            if n_pairs == 0:
+                continue
+            p = _mcnemar_exact_p(n01, n10)
+            raw_p[(model, emo)] = p
+            pvals.append(((model, emo), p))
+
+    q = _bh_fdr(pvals)
+
+    annotations: List[List[str]] = []
+    for r, model in enumerate(models):
+        row: List[str] = []
+        for c, emo in enumerate(emotions):
+            delta = float(values[r][c]) if r < len(values) and c < len(values[r]) else 0.0
+            stars = _stars(q.get((model, emo), 1.0)) if (model, emo) in raw_p else ""
+            row.append(f"{delta:+.2f}{stars}")
+        annotations.append(row)
+    return models, emotions, values, annotations
