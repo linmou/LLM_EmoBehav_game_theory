@@ -7,6 +7,8 @@ utils_py_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'utils.
 
 # Load the utils.py module directly
 spec = importlib.util.spec_from_file_location("utils_module", utils_py_path)
+if spec is None or spec.loader is None:
+    raise ImportError(f"Failed to import utils module from: {utils_py_path}")
 utils_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(utils_module)
 

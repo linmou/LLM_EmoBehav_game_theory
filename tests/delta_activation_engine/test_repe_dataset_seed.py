@@ -3,6 +3,12 @@ Responsible: tests/delta_activation_engine/test_repe_dataset_seed.py
 Purpose: Ensure RepE dataset seed propagates so delta activations can vary splits.
 """
 
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+
 def test_load_emotion_readers_uses_emotion_data_seed(monkeypatch):
     import neuro_manipulation.model_utils as mu
     import neuro_manipulation.utils as nm_utils

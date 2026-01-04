@@ -1,17 +1,12 @@
 import pickle
 
 from transformers import pipeline
-from vllm import LLM
 
-from constants import Emotions
 from neuro_manipulation.prompt_formats import PromptFormat
-from neuro_manipulation.repe.pipelines import get_pipeline
 from neuro_manipulation.utils import (
     all_emotion_rep_reader,
     dict_to_unique_code,
     load_model_tokenizer,
-    load_tokenizer_only,
-    load_model_only,
     primary_emotions_concept_dataset,
 )
 

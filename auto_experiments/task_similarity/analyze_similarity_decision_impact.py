@@ -6,7 +6,9 @@ Purpose: Analyze how delta-activation similarity (cos(Δ^anger, Δ^pd)) relates 
 This script *does not* recompute deltas. It consumes:
 1) A similarity run directory produced by `emotion_pd_delta_similarity.py`:
    - metadata.json (intensities, item_ids, controlled_layers, ...)
-   - cosines.npy    shape (n_int, n_samples, n_layers)
+   - cosines.npy    shape (n_int, n_samples, n_layers)  [emotion vs PD-defect]
+   - cosines_pd_cooperate.npy (optional)                [emotion vs PD-cooperate]
+   - pref_cosines.npy (optional)                        [cos_defect - cos_cooperate]
 2) An experiment result directory containing `detailed_results.csv` from EmotionExperiment:
    - item_id, emotion, intensity, chosen_behavior
 
@@ -22,7 +24,7 @@ import csv
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Dict, Iterable, List, Mapping, Sequence, Tuple, cast
 
 import numpy as np
 
@@ -34,11 +36,17 @@ class SimilarityRun:
     controlled_layers: List[int]
     measurement_layers: List[int]
     cosines: np.ndarray  # (n_int, n_samples, n_layers)
+    cosines_pd_cooperate: np.ndarray | None  # (n_int, n_samples, n_layers)
+    pref_cosines: np.ndarray | None  # (n_int, n_samples, n_layers)
 
 
 def load_similarity_run(run_dir: Path) -> SimilarityRun:
     meta = json.loads((Path(run_dir) / "metadata.json").read_text(encoding="utf-8"))
     cos = np.load(Path(run_dir) / "cosines.npy")
+    coop_path = Path(run_dir) / "cosines_pd_cooperate.npy"
+    pref_path = Path(run_dir) / "pref_cosines.npy"
+    cos_coop = np.load(coop_path) if coop_path.exists() else None
+    pref = np.load(pref_path) if pref_path.exists() else None
     item_ids = [int(x) for x in meta["item_ids"]]
     intensities = [float(x) for x in meta["intensities"]]
     controlled_layers = [int(x) for x in meta["controlled_layers"]]
@@ -51,12 +59,20 @@ def load_similarity_run(run_dir: Path) -> SimilarityRun:
         raise ValueError("cosines second dim must match item_ids")
     if cos.shape[2] != len(measurement_layers):
         raise ValueError("cosines third dim must match measurement_layers")
+    if cos_coop is not None:
+        if cos_coop.shape != cos.shape:
+            raise ValueError(f"cosines_pd_cooperate must match cosines shape, got {cos_coop.shape} vs {cos.shape}")
+    if pref is not None:
+        if pref.shape != cos.shape:
+            raise ValueError(f"pref_cosines must match cosines shape, got {pref.shape} vs {cos.shape}")
     return SimilarityRun(
         item_ids=item_ids,
         intensities=intensities,
         controlled_layers=controlled_layers,
         measurement_layers=measurement_layers,
         cosines=cos.astype(np.float32, copy=False),
+        cosines_pd_cooperate=cos_coop.astype(np.float32, copy=False) if cos_coop is not None else None,
+        pref_cosines=pref.astype(np.float32, copy=False) if pref is not None else None,
     )
 
 
@@ -124,7 +140,9 @@ def join_similarity_with_decisions(
     Join by (item_id,intensity). Output holds:
       - defect: 1 if behavior=='defect' else 0
       - behavior: original string
-      - cosine: np.ndarray shape (n_layers,) for that sample+intensity
+      - cosine: np.ndarray shape (n_layers,) for that sample+intensity (emotion vs PD-defect)
+      - cosine_pd_cooperate: optional np.ndarray shape (n_layers,)
+      - pref_cosine: optional np.ndarray shape (n_layers,)
     """
     out: Dict[Tuple[int, float], Dict[str, object]] = {}
     id_to_idx = {int(item_id): idx for idx, item_id in enumerate(sim.item_ids)}
@@ -138,10 +156,14 @@ def join_similarity_with_decisions(
         i_s = id_to_idx[item_id]
         i_int = int_to_idx[float(intensity)]
         cos = sim.cosines[i_int, i_s, :]
+        cos_coop = sim.cosines_pd_cooperate[i_int, i_s, :] if sim.cosines_pd_cooperate is not None else None
+        pref = sim.pref_cosines[i_int, i_s, :] if sim.pref_cosines is not None else None
         out[(item_id, float(intensity))] = {
             "behavior": behavior,
             "defect": 1 if behavior == "defect" else 0,
             "cosine": cos,
+            "cosine_pd_cooperate": cos_coop,
+            "pref_cosine": pref,
         }
     return out
 
@@ -228,7 +250,7 @@ def main() -> None:
                     int(item_id),
                     float(intensity),
                     str(payload["behavior"]),
-                    int(payload["defect"]),
+                    int(cast(int, payload["defect"])),
                     prompt,
                     resp,
                 ]
@@ -238,9 +260,25 @@ def main() -> None:
     joined_path = out_dir / "joined_rows.csv"
     with joined_path.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["item_id", "intensity", "layer", "controlled", "behavior", "defect", "cosine"])
+        w.writerow(
+            [
+                "item_id",
+                "intensity",
+                "layer",
+                "controlled",
+                "behavior",
+                "defect",
+                "cosine",
+                "cosine_pd_cooperate",
+                "pref_cosine",
+            ]
+        )
         for (item_id, intensity), payload in sorted(joined.items()):
             cos = np.asarray(payload["cosine"], dtype=np.float32)
+            cos_coop = payload.get("cosine_pd_cooperate")
+            pref = payload.get("pref_cosine")
+            cos_coop_arr = np.asarray(cos_coop, dtype=np.float32) if cos_coop is not None else None
+            pref_arr = np.asarray(pref, dtype=np.float32) if pref is not None else None
             for layer_idx, layer in enumerate(sim.measurement_layers):
                 w.writerow(
                     [
@@ -249,8 +287,10 @@ def main() -> None:
                         int(layer),
                         1 if int(layer) in controlled else 0,
                         str(payload["behavior"]),
-                        int(payload["defect"]),
+                        int(cast(int, payload["defect"])),
                         float(cos[layer_idx]),
+                        float(cos_coop_arr[layer_idx]) if cos_coop_arr is not None else float("nan"),
+                        float(pref_arr[layer_idx]) if pref_arr is not None else float("nan"),
                     ]
                 )
 
@@ -270,6 +310,10 @@ def main() -> None:
                 "mean_cos_cooperate",
                 "mean_diff_defect_minus_coop",
                 "pearson_r(defect,cosine)",
+                "mean_pref_defect",
+                "mean_pref_cooperate",
+                "mean_pref_diff_defect_minus_coop",
+                "pearson_r(defect,pref_cosine)",
             ]
         )
 
@@ -277,9 +321,12 @@ def main() -> None:
             rows = [(k, v) for k, v in joined.items() if k[1] == float(intensity)]
             if not rows:
                 continue
-            y = np.array([int(v["defect"]) for _, v in rows], dtype=np.int64)
+            y = np.array([int(cast(int, v["defect"])) for _, v in rows], dtype=np.int64)
             for layer_idx, layer in enumerate(sim.measurement_layers):
-                x = np.array([float(v["cosine"][layer_idx]) for _, v in rows], dtype=np.float64)
+                x = np.array(
+                    [float(np.asarray(cast(np.ndarray, v["cosine"]), dtype=np.float64)[layer_idx]) for _, v in rows],
+                    dtype=np.float64,
+                )
                 # ignore NaNs
                 m = ~np.isnan(x)
                 x = x[m]
@@ -293,6 +340,26 @@ def main() -> None:
                 mean_coop = float(np.mean(x[yy == 0])) if n_coop else float("nan")
                 mean_diff = mean_def - mean_coop if (n_def and n_coop) else float("nan")
                 r = _pearsonr_binary(x.astype(np.float64), yy.astype(np.int64))
+
+                pref_vals: List[float] = []
+                pref_y: List[int] = []
+                for _, payload in rows:
+                    pref_vec = payload.get("pref_cosine")
+                    if pref_vec is None:
+                        continue
+                    pref_vals.append(float(np.asarray(pref_vec, dtype=np.float64)[layer_idx]))
+                    pref_y.append(int(cast(int, payload["defect"])))
+                pref_x = np.asarray(pref_vals, dtype=np.float64)
+                pref_y01 = np.asarray(pref_y, dtype=np.int64)
+                m_pref = ~np.isnan(pref_x)
+                pref_x2 = pref_x[m_pref]
+                pref_y2 = pref_y01[m_pref]
+                n_pref_def = int(np.sum(pref_y2 == 1))
+                n_pref_coop = int(np.sum(pref_y2 == 0))
+                mean_pref_def = float(np.mean(pref_x2[pref_y2 == 1])) if n_pref_def else float("nan")
+                mean_pref_coop = float(np.mean(pref_x2[pref_y2 == 0])) if n_pref_coop else float("nan")
+                mean_pref_diff = mean_pref_def - mean_pref_coop if (n_pref_def and n_pref_coop) else float("nan")
+                r_pref = _pearsonr_binary(pref_x2.astype(np.float64), pref_y2.astype(np.int64))
                 w.writerow(
                     [
                         float(intensity),
@@ -305,6 +372,10 @@ def main() -> None:
                         mean_coop,
                         mean_diff,
                         r,
+                        mean_pref_def,
+                        mean_pref_coop,
+                        mean_pref_diff,
+                        r_pref,
                     ]
                 )
 

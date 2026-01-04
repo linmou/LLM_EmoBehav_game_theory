@@ -29,18 +29,18 @@ At a high level, the pipeline is:
    - `emotion_pd_delta_similarity.py` measures **sample-level** per-layer similarity between two *effects* on the model:
      - Δ activations caused by **emotion RepReader steering** (`--emotion`, default `anger`), and
      - Δ activations caused by **PD defection steering**.
-   - Dataset split selection:
-     - Default `--split test` filters prompts to match the PD training run's `split_manifest.json`.
-     - Use `--split all` to run on all benchmark PD samples (no filtering).
+  - Dataset split selection:
+     - Default `--split all` runs on all benchmark PD samples (no filtering).
+     - Use `--split test` / `--split train` to filter prompts by `split_manifest.json`.
    - Uses **last non-pad token hidden state** (no generation) and applies per-layer steering on the **middle-third layers** (e.g. 12..23 for 36-layer Qwen2.5-3B), while measuring all layers.
    - Output directory contains both `.npy` tensors and CSVs:
      - `cosines.npy`: `(n_intensities, n_samples, n_layers)` with `cos(Δ_l^anger(x), Δ_l^pd(x))`
      - `samples.csv`: `item_id,prompt` for traceability
      - `cosines.csv`: long-form table `item_id,intensity,layer,controlled,cosine,...` for analysis in pandas/R
    - Output layout uses a run identifier (typically datetime) as the top-level folder:
-     - `results/anger_pd_delta_similarity/<run_id>/<model>/<emotion>/seed_<seed>/`
+     - `results/emotion_pd_delta_similarity/<run_id>/<model>/<emotion>/seed_<seed>/`
    - The multi-emotion pipeline writes a reproducibility snapshot at:
-     - `results/anger_pd_delta_similarity/<run_id>/config.json`
+     - `results/emotion_pd_delta_similarity/<run_id>/config.json`
 
 8. **Optional: decision-impact analysis (similarity → behavior)**  
    - `analyze_similarity_decision_impact.py` joins a similarity run with an EmotionExperiment result folder (expects `detailed_results.csv`, and uses `raw_results.json` to attach sample text).
@@ -48,7 +48,7 @@ At a high level, the pipeline is:
      - `samples_with_decision.csv`: `item_id,intensity,behavior,defect,prompt,response`
      - `layer_impact_summary.csv`: per `(intensity,layer)` association stats (`mean_cos_defect`, `mean_cos_cooperate`, `pearson_r(defect,cosine)`)
    - Note: the join key is `(item_id,intensity)`; if the benchmark run uses prompt augmentation (e.g. shuffled options), the prompt strings can differ while `item_id` stays aligned.
-   - A convenience runner for multiple emotions exists: `run_emotion_pd_similarity_pipeline.sh` (similarity → join → summary).
+  - A convenience runner for multiple emotions exists: `python -m auto_experiments.task_similarity.run_emotion_pd_similarity_pipeline` (and the thin wrapper `run_emotion_pd_similarity_pipeline.sh`).
 
 ## Modules and Responsibilities
 

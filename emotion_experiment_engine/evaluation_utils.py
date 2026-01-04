@@ -585,7 +585,10 @@ from typing import List
 
 import openai
 
-from api_configs import OAI_CONFIG
+try:
+    from api_configs import OAI_CONFIG  # type: ignore
+except ModuleNotFoundError:
+    OAI_CONFIG = None  # type: ignore
 
 # Global client to prevent file descriptor leaks
 _global_client = None
@@ -594,6 +597,10 @@ _global_client = None
 def _get_openai_client():
     """Get or create global OpenAI client to prevent file descriptor leaks"""
     global _global_client
+    if OAI_CONFIG is None:
+        raise RuntimeError(
+            "Missing `api_configs.py` (OAI_CONFIG). LLM-based evaluation is unavailable."
+        )
     if _global_client is None:
         _global_client = openai.OpenAI(**OAI_CONFIG)
     return _global_client
@@ -605,6 +612,10 @@ _global_client = None
 def _get_openai_client():
     """Get or create global OpenAI client to prevent file descriptor leaks"""
     global _global_client
+    if OAI_CONFIG is None:
+        raise RuntimeError(
+            "Missing `api_configs.py` (OAI_CONFIG). LLM-based evaluation is unavailable."
+        )
     if _global_client is None:
         _global_client = openai.OpenAI(**OAI_CONFIG)
     return _global_client

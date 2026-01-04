@@ -3,10 +3,10 @@ Responsible: auto_experiments/task_similarity/migrate_emotion_pd_delta_similarit
 Purpose: Migrate legacy similarity result layout to the new run_id-first layout.
 
 Legacy layout (per emotion run):
-  results/anger_pd_delta_similarity/<model>/<emotion>/<timestamp>/seed_<seed>/
+  results/emotion_pd_delta_similarity/<model>/<emotion>/<timestamp>/seed_<seed>/
 
 New layout (date/run_id is the identifier):
-  results/anger_pd_delta_similarity/<run_id>/<model>/<emotion>/seed_<seed>/
+  results/emotion_pd_delta_similarity/<run_id>/<model>/<emotion>/seed_<seed>/
 
 This script moves directories in-place (no recomputation).
 """
@@ -144,7 +144,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description="Migrate legacy emotion_pd_delta_similarity results to run_id-first layout.")
     p.add_argument(
         "--root",
-        default="auto_experiments/task_similarity/results/anger_pd_delta_similarity",
+        default="auto_experiments/task_similarity/results/emotion_pd_delta_similarity",
         help="Root results directory to migrate.",
     )
     p.add_argument("--dry_run", action="store_true", help="Report moves without changing filesystem.")

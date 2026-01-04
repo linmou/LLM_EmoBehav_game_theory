@@ -3,10 +3,10 @@ Responsible: auto_experiments/task_similarity/group_emotion_pd_delta_similarity_
 Purpose: Group per-emotion similarity runs into bash-level sessions based on time proximity.
 
 After earlier migrations, you can have per-emotion folders like:
-  results/anger_pd_delta_similarity/<run_id>/<model>/<emotion>/seed_<seed>/
+  results/emotion_pd_delta_similarity/<run_id>/<model>/<emotion>/seed_<seed>/
 
 But for usability, we want bash-level run_id (same for all emotions in a run):
-  results/anger_pd_delta_similarity/<bash_run_id>/<model>/<emotion>/seed_<seed>/
+  results/emotion_pd_delta_similarity/<bash_run_id>/<model>/<emotion>/seed_<seed>/
 
 This script groups run_ids by time window and merges them by moving emotion folders
 into the earliest run_id directory of each group. It also rewrites metadata.json
@@ -267,7 +267,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description="Group per-emotion similarity runs into bash-level run_id folders.")
     p.add_argument(
         "--root",
-        default="auto_experiments/task_similarity/results/anger_pd_delta_similarity",
+        default="auto_experiments/task_similarity/results/emotion_pd_delta_similarity",
         help="Root results directory.",
     )
     p.add_argument("--window_seconds", type=int, default=10 * 60)

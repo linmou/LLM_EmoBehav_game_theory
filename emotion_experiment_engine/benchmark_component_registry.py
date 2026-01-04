@@ -331,6 +331,11 @@ BENCHMARK_SPECS: Dict[Tuple[str, str], BenchmarkSpec] = {
         answer_wrapper_class=IdentityAnswerWrapper,
         prompt_wrapper_class=GameBenchmarkPromptWrapper,
     ),
+    ("game_theory_decision", "*"): BenchmarkSpec(
+        dataset_class=GameTheoryDataset,
+        answer_wrapper_class=IdentityAnswerWrapper,
+        prompt_wrapper_class=GameBenchmarkPromptWrapper,
+    ),
     # Diplomacy PD-style gradient benchmark (options = 1..5 natural-language orders)
     ("diplomacy_pd", "*"): BenchmarkSpec(
         dataset_class=DiplomacyGradientDataset,

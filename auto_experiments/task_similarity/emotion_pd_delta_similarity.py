@@ -19,9 +19,8 @@ import pickle
 import sys
 from dataclasses import dataclass
 from datetime import datetime
-from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Sequence
+from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 import numpy as np
 
@@ -151,7 +150,7 @@ def write_csv_outputs(
                 "layer",
                 "controlled",
                 "cosine",
-                "delta_norm_anger",
+                "delta_norm_emotion",
                 "delta_norm_pd",
             ]
         )
@@ -170,6 +169,75 @@ def write_csv_outputs(
                             float(delta_norms_pd[i_int, i_s, layer]),
                         ]
                     )
+
+
+def write_tensor_outputs(
+    *,
+    out_dir: Path,
+    base_hidden: np.ndarray,
+    emotion_hidden: np.ndarray,
+    pd_hidden: np.ndarray,
+    pd_cooperate_hidden: np.ndarray,
+    delta_emotion: np.ndarray,
+    delta_pd: np.ndarray,
+    delta_pd_cooperate: np.ndarray,
+    dtype: str = "float16",
+) -> None:
+    """
+    Write optional raw tensors for offline analysis.
+
+    Shapes:
+      - base_hidden:    (n_samples, n_layers, hidden)
+      - emotion_hidden: (n_int, n_samples, n_layers, hidden)
+      - pd_hidden:      (n_int, n_samples, n_layers, hidden)
+      - pd_cooperate_hidden: (n_int, n_samples, n_layers, hidden)
+      - delta_emotion:  (n_int, n_samples, n_layers, hidden)
+      - delta_pd:       (n_int, n_samples, n_layers, hidden)
+      - delta_pd_cooperate: (n_int, n_samples, n_layers, hidden)
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if base_hidden.ndim != 3:
+        raise ValueError(f"base_hidden must be 3D (n_samples,n_layers,hidden), got {base_hidden.shape}")
+    if (
+        emotion_hidden.ndim != 4
+        or pd_hidden.ndim != 4
+        or pd_cooperate_hidden.ndim != 4
+        or delta_emotion.ndim != 4
+        or delta_pd.ndim != 4
+        or delta_pd_cooperate.ndim != 4
+    ):
+        raise ValueError(
+            "emotion_hidden/pd_hidden/pd_cooperate_hidden/delta_* must be 4D (n_int,n_samples,n_layers,hidden)"
+        )
+
+    n_samples, n_layers, hidden = base_hidden.shape
+    expected = (emotion_hidden.shape[0], n_samples, n_layers, hidden)
+    for name, arr in [
+        ("emotion_hidden", emotion_hidden),
+        ("pd_hidden", pd_hidden),
+        ("pd_cooperate_hidden", pd_cooperate_hidden),
+        ("delta_emotion", delta_emotion),
+        ("delta_pd", delta_pd),
+        ("delta_pd_cooperate", delta_pd_cooperate),
+    ]:
+        if tuple(arr.shape) != tuple(expected):
+            raise ValueError(f"{name} shape mismatch: expected {expected}, got {arr.shape}")
+
+    if str(dtype) == "float16":
+        dt = np.float16
+    elif str(dtype) == "float32":
+        dt = np.float32
+    else:
+        raise ValueError(f"Unsupported dtype: {dtype!r} (expected 'float16' or 'float32')")
+
+    np.save(out_dir / "hidden_base.npy", base_hidden.astype(dt, copy=False))
+    np.save(out_dir / "hidden_emotion.npy", emotion_hidden.astype(dt, copy=False))
+    np.save(out_dir / "hidden_pd.npy", pd_hidden.astype(dt, copy=False))
+    np.save(out_dir / "hidden_pd_cooperate.npy", pd_cooperate_hidden.astype(dt, copy=False))
+    np.save(out_dir / "delta_emotion.npy", delta_emotion.astype(dt, copy=False))
+    np.save(out_dir / "delta_pd.npy", delta_pd.astype(dt, copy=False))
+    np.save(out_dir / "delta_pd_cooperate.npy", delta_pd_cooperate.astype(dt, copy=False))
 
 
 @dataclass
@@ -244,7 +312,43 @@ def _iter_batches(seq: Sequence[Any], batch_size: int) -> Iterable[Sequence[Any]
         yield seq[start : start + batch_size]
 
 
-def main() -> None:
+def load_prompts_from_raw_results(raw_results_json: Path, *, emotion: str) -> Tuple[List[int], List[str]]:
+    """
+    Extract unique (item_id -> prompt) pairs from an EmotionExperiment `raw_results.json`.
+    Filters to `emotion` and enforces prompt consistency across intensities.
+    """
+    raw = json.loads(Path(raw_results_json).read_text(encoding="utf-8"))
+    if not isinstance(raw, list):
+        raise ValueError(f"raw_results.json must be a list of records: {raw_results_json}")
+
+    prompts_by_id: Dict[int, str] = {}
+    for rec in raw:
+        if not isinstance(rec, dict):
+            continue
+        if str(rec.get("emotion")) != str(emotion):
+            continue
+        if "item_id" not in rec:
+            continue
+        item_id = int(float(rec["item_id"]))
+        prompt = rec.get("prompt")
+        if prompt is None:
+            prompt = ""
+        if not isinstance(prompt, str):
+            prompt = str(prompt)
+        prev = prompts_by_id.get(item_id)
+        if prev is not None and prev != prompt:
+            raise ValueError(f"raw_results has conflicting prompts for item_id={item_id}")
+        prompts_by_id[item_id] = prompt
+
+    if not prompts_by_id:
+        raise ValueError(f"No prompts found for emotion={emotion} in {raw_results_json}")
+
+    item_ids = sorted(prompts_by_id)
+    prompts = [prompts_by_id[i] for i in item_ids]
+    return item_ids, prompts
+
+
+def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Compute sample-level per-layer cosine(Δ^emotion, Δ^pd) on Prisoner's Dilemma prompts."
     )
@@ -268,9 +372,9 @@ def main() -> None:
     parser.add_argument("--emotion", default="anger", help="Emotion key in the RepReader pickle.")
     parser.add_argument(
         "--split",
-        default="test",
+        default="all",
         choices=["test", "train", "all"],
-        help="Which PD split to run on (default: test; use all to disable filtering).",
+        help="Which PD split to run on (default: all; use test/train to filter by split_manifest.json).",
     )
     parser.add_argument(
         "--run_id",
@@ -297,9 +401,29 @@ def main() -> None:
     )
     parser.add_argument(
         "--output_root",
-        default="auto_experiments/task_similarity/results/anger_pd_delta_similarity",
+        default="auto_experiments/task_similarity/results/emotion_pd_delta_similarity",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--raw_results_path",
+        required=True,
+        help="EmotionExperiment raw_results.json to source prompts (required).",
+    )
+    parser.add_argument(
+        "--save_tensors",
+        action="store_true",
+        help="Also write raw hidden states and delta tensors as .npy files (can be large).",
+    )
+    parser.add_argument(
+        "--tensor_dtype",
+        default="float16",
+        choices=["float16", "float32"],
+        help="Dtype for saved tensors when --save_tensors is enabled.",
+    )
+    return parser
+
+
+def main() -> None:
+    args = build_arg_parser().parse_args()
 
     cfg = AnalysisConfig(
         model_path=str(args.model),
@@ -315,11 +439,6 @@ def main() -> None:
     # Heavy imports kept in main to keep unit tests light.
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
-
-    from emotion_experiment_engine.data_models import BenchmarkConfig
-    from emotion_experiment_engine.datasets.games import GameTheoryDataset
-    from emotion_experiment_engine.game_prompt_wrapper import GameBenchmarkPromptWrapper
-    from neuro_manipulation.prompt_formats import PromptFormat
 
     from .run_pd_defection_experiment import _register_control_hook
 
@@ -362,62 +481,26 @@ def main() -> None:
         emotion=str(args.emotion),
     )
 
-    # Build PD prompts via benchmark wrapper to keep formatting consistent with the rest of repo.
-    bench = BenchmarkConfig(
-        name="game_theory",
-        task_type="Prisoners_Dilemma",
-        data_path=None,
-        base_data_dir=None,
-        sample_limit=None,
-        augmentation_config=None,
-        enable_auto_truncation=False,
-        truncation_strategy="right",
-        preserve_ratio=1.0,
-        llm_eval_config=None,
-    )
-
-    prompt_format = PromptFormat(tokenizer)
-    game_prompt = GameBenchmarkPromptWrapper(prompt_format, bench.task_type)
-    prompt_wrapper = partial(
-        game_prompt.__call__,
-        user_messages="Please provide your answer.",
-        enable_thinking=False,
-        augmentation_config=bench.augmentation_config,
-        emotion=None,
-    )
-
-    dataset = GameTheoryDataset(
-        config=bench,
-        prompt_wrapper=prompt_wrapper,
-        max_context_length=None,
-        tokenizer=tokenizer,
-        truncation_strategy=bench.truncation_strategy,
-        answer_wrapper=None,
-    )
-
     dataset_split = str(args.split).strip().lower()
+    assert args.raw_results_path
+    raw_results_path = Path(args.raw_results_path)
+    item_ids, prompts = load_prompts_from_raw_results(raw_results_path, emotion=str(args.emotion))
+
     if dataset_split != "all":
         allowed = set(_load_split_indices(cfg.split_manifest, split=dataset_split))
-        filtered_items = []
-        for item in dataset.items:
-            try:
-                idx = int(item.id)
-            except Exception:
-                continue
-            if idx in allowed:
-                filtered_items.append(item)
-        dataset.items = filtered_items
+        filtered_ids: List[int] = []
+        filtered_prompts: List[str] = []
+        for item_id, prompt in zip(item_ids, prompts):
+            if int(item_id) in allowed:
+                filtered_ids.append(int(item_id))
+                filtered_prompts.append(prompt)
+        item_ids = filtered_ids
+        prompts = filtered_prompts
 
     max_samples = None if args.max_samples is None else int(args.max_samples)
     if max_samples is not None and max_samples > 0:
-        dataset.items = dataset.items[:max_samples]
-
-    prompts: List[str] = []
-    item_ids: List[int] = []
-    for i in range(len(dataset)):
-        row = dataset[i]
-        prompts.append(row["prompt"])
-        item_ids.append(int(row["item"].id))
+        item_ids = item_ids[:max_samples]
+        prompts = prompts[:max_samples]
 
     run_id = str(args.run_id) if args.run_id else datetime.now().strftime("%Y%m%d_%H%M%S")
     split_seed = int(json.loads(cfg.split_manifest.read_text())["split_seed"])
@@ -431,8 +514,19 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     cosines = np.empty((len(cfg.intensities), len(prompts), len(measurement_layers)), dtype=np.float32)
-    anger_norms = np.empty_like(cosines)
+    cosines_pd_cooperate = np.empty_like(cosines)
+    emotion_norms = np.empty_like(cosines)
     pd_norms = np.empty_like(cosines)
+    pd_cooperate_norms = np.empty_like(cosines)
+
+    tensor_dtype = np.float16 if str(args.tensor_dtype) == "float16" else np.float32
+    base_mm = None
+    emo_mm = None
+    pd_mm = None
+    pd_cooperate_mm = None
+    delta_emo_mm = None
+    delta_pd_mm = None
+    delta_pd_cooperate_mm = None
 
     device = next(model.parameters()).device
     model.eval()
@@ -464,13 +558,61 @@ def main() -> None:
         batch_prompts = prompts[batch_start : batch_start + cfg.batch_size]
         base = _forward_final_hidden(batch_prompts)
 
+        if bool(args.save_tensors) and base_mm is None:
+            from numpy.lib.format import open_memmap
+
+            n_samples = len(prompts)
+            n_layers = int(base.shape[1])
+            hidden = int(base.shape[2])
+            n_int = len(cfg.intensities)
+
+            base_mm = open_memmap(
+                out_dir / "hidden_base.npy", mode="w+", dtype=tensor_dtype, shape=(n_samples, n_layers, hidden)
+            )
+            emo_mm = open_memmap(
+                out_dir / "hidden_emotion.npy",
+                mode="w+",
+                dtype=tensor_dtype,
+                shape=(n_int, n_samples, n_layers, hidden),
+            )
+            pd_mm = open_memmap(
+                out_dir / "hidden_pd.npy",
+                mode="w+",
+                dtype=tensor_dtype,
+                shape=(n_int, n_samples, n_layers, hidden),
+            )
+            pd_cooperate_mm = open_memmap(
+                out_dir / "hidden_pd_cooperate.npy",
+                mode="w+",
+                dtype=tensor_dtype,
+                shape=(n_int, n_samples, n_layers, hidden),
+            )
+            delta_emo_mm = open_memmap(
+                out_dir / "delta_emotion.npy",
+                mode="w+",
+                dtype=tensor_dtype,
+                shape=(n_int, n_samples, n_layers, hidden),
+            )
+            delta_pd_mm = open_memmap(
+                out_dir / "delta_pd.npy",
+                mode="w+",
+                dtype=tensor_dtype,
+                shape=(n_int, n_samples, n_layers, hidden),
+            )
+            delta_pd_cooperate_mm = open_memmap(
+                out_dir / "delta_pd_cooperate.npy",
+                mode="w+",
+                dtype=tensor_dtype,
+                shape=(n_int, n_samples, n_layers, hidden),
+            )
+
         for i_int, intensity in enumerate(progress(cfg.intensities, total=len(cfg.intensities), desc="intensities")):
             handles: List[Any] = []
             try:
                 for lyr in control_layers:
                     layer_module = model.model.layers[int(lyr)]
                     handles.append(_register_control_hook(layer_module, emotion_vectors[int(lyr)], float(intensity)))
-                steered_anger = _forward_final_hidden(batch_prompts)
+                steered_emotion = _forward_final_hidden(batch_prompts)
             finally:
                 for h in handles:
                     h.remove()
@@ -485,21 +627,58 @@ def main() -> None:
                 for h in handles:
                     h.remove()
 
-            delta_anger = steered_anger - base
-            delta_pd = steered_pd - base
+            handles = []
+            try:
+                for lyr in control_layers:
+                    layer_module = model.model.layers[int(lyr)]
+                    handles.append(_register_control_hook(layer_module, pd_vectors[int(lyr)], -float(intensity)))
+                steered_pd_cooperate = _forward_final_hidden(batch_prompts)
+            finally:
+                for h in handles:
+                    h.remove()
 
-            cos = cosine_per_layer(delta_anger, delta_pd, eps=1e-12)
-            na = np.linalg.norm(delta_anger.astype(np.float32), axis=-1).astype(np.float32)
+            delta_emotion = steered_emotion - base
+            delta_pd = steered_pd - base
+            delta_pd_cooperate = steered_pd_cooperate - base
+
+            cos = cosine_per_layer(delta_emotion, delta_pd, eps=1e-12)
+            cos_coop = cosine_per_layer(delta_emotion, delta_pd_cooperate, eps=1e-12)
+            na = np.linalg.norm(delta_emotion.astype(np.float32), axis=-1).astype(np.float32)
             nb = np.linalg.norm(delta_pd.astype(np.float32), axis=-1).astype(np.float32)
+            nb_coop = np.linalg.norm(delta_pd_cooperate.astype(np.float32), axis=-1).astype(np.float32)
 
             sl = slice(batch_start, batch_start + len(batch_prompts))
             cosines[i_int, sl, :] = cos
-            anger_norms[i_int, sl, :] = na
+            cosines_pd_cooperate[i_int, sl, :] = cos_coop
+            emotion_norms[i_int, sl, :] = na
             pd_norms[i_int, sl, :] = nb
+            pd_cooperate_norms[i_int, sl, :] = nb_coop
+            if bool(args.save_tensors):
+                if (
+                    base_mm is None
+                    or emo_mm is None
+                    or pd_mm is None
+                    or pd_cooperate_mm is None
+                    or delta_emo_mm is None
+                    or delta_pd_mm is None
+                    or delta_pd_cooperate_mm is None
+                ):
+                    raise RuntimeError("Tensor memmaps not initialized")
+                if i_int == 0:
+                    base_mm[sl, :, :] = base.astype(tensor_dtype, copy=False)
+                emo_mm[i_int, sl, :, :] = steered_emotion.astype(tensor_dtype, copy=False)
+                pd_mm[i_int, sl, :, :] = steered_pd.astype(tensor_dtype, copy=False)
+                pd_cooperate_mm[i_int, sl, :, :] = steered_pd_cooperate.astype(tensor_dtype, copy=False)
+                delta_emo_mm[i_int, sl, :, :] = delta_emotion.astype(tensor_dtype, copy=False)
+                delta_pd_mm[i_int, sl, :, :] = delta_pd.astype(tensor_dtype, copy=False)
+                delta_pd_cooperate_mm[i_int, sl, :, :] = delta_pd_cooperate.astype(tensor_dtype, copy=False)
 
     np.save(out_dir / "cosines.npy", cosines)
-    np.save(out_dir / "delta_norms_anger.npy", anger_norms)
+    np.save(out_dir / "cosines_pd_cooperate.npy", cosines_pd_cooperate)
+    np.save(out_dir / "pref_cosines.npy", (cosines - cosines_pd_cooperate).astype(np.float32, copy=False))
+    np.save(out_dir / "delta_norms_anger.npy", emotion_norms)
     np.save(out_dir / "delta_norms_pd.npy", pd_norms)
+    np.save(out_dir / "delta_norms_pd_cooperate.npy", pd_cooperate_norms)
     write_csv_outputs(
         out_dir=out_dir,
         item_ids=item_ids,
@@ -507,7 +686,7 @@ def main() -> None:
         intensities=cfg.intensities,
         controlled_layers=control_layers,
         cosines=cosines,
-        delta_norms_anger=anger_norms,
+        delta_norms_anger=emotion_norms,
         delta_norms_pd=pd_norms,
     )
 
@@ -527,6 +706,10 @@ def main() -> None:
         "n_samples": len(prompts),
         "item_ids": item_ids,
         "run_id": run_id,
+        "saved_tensors": bool(args.save_tensors),
+        "tensor_dtype": str(args.tensor_dtype),
+        "has_pd_cooperate": True,
+        "raw_results_path": str(raw_results_path),
     }
     (out_dir / "metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     print(str(out_dir), flush=True)

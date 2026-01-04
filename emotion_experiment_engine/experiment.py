@@ -38,6 +38,7 @@ from .data_models import DEFAULT_GENERATION_CONFIG, ExperimentConfig, ResultReco
 # NEW: Import the registry-based component assembly
 from .benchmark_component_registry import create_benchmark_components
 from .truncation_utils import calculate_max_context_length
+from .steering_vectors import LayerVectorReader, load_layer_vectors_dir
 
 
 class EmotionExperiment:
@@ -236,9 +237,54 @@ class EmotionExperiment:
             config.model_path, yaml_config=config.repe_eng_config
         )
 
+        steering_vectors_dir = None
+        if config.repe_eng_config and isinstance(config.repe_eng_config, dict):
+            steering_vectors_dir = (
+                config.repe_eng_config.get("steering_vector_dir")
+                or config.repe_eng_config.get("pd_vectors_dir")
+            )
+
         # Ensure loading_config has the model path if it exists
         if self.loading_config and not self.loading_config.model_path:
             self.loading_config.model_path = config.model_path
+
+        # Fast-path: use precomputed steering vectors (no emotion reader extraction).
+        if steering_vectors_dir is not None:
+            if not config.emotions:
+                raise ValueError(
+                    "steering_vector_dir set but config.emotions is empty; "
+                    "set e.g. emotions=['pd_defection']"
+                )
+            if len(config.emotions) != 1:
+                raise ValueError(
+                    "steering_vector_dir requires exactly one label in config.emotions "
+                    f"(got {config.emotions})"
+                )
+
+            vectors = load_layer_vectors_dir(Path(steering_vectors_dir))
+            self.hidden_layers = sorted(vectors.keys())
+            self.logger.info(f"Using steering vector layers: {self.hidden_layers}")
+            self.emotion_rep_readers = {config.emotions[0]: LayerVectorReader(vectors)}
+
+            self.model, tokenizer_temp, prompt_format_temp, _ = setup_model_and_tokenizer(
+                self.loading_config, from_vllm=True
+            )
+            self._assert_tokenizers_equivalent(
+                self.tokenizer, tokenizer_temp, "basic", "vllm"
+            )
+            self.logger.info(f"Model loaded: {type(self.model)}")
+            self.is_vllm = isinstance(self.model, LLM)
+            assert self.is_vllm
+
+            self.rep_control_pipeline = get_pipeline(
+                "rep-control-vllm",
+                model=self.model,
+                tokenizer=self.tokenizer,
+                layers=self.hidden_layers,
+                block_name=self.repe_config["block_name"],
+                control_method=self.repe_config["control_method"],
+            )
+            return
 
         # First load from HF for emotion readers
         self.model, tokenizer_temp, prompt_format_temp, processor = (
@@ -286,10 +332,9 @@ class EmotionExperiment:
             "rep-control-vllm" if self.is_vllm else "rep-control",
             model=self.model,
             tokenizer=self.tokenizer,  # Use basic tokenizer instead of tokenizer_temp
-            layers=[self.hidden_layers[len(self.hidden_layers) // 2]],
-            # layers=self.hidden_layers[
-            #     len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
-            # ],
+            layers=self.hidden_layers[
+                len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
+            ],
             block_name=self.repe_config["block_name"],
             control_method=self.repe_config["control_method"],
         )
