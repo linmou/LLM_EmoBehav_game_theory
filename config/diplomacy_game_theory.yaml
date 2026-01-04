@@ -1,0 +1,72 @@
+experiment_name: "diplomacy_trust_game"
+description: "Diplomacy trust game (trustor/trustee) via game_theory benchmark using transformed Diplomacy episodes."
+version: "1.0.0"
+
+models:
+  # - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  # - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+
+emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
+intensities: [1.5]
+
+benchmarks:
+  # - name: "game_theory_decision"
+  #   task_type: "Trust_Game_Trustor"
+  #   enable_auto_truncation: false
+  #   truncation_strategy: "right"
+  #   augmentation_config:
+  #     shuffle_options: true
+  #     data_path: "data_creation/scenario_creation/langgraph_creation/diplomacy_Trust_Game_Trustor_all_data_samples.json"
+  #   sample_limit: 500
+  #   preserve_ratio: 1.0
+  #   llm_eval_config:
+  #     client: "gemini"
+  #     model: "gemini-2.5-flash-lite"
+  #     temperature: 0.0
+  - name: "game_theory_decision"
+    task_type: "Trust_Game_Trustee"
+    enable_auto_truncation: false
+    augmentation_config:
+      data_path: "data_creation/scenario_creation/langgraph_creation/diplomacy_Trust_Game_Trustee_all_data_samples.json"
+      shuffle_options: true
+      previous_actions_length: 1
+      previous_trust_level: 0
+    truncation_strategy: "right"
+    sample_limit: 500
+    preserve_ratio: 1.0
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+
+loading_config:
+  gpu_memory_utilization: 0.85
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 1
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+repeat_runs: 3
+repeat_seed_base: 1231
+
+generation_config:
+  temperature: 0.9
+  max_new_tokens: 512
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 500
+
+output_dir: "results/diplomacy_trust_game/500_sample_removeAlice/previous_trust_level_0_high_temp"
+sanity_check: false
+defer_evaluation: false

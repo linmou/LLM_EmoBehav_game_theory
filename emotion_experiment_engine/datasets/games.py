@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import os
 import random
 import re
 from collections import defaultdict
@@ -12,11 +13,10 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
-from scipy import stats
+from scipy import stats  # type: ignore[import-untyped]
 
 from games.game import SequentialGameScenario
 from games.game_configs import get_game_config
-from neuro_manipulation.utils import oai_response
 from pydantic import BaseModel
 
 from .. import evaluation_utils
@@ -79,15 +79,14 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         augmentation = self.config.augmentation_config or {}
         scenario_fields = getattr(scenario_class, "model_fields", {})
         config_fields = self._game_config
-        shuffle_options = bool(self._game_config.get("shuffle_options", False))
+        # Always shuffle options; allow deterministic control via behavior_ratio.
         behavior_ratio = self._game_config.get("behavior_ratio")
-        shuffle_rng = None
-        if shuffle_options:
-            shuffle_rng = (
-                random.Random(behavior_ratio)
-                if behavior_ratio is not None
-                else random.Random()
-            )
+        shuffle_rng = (
+            random.Random(behavior_ratio)
+            if behavior_ratio is not None
+            else random
+        )
+        shuffle_options = bool(self._game_config.get("shuffle_options", True))
 
         items: List[BenchmarkItem] = []
         for idx, record in enumerate(raw_items):
@@ -101,6 +100,10 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 elif field_name in config_fields and field_name not in enriched:
                     enriched[field_name] = config_fields[field_name]
 
+            if "previous_actions_length" in scenario_fields and "previous_actions_length" not in enriched:
+                previous_actions = enriched.get("previous_actions") or []
+                enriched["previous_actions_length"] = len(previous_actions) if isinstance(previous_actions, list) else 0
+
             try:
                 scenario = scenario_class(**enriched)
             except Exception as exc:  # pragma: no cover - defensive logging
@@ -110,31 +113,97 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 continue
 
             # Build behavior-category options, then shuffle and reindex.
-            raw_choices = scenario.get_behavior_choices().get_choices()
             options: List[Dict[str, Any]] = []
-            for opt_idx, choice in enumerate(raw_choices):
-                try:
-                    behavior = scenario.find_behavior_from_decision(choice)
-                except Exception:  # pragma: no cover - defensive guard
-                    behavior = ""
-                options.append(
-                    {
-                        "id": opt_idx + 1,
-                        "text": choice,
-                        "behavior": behavior,
-                    }
-                )
-
-            # Optionally shuffle in-place and reassign ids to reflect presented order.
-            if shuffle_options and shuffle_rng is not None:
-                shuffle_rng.shuffle(options)
-                for new_idx, opt in enumerate(options, start=1):
-                    opt["id"] = new_idx
-
             item_id = enriched.get("id", idx)
-            metadata: Dict[str, Any] = {
-                "options": options,
-            }
+            use_bins_key = self._game_config.get("use_augmented_bins")
+            if isinstance(use_bins_key, str) and use_bins_key:
+                persisted_bins = record.get("augmented_bins") or {}
+                selected = persisted_bins.get(use_bins_key)
+                if isinstance(selected, list) and selected:
+                    for opt_idx, opt in enumerate(selected):
+                        if not isinstance(opt, dict):
+                            continue
+                        text = opt.get("text")
+                        behavior = opt.get("behavior")
+                        if not isinstance(text, str) or not text.strip():
+                            continue
+                        if not isinstance(behavior, str) or not behavior.strip():
+                            behavior = "interpolated"
+                        options.append(
+                            {"id": opt_idx + 1, "text": text.strip(), "behavior": behavior.strip()}
+                        )
+
+            augmented_options_enabled = bool(self._game_config.get("use_augmented_options"))
+            if not options and augmented_options_enabled:
+                field_name = self._game_config.get(
+                    "augmented_options_field", "augmented_options_v1"
+                )
+                expected_bins = self._game_config.get("augmented_options_bins")
+                expected_len: int | None = None
+                if expected_bins is not None:
+                    try:
+                        expected_len = int(expected_bins)
+                    except (TypeError, ValueError):
+                        expected_len = None
+
+                candidate = record.get(field_name)
+                if not isinstance(candidate, list) or not candidate:
+                    raise ValueError(
+                        f"Missing augmented options field '{field_name}' for item '{item_id}'"
+                    )
+                if expected_len is not None and len(candidate) != expected_len:
+                    raise ValueError(
+                        f"Expected {expected_len} augmented options for item '{item_id}', "
+                        f"found {len(candidate)}"
+                    )
+                for opt_idx, choice in enumerate(candidate):
+                    if not isinstance(choice, str) or not choice.strip():
+                        continue
+                    try:
+                        behavior = scenario.find_behavior_from_decision(choice)
+                    except Exception:
+                        behavior = "interpolated"
+                    options.append(
+                        {
+                            "id": opt_idx + 1,
+                            "text": choice.strip(),
+                            "behavior": behavior,
+                        }
+                    )
+                if not options:
+                    raise ValueError(
+                        f"No valid augmented options could be parsed from '{field_name}' "
+                        f"for item '{item_id}'"
+                    )
+
+            if not options and not augmented_options_enabled:
+                raw_choices = scenario.get_behavior_choices().get_choices()
+                for opt_idx, choice in enumerate(raw_choices):
+                    try:
+                        behavior = scenario.find_behavior_from_decision(choice)
+                    except Exception:  # pragma: no cover - defensive guard
+                        behavior = ""
+                    options.append(
+                        {
+                            "id": opt_idx + 1,
+                            "text": choice,
+                            "behavior": behavior,
+                        }
+                    )
+
+            # Shuffle in-place and reassign ids to reflect presented order.
+            if shuffle_options:
+                shuffle_rng.shuffle(options)
+            for new_idx, opt in enumerate(options, start=1):
+                opt["id"] = new_idx
+
+            metadata: Dict[str, Any] = {"options": options}
+            try:
+                scenario_info = scenario.get_scenario_info()
+            except Exception:  # pragma: no cover - keep dataset load resilient
+                scenario_info = {}
+            if isinstance(scenario_info, dict):
+                metadata.update(scenario_info)
             if shuffle_options and behavior_ratio is not None:
                 metadata["behavior_ratio_used"] = behavior_ratio
 
@@ -197,7 +266,16 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                     input_text=str(event),
                     context=None,
                     ground_truth=None,
-                    metadata={"options": normalized_options},
+                    metadata=self._compact_metadata(
+                        {
+                            "options": normalized_options,
+                            "scenario": record.get("scenario"),
+                            "description": record.get("description"),
+                            "participants": record.get("participants"),
+                            "game_name": record.get("game_name"),
+                            "payoff_description": record.get("payoff_description"),
+                        }
+                    ),
                 )
             )
 
@@ -206,6 +284,9 @@ class GameTheoryDataset(BaseBenchmarkDataset):
 
         return items
 
+    @staticmethod
+    def _compact_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
+        return {key: value for key, value in metadata.items() if value is not None}
 
     class _ExtractionSchema(BaseModel):
         option_id: int
@@ -213,6 +294,15 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         decision: str
 
     def _resolve_data_path(self) -> Path:
+        explicit = getattr(self.config, "data_path", None)
+        if explicit:
+            explicit_path = Path(explicit)
+            if not explicit_path.is_absolute():
+                explicit_path = REPO_ROOT / explicit_path
+            if explicit_path.exists():
+                self.config.data_path = explicit_path
+                return explicit_path
+
         candidate = Path(self._game_config["data_path"])
         if not candidate.is_absolute():
             candidate = REPO_ROOT / candidate
@@ -266,7 +356,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             return float(choice_id)
 
         logger.warning("Failed to extract option id for response: %s", response)
-        return math.nan
+        return -1.0
 
     def get_task_metrics(self, task_name: str) -> List[str]:
         del task_name
@@ -313,6 +403,17 @@ class GameTheoryDataset(BaseBenchmarkDataset):
     def _extract_option_from_response(
         response: str, options: Sequence[str]
     ) -> Optional[int]:
+        # Content-first: if the raw response contains a single option text,
+        # prefer that before parsing any ids.
+        response_norm = response.lower()
+        matched_ids: List[int] = []
+        for idx, option in enumerate(options, start=1):
+            opt_norm = option.lower().strip()
+            if opt_norm and opt_norm in response_norm:
+                matched_ids.append(idx)
+        if len(matched_ids) == 1:
+            return matched_ids[0]
+
         candidates = []
         for pattern in (_DECISION_PATTERN, _SINGLE_QUOTE_PATTERN):
             match = pattern.search(response)
@@ -327,9 +428,21 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 candidates.append(match.group(1).strip())
 
         for candidate in candidates:
-            option_id = GameTheoryDataset._match_option(candidate, options)
-            if option_id is not None:
-                return option_id
+            matched = GameTheoryDataset._match_option(candidate, options)
+            if matched is not None:
+                return matched
+
+            candidate_stripped = candidate.strip()
+            if candidate_stripped.isdigit():
+                option_id = int(candidate_stripped)
+                if 1 <= option_id <= len(options):
+                    return option_id
+
+            match = re.match(r"option\s*(\d+)(?:\s*[:\.\)\-]|$)", candidate_stripped, re.IGNORECASE)
+            if match:
+                option_id = int(match.group(1))
+                if 1 <= option_id <= len(options):
+                    return option_id
         return None
 
     @staticmethod
@@ -353,6 +466,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             if normalized in opt_norm or opt_norm in normalized:
                 return idx
         return None
+
 
     def _choice_ratio_rows(
         self, records: List[ResultRecord], *, include_repeat: bool
@@ -528,6 +642,8 @@ class GameTheoryDataset(BaseBenchmarkDataset):
     def _fallback_option_via_llm(
         self, response: str, options: Sequence[str]
     ) -> Optional[int]:
+        if os.environ.get("DISABLE_LLM_JUDGE") == "1":
+            return None
         if not options:
             return None
 
@@ -562,6 +678,8 @@ class GameTheoryDataset(BaseBenchmarkDataset):
 
         # OpenAI / Azure path: use existing beta parse helper
         client = self._ensure_llm_client()
+        if client is None:
+            return None
 
         prompt = (
             "You are helping classify a model's decision. Given the available options "
@@ -572,6 +690,8 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         )
 
         try:
+            from neuro_manipulation.utils import oai_response  # type: ignore
+
             result = oai_response(
                 prompt,
                 client=client,
@@ -749,4 +869,88 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             return 0.0, 1.0
 
 
-__all__ = ["GameTheoryDataset"]
+class GameTheoryCompletionOptionIdDataset(GameTheoryDataset):
+    """Variant evaluator for base LMs emitting completion-style option ids/text."""
+
+    @staticmethod
+    def _match_option(candidate: str, options: Sequence[str]) -> Optional[int]:
+        normalized = candidate.lower().strip().strip("\"'").strip()
+        if not normalized:
+            return None
+
+        for idx, option in enumerate(options, start=1):
+            opt_norm = option.lower().strip()
+            if normalized == opt_norm:
+                return idx
+
+        matches: List[Tuple[int, int]] = []
+        for idx, option in enumerate(options, start=1):
+            opt_norm = option.lower().strip()
+            if normalized in opt_norm:
+                matches.append((idx, len(normalized)))
+            elif opt_norm in normalized:
+                matches.append((idx, len(opt_norm)))
+
+        if not matches:
+            return None
+
+        matches.sort(key=lambda x: (-x[1], x[0]))
+        best_score = matches[0][1]
+        best = [idx for idx, score in matches if score == best_score]
+        if len(best) == 1:
+            return best[0]
+        return None
+
+    @staticmethod
+    def _extract_option_from_response(
+        response: str, options: Sequence[str]
+    ) -> Optional[int]:
+        # Some base checkpoints emit chat-style speaker tags despite using
+        # completion prompts, e.g. "Human: 1" or "Assistant: Option 2".
+        response = re.sub(
+            r"^\s*(?:human|user|assistant|system)\s*:\s*",
+            "",
+            response,
+            flags=re.IGNORECASE,
+        )
+        response = re.sub(r"^\s*(?:answer|final)\s*:\s*", "", response, flags=re.IGNORECASE)
+
+        # Start with the strict JSON decision parsing from the base class.
+        choice = GameTheoryDataset._extract_option_from_response(response, options)
+        if choice is not None:
+            return choice
+
+        # Completion-style variants:
+        # 1) Leading numeric id: '2', '2.', '"2"', '2) ...'
+        match = re.match(r"\s*\"?\s*(\d+)", response)
+        if match:
+            option_id = int(match.group(1))
+            if 1 <= option_id <= len(options):
+                return option_id
+
+        # 2) Leading 'Option N. ...' or 'Option N: ...'
+        match = re.match(
+            r"\s*option\s*(\d+)(?:\s*[:\.\)\-]|$)", response, re.IGNORECASE
+        )
+        if match:
+            option_id = int(match.group(1))
+            if 1 <= option_id <= len(options):
+                return option_id
+
+        # 3) Full option line parse (captures trailing text too)
+        match = _OPTION_LINE_PATTERN.match(response)
+        if match:
+            option_id = int(match.group(1))
+            if 1 <= option_id <= len(options):
+                return option_id
+            matched = GameTheoryCompletionOptionIdDataset._match_option(
+                match.group(2), options
+            )
+            if matched is not None:
+                return matched
+
+        # 4) Plain option text (possibly truncated)
+        return GameTheoryCompletionOptionIdDataset._match_option(response, options)
+
+
+__all__ = ["GameTheoryDataset", "GameTheoryCompletionOptionIdDataset"]

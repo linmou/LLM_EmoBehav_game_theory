@@ -2,6 +2,7 @@ from typing import Union
 
 from constants import GameNames
 from games.battle_of_sexes import BattleOfSexesDecision, BattleOfSexesScenario
+from games.beauty_contest import BeautyContestDecision, BeautyContestScenario
 from games.duopolistic_competition import (
     DuopolisticCompetitionDecision,
     DuopolisticCompetitionScenario,
@@ -21,6 +22,7 @@ from games.ultimatum_game import (
     UltimatumGameResponderScenario,
 )
 from games.wait_go_game import WaitGoDecision, WaitGoScenario
+from games.sealed_auction import SealedAuctionDecision, SealedAuctionScenario
 
 # data_path_format = "groupchat/scenarios/{}_all_data_samples.json"  # data path is json containing all data samples
 data_path_format = (
@@ -72,10 +74,33 @@ GAME_CONFIGS = {
         "payoff_matrix": ALL_GAME_PAYOFF[GameNames.ESCALATION_GAME],
         "data_path": data_path_format.format(GameNames.ESCALATION_GAME.value),
     },
+    GameNames.BEAUTY_CONTEST: {
+        "game_name": GameNames.BEAUTY_CONTEST.value,
+        "scenario_class": BeautyContestScenario,
+        "decision_class": BeautyContestDecision,
+        "payoff_matrix": dict(),
+        "data_path": data_path_format.format(GameNames.BEAUTY_CONTEST.value),
+    },
+    GameNames.SEALED_AUCTION: {
+        "game_name": GameNames.SEALED_AUCTION.value,
+        "scenario_class": SealedAuctionScenario,
+        "decision_class": SealedAuctionDecision,
+        "payoff_matrix": dict(),
+        "data_path": data_path_format.format(GameNames.SEALED_AUCTION.value),
+    },
+    GameNames.DIPLOMACY_ESCALATION_GAME: {
+        "game_name": GameNames.DIPLOMACY_ESCALATION_GAME.value,
+        "scenario_class": EscalationGameScenario,
+        "decision_class": EscalationGameDecision,
+        "payoff_matrix": ALL_GAME_PAYOFF[GameNames.ESCALATION_GAME],
+        "data_path": "data_creation/scenario_creation/langgraph_creation/diplomacy_Escalation_Game_all_data_samples.json",
+        "previous_actions_length": 0,
+    },
     GameNames.TRUST_GAME_TRUSTOR: {
         "game_name": GameNames.TRUST_GAME_TRUSTOR.value,
         "scenario_class": TrustGameTrustorScenario,
         "decision_class": TrustGameDecision,
+        "previous_actions_length": 0, 
         "payoff_matrix": dict(),
         "data_path": data_path_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
         "data_folder": data_folder_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
@@ -84,6 +109,7 @@ GAME_CONFIGS = {
         "game_name": GameNames.TRUST_GAME_TRUSTEE.value,
         "scenario_class": TrustGameTrusteeScenario,
         "decision_class": TrustGameDecision,
+        "previous_actions_length": 1, 
         "payoff_matrix": dict(),
         "data_path": data_path_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
         "data_folder": data_folder_format.format(GameNames.TRUST_GAME_TRUSTOR.value),

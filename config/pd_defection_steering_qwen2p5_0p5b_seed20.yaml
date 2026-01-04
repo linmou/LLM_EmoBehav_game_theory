@@ -1,0 +1,66 @@
+experiment_name: "pd_defection_steering_qwen2p5_0p5b_seed20"
+description: "Prisoners Dilemma: intervene with precomputed PD defection layer vectors (seed=20) on game_theory_decision benchmark."
+version: "1.0.0"
+
+models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+
+# Steering-vector mode expects exactly ONE label here.
+emotions:
+  - "pd_defection"
+
+intensities:
+  - 0.5
+  - 1.0
+  - 1.5
+
+benchmarks:
+  - name: "game_theory_decision"
+    task_type: "Prisoners_Dilemma"
+    enable_auto_truncation: false
+    truncation_strategy: "right"
+    preserve_ratio: 1.0
+    sample_limit: null
+    augmentation_config:
+      shuffle_options: true
+      behavior_ratio: 20
+    llm_eval_config: null
+
+repe_eng_config:
+  # Use vLLM RepControl hook + apply vectors as "reading_vec"
+  control_method: "reading_vec"
+  block_name: "decoder_block"
+  # Load precomputed per-layer PD defection vectors (seed=20).
+  steering_vector_dir: "auto_experiments/task_similarity/results/steering_vectors/Qwen2.5-0.5B-Instruct/20251202_000855/seed_20/layer_vectors"
+
+loading_config:
+  gpu_memory_utilization: 0.9
+  tensor_parallel_size: null
+  max_model_len: 8192
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 1
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+generation_config:
+  temperature: 0.1
+  max_new_tokens: 200
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 64
+max_evaluation_workers: 2
+pipeline_queue_size: 2
+repeat_runs: 1
+
+output_dir: "results_task_similarity/pd_defection_steering"
+sanity_check: false

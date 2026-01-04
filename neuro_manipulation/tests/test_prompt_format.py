@@ -499,4 +499,63 @@ class TestPromptFormatCompatibility(unittest.TestCase):
         self.assertFalse(RWKVsFormat.name_pattern("llama-2-7b"))
 
 if __name__ == "__main__":
-    unittest.main() 
+    unittest.main()
+
+
+class TestPromptFormatFallbackRegression(unittest.TestCase):
+    # Tests for neuro_manipulation/prompt_formats.py; ensure system prompt survives fallback when chat template drops it.
+
+    def test_llama3_system_prompt_not_lost_when_template_drops_system(self):
+        """I am starting with a failing test. This is the Red phase."""
+
+        class _TokenizerDropsSystem:
+            name_or_path = "/data/home/jjl7137/huggingface_models/meta-llama/Llama-3.2-1B-Instruct"
+
+            def apply_chat_template(
+                self,
+                chat,
+                tokenize=False,
+                add_generation_prompt=True,
+                encoding_strategy=None,
+            ):
+                # Simulate HF template that ignores the system message and only renders the user.
+                user_content = ""
+                for msg in chat:
+                    if msg.get("role") == "user":
+                        user_content = msg.get("content", "")
+                        break
+                return (
+                    "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n"
+                    "Cutting Knowledge Date: December 2023\nToday Date: 23 Dec 2025\n\n"
+                    "<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n"
+                    + user_content
+                    + "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+                )
+
+        pf = PromptFormat(_TokenizerDropsSystem())
+        system_prompt = "Scenario: RISKY_SYSTEM_SHOULD_SURVIVE"
+        user_messages = ["Please provide your answer."]
+        prompt = pf.build(system_prompt, user_messages, enable_thinking=False)
+
+        # Regression assertion: even if apply_chat_template drops system content,
+        # PromptFormat should fall back and keep the system prompt in the final prompt.
+        self.assertIn(system_prompt, prompt)
+
+    def test_llama3_base_model_without_template_uses_llama3_format(self):
+        # neuro_manipulation/tests/test_prompt_format.py: ensure Llama3 base model names without chat templates still resolve to Llama3InstFormat.
+        class _TokenizerNoTemplate:
+            name_or_path = "meta-llama/Llama-3.2-1B"
+
+            def apply_chat_template(self, *args, **kwargs):
+                raise ValueError(
+                    "Cannot use chat template functions because tokenizer.chat_template is not set and no template argument was passed!"
+                )
+
+        model_name = _TokenizerNoTemplate.name_or_path
+        self.assertIs(ManualPromptFormat.get(model_name), Llama3InstFormat)
+
+        prompt_format = PromptFormat(_TokenizerNoTemplate())
+        result = prompt_format.build("You are a helpful assistant.", ["Hello?"])
+
+        self.assertIn("<|begin_of_text|>", result)
+        self.assertIn("Hello?", result)

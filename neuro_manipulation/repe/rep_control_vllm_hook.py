@@ -1,6 +1,7 @@
 import logging
 import sys
 import traceback
+from typing import Any, Dict, Optional
 
 import numpy as np
 import torch
@@ -17,7 +18,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-_CAPTURE_STORE = {}
+def _to_rpc_serializable_tensor_payload(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        return {k: _to_rpc_serializable_tensor_payload(v) for k, v in value.items()}
+    if isinstance(value, torch.Tensor):
+        return value.detach().cpu().tolist()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, (list, tuple)):
+        return [_to_rpc_serializable_tensor_payload(v) for v in value]
+    return value
 
 
 # --- Hook Function ---
@@ -32,12 +44,12 @@ def hook_fn_rep_control(module, args, output):
         return output  # No state set, do nothing
 
     state = module._rep_control_state
-    controller = state.get("controller")
     mask = state.get("mask")
     token_pos = state.get("token_pos")
     normalize = state.get("normalize", False)
     operator_name = state.get("operator_name")
     tp_size = state.get("tp_size", 1)
+    tp_rank = state.get("tp_rank")
     full_controller = state.get("controller")
 
     if full_controller is None or operator_name is None:
@@ -77,39 +89,54 @@ def hook_fn_rep_control(module, args, output):
             )
             return output
 
+        if isinstance(full_controller, (list, tuple, np.ndarray)):
+            full_controller = torch.as_tensor(full_controller)
+
+        modified_is_packed = modified.ndim == 2
+        modified_is_batched = modified.ndim == 3
+        if not (modified_is_packed or modified_is_batched):
+            logger.error(
+                f"Rank {rank} - Unsupported activation tensor shape for RepControl: {modified.shape}"
+            )
+            return output
+
         logger.debug(
-            f"Rank {rank} - Applying RepControl hook on {module.__class__.__name__}. Full Controller shape: {full_controller.shape}, Modified shape: {modified.shape}, TP size: {tp_size}"
+            f"Rank {rank} - Applying RepControl hook on {module.__class__.__name__}. Full Controller shape: {getattr(full_controller, 'shape', None)}, Modified shape: {modified.shape}, TP size: {tp_size}"
         )
 
         # --- Apply modification logic (Tensor Parallel Aware) ---
         norm_pre = torch.norm(modified, dim=-1, keepdim=True) if normalize else None
 
         # Ensure mask is on the correct device and dtype
-        if mask is not None and isinstance(mask, torch.Tensor):
-            mask = mask.to(modified.device, dtype=modified.dtype)
-        elif mask is None and "position_ids" in state.get(
-            "kwargs", {}
-        ):  # Check if kwargs were passed
-            # Basic mask handling if position_ids available (less robust than original)
-            pos = state["kwargs"]["position_ids"]
-            zero_indices = (pos == 0).cumsum(1).argmax(1, keepdim=True)
-            col_indices = torch.arange(pos.size(1), device=pos.device).unsqueeze(0)
-            target_shape = modified.shape
-            mask = (
-                (col_indices >= zero_indices)
-                .float()
-                .reshape(target_shape[0], target_shape[1], 1)
-            )
-            mask = mask.to(modified.dtype)
-            logger.debug(f"Rank {rank} - Generated mask from position_ids.")
+        if mask is None:
+            if "position_ids" in state.get("kwargs", {}):  # Check if kwargs were passed
+                # Basic mask handling if position_ids available (less robust than original)
+                pos = state["kwargs"]["position_ids"]
+                zero_indices = (pos == 0).cumsum(1).argmax(1, keepdim=True)
+                col_indices = torch.arange(pos.size(1), device=pos.device).unsqueeze(0)
+                target_shape = modified.shape
+                mask = (
+                    (col_indices >= zero_indices)
+                    .float()
+                    .reshape(target_shape[0], target_shape[1], 1)
+                )
+                mask = mask.to(modified.dtype)
+                logger.debug(f"Rank {rank} - Generated mask from position_ids.")
+            else:
+                mask = 1.0  # Default mask
         else:
-            mask = 1.0  # Default mask
+            if isinstance(mask, (list, tuple, np.ndarray)):
+                mask = torch.as_tensor(mask)
+            if isinstance(mask, torch.Tensor):
+                mask = mask.to(modified.device, dtype=modified.dtype)
 
         # --- Conditional Tensor Parallel Slicing Logic --- Start
         full_controller = full_controller.to(modified.device, dtype=modified.dtype)
         controller_ready = None  # Initialize
         modified_dim = modified.shape[-1]
         full_dim = full_controller.shape[-1]
+        seq_len = modified.shape[0] if modified_is_packed else modified.shape[1]
+        batch_size = 1 if modified_is_packed else modified.shape[0]
 
         logger.debug(
             f"Rank {rank} - Comparing shapes: modified_dim={modified_dim}, full_dim={full_dim}, tp_size={tp_size}"
@@ -129,14 +156,20 @@ def hook_fn_rep_control(module, args, output):
             logger.debug(
                 f"Rank {rank} - Output shape ({modified_dim}) matches sharded dim ({full_dim // tp_size}). Slicing controller."
             )
+            effective_rank = tp_rank if isinstance(tp_rank, int) else rank
+            if not isinstance(effective_rank, int):
+                logger.error(
+                    f"Rank {rank} - Cannot slice controller for TP: no integer rank available (tp_rank={tp_rank})."
+                )
+                return output
             if full_dim % tp_size != 0:
                 logger.error(
                     f"Rank {rank} - Full hidden dimension {full_dim} is not divisible by TP size {tp_size}. Cannot slice controller accurately."
                 )
                 return output  # Cannot proceed reliably
             chunk_size = full_dim // tp_size
-            start_idx = rank * chunk_size
-            end_idx = (rank + 1) * chunk_size
+            start_idx = effective_rank * chunk_size
+            end_idx = (effective_rank + 1) * chunk_size
             controller_slice = full_controller[..., start_idx:end_idx]
             logger.debug(
                 f"Rank {rank} - Sliced controller: indices [{start_idx}:{end_idx}], shape {controller_slice.shape}"
@@ -152,22 +185,21 @@ def hook_fn_rep_control(module, args, output):
         if len(controller_slice.shape) == 1:
             controller_ready = controller_slice.unsqueeze(0)
         elif len(controller_slice.shape) == 2:
-            if controller_slice.shape[0] == 1:
-                # If it's already (1, hidden_dim), use it directly
+            if controller_slice.shape[0] in (1, seq_len):
                 controller_ready = controller_slice
             else:
                 logger.warning(
-                    f"Rank {rank} - Controller has unexpected 2D shape: {controller_slice.shape}. First dimension should be 1."
+                    f"Rank {rank} - Controller has unexpected 2D shape: {controller_slice.shape} for seq_len={seq_len}."
                 )
                 return output
         elif len(controller_slice.shape) == 3:
             if controller_slice.shape[1] == 1:
-                controller_ready = controller_slice.expand(-1, modified.shape[0], -1)
-            elif controller_slice.shape[1] == modified.shape[0]:
+                controller_ready = controller_slice.expand(-1, seq_len, -1)
+            elif controller_slice.shape[1] == seq_len:
                 controller_ready = controller_slice
             else:
                 logger.warning(
-                    f"Rank {rank} - Controller sequence length ({controller_slice.shape[1]}) does not match activation sequence length ({modified.shape[0]}) and is not 1. Trying broadcast."
+                    f"Rank {rank} - Controller sequence length ({controller_slice.shape[1]}) does not match activation sequence length ({seq_len}) and is not 1. Trying broadcast."
                 )
                 controller_ready = controller_slice  # Hope broadcasting works
         else:
@@ -181,37 +213,90 @@ def hook_fn_rep_control(module, args, output):
         )
         # --- Conditional Tensor Parallel Slicing Logic --- End
 
+        # Make controller token-indexable for the observed activation layout.
+        if modified_is_packed:
+            if controller_ready.ndim == 2 and controller_ready.shape[0] == 1:
+                controller_ready = controller_ready.expand(seq_len, -1)
+            elif controller_ready.ndim == 3:
+                if controller_ready.shape[0] == 1 and controller_ready.shape[1] == seq_len:
+                    controller_ready = controller_ready[0]
+                else:
+                    logger.error(
+                        f"Rank {rank} - Cannot align controller to packed activations: controller_ready={controller_ready.shape}, modified={modified.shape}"
+                    )
+                    return output
+        else:
+            if controller_ready.ndim == 2:
+                if controller_ready.shape[0] == 1:
+                    controller_ready = controller_ready.expand(seq_len, -1)
+                if controller_ready.shape[0] == seq_len:
+                    controller_ready = controller_ready.unsqueeze(0).expand(batch_size, -1, -1)
+            elif controller_ready.ndim == 3:
+                if controller_ready.shape[0] == 1:
+                    controller_ready = controller_ready.expand(batch_size, -1, -1)
+                elif controller_ready.shape[0] != batch_size:
+                    logger.error(
+                        f"Rank {rank} - Cannot align controller to batched activations: controller_ready={controller_ready.shape}, modified={modified.shape}"
+                    )
+                    return output
+
         controller_masked = controller_ready * mask
 
-        if isinstance(token_pos, int):
-            modified[:, token_pos] = operator_fn(
-                modified[:, token_pos], controller_masked[:, token_pos]
-            )
-        elif isinstance(token_pos, (list, tuple, np.ndarray)):
-            # Ensure token_pos is usable as index
-            if isinstance(token_pos, np.ndarray):
-                token_pos = token_pos.tolist()
-            modified[:, token_pos] = operator_fn(
-                modified[:, token_pos], controller_masked[:, token_pos]
-            )
-        elif isinstance(token_pos, str):
-            len_token = (
-                controller_ready.shape[1] if len(controller_ready.shape) > 1 else 1
-            )
-            if token_pos == "end":
-                modified[:, -len_token:] = operator_fn(
-                    modified[:, -len_token:], controller_masked[:, -len_token:]
+        if modified_is_packed:
+            if isinstance(token_pos, int):
+                modified[token_pos] = operator_fn(
+                    modified[token_pos], controller_masked[token_pos]
                 )
-            elif token_pos == "start":
-                modified[:, :len_token] = operator_fn(
-                    modified[:, :len_token], controller_masked[:, :len_token]
+            elif isinstance(token_pos, (list, tuple, np.ndarray)):
+                if isinstance(token_pos, np.ndarray):
+                    token_pos = token_pos.tolist()
+                modified[token_pos] = operator_fn(
+                    modified[token_pos], controller_masked[token_pos]
                 )
+            elif isinstance(token_pos, str):
+                len_token = controller_ready.shape[0] if controller_ready.ndim > 1 else 1
+                if token_pos == "end":
+                    modified[-len_token:] = operator_fn(
+                        modified[-len_token:], controller_masked[-len_token:]
+                    )
+                elif token_pos == "start":
+                    modified[:len_token] = operator_fn(
+                        modified[:len_token], controller_masked[:len_token]
+                    )
+                else:
+                    logger.error(f"Rank {rank} - Unknown token position string: {token_pos}")
             else:
-                logger.error(
-                    f"Rank {rank} - Unknown token position string: {token_pos}"
+                modified = operator_fn(modified, controller_masked)
+        else:
+            if isinstance(token_pos, int):
+                modified[:, token_pos] = operator_fn(
+                    modified[:, token_pos], controller_masked[:, token_pos]
                 )
-        else:  # Apply to all tokens if token_pos is None or not recognized
-            modified = operator_fn(modified, controller_masked)
+            elif isinstance(token_pos, (list, tuple, np.ndarray)):
+                # Ensure token_pos is usable as index
+                if isinstance(token_pos, np.ndarray):
+                    token_pos = token_pos.tolist()
+                modified[:, token_pos] = operator_fn(
+                    modified[:, token_pos], controller_masked[:, token_pos]
+                )
+            elif isinstance(token_pos, str):
+                len_token = (
+                    controller_ready.shape[1] if len(controller_ready.shape) > 1 else 1
+                )
+                if token_pos == "end":
+                    modified[:, -len_token:] = operator_fn(
+                        modified[:, -len_token:], controller_masked[:, -len_token:]
+                    )
+                elif token_pos == "start":
+                    modified[:, :len_token] = operator_fn(
+                        modified[:, :len_token], controller_masked[:, :len_token]
+                    )
+                else:
+                    logger.error(
+                        f"Rank {rank} - Unknown token position string: {token_pos}"
+                    )
+            else:  # Apply to all tokens if token_pos is None or not recognized
+                modified = operator_fn(modified, controller_masked)
 
         # Apply normalization if requested
         if normalize:
@@ -367,6 +452,13 @@ def _register_hook_on_worker_rpc(worker_self, layer_index, block_name, hook_func
         logger.debug(
             f"RPC: Worker Rank {rank} registering hook {hook_func.__name__} to {target_module.__class__.__name__} (Layer {layer_index}, Block {block_name})"
         )
+        handle_key = (layer_index, block_name, hook_func.__name__)
+        if hasattr(worker_self, "_hook_handles"):
+            existing = worker_self._hook_handles.get(handle_key)
+            if existing is not None:
+                existing_module_id, _existing_handle = existing
+                if existing_module_id == id(target_module):
+                    return True
         handle = target_module.register_forward_hook(hook_func)
 
         if handle:
@@ -375,7 +467,6 @@ def _register_hook_on_worker_rpc(worker_self, layer_index, block_name, hook_func
             # We might need a way to manage multiple handles per module if needed
             if not hasattr(worker_self, "_hook_handles"):
                 worker_self._hook_handles = {}
-            handle_key = (layer_index, block_name, hook_func.__name__)
             # Store handle associated with the specific module instance id to be robust
             worker_self._hook_handles[handle_key] = (id(target_module), handle)
             return True
@@ -411,6 +502,8 @@ def _set_controller_state_on_worker_rpc(worker_self, layer_index, block_name, st
         )
         # --- Add Debug Logging Here --- End
         # Attach state directly to the module instance
+        if "tp_rank" not in state and isinstance(worker_self.rank, int):
+            state["tp_rank"] = worker_self.rank
         target_module._rep_control_state = state
         return True
     except Exception as e:
@@ -503,9 +596,7 @@ class RepControlVLLMHook:
         self.layers = layers
         self.block_name = block_name
         self.control_method = control_method
-        self.hook_handles = (
-            {}
-        )  # Store handles locally if needed, but primary management is RPC
+        self.hook_handles: Dict[Any, Any] = {}
         self.tp_size = tensor_parallel_size  # Use the passed value
         self._hook_fn = hook_fn
 
@@ -540,12 +631,17 @@ class RepControlVLLMHook:
                 f"Registering hook for layer {layer_id}, block '{block_name}'..."
             )
             rpc_results = self.model.llm_engine.collective_rpc(
+<<<<<<< HEAD
                 _register_hook_on_worker_rpc,
                 args=(
                     layer_id,
                     self.block_name,
                     self._hook_fn,
                 ),  # Pass hook fn directly
+=======
+                "_nm_repcontrol_register_hook",
+                args=(layer_id, self.block_name),
+>>>>>>> main
             )
             logger.info(
                 f"RPC hook registration results for layer {layer_id}: {rpc_results}"
@@ -572,7 +668,7 @@ class RepControlVLLMHook:
     def __call__(
         self,
         text_inputs: list[str],
-        activations: dict = None,  # Dict mapping layer_id to activation tensor
+        activations: Optional[Dict[int, torch.Tensor]] = None,  # Dict mapping layer_id to activation tensor
         token_pos=None,
         masks=None,  # Can be a single mask or dict mapping layer_id to mask
         normalize=False,
@@ -598,8 +694,8 @@ class RepControlVLLMHook:
         Returns:
             List of vLLM RequestOutput objects.
         """
-        control_active = activations is not None and len(activations) > 0
-        operator_fn = self._get_operator_fn(operator)  # Get the actual function
+        activations = activations or {}
+        control_active = len(activations) > 0
 
         try:
             # 1. Set controller state via RPC if activations are provided
@@ -620,12 +716,12 @@ class RepControlVLLMHook:
                         masks.get(layer_id) if isinstance(masks, dict) else masks
                     )
                     state = {
-                        "controller": activation_tensor,
-                        "mask": layer_mask,
-                        "token_pos": token_pos,
+                        "controller": _to_rpc_serializable_tensor_payload(activation_tensor),
+                        "mask": _to_rpc_serializable_tensor_payload(layer_mask),
+                        "token_pos": _to_rpc_serializable_tensor_payload(token_pos),
                         "normalize": normalize,
                         "operator_name": operator,
-                        "kwargs": kwargs,  # Pass generation kwargs in case hook needs them (e.g., position_ids)
+                        "kwargs": _to_rpc_serializable_tensor_payload(kwargs),  # Must be RPC-serializable
                         "tp_size": self.tp_size,  # Use stored tp_size
                     }
                     # Verify the tp_size being sent
@@ -635,7 +731,7 @@ class RepControlVLLMHook:
 
                     # Send state via RPC
                     rpc_results = self.model.llm_engine.collective_rpc(
-                        _set_controller_state_on_worker_rpc,
+                        "_nm_repcontrol_set_state",
                         args=(layer_id, self.block_name, state),
                     )
                     set_results.append(
@@ -689,7 +785,7 @@ class RepControlVLLMHook:
                         continue  # Skip layers not managed by this instance
 
                     rpc_results = self.model.llm_engine.collective_rpc(
-                        _reset_controller_state_on_worker_rpc,
+                        "_nm_repcontrol_reset_state",
                         args=(layer_id, self.block_name),
                     )
                     reset_results.append(all(rpc_results))

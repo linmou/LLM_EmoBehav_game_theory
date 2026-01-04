@@ -1,4 +1,5 @@
 # RepControlVLLMHook
+<!-- Updated: 2025-12-20 | Commit: a5cad74 -->
 
 This module provides the `RepControlVLLMHook` class, designed to apply representation control techniques (specifically `reading_vec` for now) to models running within the vLLM framework by leveraging forward hooks and Remote Procedure Calls (RPC).
 
@@ -51,6 +52,64 @@ Instead of wrapping model layers (as in `rep_control_reading_vec.py`), this appr
 *   **Hook Limitations**: Hooks might interact unexpectedly with vLLM's internal optimizations or execution graph. `enforce_eager=True` might be necessary when initializing the vLLM `LLM` object.
 *   **Hook Removal**: Properly removing hooks registered via RPC requires careful handle management, which is currently implemented conceptually but might need refinement.
 
+## vLLM v0.11+ Compatibility Notes (Important)
+
+vLLM v0.11 tightened multiprocessing and RPC serialization rules. The RepControl hook workflow is designed to be compatible and safe by default.
+
+### 1) RPC must use method names (no Python callables)
+
+vLLM v0.11+ disallows serializing Python callables over `collective_rpc` by default. This hook therefore uses string RPC method names:
+
+- `_nm_repcontrol_register_hook`
+- `_nm_repcontrol_set_state`
+- `_nm_repcontrol_reset_state`
+
+These methods are implemented on workers via the vLLM worker extension class:
+
+- `neuro_manipulation/repe/vllm_worker_extension.py` → `NMRepControlWorkerExtension`
+
+### 2) Worker extension class must be importable in vLLM worker processes
+
+vLLM spawns worker processes that may not have the repo root on `sys.path`.
+The loader ensures the repo root is injected into `PYTHONPATH` before creating the vLLM `LLM`, so workers can import:
+
+- `neuro_manipulation.repe.vllm_worker_extension.NMRepControlWorkerExtension`
+
+### 3) Controller payload must be RPC-serializable
+
+Do not send `torch.Tensor` directly in the RPC state. The hook converts tensors to Python lists before RPC, and workers convert lists back to tensors in the forward hook.
+
+This avoids failures like:
+- `list object has no attribute shape`
+- `ValueError: too many dimensions 'str'`
+
+### 4) FlashAttention ABI issues (torch upgrade)
+
+If you see an import error like:
+
+`flash_attn_2_cuda...so: undefined symbol ...`
+
+it means the installed `flash-attn` binary is not compatible with your current `torch` build. You can force vLLM to use a different attention backend without touching the rest of the hook workflow:
+
+- Set `VLLM_ATTENTION_BACKEND=TRITON_ATTN`, or
+- Provide `attention_backend: "TRITON_ATTN"` via vLLM kwargs in your experiment config.
+
+## Minimal YAML knobs (EmotionExperimentEngine)
+
+When using `emotion_experiment_engine`, vLLM kwargs are passed via `loading_config.additional_vllm_kwargs`.
+
+Example:
+
+```yaml
+loading_config:
+  gpu_memory_utilization: 0.85
+  max_model_len: 2048
+  dtype: "bfloat16"
+  additional_vllm_kwargs:
+    max_num_seqs: 8
+    attention_backend: "TRITON_ATTN"
+```
+
 ## Usage
 
-See the `if __name__ == "__main__":` block in `rep_control_vllm_hook.py` for an example demonstrating initialization, baseline generation, and controlled generation. 
+See the `if __name__ == "__main__":` block in `rep_control_vllm_hook.py` for an example demonstrating initialization, baseline generation, and controlled generation.  

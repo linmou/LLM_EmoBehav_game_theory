@@ -585,10 +585,7 @@ from typing import List
 
 import openai
 
-try:
-    from api_configs import OAI_CONFIG  # type: ignore
-except ModuleNotFoundError:
-    OAI_CONFIG = None  # type: ignore
+from api_configs import OAI_CONFIG, GEMINI_CONFIG
 
 # Global client to prevent file descriptor leaks
 _global_client = None
@@ -606,20 +603,28 @@ def _get_openai_client():
     return _global_client
 
 
-_global_client = None
+def _extract_json_text(raw: str) -> str:
+    """
+    Extract a JSON object from an LLM string response.
 
+    Supports plain JSON and fenced blocks like:
+      ```json
+      {...}
+      ```
+    """
+    text = (raw or "").strip()
 
-def _get_openai_client():
-    """Get or create global OpenAI client to prevent file descriptor leaks"""
-    global _global_client
-    if OAI_CONFIG is None:
-        raise RuntimeError(
-            "Missing `api_configs.py` (OAI_CONFIG). LLM-based evaluation is unavailable."
-        )
-    if _global_client is None:
-        _global_client = openai.OpenAI(**OAI_CONFIG)
-    return _global_client
+    # Fast-path: looks like raw JSON already
+    if text.startswith("{") and text.endswith("}"):
+        return text
 
+    # Try to pull out the first {...} block
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if match:
+        return match.group(0).strip()
+
+    # Fall back to original text; json.loads will raise a helpful error
+    return text
 
 
 def llm_evaluate_response(
@@ -628,10 +633,49 @@ def llm_evaluate_response(
     llm_eval_config: dict[str, Any],
 ) -> dict[str, Any]:
     """
-    LLM evaluation with system prompt and query using global client.
+    LLM-based evaluation helper.
+
+    - Default client: OpenAI (`client` key omitted or not "gemini")
+    - Gemini client: set `client: "gemini"` in llm_eval_config
     """
 
+    client_name = str(llm_eval_config.get("client", "openai")).lower()
+
+    # Gemini path
+    if client_name == "gemini":
+        try:
+            import google.generativeai as genai  # type: ignore[import-not-found]
+        except Exception as exc:
+            raise RuntimeError(
+                "Gemini client requested for LLM evaluation, but "
+                "google.generativeai is not available"
+            ) from exc
+
+        # Configure once per process; idempotent if called repeatedly
+        genai.configure(api_key=GEMINI_CONFIG.get("api_key"))
+
+        model_name = str(llm_eval_config.get("model") or "gemini-pro")
+        model = genai.GenerativeModel(model_name)
+
+        # Simple combined prompt; tests only verify that generate_content is called
+        prompt = f"{system_prompt}\n\n{query}"
+
+        try:
+            response_obj = model.generate_content(prompt)
+            raw_text = getattr(response_obj, "text", "")
+            json_text = _extract_json_text(raw_text)
+            return json.loads(json_text)
+        except Exception as e:
+            raise RuntimeError(
+                f"LLM evaluation failed for query '{query[:50]}...' (gemini): {e}"
+            ) from e
+
+    # OpenAI default path
     client = _get_openai_client()
+
+    # Do not forward internal routing keys like "client"
+    openai_kwargs = dict(llm_eval_config)
+    openai_kwargs.pop("client", None)
 
     try:
         response_obj = client.chat.completions.create(
@@ -639,15 +683,18 @@ def llm_evaluate_response(
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query},
             ],
-            **llm_eval_config,
+            **openai_kwargs,
             response_format={"type": "json_object"},
         )
 
         result = response_obj.choices[0].message.content
-        return json.loads(result)
+        json_text = _extract_json_text(result)
+        return json.loads(json_text)
 
     except Exception as e:
-        raise RuntimeError(f"LLM evaluation failed for query '{query[:50]}...': {e}")
+        raise RuntimeError(
+            f"LLM evaluation failed for query '{query[:50]}...' (openai): {e}"
+        ) from e
 
 
 # ============================================================================

@@ -140,7 +140,10 @@ def evaluate_saved_run(run_dir: Path | str, max_workers: int = 8) -> pd.DataFram
 
     total_items = len(result_records)
     if total_items == 0:
-        LOGGER.info("No raw rows found in %s; skipping evaluation", run_path)
+        raise ValueError(
+            "No raw rows found in run directory; cannot evaluate. "
+            f"Check {run_path}/raw_results.json was written and is non-empty."
+        )
 
     chunk_size_attr = getattr(dataset, "offline_eval_chunk_size", None)
     if isinstance(chunk_size_attr, int) and chunk_size_attr > 0:

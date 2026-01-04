@@ -82,6 +82,12 @@ class GameNames(Enum):
         SymmetryType.SYMMETRIC,
     )
     STAG_HUNT = ("Stag_Hunt", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
+    BEAUTY_CONTEST = ("Beauty_Contest", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
+    SEALED_AUCTION = (
+        "Sealed_Auction",
+        GameType.SIMULTANEOUS,
+        SymmetryType.SYMMETRIC,
+    )
 
     # Sequential Games
     ESCALATION_GAME = ("Escalation_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)
@@ -89,6 +95,11 @@ class GameNames(Enum):
     HOT_COLD_GAME = ("Hot_Cold_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)
     DRACO_GAME = ("Draco_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)
     TRI_GAME = ("Tri_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)
+    DIPLOMACY_ESCALATION_GAME = (
+        "Diplomacy_Escalation_Game",
+        GameType.SEQUENTIAL,
+        SymmetryType.SYMMETRIC,
+    )
 
     # Asymmetric Games
     TRUST_GAME_TRUSTOR = (

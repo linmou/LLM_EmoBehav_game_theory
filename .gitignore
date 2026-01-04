@@ -1,8 +1,10 @@
+.DS_Store
 .env
 *.pyc
 OAI_CONFIG_LIST
 api_configs.py
 results/*
+results.bk/
 *.csv
 neuro_manipulation/representation_storage
 .cache/*
@@ -26,6 +28,9 @@ results.bk
 # Track only this subset under data
 !data/emotion_scales/
 !data/emotion_scales/**
+!data/diplomacy/
+!data/diplomacy/**
+!auto_experiments/diplomacy_emotion_effects/*.csv
 
 # Editor swap files
 *.swp

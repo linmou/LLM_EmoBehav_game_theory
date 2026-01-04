@@ -100,3 +100,59 @@ The `RepReadingPipeline` provides the mechanism to access the model's hidden sta
     *   Saves the collected readers and metadata to a file if `save_path` is provided.
 
 This process yields a set of vectors, one per layer per emotion, representing the direction in activation space associated with that emotion. These directions can then be used for analysis or manipulation of model behavior. 
+
+## Visualize Stored RepE Directions (2D)
+
+If you already have cached emotion readers saved under `neuro_manipulation/representation_storage/` (the `emotion_rep_reader_<hash>.pkl` files created/loaded by `neuro_manipulation/model_utils.py:load_emotion_readers`), you can visualize the **stored per-layer direction vectors** in 2D without recomputing them.
+
+The script:
+- Infers the **exact RepE cache hash** the `emotion_experiment_engine` runner would use (from your series config + RepE defaults/overrides).
+- Loads the cached `emotion_rep_reader_<hash>.pkl` (and prints the exact file used).
+- Projects all `(emotion, layer, component)` direction vectors to 2D with PCA and saves a plot + JSONL points.
+
+Run:
+```bash
+# Make sure conda env llm_fresh is active
+python result_analysis/repe/plot_emotion_rep_directions_2d.py \
+  --config config/new_game_theory_config.yaml
+```
+
+If the exact hash-derived cache file is missing (e.g., your stored readers were generated with different RepE defaults), you can let it scan `neuro_manipulation/representation_storage/` and pick the newest cached reader per model:
+```bash
+python result_analysis/repe/plot_emotion_rep_directions_2d.py \
+  --config config/new_game_theory_config.yaml \
+  --fallback-scan
+```
+
+Outputs (default):
+- Plots: `neuro_manipulation/representation_storage/<model>_emotion_rep_directions_<method>2d.png`
+- Points: `neuro_manipulation/representation_storage/<model>_emotion_rep_directions_<method>2d.jsonl`
+
+### Alternative 2D reducers
+
+Even though the stored RepE vectors may themselves come from PCA (e.g., `PCARepReader` stores PCA components per layer), they are still high-dimensional vectors (hidden size). You still need a separate 2D reduction step to visualize them.
+
+Supported `--method` values:
+- `pca` (default): fast and deterministic
+- `tsne`: non-linear; requires choosing a valid `--perplexity`
+- `umap`: non-linear; requires `umap-learn` installed
+
+Extra knobs:
+- `--metric` (for `tsne`/`umap`): try `cosine` for direction vectors
+- `--normalize l2`: L2-normalize vectors before 2D reduction
+- `--model-filter Qwen2.5`: only plot a subset of models
+- `--tag <name>`: add a suffix to output filenames to avoid overwriting
+
+Examples:
+```bash
+python result_analysis/repe/plot_emotion_rep_directions_2d.py \
+  --config config/new_game_theory_config.yaml \
+  --fallback-scan \
+  --method tsne --metric cosine --normalize l2 --perplexity 10 --seed 0 --tag tsne_cos_l2_p10
+```
+```bash
+python result_analysis/repe/plot_emotion_rep_directions_2d.py \
+  --config config/new_game_theory_config.yaml \
+  --fallback-scan \
+  --method umap --metric cosine --normalize l2 --n-neighbors 15 --min-dist 0.0 --seed 0 --tag umap_cos_l2_n15_d0
+```

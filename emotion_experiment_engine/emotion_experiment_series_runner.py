@@ -23,15 +23,30 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
-try:
-    # Optional: only needed when downloading remote models
-    from transformers import AutoConfig  # type: ignore
-except Exception:
-    AutoConfig = None  # Will be checked before use
+# Optional: only needed when downloading remote models.
+# Importing transformers can transitively import torch/OpenMP, which may SIGABRT
+# in sandboxed environments (e.g., missing shared memory). Defer to runtime.
+AutoConfig = None  # type: ignore
 
 # Defer heavy imports (torch/vLLM) to runtime when needed
 
-from .data_models import BenchmarkConfig, ExperimentConfig, VLLMLoadingConfig
+from .data_models import (
+    DEFAULT_VLLM_MAX_MODEL_LEN,
+    DEFAULT_VLLM_MAX_NUM_SEQS_CAP,
+    BenchmarkConfig,
+    ExperimentConfig,
+    VLLMLoadingConfig,
+)
+
+
+def _ensure_openmp_shm_compat() -> None:
+    """
+    Avoid hard crashes from Intel OpenMP trying to use SHM in constrained envs.
+
+    This can otherwise abort the process with:
+      OMP: Error #179: Function Can't open SHM2 failed
+    """
+    os.environ.setdefault("KMP_USE_SHM", "0")
 
 
 class ExperimentStatus:
@@ -444,6 +459,7 @@ class MemoryExperimentSeriesRunner:
 
     def _load_config(self) -> None:
         """Load configuration from YAML file"""
+        assert self.config_path is not None
         with open(self.config_path, "r") as f:
             self.base_config = yaml.safe_load(f)
 
@@ -534,18 +550,15 @@ class MemoryExperimentSeriesRunner:
             os.makedirs(os.path.dirname(alt_model_path), exist_ok=True)
 
             # First verify the model exists on HuggingFace (if transformers available)
-            if AutoConfig is not None:
-                try:
-                    AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-                except Exception as e:
-                    self.logger.error(
-                        f"Model {model_name} not found on HuggingFace: {str(e)}"
-                    )
-                    return None
-            else:
-                self.logger.warning(
-                    "transformers not available; skipping remote existence check"
+            try:
+                from transformers import AutoConfig as _AutoConfig  # type: ignore
+
+                _AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+            except Exception as e:
+                self.logger.error(
+                    f"Model {model_name} not found on HuggingFace or transformers unavailable: {str(e)}"
                 )
+                return None
 
             # Download model using huggingface-cli command
             self.logger.info(
@@ -675,13 +688,19 @@ class MemoryExperimentSeriesRunner:
             llm_eval_config=benchmark_config.get("llm_eval_config"),
         )
 
+        batch_size = int(self.base_config.get("batch_size", 4))
+
         # Create VLLMLoadingConfig directly from base config
         loading_cfg = self.base_config["loading_config"]
+        additional_vllm_kwargs = dict(loading_cfg.get("additional_vllm_kwargs", {}) or {})
+        additional_vllm_kwargs.setdefault(
+            "max_num_seqs", min(batch_size, DEFAULT_VLLM_MAX_NUM_SEQS_CAP)
+        )
         loading_config = VLLMLoadingConfig(
             model_path=loading_cfg.get("model_path", model_name),
             gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
             tensor_parallel_size=loading_cfg.get("tensor_parallel_size"),
-            max_model_len=loading_cfg.get("max_model_len", 32768),
+            max_model_len=loading_cfg.get("max_model_len", DEFAULT_VLLM_MAX_MODEL_LEN),
             enforce_eager=loading_cfg.get("enforce_eager", True),
             quantization=loading_cfg.get("quantization"),
             trust_remote_code=loading_cfg.get("trust_remote_code", True),
@@ -690,7 +709,7 @@ class MemoryExperimentSeriesRunner:
             disable_custom_all_reduce=loading_cfg.get(
                 "disable_custom_all_reduce", False
             ),
-            additional_vllm_kwargs=loading_cfg.get("additional_vllm_kwargs", {}),
+            additional_vllm_kwargs=additional_vllm_kwargs,
         )
 
         defer_eval_flag = bool(self.base_config.get("defer_evaluation", False))
@@ -702,7 +721,7 @@ class MemoryExperimentSeriesRunner:
             intensities=self.base_config["intensities"],
             benchmark=benchmark,
             output_dir=self.base_config.get("output_dir", "results/memory_experiments"),
-            batch_size=self.base_config.get("batch_size", 4),
+            batch_size=batch_size,
             generation_config=self.base_config.get("generation_config"),
             loading_config=loading_config,
             repe_eng_config=self.base_config.get("repe_eng_config"),
@@ -1094,14 +1113,22 @@ class MemoryExperimentSeriesRunner:
         )
 
         # Test creating experiment configurations
+        #
+        # NOTE: Dry-run should catch dataset/schema issues, which are benchmark-specific
+        # (e.g., required scenario fields like previous_offer_level). Those failures are
+        # independent of model choice. For speed and determinism, validate *all* benchmarks
+        # against the first model entry rather than sampling the first 3 benchmark×model pairs.
         self.logger.info("\n🔬 Testing experiment configuration creation...")
-        test_count = min(3, len(benchmarks), len(models))  # Test first 3 combinations
+        if not models:
+            raise ValueError("Configuration must include at least one model")
+        model_name = models[0]
+        self.logger.info(
+            f"🔎 Dry-run validating {len(benchmarks)} benchmark(s) using first model: {model_name}"
+        )
 
-        errors: List[Tuple[int, str]] = []
+        errors: List[Tuple[int, str, str]] = []
 
-        for i, (benchmark_config, model_name) in enumerate(
-            zip(benchmarks[:test_count], models[:test_count])
-        ):
+        for i, benchmark_config in enumerate(benchmarks):
             try:
                 experiment = self.setup_experiment(benchmark_config, model_name)
                 self.logger.info(
@@ -1150,12 +1177,14 @@ class MemoryExperimentSeriesRunner:
                             # Fallback for unexpected structure
                             self.logger.info(f"         Unexpected item structure: {first_item}")
             except Exception as e:
-                self.logger.error(f"   ❌ Config {i+1} failed: {e}")
-                errors.append((i + 1, str(e)))
+                bench_id = f"{benchmark_config.get('name')}_{benchmark_config.get('task_type')}"
+                self.logger.error(f"   ❌ Config {i+1} failed ({bench_id}): {e}")
+                errors.append((i + 1, bench_id, str(e)))
 
         if errors:
             failure_summary = "; ".join(
-                f"Config {idx} failed: {message}" for idx, message in errors
+                f"Config {idx} failed ({bench_id}): {message}"
+                for idx, bench_id, message in errors
             )
             self.logger.error(
                 "Dry run aborted with %d configuration error(s)", len(errors)
@@ -1318,7 +1347,7 @@ class MemoryExperimentSeriesRunner:
                     exp_record = self.report.experiments.get(exp["exp_id"])
                     if not exp_record or exp_record.get("status") != ExperimentStatus.COMPLETED:
                         now = datetime.now().isoformat()
-                        update_payload = {
+                        update_payload: Dict[str, Any] = {
                             "status": ExperimentStatus.COMPLETED,
                             "end_time": now,
                         }
@@ -1419,6 +1448,8 @@ class MemoryExperimentSeriesRunner:
 def main():
     """Run the memory experiment series from command line"""
     import argparse
+
+    _ensure_openmp_shm_compat()
 
     parser = argparse.ArgumentParser(
         description="Run a memory experiment series with multiple benchmarks and models"
