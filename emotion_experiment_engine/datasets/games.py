@@ -335,6 +335,15 @@ class GameTheoryDataset(BaseBenchmarkDataset):
     @staticmethod
     def _match_option(candidate: str, options: Sequence[str]) -> Optional[int]:
         normalized = candidate.lower().strip()
+        match = re.match(r"^option\s*(\d+)\s*$", normalized, re.IGNORECASE)
+        if match:
+            option_id = int(match.group(1))
+            if 1 <= option_id <= len(options):
+                return option_id
+        if normalized.isdigit():
+            option_id = int(normalized)
+            if 1 <= option_id <= len(options):
+                return option_id
         for idx, option in enumerate(options, start=1):
             opt_norm = option.lower().strip()
             if normalized == opt_norm:
@@ -422,22 +431,13 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         FR-004/FR-006/FR-007: derive behavior categories from per-item options and
         ensure that every chosen option_id has a non-empty behavior category.
         """
-        # Build a simple cache: (item_id) -> list of option dicts
-        options_by_item: Dict[Any, List[Dict[str, Any]]] = {}
-
-        def _get_options_for(item_id: Any, meta: Dict[str, Any] | None) -> List[Dict[str, Any]]:
-            if item_id in options_by_item:
-                return options_by_item[item_id]
+        def _get_options_for(meta: Dict[str, Any] | None) -> List[Dict[str, Any]]:
             if not meta:
-                # No metadata: skip this record for behavior-level aggregation.
-                options_by_item[item_id] = []
                 return []
             item_md = meta.get("item_metadata") or {}
             opts = item_md.get("options")
             if not isinstance(opts, list) or not opts:
-                options_by_item[item_id] = []
                 return []
-            options_by_item[item_id] = opts
             return opts
 
         # Counts keyed by (emotion, intensity[, repeat_id], behavior)
@@ -459,7 +459,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
 
             option_id = int(option_val)
             # Look up behavior category from metadata
-            opts = _get_options_for(record.item_id, record.metadata)
+            opts = _get_options_for(record.metadata)
             if not opts:
                 # No behavior metadata for this item; skip for behavior-level ratios.
                 continue
@@ -562,8 +562,6 @@ class GameTheoryDataset(BaseBenchmarkDataset):
 
         # OpenAI / Azure path: use existing beta parse helper
         client = self._ensure_llm_client()
-        if client is None:
-            return None
 
         prompt = (
             "You are helping classify a model's decision. Given the available options "

@@ -69,6 +69,24 @@ def test_evaluate_response_regex_only(dataset: GameTheoryDataset):
     assert choice == pytest.approx(2.0)
 
 
+def test_evaluate_response_accepts_option_number(dataset: GameTheoryDataset):
+    prompt = (
+        "Scenario: Prisoners dilemma\n"
+        "Option 1. Cooperate\n"
+        "Option 2. Defect\n"
+    )
+    response = '{"analysis": "...", "decision": "Option 2"}'
+
+    choice = dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Prisoners_Dilemma",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(2.0)
+
+
 def test_evaluate_response_llm_fallback(monkeypatch, dataset: GameTheoryDataset):
     captured = {}
 
