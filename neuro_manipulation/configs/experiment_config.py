@@ -48,7 +48,7 @@ def get_repe_eng_config(model_name, yaml_config_path=None, yaml_config=None):
     # Base configuration
     base_config = {
         'emotions': ["happiness", "sadness", "anger", "fear", "disgust", "surprise"],
-        'data_dir': "./data/stimulus/text",
+        'data_dir': "data/stimulus/crowd-enVent_textlike",
         'model_name_or_path': model_name,
         'coeffs': [0.5, 1, 1.5],
         'max_new_tokens': 450,

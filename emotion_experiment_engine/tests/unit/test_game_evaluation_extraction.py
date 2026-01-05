@@ -363,3 +363,29 @@ def test_completion_dataset_parses_plain_option_text_without_json(monkeypatch, c
     )
 
     assert choice == pytest.approx(2.0)
+
+
+def test_completion_dataset_strips_speaker_prefix_before_parsing(monkeypatch, completion_dataset: GameTheoryCompletionOptionIdDataset):
+    """Some base checkpoints emit chat-style prefixes like 'Human: 1'."""
+
+    def _fail_fallback(*args, **kwargs):  # pragma: no cover - should never be called
+        raise AssertionError("LLM fallback should not be invoked for speaker-prefixed digits")
+
+    monkeypatch.setattr(GameTheoryCompletionOptionIdDataset, "_fallback_option_via_llm", _fail_fallback)
+
+    prompt = (
+        "Scenario: Prisoners dilemma\n"
+        "Option 1. Cooperate\n"
+        "Option 2. Defect\n"
+        "Output exactly one character: 1 or 2."
+    )
+    response = "Human: 2"
+
+    choice = completion_dataset.evaluate_response(
+        response=response,
+        ground_truth=None,
+        task_name="Prisoners_Dilemma",
+        prompt=prompt,
+    )
+
+    assert choice == pytest.approx(2.0)

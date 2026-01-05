@@ -138,7 +138,8 @@ def test_completion_wrapper_ignores_chat_template_and_demands_single_token_choic
     assert "Option 1." in prompt
     assert "Option 2." in prompt
     assert "you choose option" not in prompt
-    assert prompt.strip().endswith("Output exactly one character: 1, 2, or 3.")
+    assert "Output exactly one character: 1, 2, or 3." in prompt
+    assert prompt.strip().endswith("Answer:")
 
 
 def test_completion_wrapper_adapts_numeric_range_for_many_options(patch_game_config):
@@ -157,4 +158,5 @@ def test_completion_wrapper_adapts_numeric_range_for_many_options(patch_game_con
         options=options,
     )
 
-    assert prompt.strip().endswith("Output only the option number (1-12).")
+    assert "Output only the option number (1-12)." in prompt
+    assert prompt.strip().endswith("Answer:")

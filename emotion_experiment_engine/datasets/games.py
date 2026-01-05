@@ -896,6 +896,16 @@ class GameTheoryCompletionOptionIdDataset(GameTheoryDataset):
     def _extract_option_from_response(
         response: str, options: Sequence[str]
     ) -> Optional[int]:
+        # Some base checkpoints emit chat-style speaker tags despite using
+        # completion prompts, e.g. "Human: 1" or "Assistant: Option 2".
+        response = re.sub(
+            r"^\s*(?:human|user|assistant|system)\s*:\s*",
+            "",
+            response,
+            flags=re.IGNORECASE,
+        )
+        response = re.sub(r"^\s*(?:answer|final)\s*:\s*", "", response, flags=re.IGNORECASE)
+
         # Start with the strict JSON decision parsing from the base class.
         choice = GameTheoryDataset._extract_option_from_response(response, options)
         if choice is not None:

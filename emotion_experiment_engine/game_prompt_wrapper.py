@@ -186,6 +186,7 @@ class GameCompletionOptionIdPromptWrapper(GameBenchmarkPromptWrapper):
             system_lines.append(f"Option {idx}. {option}")
         system_lines.append("")
         system_lines.append(instruction)
+        system_lines.append("Answer:")
         return "\n".join(system_lines)
 
 
