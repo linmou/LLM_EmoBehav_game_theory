@@ -32,7 +32,7 @@ class SealedAuctionScenario(GameScenario):
     behavior_choices: SealedAuctionBehaviorChoices
     payoff_matrix: Dict[str, Any]
     game_category: str
-    game_name: str = "NoReturn_SealedBid_Auction"
+    game_name: str = "Sealed_Auction"
 
     def find_behavior_from_decision(self, decision: str) -> str:
         if decision == self.behavior_choices.devote_low:

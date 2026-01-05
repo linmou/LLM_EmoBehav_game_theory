@@ -84,7 +84,7 @@ class GameNames(Enum):
     STAG_HUNT = ("Stag_Hunt", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
     BEAUTY_CONTEST = ("Beauty_Contest", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
     SEALED_AUCTION = (
-        "NoReturn_SealedBid_Auction",
+        "Sealed_Auction",
         GameType.SIMULTANEOUS,
         SymmetryType.SYMMETRIC,
     )

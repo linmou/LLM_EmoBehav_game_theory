@@ -92,7 +92,7 @@ def normalize_participants(job: str) -> list[dict]:
 def build_prompt(job: str, fewshot: list[dict]) -> str:
     fewshot_block = f"Fewshot examples (for style only):\n{json.dumps(fewshot, indent=2)}" if fewshot else ""
     return f"""
-You are writing Diplomacy-themed sealed auction scenarios. Avoid any wording that suggests a game or competition.
+You are writing job-themed sealed auction scenarios. Avoid any wording that suggests a game or competition.
 
 Role focus: {job}
 
@@ -100,7 +100,7 @@ Role focus: {job}
 
 Write a new scenario as a JSON object with exactly these keys:
 - scenario: short title
-- description: 3-5 sentences, Diplomacy setting, no negotiation
+- description: 3-5 sentences, reflecting the job situation , no negotiation
 - participants: list with exactly four dict entries, each with a "name" field:
   - {{"name": "You (<job>)"}}
   - {{"name": "Other <job> counterpart 1"}}
