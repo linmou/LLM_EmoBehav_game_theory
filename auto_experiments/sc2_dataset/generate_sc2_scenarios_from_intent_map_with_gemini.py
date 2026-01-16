@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Sequence
 
-from generate_sc2_scenarios_with_gemini import (  # reuse parsing + few-shot loader
+from auto_experiments.sc2_dataset.generate_sc2_scenarios_with_gemini import (  # reuse parsing + few-shot loader
     DEFAULT_MODEL_NAME,
     DEFAULT_TEMPERATURE,
     _extract_json,
@@ -23,6 +23,8 @@ from generate_sc2_scenarios_with_gemini import (  # reuse parsing + few-shot loa
     load_few_shot_examples,
     write_scenarios,
 )
+
+from games.game_configs import get_game_config
 
 
 IntentMapRecord = Dict[str, Any]
@@ -66,6 +68,8 @@ def iter_intent_map_records(path: Path) -> Iterable[IntentMapRecord]:
                     f"{path}:{line_num} missing required fields: map_image/description/intent_category"
                 )
 
+            meta = raw.get("meta")
+            meta_dict: Dict[str, Any] = meta if isinstance(meta, dict) else {}
             yield {
                 "map_image": map_image.strip(),
                 "description": description.strip(),
@@ -73,7 +77,7 @@ def iter_intent_map_records(path: Path) -> Iterable[IntentMapRecord]:
                 "metadata": {
                     "source_jsonl": str(path),
                     "source_line_num": line_num,
-                    **(raw.get("meta") if isinstance(raw.get("meta"), dict) else {}),
+                    **meta_dict,
                 },
             }
 
@@ -94,7 +98,22 @@ def _parse_one_scenario(text: str) -> Dict[str, Any]:
     return scenarios[0]
 
 
-def _validate_scenario_format(sc: Dict[str, Any]) -> None:
+def _behavior_choice_keys_for_game_name(game_name: str) -> tuple[str, ...]:
+    scenario_cls = get_game_config(game_name)["scenario_class"]
+    example = scenario_cls.example()
+    if not isinstance(example, dict):
+        raise ValueError(f"Invalid scenario example for game {game_name!r}: expected dict")
+    behavior_choices = example.get("behavior_choices")
+    if not isinstance(behavior_choices, dict) or not behavior_choices:
+        raise ValueError(
+            f"Invalid scenario example for game {game_name!r}: missing behavior_choices dict"
+        )
+    return tuple(str(k) for k in behavior_choices.keys())
+
+
+def _validate_scenario_format(
+    sc: Dict[str, Any], *, behavior_choice_keys: Sequence[str]
+) -> None:
     scenario = sc.get("scenario")
     if not (isinstance(scenario, str) and scenario.strip()):
         raise ValueError("Missing/empty 'scenario'")
@@ -119,7 +138,7 @@ def _validate_scenario_format(sc: Dict[str, Any]) -> None:
     bc = sc.get("behavior_choices")
     if not isinstance(bc, dict):
         raise ValueError("Missing 'behavior_choices'")
-    for k in ("devote_none", "devote_low", "devote_high"):
+    for k in behavior_choice_keys:
         v = bc.get(k)
         if not (isinstance(v, str) and v.strip()):
             raise ValueError(f"Missing/empty behavior_choices.{k}")
@@ -129,21 +148,29 @@ def _build_prompt(
     instruction: Sequence[str],
     examples: Sequence[Dict[str, Any]],
     record: IntentMapRecord,
+    *,
+    game_name: str,
 ) -> str:
     instr = "\n".join(f"- {line}" for line in instruction)
     scenario_type = scenario_type_for_intent_category(record["intent_category"])
+    behavior_keys = _behavior_choice_keys_for_game_name(game_name)
+    schema_example = get_game_config(game_name)["scenario_class"].example()
     return (
-        "You generate StarCraft scenarios.\n\n"
+        "You generate StarCraft scenarios as game-theory cases.\n\n"
         "Rules:\n"
         f"{instr}\n\n"
         "Return exactly 1 new scenario.\n"
         "Return ONLY valid JSON for a single scenario object with keys:\n"
         "scenario, description, participants, behavior_choices.\n"
+        f"GameName MUST be exactly: {game_name}\n"
+        f"behavior_choices keys MUST be: {', '.join(behavior_keys)}\n"
         f"ScenarioType MUST be exactly: {scenario_type}\n\n"
         "Ground the scenario in this map slice:\n"
         f"- intent_category: {record['intent_category']}\n"
         f"- observation: {record['description']}\n"
         f"- map_image_path: {record['map_image']}\n\n"
+        "Game schema example (follow this shape):\n"
+        f"{json.dumps(schema_example, ensure_ascii=False)}\n\n"
         "Few-shot examples:\n"
         f"{json.dumps(list(examples), ensure_ascii=False)}"
     )
@@ -155,8 +182,10 @@ def generate_one_scenario(
     instruction: Sequence[str],
     examples: Sequence[Dict[str, Any]],
     record: IntentMapRecord,
+    game_name: str,
 ) -> Dict[str, Any]:
-    prompt = _build_prompt(instruction, examples, record)
+    behavior_choice_keys = _behavior_choice_keys_for_game_name(game_name)
+    prompt = _build_prompt(instruction, examples, record, game_name=game_name)
     response = model.generate_content(
         [{"role": "user", "parts": [prompt]}],
         generation_config={
@@ -175,7 +204,7 @@ def generate_one_scenario(
     scenario["image_path"] = record["map_image"]
     if "metadata" in record:
         scenario["metadata"] = record["metadata"]
-    _validate_scenario_format(scenario)
+    _validate_scenario_format(scenario, behavior_choice_keys=behavior_choice_keys)
     expected_suffix = "_" + scenario_type_for_intent_category(record["intent_category"])
     if not str(scenario.get("scenario", "")).endswith(expected_suffix):
         raise ValueError(f"Scenario 'scenario' must end with {expected_suffix!r}")
@@ -189,6 +218,7 @@ def generate_from_intent_map_parallel(
     instruction: Sequence[str],
     examples: Sequence[Dict[str, Any]],
     records: Sequence[IntentMapRecord],
+    game_name: str,
     concurrency: int,
     max_retries: int,
     show_progress: bool,
@@ -204,7 +234,11 @@ def generate_from_intent_map_parallel(
             try:
                 model = init_gemini_model(api_key=api_key, model_name=model_name)
                 return generate_one_scenario(
-                    model=model, instruction=instruction, examples=examples, record=rec
+                    model=model,
+                    instruction=instruction,
+                    examples=examples,
+                    record=rec,
+                    game_name=game_name,
                 )
             except Exception as exc:
                 last_err = exc
@@ -230,15 +264,40 @@ def generate_from_intent_map_parallel(
     return out
 
 
-def main(argv: Sequence[str] | None = None) -> None:
+def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser()
-    p.add_argument("--few_shot", type=Path, default=Path(__file__).with_name("few_shot_examples.json"))
-    p.add_argument("--intent_map_jsonl", type=Path, default=Path("/data/home/jjl7137/MSC/datasets/intent_map_dataset_air85_rest95_firstframe.jsonl"))
-    p.add_argument("--out", type=Path, required=True)
-    p.add_argument("--n", type=int, default=50, help="Number of scenarios to generate (1 per JSONL line).")
-    p.add_argument("--offset", type=int, default=0, help="Skip this many JSONL records before generating.")
+    p.add_argument(
+        "--few_shot",
+        type=Path,
+        default=Path(__file__).with_name("few_shot_examples.json"),
+    )
+    p.add_argument(
+        "--intent_map_jsonl",
+        type=Path,
+        default=Path("datasets/intent_map_dataset_air72_base96p6_drop94p6_gold50.jsonl"),
+    )
+    p.add_argument(
+        "--out",
+        type=Path,
+        default=Path(
+            "data_creation/scenario_creation/langgraph_creation/SC2_Sealed_Auction_all_data_samples.json"
+        ),
+    )
+    p.add_argument("--game_name", type=str, default="Sealed_Auction")
+    p.add_argument(
+        "--n",
+        type=int,
+        default=50,
+        help="Number of scenarios to generate (1 per JSONL line).",
+    )
+    p.add_argument(
+        "--offset",
+        type=int,
+        default=0,
+        help="Skip this many JSONL records before generating.",
+    )
     p.add_argument("--model", type=str, default=DEFAULT_MODEL_NAME)
-    p.add_argument("--concurrency", type=int, default=8)
+    p.add_argument("--concurrency", type=int, default=20)
     p.add_argument("--max_retries", type=int, default=2)
     p.add_argument("--no_progress", action="store_true")
     p.add_argument(
@@ -246,14 +305,37 @@ def main(argv: Sequence[str] | None = None) -> None:
         action="store_true",
         help="If --out exists, append until total --n scenarios; JSONL offset advances accordingly.",
     )
+    return p
+
+
+def _confirm_overwrite(path: Path, *, input_fn=input) -> bool:
+    if not path.exists():
+        return True
+    ans = (input_fn(f"Output file '{path}' already exists. Replace it? [y/N] ") or "").strip()
+    return ans.lower() in {"y", "yes"}
+
+
+def main(argv: Sequence[str] | None = None) -> None:
+    p = build_arg_parser()
     args = p.parse_args(list(argv) if argv is not None else None)
 
     api_key = os.environ.get("GEMINI_API_KEY", "")
     instruction, examples = load_few_shot_examples(args.few_shot)
+    behavior_choice_keys = _behavior_choice_keys_for_game_name(args.game_name)
+    for idx, ex in enumerate(examples):
+        bc = ex.get("behavior_choices")
+        if not isinstance(bc, dict):
+            raise ValueError(f"Few-shot example {idx} missing behavior_choices dict")
+        for k in behavior_choice_keys:
+            v = bc.get(k)
+            if not (isinstance(v, str) and v.strip()):
+                raise ValueError(f"Few-shot example {idx} missing/empty behavior_choices.{k}")
 
     existing: List[Dict[str, Any]] = []
     if args.resume and args.out.exists():
         existing = load_existing_scenarios(args.out)
+    elif args.out.exists() and not _confirm_overwrite(args.out):
+        raise SystemExit(1)
 
     remaining = args.n - len(existing)
     if remaining <= 0:
@@ -283,6 +365,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         instruction=instruction,
         examples=examples,
         records=records,
+        game_name=args.game_name,
         concurrency=args.concurrency,
         max_retries=args.max_retries,
         show_progress=not args.no_progress,

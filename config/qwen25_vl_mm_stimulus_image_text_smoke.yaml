@@ -10,7 +10,7 @@ intensities: [1.0]
 
 benchmarks:
   - name: "game_theory_decision"
-    task_type: "Escalation_Game"
+    task_type: "Sealed_Auction"
     data_path: "/data/home/jjl7137/LLM_EmoBehav_sc2_escalation_worktree/auto_experiments/sc2_dataset/generated_sc2_intent_map_samples_5.json"
     augmentation_config:
       shuffle_options: true
@@ -18,7 +18,7 @@ benchmarks:
 
 loading_config:
   gpu_memory_utilization: 0.3
-  max_model_len: 16384
+  max_model_len: 1634
   enforce_eager: true
   quantization: null
   trust_remote_code: true
@@ -35,7 +35,6 @@ repe_eng_config:
   # Image paths in the JSON are resolved relative to `data_dir` by default.
   data_dir: "data/stimulus/repeng_generated_images_with_text"
   multimodal_intent: true
-  emotions: ["anger", "happiness"]
   rebuild: true
 
 repeat_runs: 1
@@ -52,7 +51,7 @@ generation_config:
   frequency_penalty: 0.0
   enable_thinking: false
 
-batch_size: 1
+batch_size: 500
 
 output_dir: "results/qwen25_vl_mm_stimulus_image_text_smoke"
 sanity_check: false
