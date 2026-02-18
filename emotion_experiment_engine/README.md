@@ -1,7 +1,7 @@
 # Emotion Memory Experiments
-<!-- Updated: 2025-12-29 | Commit: 5dfa39c -->
+<!-- Updated: 2026-02-18 | Commit: 36f97ec -->
 
-Updated: 2025-12-29 · commit: 5dfa39c
+Updated: 2026-02-18 · commit: 36f97ec
 
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
@@ -224,6 +224,52 @@ python -m emotion_experiment_engine.evaluate_saved_series \
 LLM-based evaluation (`llm_eval_config`) accepts a `client` key. Supported
 options: `openai` (default) and `gemini` (uses `GEMINI_CONFIG` from
 `api_configs.py`).
+
+## Emotion Scale Task (Subjective Sentences)
+
+This repo now includes an `emotion_scale` task to test whether RepE steering
+vectors alone can shift the emotional style of responses to subjective prompts.
+
+### Intent
+
+- Measure steering effect on open-ended subjective responses.
+- Classify model outputs into `anger`, `happiness`, `sadness`, `fear`,
+  `disgust`, `surprise`, or `neutral` using Gemini (`gemini-2.5-flash`).
+- Keep prompt text neutral regarding emotion so the effect comes from vectors,
+  not from explicit cue text.
+
+### Dataset and Config
+
+- Dataset: `data/emotion_scales/emotion_check_emotion_scale_subjective_sentences.jsonl`
+- Series config: `config/emotion_scale_subjective_sentences.yaml`
+- RepE source in config:
+  - `repe_eng_config.data_dir: "data/stimulus/crowd-enVent_textlike"`
+
+### Run Command
+
+```bash
+python -m emotion_experiment_engine.emotion_experiment_series_runner \
+  --config config/emotion_scale_subjective_sentences.yaml
+```
+
+### Prompting Rule (Steering-Only)
+
+`emotion_scale` prompts are open-ended and do not include explicit emotion hints
+like `You currently feel <emotion>`. Emotional shift should come from steering
+vectors only.
+
+### Persisted Outputs
+
+For each run directory, important files include:
+
+- `raw_results.json`: full prompt/response records and metadata for replay/audit
+- `detailed_results.csv`: scored row-level results including evaluator output
+- `summary_results.csv`, `summary_overall.csv`, `split_metrics.json`
+- `confusion_matrix_counts_intensity_*.csv`
+
+If you need deeper review of successful steering cases, you can also export a
+compact file such as `matched_cases_analysis.csv` from saved results without
+rerunning GPU inference.
 
 ## Data Format
 

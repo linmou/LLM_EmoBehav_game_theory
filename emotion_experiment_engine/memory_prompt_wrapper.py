@@ -264,30 +264,50 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
             base_user_msg = str(base_user)
 
         question_part = question
+        question_text = question_part or ""
         options_part = self._format_options_numeric(options)
 
         # Emotion priming to reduce deflection and bias toward active state
         is_academic = self.task_type == "academic_scale"
-        # For academic_scale we avoid explicit emotion hint to prevent describing feelings
-        emotion_hint = "" if is_academic else (f"\n\nYou currently feel {emotion}." if emotion else "")
-
-        # JSON response format instruction
-        json_instr = (
-            "\n\nTask: Answer using one of the listed options."
-            " Respond in JSON only, exactly in the form: {'response': '<copy the chosen option text exactly>' }"
-            " Do not output a number or letter label; return the option text itself."
-            " Return only the JSON, no extra text."
+        is_emotion_scale = self.task_type == "emotion_scale"
+        # For academic_scale and emotion_scale, avoid explicit emotion text hints.
+        emotion_hint = (
+            ""
+            if (is_academic or is_emotion_scale)
+            else (f"\n\nYou currently feel {emotion}." if emotion else "")
         )
 
-        user_content = (
-            question_part
-            + ("\n" if question_part else "")
-            + options_part
-            + ("\n\n" if options_part or question_part else "")
-            + base_user_msg.strip()
-            + emotion_hint
-            + json_instr
-        ).strip()
+        if is_emotion_scale:
+            free_text_instr = (
+                "\n\nTask: Write one short first-person response to the sentence above."
+                " Keep it natural and emotionally expressive."
+                " Do not output JSON, labels, or explanations."
+            )
+            user_content = (
+                question_text
+                + ("\n\n" if question_part else "")
+                + base_user_msg.strip()
+                + emotion_hint
+                + free_text_instr
+            ).strip()
+        else:
+            # JSON response format instruction
+            json_instr = (
+                "\n\nTask: Answer using one of the listed options."
+                " Respond in JSON only, exactly in the form: {'response': '<copy the chosen option text exactly>' }"
+                " Do not output a number or letter label; return the option text itself."
+                " Return only the JSON, no extra text."
+            )
+
+            user_content = (
+                question_text
+                + ("\n" if question_part else "")
+                + options_part
+                + ("\n\n" if options_part or question_part else "")
+                + base_user_msg.strip()
+                + emotion_hint
+                + json_instr
+            ).strip()
 
         return self.prompt_format.build(
             self.system_prompt(augmented_context, question, options),
@@ -317,11 +337,11 @@ class PasskeyPromptWrapper(MemoryPromptWrapper):
 
     def augment_context(
         self,
-        context,
-        augmentation_config,
-        answer,
+        context: Optional[str],
+        augmentation_config: Optional[Dict[str, Any]] = None,
+        answer: Optional[str] = None,
         emotion: Optional[str] = None,
-    ):
+    ) -> Optional[str]:
         if not context or not augmentation_config:
             return context
 
@@ -437,8 +457,8 @@ class LongbenchRetrievalPromptWrapper(MemoryPromptWrapper):
     def augment_context(
         self,
         context: Optional[str],
-        augmentation_config: Optional[Dict[str, Any]],
-        answer: Optional[str],
+        augmentation_config: Optional[Dict[str, Any]] = None,
+        answer: Optional[str] = None,
         emotion: Optional[str] = None,
     ) -> Optional[str]:
         if not context or not augmentation_config:
