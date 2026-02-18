@@ -1523,7 +1523,7 @@ if __name__ == "__main__":
     import time
 
     # Path to PD-like contests enriched file (adjust if needed)
-    sample_path = "/data/home/jjl7137/dipllm/data/pd_like_contests_sample.enriched.jsonl"
+    sample_path = os.path.expandvars("${USER_HOME}/dipllm/data/pd_like_contests_sample.enriched.jsonl").replace("${USER_HOME}", "/home/jjl7137")
     try:
         lines = Path(sample_path).read_text().splitlines()
         raw_record = json.loads(lines[0]) if lines else {}

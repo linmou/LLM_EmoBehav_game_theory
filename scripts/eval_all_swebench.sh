@@ -10,7 +10,7 @@ set -euo pipefail
 # - CONDA_ENV: conda env to activate for the CLI (defaults to llm_fresh)
 # - HARNESS_PY: Python 3.10+ interpreter to run the SWE-bench harness
 #               (defaults to /home/jjl7137/.conda/envs/swebench310/bin/python)
-# - SWE_REPO: path to SWE-bench repo (defaults to /data/home/jjl7137/SWE-bench)
+# - SWE_REPO: path to SWE-bench repo (defaults to ${USER_HOME}/SWE-bench)
 # - DATASET: dataset name (defaults to SWE-bench/SWE-bench_Lite)
 # - MAX_WORKERS: harness parallelism (defaults to 8)
 # - DRY_RUN: set to 1 to print actions without running
@@ -25,7 +25,7 @@ USE_CONDA="${USE_CONDA:-0}"
 CONDA_SH="${CONDA_SH:-/usr/local/anaconda3/etc/profile.d/conda.sh}"
 CONDA_ENV="${CONDA_ENV:-llm_fresh}"
 HARNESS_PY="${HARNESS_PY:-/home/jjl7137/.conda/envs/swebench310/bin/python}"
-SWE_REPO="${SWE_REPO:-/data/home/jjl7137/SWE-bench}"
+SWE_REPO="${SWE_REPO:-${USER_HOME:-/home/jjl7137}/SWE-bench}"
 DATASET="${DATASET:-SWE-bench/SWE-bench_Lite}"
 MAX_WORKERS="${MAX_WORKERS:-32}"
 DRY_RUN="${DRY_RUN:-0}"

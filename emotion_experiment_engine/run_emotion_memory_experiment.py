@@ -7,12 +7,14 @@ Loads configuration from YAML files and runs complete emotion memory experiments
 import argparse
 import json
 import logging
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 import yaml
+from dotenv import load_dotenv
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -27,13 +29,25 @@ from .data_models import (
 from .dataset_factory import create_dataset_from_config
 
 
+def _expand_env_placeholders(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {k: _expand_env_placeholders(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_expand_env_placeholders(v) for v in value]
+    if isinstance(value, str):
+        expanded = os.path.expanduser(os.path.expandvars(value))
+        return expanded.replace("${USER_HOME}", "/home/jjl7137")
+    return value
+
+
 def load_config(config_path: Path) -> Dict[str, Any]:
     """Load experiment configuration from YAML file"""
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
+    load_dotenv(override=False)
     with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
+        config = _expand_env_placeholders(yaml.safe_load(f))
 
     print(f"✅ Loaded configuration from: {config_path}")
     return config

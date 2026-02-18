@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import patch, MagicMock
 from transformers import AutoTokenizer
@@ -509,7 +510,7 @@ class TestPromptFormatFallbackRegression(unittest.TestCase):
         """I am starting with a failing test. This is the Red phase."""
 
         class _TokenizerDropsSystem:
-            name_or_path = "/data/home/jjl7137/huggingface_models/meta-llama/Llama-3.2-1B-Instruct"
+            name_or_path = os.path.expandvars("${USER_HOME}/huggingface_models/meta-llama/Llama-3.2-1B-Instruct").replace("${USER_HOME}", "/home/jjl7137")
 
             def apply_chat_template(
                 self,

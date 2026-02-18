@@ -7,7 +7,7 @@ experiment:
   
   # Smallest multimodal Gemma 3 model for testing (4B is minimum for multimodal)
   models: 
-    - "/data/home/jjl7137/huggingface_models/google/gemma-3-4b-it"
+    - "${USER_HOME}/huggingface_models/google/gemma-3-4b-it"
   
   game:
     name: "Prisoners_Dilemma"

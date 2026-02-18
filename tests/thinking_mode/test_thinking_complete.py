@@ -32,7 +32,7 @@ def generate_response(model, tokenizer, prompt, max_tokens=300):
 def test_thinking_methods():
     """Test different methods to control thinking mode"""
     
-    model_path = "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
+    model_path = os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen3-1.7B").replace("${USER_HOME}", "/home/jjl7137")
     
     print("=" * 80)
     print("QWEN3 THINKING MODE CONTROL TEST")

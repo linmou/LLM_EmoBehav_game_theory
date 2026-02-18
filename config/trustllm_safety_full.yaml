@@ -14,21 +14,21 @@ models:
 benchmarks:
   - name: trustllm_safety
     task_type: jailbreak
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/safety/jailbreak.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/safety/jailbreak.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0
 
   - name: trustllm_safety
     task_type: misuse
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/safety/misuse.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/safety/misuse.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0
 
   - name: trustllm_safety
     task_type: exaggerated_safety
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/safety/exaggerated_safety.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/safety/exaggerated_safety.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0

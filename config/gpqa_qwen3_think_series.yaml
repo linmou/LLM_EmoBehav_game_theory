@@ -6,13 +6,13 @@ description: "Run GPQA (main/extended/diamond) with Qwen3-1.7B using zero-shot C
 version: "1.0.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen3-1.7B"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen3-4B"
 
 benchmarks:
   - name: "gpqa"
     task_type: "main"
-    base_data_dir: "/data/home/jjl7137/gpqa/dataset"
+    base_data_dir: "${USER_HOME}/gpqa/dataset"
     enable_auto_truncation: false
     truncation_strategy: "right"
     preserve_ratio: 0.95
@@ -22,7 +22,7 @@ benchmarks:
 
   - name: "gpqa"
     task_type: "extended"
-    base_data_dir: "/data/home/jjl7137/gpqa/dataset"
+    base_data_dir: "${USER_HOME}/gpqa/dataset"
     enable_auto_truncation: false
     truncation_strategy: "right"
     preserve_ratio: 0.95
@@ -32,7 +32,7 @@ benchmarks:
 
   - name: "gpqa"
     task_type: "diamond"
-    base_data_dir: "/data/home/jjl7137/gpqa/dataset"
+    base_data_dir: "${USER_HOME}/gpqa/dataset"
     enable_auto_truncation: false
     truncation_strategy: "right"
     preserve_ratio: 0.95

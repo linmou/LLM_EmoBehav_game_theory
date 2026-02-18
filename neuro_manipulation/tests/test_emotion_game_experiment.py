@@ -1,3 +1,4 @@
+import os
 import unittest
 import torch
 import yaml
@@ -40,7 +41,7 @@ except ImportError:
 
 # Make sure the experiment class is importable
 # Adjust the path as necessary based on your project structure
-sys.path.insert(0, '/data/home/jjl7137/LLM_EmoBehav_game_theory') # Add project root to path
+sys.path.insert(0, os.path.expandvars('').replace('', '/home/jjl7137')) # Add project root to path
 from neuro_manipulation.experiments.emotion_game_experiment import EmotionGameExperiment, ExtractedResult
 
 # Configure basic logging for tests

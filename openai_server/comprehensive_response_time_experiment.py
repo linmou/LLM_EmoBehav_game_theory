@@ -69,42 +69,42 @@ class ServerManager:
             ModelConfig(
                 name="Qwen2.5-0.5B-Instruct",
                 size="0.5B", 
-                path="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct",
+                path=os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
                 min_vram_gb=2.0,
                 expected_startup_time=60  # Increased from 30s
             ),
             ModelConfig(
                 name="Qwen2.5-1.5B-Instruct", 
                 size="1.5B",
-                path="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct",
+                path=os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
                 min_vram_gb=4.0,
                 expected_startup_time=75  # Increased from 45s
             ),
             ModelConfig(
                 name="Qwen2.5-3B-Instruct",
                 size="3B", 
-                path="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct",
+                path=os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
                 min_vram_gb=8.0,
                 expected_startup_time=90  # Increased from 60s
             ),
             ModelConfig(
                 name="Qwen2.5-7B-Instruct",
                 size="7B",
-                path="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct", 
+                path=os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-7B-Instruct").replace("${USER_HOME}", "/home/jjl7137"), 
                 min_vram_gb=16.0,
                 expected_startup_time=150  # Longer for tensor parallel
             ),
             ModelConfig(
                 name="Qwen2.5-14B-Instruct",
                 size="14B",
-                path="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-14B-Instruct",
+                path=os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-14B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
                 min_vram_gb=32.0,
                 expected_startup_time=200  # Longer for tensor parallel
             ),
             ModelConfig(
                 name="Qwen2.5-32B-Instruct", 
                 size="32B",
-                path="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-32B-Instruct",
+                path=os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-32B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
                 min_vram_gb=64.0,
                 expected_startup_time=300  # Much longer for tensor parallel
             )
@@ -834,7 +834,7 @@ class ComprehensiveExperiment:
 
 def main():
     parser = argparse.ArgumentParser(description='Comprehensive multi-model response time experiment')
-    parser.add_argument('--base-path', default='/data/home/jjl7137/LLM_EmoBehav_game_theory',
+    parser.add_argument('--base-path', default=os.path.expandvars('').replace('', '/home/jjl7137'),
                        help='Base path to project directory')
     parser.add_argument('--models', nargs='+', 
                        choices=['0.5B', '1.5B', '3B', '7B', '14B', '32B', '72B'],

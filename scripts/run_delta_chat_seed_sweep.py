@@ -30,9 +30,9 @@ def main() -> None:
     seeds = list(range(args.start, args.end + 1))
     base = load_chat_job_config_from_yaml("config/delta_activations/qwen_chat_template.yaml")
     models = [
-        "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct",
-        "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct",
-        "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct",
+        os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
+        os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
+        os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
     ]
 
     jobs = build_seeded_chat_jobs(base, models, seeds, output_root="results/delta_activations")

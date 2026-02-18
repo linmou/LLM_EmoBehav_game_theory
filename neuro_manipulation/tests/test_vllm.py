@@ -138,7 +138,7 @@ def check_model_directory(model_path):
 # --- Configuration ---
 # Model path on your system - can be either HuggingFace model name or local path
 # MODEL_PATH = "Qwen/Qwen2.5-0.5B-Instruct"  # Example HuggingFace model name
-MODEL_PATH = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"  # Example local path
+MODEL_PATH = os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137")  # Example local path
 
 # Calculate optimal tensor parallel size
 TENSOR_PARALLEL_SIZE = get_optimal_tensor_parallel_size(MODEL_PATH)

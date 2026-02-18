@@ -6,7 +6,7 @@ description: "Dry-run against MBPPPlus (base + extra tests)"
 version: "1.0.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
 
 benchmarks:
   - name: "mbpp"
@@ -25,7 +25,7 @@ repeat_run: 1
 repeat_seed_base: 42
 
 loading_config:
-  model_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  model_path: "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
   gpu_memory_utilization: 0.60
   tensor_parallel_size: 1
   max_model_len: 4096

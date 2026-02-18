@@ -39,7 +39,7 @@ experiment:
     
 # Representation Engineering Configuration
 repe_config:
-  model_name_or_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  model_name_or_path: "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
   
   # vLLM settings
   tensor_parallel_size: 4

@@ -20,7 +20,7 @@ python -m openai_server --model /path/to/model --model_name "MyModel" --emotion 
 
 # Example with specific parameters
 python -m openai_server \
-    --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+    --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
     --model_name "Qwen2.5-0.5B-Instruct" \
     --emotion anger \
     --host localhost \
@@ -69,7 +69,7 @@ conda activate llm_fresh
 
 # Start single server
 python -m openai_server \
-    --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+    --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
     --model_name "Qwen2.5-0.5B-Instruct" \
     --emotion anger \
     --port 8000 \
@@ -184,7 +184,7 @@ MAX_NUM_SEQS=32          # Maximum concurrent sequences
 ```bash
 # Set environment variables
 export CUDA_VISIBLE_DEVICES=0,1
-export MODEL_PATH=/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
+export MODEL_PATH=${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
 export EMOTION=anger
 export TENSOR_PARALLEL_SIZE=2
 
@@ -246,7 +246,7 @@ python manage_servers.py
 ./start_emotion_servers.sh help
 
 # Check model path and permissions
-ls -la /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
+ls -la ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
 ```
 
 #### Debug Commands

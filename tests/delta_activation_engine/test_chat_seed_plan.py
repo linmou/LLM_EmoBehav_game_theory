@@ -36,9 +36,9 @@ def _make_base_cfg() -> DeltaActivationChatJobConfig:
 def test_build_seeded_chat_jobs_creates_full_grid_without_mutation() -> None:
     base_cfg = _make_base_cfg()
     models = [
-        "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct",
-        "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct",
-        "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct",
+        os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
+        os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
+        os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct").replace("${USER_HOME}", "/home/jjl7137"),
     ]
     seeds = list(range(20))
     jobs = build_seeded_chat_jobs(base_cfg, models, seeds, output_root="results/delta_activations/chat")

@@ -18,7 +18,7 @@ sys.path.insert(0, str(project_root))
 @pytest.fixture
 def mock_model_path():
     """Provide a mock model path for testing"""
-    return "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+    return os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137")
 
 
 @pytest.fixture

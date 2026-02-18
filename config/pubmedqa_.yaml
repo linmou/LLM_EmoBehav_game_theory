@@ -1,8 +1,8 @@
 models:
-  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
-  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct
-  # - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct
-  - /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct
+  # - ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
+  # - ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct
+  # - ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct
+  - ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct
 
 benchmarks:
   - name: pubmed_qa

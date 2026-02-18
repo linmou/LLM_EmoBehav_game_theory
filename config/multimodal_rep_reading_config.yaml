@@ -3,8 +3,8 @@ experiment:
   
   # Multimodal model configuration
   models: 
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-7B-Instruct"
+    - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+    - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-VL-7B-Instruct"
   
   # RepE pipeline configuration
   pipeline:

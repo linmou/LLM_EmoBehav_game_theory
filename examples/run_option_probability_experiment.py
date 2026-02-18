@@ -17,19 +17,24 @@ import sys
 import logging
 from pathlib import Path
 from datetime import datetime
+from dotenv import load_dotenv
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from neuro_manipulation.experiments.option_probability_experiment import OptionProbabilityExperiment
-from neuro_manipulation.configs.experiment_config import get_repe_eng_config
+from neuro_manipulation.configs.experiment_config import (
+    expand_env_placeholders,
+    get_repe_eng_config,
+)
 from games.game_configs import get_game_config
 from constants import GameNames
 
 def load_config(config_path: str) -> dict:
     """Load configuration from YAML file."""
+    load_dotenv(override=False)
     with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
+        return expand_env_placeholders(yaml.safe_load(f))
 
 def setup_logging(config: dict) -> None:
     """Setup logging based on configuration."""

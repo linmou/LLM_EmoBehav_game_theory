@@ -111,7 +111,7 @@ A successful demo should show:
 ### Sample Output
 
 ```
-✅ Model: /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
+✅ Model: ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct
 ✅ Target word: 'angry'
 ✅ Target tokens: [26921]
 ✅ Test prompts: 10 prompts

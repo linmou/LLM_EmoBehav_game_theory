@@ -6,9 +6,9 @@
       "args": [
         "run",
         "--project",
-        "/data/home/jjl7137/graphiti/mcp_server",
+        "${USER_HOME}/graphiti/mcp_server",
         "python",
-        "/data/home/jjl7137/graphiti/mcp_server/graphiti_mcp_server.py",
+        "${USER_HOME}/graphiti/mcp_server/graphiti_mcp_server.py",
         "--transport",
         "stdio",
         "--group-id",

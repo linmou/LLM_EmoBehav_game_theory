@@ -52,7 +52,7 @@ def test_registry_unknown_task_raises():
 def test_humaneval_default_loads_local_orig():
     # prefer env var; else fallback to a common local path
     path_str = os.environ.get(
-        "HUMANEVAL_ORIG_GZ", "/data/home/jjl7137/human-eval/data/HumanEval.jsonl.gz"
+        "HUMANEVAL_ORIG_GZ", os.path.expandvars("${USER_HOME}/human-eval/data/HumanEval.jsonl.gz").replace("${USER_HOME}", "/home/jjl7137")
     )
     path = Path(path_str)
     if not path.exists():
@@ -87,7 +87,7 @@ def test_humaneval_star_emits_default_and_plus():
 
 def test_humaneval_default_canonical_solution_passes():
     path_str = os.environ.get(
-        "HUMANEVAL_ORIG_GZ", "/data/home/jjl7137/human-eval/data/HumanEval.jsonl.gz"
+        "HUMANEVAL_ORIG_GZ", os.path.expandvars("${USER_HOME}/human-eval/data/HumanEval.jsonl.gz").replace("${USER_HOME}", "/home/jjl7137")
     )
     path = Path(path_str)
     if not path.exists():

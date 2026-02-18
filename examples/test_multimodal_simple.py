@@ -12,7 +12,7 @@ from unittest.mock import Mock
 # Add project root to path
 import sys
 import os
-sys.path.append('/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal')
+sys.path.append(os.path.expandvars('').replace('', '/home/jjl7137'))
 
 from neuro_manipulation.repe.rep_reading_pipeline import RepReadingPipeline
 from neuro_manipulation.model_layer_detector import ModelLayerDetector
@@ -159,7 +159,7 @@ def test_config_validation():
     print("\nTesting configuration validation...")
     
     import yaml
-    config_path = "/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal/config/multimodal_rep_reading_config.yaml"
+    config_path = os.path.expandvars("${USER_HOME}/LLM_EmoBehav_game_theory_multimodal/config/multimodal_rep_reading_config.yaml").replace("${USER_HOME}", "/home/jjl7137")
     
     assert os.path.exists(config_path), "Config file should exist"
     

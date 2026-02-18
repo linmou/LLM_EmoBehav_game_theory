@@ -17,7 +17,7 @@ description: "Task list for Shuffle Behavior Option Order and Dual Choice Ratios
 **Purpose**: Project initialization and basic structure
 
 - [x] T001 Create feature directory structure (already present) and confirm design docs in specs/001-shuffle-choice-order/
-- [x] T002 [P] Verify conda environment and minimal pytest run in `/data/home/jjl7137/LLM_EmoBehav_game_theory_autoexp_worktree` using `conda activate llm_fresh` and `pytest -q`
+- [x] T002 [P] Verify conda environment and minimal pytest run in `${USER_HOME}/LLM_EmoBehav_game_theory_autoexp_worktree` using `conda activate llm_fresh` and `pytest -q`
 - [x] T003 [P] Skim emotion_experiment_engine/datasets/games.py to confirm current GameTheoryDataset behavior and choice_ratio metrics
 - [x] T004 [P] Skim games/game.py and games/* to understand BehaviorChoices and find_behavior_from_decision contracts
 - [x] T005 [P] Skim emotion_experiment_engine/experiment.py around _save_results and split-metrics persistence

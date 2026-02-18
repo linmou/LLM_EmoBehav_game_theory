@@ -3,12 +3,12 @@ description: "Diplomacy escalation game via game_theory benchmark using LangGrap
 version: "1.0.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
-    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
-    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
-    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+    #- "${USER_HOME}/huggingface_models/Qwen/Qwen3-0.6B"
+    #- "${USER_HOME}/huggingface_models/Qwen/Qwen3-1.7B"
+    #- "${USER_HOME}/huggingface_models/Qwen/Qwen3-4B"
 
 emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
 intensities: [1.0, 1.5, 2.0]

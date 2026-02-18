@@ -118,6 +118,7 @@ GAME_CONFIGS = {
         "game_name": GameNames.ULTIMATUM_GAME_PROPOSER.value,
         "scenario_class": UltimatumGameProposerScenario,
         "decision_class": UltimatumGameDecision,
+        "previous_actions_length": 0,
         "payoff_matrix": dict(),
         "data_path": data_path_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
         "data_folder": data_folder_format.format(
@@ -128,6 +129,8 @@ GAME_CONFIGS = {
         "game_name": GameNames.ULTIMATUM_GAME_RESPONDER.value,
         "scenario_class": UltimatumGameResponderScenario,
         "decision_class": UltimatumGameDecision,
+        "previous_actions_length": 1,
+        "previous_offer_level": 1,
         "payoff_matrix": dict(),
         "data_path": data_path_format.format(GameNames.ULTIMATUM_GAME_PROPOSER.value),
         "data_folder": data_folder_format.format(

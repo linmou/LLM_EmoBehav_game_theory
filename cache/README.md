@@ -7,13 +7,13 @@ This directory holds the offline retrieval results and text datasets required fo
 ## Prerequisites
 - Active conda environment: `llm_fresh`
 - Python dependencies include `pyserini` (install with `pip install pyserini` inside the environment)
-- A modern JDK available to Pyserini. These instructions assume Temurin 21 downloaded to `/data/home/jjl7137/java/jdk-21.0.8+9`.
+- A modern JDK available to Pyserini. These instructions assume Temurin 21 downloaded to `${USER_HOME}/java/jdk-21.0.8+9`.
 
 ```bash
 # one-time JDK install (already done on this machine)
-mkdir -p /data/home/jjl7137/java
-wget https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.8%2B9/OpenJDK21U-jdk_x64_linux_hotspot_21.0.8_9.tar.gz -O /data/home/jjl7137/java/OpenJDK21.tar.gz
-tar -C /data/home/jjl7137/java -xzf /data/home/jjl7137/java/OpenJDK21.tar.gz
+mkdir -p ${USER_HOME}/java
+wget https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.8%2B9/OpenJDK21U-jdk_x64_linux_hotspot_21.0.8_9.tar.gz -O ${USER_HOME}/java/OpenJDK21.tar.gz
+tar -C ${USER_HOME}/java -xzf ${USER_HOME}/java/OpenJDK21.tar.gz
 ```
 
 ## 1. Generate BM25 Retrieval Hits
@@ -22,13 +22,13 @@ Run from the SWE-bench repository root so git-based helpers resolve correctly.
 ```bash
 source /usr/local/anaconda3/etc/profile.d/conda.sh
 conda activate llm_fresh
-export JAVA_HOME=/data/home/jjl7137/java/jdk-21.0.8+9
+export JAVA_HOME=${USER_HOME}/java/jdk-21.0.8+9
 export PATH="$JAVA_HOME/bin:$PATH"
-cd /data/home/jjl7137/SWE-bench
+cd ${USER_HOME}/SWE-bench
 python -m swebench.inference.make_datasets.bm25_retrieval \
     --dataset_name_or_path SWE-bench/SWE-bench_Lite \
     --document_encoding_style file_name_and_contents \
-    --output_dir /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/cache/retrieval_results \
+    --output_dir ${USER_HOME}/LLM_EmoBehav_game_theory_flexible_dataset/cache/retrieval_results \
     --splits test
 ```
 
@@ -39,8 +39,8 @@ Outputs:
 A compatibility symlink is expected at `cache/retrieval_results/SWE-bench_SWE-bench_Lite.retrieval.jsonl`. Create or refresh it with:
 
 ```bash
-ln -sf /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/cache/retrieval_results/SWE-bench__SWE-bench_Lite/file_name_and_contents.retrieval.jsonl \
-       /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/cache/retrieval_results/SWE-bench_SWE-bench_Lite.retrieval.jsonl
+ln -sf ${USER_HOME}/LLM_EmoBehav_game_theory_flexible_dataset/cache/retrieval_results/SWE-bench__SWE-bench_Lite/file_name_and_contents.retrieval.jsonl \
+       ${USER_HOME}/LLM_EmoBehav_game_theory_flexible_dataset/cache/retrieval_results/SWE-bench_SWE-bench_Lite.retrieval.jsonl
 ```
 
 ## 2. Materialize the Text Dataset
@@ -49,8 +49,8 @@ Continue in the SWE-bench repo with the same environment variables set.
 ```bash
 python -m swebench.inference.make_datasets.create_text_dataset \
     --dataset_name_or_path SWE-bench/SWE-bench_Lite \
-    --output_dir /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/cache/datasets \
-    --retrieval_file /data/home/jjl7137/LLM_EmoBehav_game_theory_flexible_dataset/cache/retrieval_results/SWE-bench__SWE-bench_Lite/file_name_and_contents.retrieval.jsonl \
+    --output_dir ${USER_HOME}/LLM_EmoBehav_game_theory_flexible_dataset/cache/datasets \
+    --retrieval_file ${USER_HOME}/LLM_EmoBehav_game_theory_flexible_dataset/cache/retrieval_results/SWE-bench__SWE-bench_Lite/file_name_and_contents.retrieval.jsonl \
     --prompt_style style-3 \
     --file_source bm25 \
     --k 20 \

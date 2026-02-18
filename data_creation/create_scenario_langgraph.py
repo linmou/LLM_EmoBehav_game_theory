@@ -1,3 +1,4 @@
+import os
 import argparse
 import asyncio
 import json
@@ -87,7 +88,7 @@ class ScenarioCreationConfig:
         self.use_diplomacy_graph = kwargs.get("use_diplomacy_graph", False)
         self.diplomacy_records_file = kwargs.get(
             "diplomacy_records_file",
-            "/data/home/jjl7137/dipllm/data/pd_like_contests_sample.enriched.jsonl",
+            os.path.expandvars("${USER_HOME}/dipllm/data/pd_like_contests_sample.enriched.jsonl").replace("${USER_HOME}", "/home/jjl7137"),
         )
         self.debug_num_records = kwargs.get("debug_num_records", 2)
 
@@ -625,7 +626,7 @@ Examples:
     parser.add_argument(
         "--diplomacy-records-file",
         type=str,
-        default="/data/home/jjl7137/dipllm/data/pd_like_contests_sample.enriched.jsonl",
+        default=os.path.expandvars("${USER_HOME}/dipllm/data/pd_like_contests_sample.enriched.jsonl").replace("${USER_HOME}", "/home/jjl7137"),
         help="Path to enriched Diplomacy JSONL.",
     )
     parser.add_argument(

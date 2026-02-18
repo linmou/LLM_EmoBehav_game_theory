@@ -77,7 +77,7 @@ inputs = processor(
 
 ### 1. Update RepReadingPipeline
 
-Modify `/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal/neuro_manipulation/repe/rep_reading_pipeline.py`:
+Modify `${USER_HOME}/LLM_EmoBehav_game_theory_multimodal/neuro_manipulation/repe/rep_reading_pipeline.py`:
 
 ```python
 def _prepare_multimodal_inputs(self, inputs: Union[Dict, List], **tokenizer_kwargs) -> Dict[str, Any]:

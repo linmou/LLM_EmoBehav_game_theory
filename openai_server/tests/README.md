@@ -419,7 +419,7 @@ python run_stress_tests.py --server-url http://localhost:8001/v1
 #### 5. **Import Errors**
 ```bash
 # Ensure you're in the project root
-cd /data/home/jjl7137/LLM_EmoBehav_game_theory
+cd ${USER_HOME}/LLM_EmoBehav_game_theory
 make test
 ```
 

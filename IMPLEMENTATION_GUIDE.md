@@ -60,7 +60,7 @@ patch_rep_reading_pipeline()
 
 ### 4. Update RepReadingPipeline (Permanent Fix)
 
-**File:** `/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal/neuro_manipulation/repe/rep_reading_pipeline.py`
+**File:** `${USER_HOME}/LLM_EmoBehav_game_theory_multimodal/neuro_manipulation/repe/rep_reading_pipeline.py`
 
 Replace the `_prepare_multimodal_inputs` method:
 
@@ -151,7 +151,7 @@ def _prepare_multimodal_inputs(self, inputs: Union[Dict, List], **tokenizer_kwar
 
 ### 5. Update QwenVLInstFormat (Optional)
 
-**File:** `/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal/neuro_manipulation/prompt_formats.py`
+**File:** `${USER_HOME}/LLM_EmoBehav_game_theory_multimodal/neuro_manipulation/prompt_formats.py`
 
 Add a new method to QwenVLInstFormat:
 
@@ -212,7 +212,7 @@ from PIL import Image
 patch_rep_reading_pipeline()
 
 # Load model components correctly
-model_path = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+model_path = "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
 processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
 model = AutoModel.from_pretrained(model_path, trust_remote_code=True, torch_dtype=torch.bfloat16, device_map="auto")
 

@@ -253,6 +253,48 @@ class TestMemoryExperimentSeriesRunner(unittest.TestCase):
                 runner.dry_run_series()
 
     @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
+    def test_dry_run_does_not_fail_on_unresolved_data_path_in_logging(self):
+        # Test for emotion_experiment_engine/emotion_experiment_series_runner.py:
+        # dry_run_series logging must not fail when benchmark data_path/base_data_dir are unresolved.
+        cfg_path = Path(self.temp_dir) / "dry_run_unresolved_data_path.yaml"
+        cfg = {
+            "models": ["/fake/model/path"],
+            "emotions": ["anger"],
+            "intensities": [1.0],
+            "benchmarks": [
+                {
+                    "name": "game_theory",
+                    "task_type": "Prisoners_Dilemma",
+                }
+            ],
+            "output_dir": str(Path(self.temp_dir) / "results"),
+            "loading_config": self.test_config["loading_config"],
+        }
+        with open(cfg_path, "w") as f:
+            yaml.dump(cfg, f)
+
+        class _FakeBenchmark:
+            data_path = None
+            base_data_dir = None
+
+            def get_data_path(self):
+                raise TypeError(
+                    "expected str, bytes or os.PathLike object, not NoneType"
+                )
+
+        class _FakeConfig:
+            output_dir = "fake_out"
+            benchmark = _FakeBenchmark()
+
+        class _FakeExperiment:
+            config = _FakeConfig()
+            emotion_datasets = {}
+
+        runner = MemoryExperimentSeriesRunner(str(cfg_path), dry_run=True)
+        with patch.object(runner, "setup_experiment", return_value=_FakeExperiment()):
+            runner.dry_run_series()
+
+    @unittest.skipUnless(RUNNER_AVAILABLE, "MemoryExperimentSeriesRunner not available")
     def test_run_single_experiment_releases_resources_on_success(self):
         runner = MemoryExperimentSeriesRunner(str(self.config_file), dry_run=False)
         benchmark = self.test_config["benchmarks"][0]

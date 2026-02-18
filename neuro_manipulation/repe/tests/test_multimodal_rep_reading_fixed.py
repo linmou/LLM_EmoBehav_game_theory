@@ -13,7 +13,7 @@ import sys
 import os
 
 # Add project root to path
-sys.path.append('/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal')
+sys.path.append(os.path.expandvars('').replace('', '/home/jjl7137'))
 
 from neuro_manipulation.repe.rep_reading_pipeline import RepReadingPipeline
 from neuro_manipulation.model_layer_detector import ModelLayerDetector
@@ -218,7 +218,7 @@ class TestConfigurationCompatibility:
     
     def test_multimodal_config_structure(self):
         """Test multimodal configuration file structure."""
-        config_path = "/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal/config/multimodal_rep_reading_config.yaml"
+        config_path = os.path.expandvars("${USER_HOME}/LLM_EmoBehav_game_theory_multimodal/config/multimodal_rep_reading_config.yaml").replace("${USER_HOME}", "/home/jjl7137")
         
         if not os.path.exists(config_path):
             pytest.skip("Config file not found")

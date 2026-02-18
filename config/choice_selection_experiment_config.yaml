@@ -1,5 +1,5 @@
 repe_config:
-  model_name_or_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  model_name_or_path: "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
   tensor_parallel_size: 4
   # The block to hook into. 'decoder_block' is common for Llama-like models.
   block_name: "decoder_block"

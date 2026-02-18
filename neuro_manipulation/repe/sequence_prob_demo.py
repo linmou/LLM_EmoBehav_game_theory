@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 class FixedAngerActivationDemo:
     """FIXED demo class that properly integrates activation and probability measurement."""
     
-    def __init__(self, model_path: str = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"):
+    def __init__(self, model_path: str = os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137")):
         """Initialize the demo with model and emotion readers."""
         self.model_path = model_path
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

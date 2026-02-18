@@ -26,7 +26,7 @@ models:
 benchmarks:
   - name: trustllm_fairness
     task_type: stereotype_recognition
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/stereotype_recognition.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/fairness/stereotype_recognition.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -36,7 +36,7 @@ benchmarks:
 
   - name: trustllm_fairness
     task_type: stereotype_agreement
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/stereotype_agreement.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/fairness/stereotype_agreement.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -46,7 +46,7 @@ benchmarks:
 
   - name: trustllm_fairness
     task_type: stereotype_query
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/stereotype_query_test.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/fairness/stereotype_query_test.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -56,7 +56,7 @@ benchmarks:
 
   - name: trustllm_fairness
     task_type: disparagement
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/disparagement.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/fairness/disparagement.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -66,7 +66,7 @@ benchmarks:
 
   - name: trustllm_fairness
     task_type: preference
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/fairness/preference.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/fairness/preference.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8

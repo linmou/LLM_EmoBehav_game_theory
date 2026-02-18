@@ -1,7 +1,7 @@
 from vllm import LLM, SamplingParams
 
 # Configuration for the full 128k context using RoPE Scaling
-model_id = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+model_id = os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct").replace("${USER_HOME}", "/home/jjl7137")
 
 # Define the RoPE scaling configuration as a dictionary
 rope_scaling_config = {
@@ -29,3 +29,4 @@ for output in outputs:
     prompt = output.prompt
     generated_text = output.outputs[0].text
     print(f"Generated: {generated_text!r}")
+import os

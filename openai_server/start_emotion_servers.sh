@@ -1,9 +1,10 @@
 #!/bin/bash
 # Start Emotion Servers with Tensor Parallel Support
 # Usage: ./start_emotion_servers.sh [start|stop|status|restart]
+USER_HOME="${USER_HOME:-/home/jjl7137}"
 
 # Configuration
-MODEL_PATH="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+MODEL_PATH="${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
 MODEL_NAME="Qwen2.5-3B-Instruct"
 TENSOR_PARALLEL=4
 GPU_MEMORY_UTIL=0.8
@@ -67,7 +68,7 @@ start_server() {
     fi
     
     # Change to project root directory
-    cd /data/home/jjl7137/LLM_EmoBehav_game_theory
+    cd ${USER_HOME}/LLM_EmoBehav_game_theory
     
     # Start server in background
     nohup python -m openai_server \

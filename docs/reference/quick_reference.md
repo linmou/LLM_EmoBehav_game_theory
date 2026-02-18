@@ -51,10 +51,10 @@ python test_qwen3_thinking_mode.py
 #### OpenAI-Compatible Server
 ```bash
 # Start server with neural hooks (recommended)
-python -m openai_server --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct --emotion anger
+python -m openai_server --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct --emotion anger
 
 # Start server (backward compatibility)
-python init_openai_server.py --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct --emotion anger
+python init_openai_server.py --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct --emotion anger
 ```
 
 ### Documentation
@@ -112,7 +112,7 @@ python run_qwen3_thinking_mode_test.py
 **Solution**: Check model paths in configs
 ```yaml
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"  # Verify path exists
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen3-1.7B"  # Verify path exists
 ```
 
 ### Environment Issues

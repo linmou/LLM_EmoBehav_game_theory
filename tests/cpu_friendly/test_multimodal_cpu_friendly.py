@@ -154,7 +154,7 @@ class TestMultimodalCPUFriendly:
         """Test configuration file validation (CPU-only)."""
         import yaml
         
-        config_path = "/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal/config/multimodal_rep_reading_config.yaml"
+        config_path = os.path.expandvars("${USER_HOME}/LLM_EmoBehav_game_theory_multimodal/config/multimodal_rep_reading_config.yaml").replace("${USER_HOME}", "/home/jjl7137")
         
         if not os.path.exists(config_path):
             pytest.skip("Config file not found")

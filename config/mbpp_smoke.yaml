@@ -6,7 +6,7 @@ description: "Dry-run against MBPP (base tests only)"
 version: "1.0.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
 
 benchmarks:
   - name: "mbpp"
