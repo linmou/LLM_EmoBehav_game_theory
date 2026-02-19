@@ -153,3 +153,37 @@
     - `v5`: `4.0` (plain accuracy `0.2571`, match score `0.2302`)
 - Hypothesis check:
   - Not supported. Under the reduced 5-intensity setting and flash-lite judge, `v2_diary_micro` remains the best prompt.
+
+### Iteration 6 (completed, anti-confusion prompt)
+- Hypothesis: adding explicit structural constraints (trigger + involuntary body cue + impulse + thought fragment) will reduce key confusions (`disgust->fear`, `surprise->happiness/fear`, `fear<->sadness`) without hurting overall performance.
+- Setup:
+  - Config:
+    - `auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep5_v21_anti_confusion.yaml`
+  - Override env:
+    - `EMOTION_CHECK_SYSTEM_PROMPT_OVERRIDE="You are writing one first-person micro-entry from a single instant. Include: one concrete external trigger, one involuntary body cue, one immediate impulse (approach / withdraw / freeze / reject), and one short thought fragment. Use specific sensory words. Keep it under 24 words. No explanation."`
+  - Command:
+    - `CUDA_VISIBLE_DEVICES=2,3 /home/jjl7137/anaconda3/bin/conda run -n llm python -m emotion_experiment_engine.emotion_experiment_series_runner --config auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep5_v21_anti_confusion.yaml`
+- Run output:
+  - `results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep5_v21_anti_confusion/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260219_003919`
+- Analysis outputs:
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration6_v21_vs_v2/overall_comparison.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration6_v21_vs_v2/target_confusion_rates.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration6_v21_vs_v2/target_confusion_aggregate.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration6_v21_vs_v2/best_intensity_summary.csv`
+- Results:
+  - Overall steered (`v21_anti_confusion`): accuracy `0.2095`, match score `0.1870`
+  - Overall steered (`v2_diary_micro`): accuracy `0.2524`, match score `0.2252`
+  - Delta (`v21 - v2`): `-0.0429` accuracy, `-0.0383` match score
+  - Best intensity:
+    - `v21_anti_confusion`: `4.0` (accuracy `0.2429`)
+    - `v2_diary_micro`: `3.0` (accuracy `0.2952`)
+  - Target confusion deltas (`v21 - v2`):
+    - `surprise -> happiness`: `-0.1143` (improved)
+    - `surprise -> fear`: `+0.0400` (worse)
+    - `surprise -> (happiness or fear)`: `-0.0743` (improved)
+    - `disgust -> fear`: `+0.0229` (worse)
+    - `fear -> sadness`: `-0.1657` (improved)
+    - `sadness -> fear`: `+0.1543` (worse)
+- Hypothesis check:
+  - Partially supported for specific confusion edges (`surprise -> happiness`, `fear -> sadness`).
+  - Rejected as a global strategy due to worse overall accuracy/match score and regressions on `disgust -> fear` and `sadness -> fear`.
