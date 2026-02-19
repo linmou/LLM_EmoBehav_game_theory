@@ -1,0 +1,78 @@
+experiment_name: emotion_check_psyset_prompt_search_iter3_v8_micro_scene
+description: Iteration 3 system-prompt variant search (sensory + mismatch cues)
+version: 1.0.0
+models:
+- Qwen/Qwen2.5-3B-Instruct
+benchmarks:
+- name: emotion_check
+  task_type: psyset_emotion_eval
+  data_path: data/emotion_scales/emotion_check_psyset_emotion_eval.jsonl
+  base_data_dir: data/emotion_scales
+  llm_eval_config:
+    client: gemini
+    model: gemini-2.5-flash
+    temperature: 0.0
+    evaluation_prompt: 'You are a strict emotion classifier.
+
+      Classify the assistant response into exactly one label from:
+
+      anger, happiness, sadness, fear, disgust, surprise, neutral
+
+
+      Prompt: {question}
+
+      Assistant response: {response}
+
+
+      Rules:
+
+      - Output exactly one of the allowed labels.
+
+      - Use neutral when no clear emotion is expressed.
+
+      - Return JSON only using:
+
+      {{"emotion": "one_label", "confidence": 0.0}}
+
+      '
+emotions:
+- anger
+- happiness
+- sadness
+- fear
+- disgust
+- surprise
+intensities:
+- 4.0
+- 5.0
+loading_config:
+  model_path: null
+  gpu_memory_utilization: 0.7
+  tensor_parallel_size: 2
+  max_model_len: 4096
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: float16
+  seed: 42
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+repe_eng_config:
+  direction_method: pca
+  data_dir: data/stimulus/crowd-enVent_textlike
+generation_config:
+  temperature: 1.2
+  max_new_tokens: 128
+  do_sample: true
+  top_p: 1.0
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+batch_size: 24
+max_evaluation_workers: 4
+pipeline_queue_size: 2
+output_dir: results/auto_experiments/emotion_check_system_prompt_matchness/quick_prompt_search_iteration3/v8_micro_scene
+run_sanity_check: false
