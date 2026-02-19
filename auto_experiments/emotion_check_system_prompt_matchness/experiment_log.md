@@ -79,3 +79,46 @@
 ## Next Iteration Focus
 - Objective: preserve steered gains while recovering neutral control and improving `disgust` / `surprise`.
 - Candidate direction: keep first-person concise style but alter scene constraints toward multi-sensory salience and anomaly cues, still with no explicit emotion wording.
+
+### Iteration 3 (completed)
+- Hypothesis: prompts that force sensory salience and immediate action impulse can improve high-intensity steering quality, especially weak classes, while still avoiding explicit emotion wording.
+- Setup:
+  - Config: `auto_experiments/emotion_check_system_prompt_matchness/configs/quick_intensity45_iteration3.yaml`
+  - Variants: `auto_experiments/emotion_check_system_prompt_matchness/prompt_variants_iteration3.json`
+  - Command:
+    - `python auto_experiments/emotion_check_system_prompt_matchness/run_prompt_variant_search.py --base-config auto_experiments/emotion_check_system_prompt_matchness/configs/quick_intensity45_iteration3.yaml --variants-json auto_experiments/emotion_check_system_prompt_matchness/prompt_variants_iteration3.json --results-root results/auto_experiments/emotion_check_system_prompt_matchness/quick_prompt_search_iteration3 --generated-config-dir auto_experiments/emotion_check_system_prompt_matchness/generated_configs/quick_prompt_search_iteration3 --summary-csv auto_experiments/emotion_check_system_prompt_matchness/quick_prompt_search_iteration3_summary.csv --cuda-devices 2,3`
+- Results summary: `auto_experiments/emotion_check_system_prompt_matchness/quick_prompt_search_iteration3_summary.csv`
+  - `v5_sensory_jolt`: accuracy `0.3738`, match score `0.3319`, neutral `0.0571` (best)
+  - `v2_diary_micro`: accuracy `0.3667`, match score `0.3310`, neutral `0.0000`
+  - `v7_boundary_recoil`: accuracy `0.3048`, match score `0.2756`, neutral `0.0000`
+  - `v6_expectation_break`: accuracy `0.3048`, match score `0.2702`, neutral `0.0286`
+  - `v8_micro_scene`: accuracy `0.0190`, match score `0.0148`, neutral `0.0286`
+- Hypothesis check:
+  - Supported for high-intensity quick search.
+  - `v5_sensory_jolt` slightly outperforms `v2_diary_micro`, so it is promoted to full-sweep validation.
+
+### Iteration 4 (invalid due evaluator quota)
+- Hypothesis: `v5_sensory_jolt` will outperform `v2_diary_micro` across full intensities (`0.5` to `5.0`) and maybe recover some neutral behavior.
+- Setup:
+  - Config: `auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep_v5_sensory_jolt.yaml`
+  - Override env:
+    - `EMOTION_CHECK_SYSTEM_PROMPT_OVERRIDE="Write one first-person micro-entry anchored in smell, taste, touch, sound, or visual detail; include a body cue and an immediate impulse. Under 24 words."`
+  - Command:
+    - `CUDA_VISIBLE_DEVICES=2,3 /home/jjl7137/anaconda3/bin/conda run -n llm python -m emotion_experiment_engine.emotion_experiment_series_runner --config auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep_v5_sensory_jolt.yaml`
+- Run output:
+  - `results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_v5_sensory_jolt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_211157`
+- Validation analysis:
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration4_vs_baseline`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration4_vs_v2`
+- Observed issue:
+  - Metrics collapse to zero is caused by judge failures, not by model generation.
+  - `detailed_results.csv` has `predicted_emotion=unknown` for most rows with `eval_error_detail` showing Gemini `429 quota exceeded`.
+  - Generated responses are present in `raw_results.json` and `detailed_results.csv`, so GPU inference is already preserved.
+- Hypothesis check:
+  - Not testable in this iteration because judge labels are invalid.
+
+## Recovery Plan (No GPU Rerun)
+- Re-score the saved run when Gemini quota resets, using cached responses only:
+  - `python -m emotion_experiment_engine.evaluate_saved --input results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_v5_sensory_jolt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_211157 --max-workers 4`
+- Then recompute comparison artifacts:
+  - `python auto_experiments/emotion_check_system_prompt_matchness/analyze_full_sweep.py --new results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_v5_sensory_jolt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_211157/detailed_results.csv --baseline results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_best_prompt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_200458/detailed_results.csv --out-dir auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration4_vs_v2`
