@@ -203,6 +203,11 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
         "Please choose one of the following options to answer, if unsure, choose the closest option. Output exactly the requested JSON without extra text."
         # "Please reflect on your current emotion and think about its negative impact on your decision making. Try to get rid of it then answer the question."
     )
+    open_ended_system_prompt_format = (
+        "You are writing a diary micro-entry in first person. "
+        "Use one vivid moment with body cues, attention focus, and action tendency. "
+        "Keep it under 30 words."
+    )
 
     def __init__(self, prompt_format: "PromptFormat", task_type: Optional[str] = None):
         super().__init__(prompt_format)
@@ -237,7 +242,14 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
         options: Optional[list] = None,
     ) -> str:
         override = os.getenv("EMOTION_CHECK_SYSTEM_PROMPT_OVERRIDE", "").strip()
-        prompt_text = override if override else self.system_prompt_format
+        is_emotion_scale = self.task_type == "emotion_scale"
+        is_psyset_emotion_eval = self.task_type == "psyset_emotion_eval"
+        default_prompt = (
+            self.open_ended_system_prompt_format
+            if (is_emotion_scale or is_psyset_emotion_eval)
+            else self.system_prompt_format
+        )
+        prompt_text = override if override else default_prompt
         # Only include persona and optional context; exclude the question from system
         if context:
             return f"{prompt_text}\n\nContext: {context}"

@@ -49,3 +49,41 @@ def test_emotion_check_uses_env_system_prompt_override():
 
     assert prompt_format.last_system_prompt == override
 
+
+def test_open_ended_tasks_use_diary_micro_default_without_override():
+    prompt_format = DummyPromptFormat()
+    expected = (
+        "You are writing a diary micro-entry in first person. "
+        "Use one vivid moment with body cues, attention focus, and action tendency. "
+        "Keep it under 30 words."
+    )
+
+    for task_type in ("emotion_scale", "psyset_emotion_eval"):
+        wrapper = EmotionCheckPromptWrapper(
+            prompt_format=prompt_format,
+            task_type=task_type,
+        )
+        wrapper(
+            context=None,
+            question="Describe this scene in one short sentence.",
+            user_messages="Please provide your answer.",
+            emotion="anger",
+            options=None,
+        )
+        assert prompt_format.last_system_prompt == expected
+
+
+def test_non_open_ended_tasks_keep_questionnaire_default_without_override():
+    prompt_format = DummyPromptFormat()
+    wrapper = EmotionCheckPromptWrapper(
+        prompt_format=prompt_format,
+        task_type="emotion_check",
+    )
+    wrapper(
+        context=None,
+        question="I finish tasks before deadlines.",
+        user_messages="Please provide your answer.",
+        emotion="anger",
+        options=["Strongly disagree", "Strongly agree"],
+    )
+    assert "psychological questionnaire" in prompt_format.last_system_prompt
