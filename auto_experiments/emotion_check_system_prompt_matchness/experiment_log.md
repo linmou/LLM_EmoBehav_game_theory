@@ -122,3 +122,34 @@
   - `python -m emotion_experiment_engine.evaluate_saved --input results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_v5_sensory_jolt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_211157 --max-workers 4`
 - Then recompute comparison artifacts:
   - `python auto_experiments/emotion_check_system_prompt_matchness/analyze_full_sweep.py --new results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_v5_sensory_jolt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_211157/detailed_results.csv --baseline results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_best_prompt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_200458/detailed_results.csv --out-dir auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration4_vs_v2`
+
+### Iteration 5 (completed, reduced to 5 intensities)
+- Hypothesis: with judge switched to `gemini-2.5-flash-lite` and only 5 intensities, `v5_sensory_jolt` may surpass `v2_diary_micro` while staying stable on quota.
+- Setup:
+  - Configs:
+    - `auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep5_v2_diary_micro.yaml`
+    - `auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep5_v5_sensory_jolt.yaml`
+  - Shared settings:
+    - judge model: `gemini-2.5-flash-lite`
+    - intensities: `[1.0, 2.0, 3.0, 4.0, 5.0]`
+    - GPUs: `CUDA_VISIBLE_DEVICES=2,3`
+  - Commands:
+    - `EMOTION_CHECK_SYSTEM_PROMPT_OVERRIDE="You are writing a diary micro-entry in first person. Use one vivid moment with body cues, attention focus, and action tendency. Keep it under 30 words." CUDA_VISIBLE_DEVICES=2,3 /home/jjl7137/anaconda3/bin/conda run -n llm python -m emotion_experiment_engine.emotion_experiment_series_runner --config auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep5_v2_diary_micro.yaml`
+    - `EMOTION_CHECK_SYSTEM_PROMPT_OVERRIDE="Write one first-person micro-entry anchored in smell, taste, touch, sound, or visual detail; include a body cue and an immediate impulse. Under 24 words." CUDA_VISIBLE_DEVICES=2,3 /home/jjl7137/anaconda3/bin/conda run -n llm python -m emotion_experiment_engine.emotion_experiment_series_runner --config auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep5_v5_sensory_jolt.yaml`
+- Run outputs:
+  - `results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep5_v2_diary_micro/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260219_001951`
+  - `results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep5_v5_sensory_jolt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260219_002427`
+- Analysis:
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration5_v5_vs_v2/overall_comparison.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration5_v5_vs_v2/best_intensity_per_emotion.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration5_v2_best_intensity3/confusion_matrix_counts_intensity_3.0.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration5_v2_best_intensity3/confusion_matrix_row_normalized_intensity_3.0.csv`
+- Results:
+  - Overall (`v2`): steered plain accuracy `0.2524`, match score `0.2252`
+  - Overall (`v5`): steered plain accuracy `0.2019`, match score `0.1802`
+  - Delta (`v5 - v2`): `-0.0505` plain accuracy, `-0.0450` match score
+  - Best overall intensity:
+    - `v2`: `3.0` (plain accuracy `0.2952`, match score `0.2657`)
+    - `v5`: `4.0` (plain accuracy `0.2571`, match score `0.2302`)
+- Hypothesis check:
+  - Not supported. Under the reduced 5-intensity setting and flash-lite judge, `v2_diary_micro` remains the best prompt.

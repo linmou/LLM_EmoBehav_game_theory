@@ -1,7 +1,8 @@
-# Intent: validate whether best prompt from quick search improves full intensity sweep.
+# PsySET-Inspired Emotion Eval Configuration
+# Purpose: evaluate whether steering vectors shift responses on PsySET-style prompts.
 
-experiment_name: "emotion_check_psyset_prompt_search_full_sweep_best_prompt"
-description: "Full intensity sweep with best non-emotion-worded system prompt"
+experiment_name: "emotion_check_psyset_emotion_eval"
+description: "PsySET-style open-ended emotion steering evaluation with Gemini 7-class judging"
 version: "1.0.0"
 
 models:
@@ -31,7 +32,7 @@ benchmarks:
         {{"emotion": "one_label", "confidence": 0.0}}
 
 emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
-intensities: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+intensities: [1.5, 2.5]
 
 loading_config:
   model_path: null
@@ -51,10 +52,10 @@ repe_eng_config:
   data_dir: "data/stimulus/crowd-enVent_textlike"
 
 generation_config:
-  temperature: 1.2
-  max_new_tokens: 128
+  temperature: 0.7
+  max_new_tokens: 96
   do_sample: true
-  top_p: 1.0
+  top_p: 0.9
   repetition_penalty: 1.0
   top_k: -1
   min_p: 0.0
@@ -65,5 +66,6 @@ generation_config:
 batch_size: 24
 max_evaluation_workers: 4
 pipeline_queue_size: 2
-output_dir: "results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_best_prompt"
+
+output_dir: "results/psyset_emotion_eval/crowd-enVent_textlike"
 run_sanity_check: false

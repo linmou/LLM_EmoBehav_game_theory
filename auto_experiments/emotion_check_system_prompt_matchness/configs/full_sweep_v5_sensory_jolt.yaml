@@ -14,7 +14,7 @@ benchmarks:
     base_data_dir: "data/emotion_scales"
     llm_eval_config:
       client: "gemini"
-      model: "gemini-2.5-flash"
+      model: "gemini-2.5-flash-lite"
       temperature: 0.0
       evaluation_prompt: |
         You are a strict emotion classifier.

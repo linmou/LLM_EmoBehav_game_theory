@@ -1,7 +1,7 @@
-# Intent: validate whether best prompt from quick search improves full intensity sweep.
+# Intent: 5-intensity validation run for v5_sensory_jolt with flash-lite judge.
 
-experiment_name: "emotion_check_psyset_prompt_search_full_sweep_best_prompt"
-description: "Full intensity sweep with best non-emotion-worded system prompt"
+experiment_name: "emotion_check_psyset_prompt_search_full_sweep5_v5_sensory_jolt"
+description: "5-intensity sweep with v5_sensory_jolt prompt and gemini-2.5-flash-lite judge"
 version: "1.0.0"
 
 models:
@@ -31,7 +31,7 @@ benchmarks:
         {{"emotion": "one_label", "confidence": 0.0}}
 
 emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
-intensities: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+intensities: [1.0, 2.0, 3.0, 4.0, 5.0]
 
 loading_config:
   model_path: null
@@ -65,5 +65,5 @@ generation_config:
 batch_size: 24
 max_evaluation_workers: 4
 pipeline_queue_size: 2
-output_dir: "results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_best_prompt"
+output_dir: "results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep5_v5_sensory_jolt"
 run_sanity_check: false
