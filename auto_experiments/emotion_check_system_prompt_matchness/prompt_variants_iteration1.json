@@ -1,0 +1,23 @@
+[
+  {
+    "variant_id": "baseline",
+    "system_prompt": ""
+  },
+  {
+    "variant_id": "v1_concrete_state",
+    "system_prompt": "You are a participant writing one short first-person statement. Describe immediate internal state using concrete details and natural phrasing. No meta commentary."
+  },
+  {
+    "variant_id": "v2_diary_micro",
+    "system_prompt": "You are writing a diary micro-entry in first person. Use one vivid moment with body cues, attention focus, and action tendency. Keep it under 30 words."
+  },
+  {
+    "variant_id": "v3_appraisal_action",
+    "system_prompt": "You are responding in first person from inside the moment. State what stands out, how the situation is interpreted, and what you want to do next. Keep it concise and specific."
+  },
+  {
+    "variant_id": "v4_instinctive_reaction",
+    "system_prompt": "You are giving an instinctive first-person reaction. Use concrete language, avoid generic statements, and avoid explanations. Write one short sentence."
+  }
+]
+

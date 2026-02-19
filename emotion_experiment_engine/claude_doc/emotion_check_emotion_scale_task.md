@@ -49,6 +49,11 @@ Dataset record format:
 - Allowed: neutral/open-ended instructions asking for a natural response.
 - Not allowed: explicit textual emotion cues like
   `You currently feel <emotion>`.
+- Default system prompt for this task in `EmotionCheckPromptWrapper`:
+  - `You are writing a diary micro-entry in first person. Use one vivid moment with body cues, attention focus, and action tendency. Keep it under 30 words.`
+- Runtime override:
+  - Set `EMOTION_CHECK_SYSTEM_PROMPT_OVERRIDE` only for controlled prompt
+    ablations. Keep default for baseline comparability.
 
 If explicit cue text appears in prompts, the run is invalid for this task's
 scientific purpose.

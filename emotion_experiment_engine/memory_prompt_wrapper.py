@@ -3,6 +3,7 @@ Memory benchmark prompt wrapper following GameScenarioDataset pattern.
 Integrates with neuro_manipulation.prompt_wrapper.PromptWrapper for proper model-specific formatting.
 """
 
+import os
 import re
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
@@ -202,6 +203,11 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
         "Please choose one of the following options to answer, if unsure, choose the closest option. Output exactly the requested JSON without extra text."
         # "Please reflect on your current emotion and think about its negative impact on your decision making. Try to get rid of it then answer the question."
     )
+    open_ended_system_prompt_format = (
+        "You are writing a diary micro-entry in first person. "
+        "Use one vivid moment with body cues, attention focus, and action tendency. "
+        "Keep it under 30 words."
+    )
 
     def __init__(self, prompt_format: "PromptFormat", task_type: Optional[str] = None):
         super().__init__(prompt_format)
@@ -235,10 +241,19 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
         question: Optional[str],
         options: Optional[list] = None,
     ) -> str:
+        override = os.getenv("EMOTION_CHECK_SYSTEM_PROMPT_OVERRIDE", "").strip()
+        is_emotion_scale = self.task_type == "emotion_scale"
+        is_psyset_emotion_eval = self.task_type == "psyset_emotion_eval"
+        default_prompt = (
+            self.open_ended_system_prompt_format
+            if (is_emotion_scale or is_psyset_emotion_eval)
+            else self.system_prompt_format
+        )
+        prompt_text = override if override else default_prompt
         # Only include persona and optional context; exclude the question from system
         if context:
-            return f"{self.system_prompt_format}\n\nContext: {context}"
-        return self.system_prompt_format
+            return f"{prompt_text}\n\nContext: {context}"
+        return prompt_text
 
     def __call__(
         self,
@@ -270,14 +285,15 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
         # Emotion priming to reduce deflection and bias toward active state
         is_academic = self.task_type == "academic_scale"
         is_emotion_scale = self.task_type == "emotion_scale"
-        # For academic_scale and emotion_scale, avoid explicit emotion text hints.
+        is_psyset_emotion_eval = self.task_type == "psyset_emotion_eval"
+        # For scale-style/open-ended emotion tasks, avoid explicit emotion text hints.
         emotion_hint = (
             ""
-            if (is_academic or is_emotion_scale)
+            if (is_academic or is_emotion_scale or is_psyset_emotion_eval)
             else (f"\n\nYou currently feel {emotion}." if emotion else "")
         )
 
-        if is_emotion_scale:
+        if is_emotion_scale or is_psyset_emotion_eval:
             free_text_instr = (
                 "\n\nTask: Write one short first-person response to the sentence above."
                 " Keep it natural and emotionally expressive."
