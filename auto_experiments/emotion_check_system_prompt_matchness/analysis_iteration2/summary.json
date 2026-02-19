@@ -1,0 +1,29 @@
+{
+  "new_run_path": "results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_best_prompt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_200458/detailed_results.csv",
+  "baseline_run_path": "results/psyset_emotion_eval/crowd-enVent_textlike/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_160043/detailed_results.csv",
+  "overlap_intensities": [
+    0.0,
+    0.5,
+    1.0,
+    1.5,
+    2.0,
+    2.5,
+    3.0,
+    3.5,
+    4.0
+  ],
+  "new_overall": {
+    "steered_plain_accuracy": 0.3019047619047619,
+    "steered_match_score": 0.27262857142857144,
+    "neutral_plain_accuracy": 0.02857142857142857,
+    "num_steered_rows": 2100,
+    "num_neutral_rows": 35
+  },
+  "baseline_overall": {
+    "steered_plain_accuracy": 0.2386904761904762,
+    "steered_match_score": 0.21286309523809524,
+    "neutral_plain_accuracy": 0.17142857142857143,
+    "num_steered_rows": 1680,
+    "num_neutral_rows": 35
+  }
+}

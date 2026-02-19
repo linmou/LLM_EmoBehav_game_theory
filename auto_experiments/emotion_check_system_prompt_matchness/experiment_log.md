@@ -40,7 +40,7 @@
   - Supported. Non-emotion-worded system prompt framing materially increased steered matchness.
   - Best variant (`v2_diary_micro`) outperformed baseline by `+0.1476` plain accuracy and `+0.1278` match score at intensity `4.0`.
 
-### Iteration 2 (planned)
+### Iteration 2 (completed)
 - Hypothesis: the best prompt from Iteration 1 (`v2_diary_micro`) will improve full-sweep metrics across intensities `0.5` to `5.0`, not only at a single high intensity.
 - Setup:
   - Config: `auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep_best_prompt.yaml`
@@ -48,3 +48,34 @@
     - `EMOTION_CHECK_SYSTEM_PROMPT_OVERRIDE="You are writing a diary micro-entry in first person. Use one vivid moment with body cues, attention focus, and action tendency. Keep it under 30 words."`
   - Command:
     - `CUDA_VISIBLE_DEVICES=2,3 /home/jjl7137/anaconda3/bin/conda run -n llm python -m emotion_experiment_engine.emotion_experiment_series_runner --config auto_experiments/emotion_check_system_prompt_matchness/configs/full_sweep_best_prompt.yaml`
+- Run output:
+  - `results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_best_prompt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_200458`
+- Analysis command:
+  - `python auto_experiments/emotion_check_system_prompt_matchness/analyze_full_sweep.py --new results/auto_experiments/emotion_check_system_prompt_matchness/full_sweep_best_prompt/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_200458/detailed_results.csv --baseline results/psyset_emotion_eval/crowd-enVent_textlike/Qwen2.5-3B-Instruct_emotion_check_psyset_emotion_eval_20260218_160043/detailed_results.csv --out-dir auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration2`
+- Analysis outputs:
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration2/overall_comparison.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration2/overlap_intensity_comparison.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration2/best_intensity_per_emotion.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration2/confusion_matrix_counts_steered_only.csv`
+  - `auto_experiments/emotion_check_system_prompt_matchness/analysis_iteration2/confusion_matrix_row_normalized_steered_only.csv`
+- Results:
+  - Overall steered (all new intensities): accuracy `0.3019`, match score `0.2726`
+  - Baseline steered: accuracy `0.2387`, match score `0.2129`
+  - Delta (overall, non-overlap): `+0.0632` accuracy, `+0.0598` match score
+  - Fair comparison on overlap intensities (`0.0..4.0`): `+0.0518` accuracy, `+0.0512` match score
+  - Neutral plain accuracy dropped from `0.1714` (baseline) to `0.0286` (new prompt)
+  - Best intensity by emotion:
+    - `anger`: `4.0` (accuracy `0.5429`)
+    - `fear`: `5.0` (accuracy `0.6571`)
+    - `happiness`: `4.5` (accuracy `0.7143`)
+    - `sadness`: `2.5` (accuracy `0.6000`)
+    - `surprise`: `2.0` (accuracy `0.1714`)
+    - `disgust`: `5.0` (accuracy `0.0286`)
+- Hypothesis check:
+  - Partially supported.
+  - Supported for steered emotions overall and on overlap intensities.
+  - Not supported for balanced behavior: `disgust` and `surprise` remain weak, and neutral control degrades sharply.
+
+## Next Iteration Focus
+- Objective: preserve steered gains while recovering neutral control and improving `disgust` / `surprise`.
+- Candidate direction: keep first-person concise style but alter scene constraints toward multi-sensory salience and anomaly cues, still with no explicit emotion wording.
