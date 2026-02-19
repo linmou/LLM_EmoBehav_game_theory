@@ -164,9 +164,10 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
         """
         Load emotion check questions from JSON/JSONL file.
 
-        Supports two schemas:
+        Supports three schemas:
         1) Basic validation schema (id, input, ground_truth, category)
         2) Academic scales schema (emotion, Instructions, question, source)
+        3) Emotion scale schema (id, sentence) for subjective sentence prompts
         """
 
         raw_data = self._load_raw_data()
@@ -227,6 +228,31 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
                 )
             return items
 
+        # Subjective sentence schema for emotion-scale task
+        # Each record provides a sentence prompt that should be answered in free text.
+        subjective_schema = "sentence" in first
+        if subjective_schema:
+            for idx, item_data in enumerate(raw_data):
+                sentence = str(item_data.get("sentence", "")).strip()
+                if not sentence:
+                    continue
+                item_id = item_data.get("id", idx)
+                items.append(
+                    BenchmarkItem(
+                        id=item_id,
+                        input_text=sentence,
+                        context=None,
+                        ground_truth=item_data.get("ground_truth", "neutral"),
+                        metadata={
+                            "category": "emotion_scale",
+                            "expects_emotion": True,
+                            "response_type": "free_text",
+                            "source": item_data.get("source", "style_vectors_subjective_sentences"),
+                        },
+                    )
+                )
+            return items
+
         # Fallback: unknown schema - try to coerce minimal fields
         for idx, item_data in enumerate(raw_data):
             text = item_data.get("input") or item_data.get("question") or "Describe your current emotion."
@@ -273,6 +299,79 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
 
         return "unknown"
 
+    @staticmethod
+    def _normalize_confidence(value: Any) -> float:
+        """Normalize judge confidence into [0.0, 1.0]."""
+        try:
+            conf = float(value)
+        except Exception:
+            conf = 0.5
+        if conf < 0.0:
+            return 0.0
+        if conf > 1.0:
+            return 1.0
+        return conf
+
+    def _score_emotion_response(
+        self, response: str, ground_truth: Any, prompt: str = ""
+    ) -> tuple[float, Dict[str, Any]]:
+        """Return score and detailed evaluation metadata for emotion tasks."""
+        ground_truth_text = str(ground_truth).strip().lower()
+
+        if hasattr(self, "llm_eval_config") and self.llm_eval_config is not None:
+            from ..evaluation_utils import llm_evaluate_response
+
+            eval_prompt = self.llm_eval_config.get("evaluation_prompt", "")
+            query = eval_prompt.format(question=prompt, response=response)
+            eval_config = dict(self.llm_eval_config)
+            eval_config.pop("evaluation_prompt", None)
+            eval_config.setdefault("model", "gpt-4o-mini")
+            eval_config.setdefault("temperature", 0.1)
+
+            try:
+                result = llm_evaluate_response(
+                    system_prompt="You are an expert emotion classifier. Always respond with valid JSON format.",
+                    query=query,
+                    llm_eval_config=eval_config,
+                )
+                detected_emotion = str(result.get("emotion", "neutral")).strip().lower()
+                confidence = self._normalize_confidence(result.get("confidence", 0.5))
+                matched = detected_emotion == ground_truth_text
+                details = {
+                    "predicted_emotion": detected_emotion,
+                    "confidence": confidence,
+                    "matched_ground_truth": matched,
+                    "judge_client": str(eval_config.get("client", "openai")).lower(),
+                    "judge_model": str(eval_config.get("model", "gpt-4o-mini")),
+                    "judge_method": "llm",
+                }
+                return float(matched) * confidence, details
+            except Exception as exc:
+                detected_emotion = self._classify_emotion_response(response)
+                matched = detected_emotion == ground_truth_text
+                details = {
+                    "predicted_emotion": detected_emotion,
+                    "confidence": 1.0 if matched else 0.0,
+                    "matched_ground_truth": matched,
+                    "judge_client": str(eval_config.get("client", "openai")).lower(),
+                    "judge_model": str(eval_config.get("model", "gpt-4o-mini")),
+                    "judge_method": "rule_based_fallback",
+                    "evaluation_error": str(exc),
+                }
+                return float(matched), details
+
+        detected_emotion = self._classify_emotion_response(response)
+        matched = detected_emotion == ground_truth_text
+        details = {
+            "predicted_emotion": detected_emotion,
+            "confidence": 1.0 if matched else 0.0,
+            "matched_ground_truth": matched,
+            "judge_client": "rule_based",
+            "judge_model": "rule_based",
+            "judge_method": "rule_based",
+        }
+        return float(matched), details
+
     def evaluate_response(
         self, response: str, ground_truth: Any, task_name: str, prompt: str = ""
     ) -> float:
@@ -309,40 +408,80 @@ class EmotionCheckDataset(BaseBenchmarkDataset):
             score = 0.5 * (1.0 + keying_sign * target_sign * z)
             return max(0.0, min(1.0, float(score)))
 
-        # Fallback: emotion word classification
-        # If LLM evaluation is configured, use GPT-4o-mini for evaluation
-        if hasattr(self, "llm_eval_config") and self.llm_eval_config is not None:
-            from ..evaluation_utils import llm_evaluate_response
+        score, _ = self._score_emotion_response(response, ground_truth, prompt)
+        return score
 
-            # Construct evaluation query with the configured prompt template
-            eval_prompt = self.llm_eval_config.get("evaluation_prompt", "")
-            query = eval_prompt.format(question=prompt, response=response)
+    def evaluate_batch(
+        self,
+        responses: List[str],
+        ground_truths: List[Any],
+        task_names: List[str],
+        prompts: List[str],
+    ) -> List[float]:
+        """
+        Compatibility wrapper returning scores only.
 
-            try:
-                # Call LLM evaluation
-                result = llm_evaluate_response(
-                    system_prompt="You are an expert emotion classifier. Always respond with valid JSON format.",
-                    query=query,
-                    llm_eval_config={
-                        "model": self.llm_eval_config.get("model", "gpt-4o-mini"),
-                        "temperature": self.llm_eval_config.get("temperature", 0.1),
-                    },
+        Detailed outputs are available via evaluate_batch_with_details().
+        """
+        scores, eval_errors, eval_details = self.evaluate_batch_with_details(
+            responses=responses,
+            ground_truths=ground_truths,
+            task_names=task_names,
+            prompts=prompts,
+        )
+        self._last_eval_errors = eval_errors  # type: ignore[attr-defined]
+        self._last_eval_details = eval_details  # type: ignore[attr-defined]
+        return scores
+
+    def evaluate_batch_with_details(
+        self,
+        responses: List[str],
+        ground_truths: List[Any],
+        task_names: List[str],
+        prompts: List[str],
+    ) -> tuple[List[float], List[Any], List[Any]]:
+        """
+        Batch evaluation with per-item detail persistence.
+
+        Returns:
+        - scores
+        - eval_errors: list[str | None]
+        - eval_details: list[dict | None]
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        last_eval_errors: List[Any] = [None] * len(responses)
+        last_eval_details: List[Any] = [None] * len(responses)
+
+        scores: List[float] = [float("nan")] * len(responses)
+        max_workers = getattr(self, "eval_workers", 64)
+        max_workers = max(1, min(int(max_workers), len(responses)))
+
+        def _evaluate_one(idx: int, resp: str, gt: Any, task: str, prompt: str):
+            if isinstance(gt, dict) and {"active", "target"}.issubset(gt.keys()):
+                score = self.evaluate_response(resp, gt, task, prompt)
+                return idx, score, None
+            score, details = self._score_emotion_response(resp, gt, prompt)
+            return idx, score, details
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_idx = {
+                executor.submit(_evaluate_one, i, resp, gt, task, prompt): i
+                for i, (resp, gt, task, prompt) in enumerate(
+                    zip(responses, ground_truths, task_names, prompts)
                 )
+            }
 
-                # Extract emotion classification from result
-                detected_emotion = result.get("emotion", "neutral").lower()
-                confidence = result.get("confidence", 0.5)
+            for future, item_idx in future_to_idx.items():
+                try:
+                    idx, score, details = future.result()
+                except Exception as exc:
+                    last_eval_errors[item_idx] = str(exc)
+                    continue
+                scores[idx] = score
+                last_eval_details[idx] = details
 
-                return float(detected_emotion == ground_truth) * confidence
-
-            except Exception as e:
-                print(f"LLM evaluation failed: {e}")
-                # Fall back to rule-based on error
-                detected_emotion = self._classify_emotion_response(response)
-                return float(detected_emotion == ground_truth)
-        # Fallback to rule-based classification
-        detected_emotion = self._classify_emotion_response(response)
-        return float(detected_emotion == ground_truth)
+        return scores, last_eval_errors, last_eval_details
 
     def evaluate_with_detailed_metrics(
         self, response: str, ground_truth: Any, task_name: str

@@ -3,6 +3,7 @@ Memory benchmark prompt wrapper following GameScenarioDataset pattern.
 Integrates with neuro_manipulation.prompt_wrapper.PromptWrapper for proper model-specific formatting.
 """
 
+import os
 import re
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
@@ -202,6 +203,11 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
         "Please choose one of the following options to answer, if unsure, choose the closest option. Output exactly the requested JSON without extra text."
         # "Please reflect on your current emotion and think about its negative impact on your decision making. Try to get rid of it then answer the question."
     )
+    open_ended_system_prompt_format = (
+        "You are writing a diary micro-entry in first person. "
+        "Use one vivid moment with body cues, attention focus, and action tendency. "
+        "Keep it under 30 words."
+    )
 
     def __init__(self, prompt_format: "PromptFormat", task_type: Optional[str] = None):
         super().__init__(prompt_format)
@@ -235,10 +241,19 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
         question: Optional[str],
         options: Optional[list] = None,
     ) -> str:
+        override = os.getenv("EMOTION_CHECK_SYSTEM_PROMPT_OVERRIDE", "").strip()
+        is_emotion_scale = self.task_type == "emotion_scale"
+        is_psyset_emotion_eval = self.task_type == "psyset_emotion_eval"
+        default_prompt = (
+            self.open_ended_system_prompt_format
+            if (is_emotion_scale or is_psyset_emotion_eval)
+            else self.system_prompt_format
+        )
+        prompt_text = override if override else default_prompt
         # Only include persona and optional context; exclude the question from system
         if context:
-            return f"{self.system_prompt_format}\n\nContext: {context}"
-        return self.system_prompt_format
+            return f"{prompt_text}\n\nContext: {context}"
+        return prompt_text
 
     def __call__(
         self,
@@ -264,30 +279,51 @@ class EmotionCheckPromptWrapper(MemoryPromptWrapper):
             base_user_msg = str(base_user)
 
         question_part = question
+        question_text = question_part or ""
         options_part = self._format_options_numeric(options)
 
         # Emotion priming to reduce deflection and bias toward active state
         is_academic = self.task_type == "academic_scale"
-        # For academic_scale we avoid explicit emotion hint to prevent describing feelings
-        emotion_hint = "" if is_academic else (f"\n\nYou currently feel {emotion}." if emotion else "")
-
-        # JSON response format instruction
-        json_instr = (
-            "\n\nTask: Answer using one of the listed options."
-            " Respond in JSON only, exactly in the form: {'response': '<copy the chosen option text exactly>' }"
-            " Do not output a number or letter label; return the option text itself."
-            " Return only the JSON, no extra text."
+        is_emotion_scale = self.task_type == "emotion_scale"
+        is_psyset_emotion_eval = self.task_type == "psyset_emotion_eval"
+        # For scale-style/open-ended emotion tasks, avoid explicit emotion text hints.
+        emotion_hint = (
+            ""
+            if (is_academic or is_emotion_scale or is_psyset_emotion_eval)
+            else (f"\n\nYou currently feel {emotion}." if emotion else "")
         )
 
-        user_content = (
-            question_part
-            + ("\n" if question_part else "")
-            + options_part
-            + ("\n\n" if options_part or question_part else "")
-            + base_user_msg.strip()
-            + emotion_hint
-            + json_instr
-        ).strip()
+        if is_emotion_scale or is_psyset_emotion_eval:
+            free_text_instr = (
+                "\n\nTask: Write one short first-person response to the sentence above."
+                " Keep it natural and emotionally expressive."
+                " Do not output JSON, labels, or explanations."
+            )
+            user_content = (
+                question_text
+                + ("\n\n" if question_part else "")
+                + base_user_msg.strip()
+                + emotion_hint
+                + free_text_instr
+            ).strip()
+        else:
+            # JSON response format instruction
+            json_instr = (
+                "\n\nTask: Answer using one of the listed options."
+                " Respond in JSON only, exactly in the form: {'response': '<copy the chosen option text exactly>' }"
+                " Do not output a number or letter label; return the option text itself."
+                " Return only the JSON, no extra text."
+            )
+
+            user_content = (
+                question_text
+                + ("\n" if question_part else "")
+                + options_part
+                + ("\n\n" if options_part or question_part else "")
+                + base_user_msg.strip()
+                + emotion_hint
+                + json_instr
+            ).strip()
 
         return self.prompt_format.build(
             self.system_prompt(augmented_context, question, options),
@@ -317,11 +353,11 @@ class PasskeyPromptWrapper(MemoryPromptWrapper):
 
     def augment_context(
         self,
-        context,
-        augmentation_config,
-        answer,
+        context: Optional[str],
+        augmentation_config: Optional[Dict[str, Any]] = None,
+        answer: Optional[str] = None,
         emotion: Optional[str] = None,
-    ):
+    ) -> Optional[str]:
         if not context or not augmentation_config:
             return context
 
@@ -437,8 +473,8 @@ class LongbenchRetrievalPromptWrapper(MemoryPromptWrapper):
     def augment_context(
         self,
         context: Optional[str],
-        augmentation_config: Optional[Dict[str, Any]],
-        answer: Optional[str],
+        augmentation_config: Optional[Dict[str, Any]] = None,
+        answer: Optional[str] = None,
         emotion: Optional[str] = None,
     ) -> Optional[str]:
         if not context or not augmentation_config:
