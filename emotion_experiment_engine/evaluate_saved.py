@@ -46,7 +46,7 @@ def _load_manifest(run_dir: Path) -> dict:
     manifest_path = run_dir / "experiment_config.json"
     if not manifest_path.exists():
         LOGGER.warning(f"Cannot locate experiment_config.json in {run_dir}. Did you point to a valid run directory?")
-        raise FileNotFoundError(
+        return FileNotFoundError(
             f"Cannot locate experiment_config.json in {run_dir}. Did you point to a valid run directory?"
         )
     return json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -162,14 +162,8 @@ def evaluate_saved_run(run_dir: Path | str, max_workers: int = 8) -> pd.DataFram
         prompts = [record.prompt for record in block]
 
         try:
-            if hasattr(dataset, "evaluate_batch_with_details"):
-                scores, eval_errors, eval_details = dataset.evaluate_batch_with_details(
-                    responses, ground_truths, task_names, prompts
-                )
-            else:
-                scores = dataset.evaluate_batch(responses, ground_truths, task_names, prompts)
-                eval_errors = getattr(dataset, "_last_eval_errors", None)
-                eval_details = getattr(dataset, "_last_eval_details", None)
+            scores = dataset.evaluate_batch(responses, ground_truths, task_names, prompts)
+            eval_errors = getattr(dataset, "_last_eval_errors", None)
         except Exception as exc:  # pragma: no cover - defensive logging
             LOGGER.error(
                 "Batch evaluation failed for chunk starting at %d: %s; falling back to per-item scoring",
@@ -218,13 +212,6 @@ def evaluate_saved_run(run_dir: Path | str, max_workers: int = 8) -> pd.DataFram
             elif record.error:
                 # Reset any lingering error when batch succeeded and dataset provided no details.
                 record.error = None
-
-            if eval_details and idx < len(eval_details):
-                detail_val = eval_details[idx]
-                if isinstance(detail_val, dict):
-                    if record.metadata is None:
-                        record.metadata = {}
-                    record.metadata["evaluation"] = detail_val
 
         evaluated += len(block)
         percent = 0.0 if total_items == 0 else (evaluated / total_items) * 100.0

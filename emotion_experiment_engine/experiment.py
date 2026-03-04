@@ -681,9 +681,6 @@ class EmotionExperiment:
         cleaned_responses = [empty_think_prefix.sub("", r or "") for r in responses]
 
         force_eval = getattr(self, "_force_evaluate", False)
-        scores: List[Optional[float]]
-        eval_errors: List[Optional[str]]
-        eval_details: List[Any]
         if self.defer_evaluation and not force_eval:
             if not self._defer_logged:
                 self.logger.info(
@@ -692,7 +689,6 @@ class EmotionExperiment:
                 self._defer_logged = True
             scores = [None] * len(responses)
             eval_errors = [None] * len(responses)
-            eval_details = [None] * len(responses)
             if hasattr(self.dataset, "_last_eval_errors"):
                 try:
                     self.dataset._last_eval_errors = eval_errors  # type: ignore[attr-defined]
@@ -701,32 +697,16 @@ class EmotionExperiment:
         else:
             try:
                 task_names = [self.config.benchmark.task_type] * len(responses)
-                if hasattr(self.dataset, "evaluate_batch_with_details"):
-                    scores, eval_errors_raw, eval_details_raw = self.dataset.evaluate_batch_with_details(
-                        cleaned_responses,
-                        batch_ground_truths,
-                        task_names,
-                        batch_prompts,
-                    )
-                else:
-                    scores = self.dataset.evaluate_batch(
-                        cleaned_responses, batch_ground_truths, task_names, batch_prompts
-                    )
-                    eval_errors_raw = getattr(self.dataset, "_last_eval_errors", None)
-                    eval_details_raw = getattr(self.dataset, "_last_eval_details", None)
+                scores = self.dataset.evaluate_batch(
+                    cleaned_responses, batch_ground_truths, task_names, batch_prompts
+                )
             except Exception as e:
                 self.logger.error(f"Batch evaluation failed: {e}")
                 scores = [0.0] * len(responses)
-                eval_errors_raw = None
-                eval_details_raw = None
-            if not eval_errors_raw or len(eval_errors_raw) != len(scores):
+
+            eval_errors = getattr(self.dataset, "_last_eval_errors", None)
+            if not eval_errors or len(eval_errors) != len(scores):
                 eval_errors = [None] * len(scores)
-            else:
-                eval_errors = [str(err) if err is not None else None for err in eval_errors_raw]
-            if not eval_details_raw or len(eval_details_raw) != len(scores):
-                eval_details = [None] * len(scores)
-            else:
-                eval_details = list(eval_details_raw)
 
         # Create result records with batch-computed scores
         for i, (response, score, prompt, item, ground_truth) in enumerate(
@@ -740,10 +720,6 @@ class EmotionExperiment:
                 "benchmark": self.config.benchmark.name,
                 "item_metadata": item.metadata or {},
             }
-            if not (self.defer_evaluation and not force_eval):
-                detail = eval_details[i] if i < len(eval_details) else None
-                if isinstance(detail, dict):
-                    metadata["evaluation"] = detail
 
             if hasattr(self.dataset, "record_model_patch"):
                 try:
@@ -862,11 +838,8 @@ class EmotionExperiment:
                             for opt in options:
                                 if not isinstance(opt, dict):
                                     continue
-                                raw_opt_id = opt.get("id")
-                                if raw_opt_id is None:
-                                    continue
                                 try:
-                                    opt_id = int(raw_opt_id)
+                                    opt_id = int(opt.get("id"))
                                 except Exception:
                                     continue
                                 if opt_id == option_id:
@@ -891,27 +864,6 @@ class EmotionExperiment:
                     "benchmark": (result.metadata or {}).get("benchmark", ""),
                     "repeat_id": getattr(result, "repeat_id", None),
                     "error": getattr(result, "error", None),
-                    "predicted_emotion": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "predicted_emotion"
-                    ),
-                    "eval_confidence": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "confidence"
-                    ),
-                    "emotion_match": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "matched_ground_truth"
-                    ),
-                    "judge_client": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "judge_client"
-                    ),
-                    "judge_model": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "judge_model"
-                    ),
-                    "judge_method": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "judge_method"
-                    ),
-                    "eval_error_detail": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "evaluation_error"
-                    ),
                 }
             )
 
@@ -1111,7 +1063,7 @@ class EmotionExperiment:
             readme_content = (
                 "# Experiment Results Files\n\n"
                 "This folder contains outputs from EmotionExperiment. Files:\n\n"
-                "- detailed_results.csv: Item-level records including emotion, intensity, repeat_id, response, ground_truth, score, and evaluator outputs (predicted_emotion, eval_confidence, judge metadata) when available.\n"
+                "- detailed_results.csv: Item-level records including emotion, intensity, repeat_id, response, ground_truth, score.\n"
                 "- raw_results.json: Full JSON dump of all records with metadata (benchmark, item metadata).\n"
                 "- summary_results.csv: Aggregates per (emotion,intensity) across all repeats (mean, std, count, min, max).\n"
                 "- summary_by_repeat.csv: Aggregates per (emotion,intensity,repeat_id).\n"
