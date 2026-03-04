@@ -101,6 +101,7 @@ def load_emotion_readers(
         "hidden_layers": hidden_layers,
         "n_difference": config["n_difference"],
         "direction_method": config["direction_method"],
+        "direction_finder_kwargs": config.get("direction_finder_kwargs", {}),
         "experiment_mode": experiment_mode,
         "multimodal_intent": multimodal_intent,
         "emotion_data_seed": emotion_data_seed,
@@ -150,6 +151,7 @@ def load_emotion_readers(
         config["rep_token"],
         config["n_difference"],
         config["direction_method"],
+        direction_finder_kwargs=config.get("direction_finder_kwargs", {}),
         read_args=args,
         save_path=cache_filename,
     )
