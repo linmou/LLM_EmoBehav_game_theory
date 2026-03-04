@@ -585,6 +585,22 @@ class RepControlVLLMHook:
         else:
             raise NotImplementedError(f"Operator '{operator_name}' not implemented.")
 
+    def _reset_controller_state(self, layer_ids: list[int]) -> list[bool]:
+        """Reset worker-side rep-control state for the provided layer ids."""
+        reset_results = []
+        for layer_id in layer_ids:
+            if layer_id not in self.layers:
+                continue
+            rpc_results = self.model.llm_engine.collective_rpc(
+                "_nm_repcontrol_reset_state",
+                args=(layer_id, self.block_name),
+            )
+            reset_results.append(all(rpc_results))
+            logger.debug(
+                f"RPC reset state results for layer {layer_id}: {rpc_results}"
+            )
+        return reset_results
+
     def __call__(
         self,
         text_inputs: list[str],
@@ -618,6 +634,13 @@ class RepControlVLLMHook:
         control_active = len(activations) > 0
 
         try:
+            # Always clear any stale worker-side state before generation.
+            pre_reset_results = self._reset_controller_state(self.layers)
+            if pre_reset_results and not all(pre_reset_results):
+                logger.warning(
+                    "Failed to pre-reset controller state on some workers/layers."
+                )
+
             # 1. Set controller state via RPC if activations are provided
             if control_active:
                 logger.info(
@@ -695,24 +718,9 @@ class RepControlVLLMHook:
         finally:
             # 4. Reset controller state via RPC if it was active
             if control_active:
-                logger.info(
-                    f"Resetting controller state for layers {list(activations.keys())}..."
-                )
-                reset_results = []
-                # Reset state only for layers where it was potentially set
-                for layer_id in activations.keys():
-                    if layer_id not in self.layers:
-                        continue  # Skip layers not managed by this instance
-
-                    rpc_results = self.model.llm_engine.collective_rpc(
-                        "_nm_repcontrol_reset_state",
-                        args=(layer_id, self.block_name),
-                    )
-                    reset_results.append(all(rpc_results))
-                    logger.debug(
-                        f"RPC reset state results for layer {layer_id}: {rpc_results}"
-                    )
-                if not all(reset_results):
+                logger.info("Resetting controller state for all managed layers...")
+                reset_results = self._reset_controller_state(self.layers)
+                if reset_results and not all(reset_results):
                     logger.warning(
                         "Failed to reset controller state on some workers/layers."
                     )

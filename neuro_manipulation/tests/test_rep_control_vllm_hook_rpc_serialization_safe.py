@@ -107,3 +107,24 @@ class TestRepControlVllmHookRpcSerializationSafe(unittest.TestCase):
         self.assertIsInstance(state.get("kwargs"), dict)
         self.assertIsInstance(state["kwargs"]["position_ids"], list)
         self.assertIsInstance(state["kwargs"]["nested"]["arr"], list)
+
+    def test_neutral_call_still_resets_repcontrol_state(self):
+        # Responsible file: neuro_manipulation/repe/rep_control_vllm_hook.py
+        # Purpose: neutral/inactive calls must hard-reset worker state to avoid control leakage.
+        from neuro_manipulation.repe.rep_control_vllm_hook import RepControlVLLMHook
+
+        model = _FakeLLM()
+        rep_control = RepControlVLLMHook(
+            model=model,
+            tokenizer=None,
+            layers=[0, 1],
+            block_name="decoder_block",
+            control_method="reading_vec",
+            tensor_parallel_size=1,
+        )
+        model.llm_engine.calls.clear()
+
+        _ = rep_control(["hi"], activations=None, max_new_tokens=1)
+
+        reset_calls = [c for c in model.llm_engine.calls if c[0] == "_nm_repcontrol_reset_state"]
+        self.assertEqual(len(reset_calls), 2)

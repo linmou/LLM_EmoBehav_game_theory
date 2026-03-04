@@ -240,6 +240,70 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         self.assertEqual(result.intensity, 0.0)
         self.assertIn("neutral_response", result.response)
 
+    def test_neutral_condition_uses_no_steering_activations(
+        self,
+    ):
+        """Neutral run should bypass control vectors and use activations=None."""
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+        experiment.is_vllm = True
+        experiment.model = MagicMock()
+        experiment.hidden_layers = [-1, -2]
+        experiment.cur_emotion = "neutral"
+        experiment.cur_intensity = 0.0
+        dataloader = object()
+
+        import numpy as np
+
+        dummy_reader = MagicMock()
+        dummy_reader.directions = {-1: np.array([0.1, 0.2]), -2: np.array([0.2, -0.1])}
+        dummy_reader.direction_signs = {-1: np.array([1.0, -1.0]), -2: np.array([1.0, 1.0])}
+
+        captured_activations = []
+
+        def _capture_forward(_dataloader, activations):
+            captured_activations.append(activations)
+            return []
+
+        experiment._forward_dataloader = _capture_forward
+
+        results = experiment._infer_with_activation(dummy_reader, dataloader)
+
+        self.assertEqual(len(results), 0)
+        self.assertEqual(len(captured_activations), 1)
+        self.assertIsNone(captured_activations[0])
+
+    def test_run_experiment_resets_vllm_prefix_cache_between_conditions(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: avoid cross-condition contamination when prompts are reused.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+        experiment.is_vllm = True
+        experiment.model = MagicMock()
+        experiment.model.reset_prefix_cache = MagicMock()
+        experiment.model.reset_mm_cache = MagicMock()
+        experiment.config = MagicMock()
+        experiment.config.emotions = ["anger"]
+        experiment.config.intensities = [1.5]
+        experiment.config.benchmark = MagicMock()
+        experiment.config.benchmark.name = "game_theory_decision"
+        experiment.config.benchmark.task_type = "Prisoners_Dilemma"
+        experiment.repeat_runs = 1
+        experiment.cur_repeat = 0
+        experiment.emotion_rep_readers = {"anger": MagicMock()}
+        experiment.defer_evaluation = False
+        experiment._force_evaluate = False
+        experiment.build_dataloader = MagicMock(return_value=object())
+        fake_record = MagicMock()
+        fake_record.metadata = None
+        experiment._infer_with_activation = MagicMock(return_value=[fake_record])
+        experiment._save_results = MagicMock(return_value=pd.DataFrame())
+
+        experiment.run_experiment()
+
+        self.assertEqual(experiment.model.reset_prefix_cache.call_count, 2)
+        self.assertEqual(experiment.model.reset_mm_cache.call_count, 2)
+
     @patch("emotion_experiment_engine.experiment.setup_model_and_tokenizer")
     @patch("emotion_experiment_engine.experiment.ModelLayerDetector")
     @patch("emotion_experiment_engine.experiment.load_emotion_readers")

@@ -379,6 +379,23 @@ class EmotionExperiment:
 
         return dataloader
 
+    def _reset_vllm_caches(self, context: str) -> None:
+        """Reset vLLM caches to avoid cross-condition contamination."""
+        if not self.is_vllm or self.model is None:
+            return
+        try:
+            if hasattr(self.model, "reset_prefix_cache"):
+                self.model.reset_prefix_cache()
+            if hasattr(self.model, "reset_mm_cache"):
+                self.model.reset_mm_cache()
+            self.logger.info("Reset vLLM caches before condition: %s", context)
+        except Exception as exc:
+            self.logger.warning(
+                "Failed to reset vLLM caches before condition '%s': %s",
+                context,
+                exc,
+            )
+
     def run_experiment(self) -> pd.DataFrame:
         """Run the complete emotion experiment"""
         self.logger.info("Starting emotion experiment")
@@ -398,6 +415,7 @@ class EmotionExperiment:
             for intensity in self.config.intensities:
                 self.logger.info(f"Processing intensity: {intensity}")
                 self.cur_intensity = intensity
+                self._reset_vllm_caches(f"{emotion}@{intensity}")
                 # Repeat independent runs for this condition
                 for r in range(self.repeat_runs):
                     self.cur_repeat = r
@@ -414,6 +432,7 @@ class EmotionExperiment:
         self.cur_emotion = "neutral"
         self.cur_intensity = 0.0  # set to 0.0 to avoid using activations
         self.logger.info("Processing neutral baseline")
+        self._reset_vllm_caches("neutral@0.0")
 
         # Use the same rep_reader for neutral (with 0 intensity)
         data_loader = self.build_dataloader(self.cur_emotion)
@@ -439,7 +458,11 @@ class EmotionExperiment:
 
         # For vLLM models, use cpu device
         device = torch.device("cpu") if self.is_vllm else self.model.device
-        if rep_reader is None:
+        use_neutral_baseline = (
+            str(self.cur_emotion).lower() == "neutral"
+            or float(self.cur_intensity or 0.0) == 0.0
+        )
+        if rep_reader is None or use_neutral_baseline:
             activations = None
         else:
             activations = {
