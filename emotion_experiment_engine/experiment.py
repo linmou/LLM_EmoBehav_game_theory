@@ -219,7 +219,57 @@ class EmotionExperiment:
         self.rep_control_pipeline = None
         self.is_vllm = False
         self.hidden_layers = []
+        self.control_layers = []
         self.repe_config = None
+
+    def _select_control_layers(
+        self, hidden_layers: List[int], repe_config: Optional[Dict[str, Any]]
+    ) -> List[int]:
+        """Select intervention layers from detected hidden layers."""
+        if not hidden_layers:
+            raise ValueError("No hidden layers detected for control layer selection.")
+
+        repe_config = repe_config or {}
+        control_cfg = repe_config.get("control_layers") or {}
+        strategy = control_cfg.get("strategy", "middle_third")
+
+        if strategy == "middle_third":
+            start = len(hidden_layers) // 3
+            end = (2 * len(hidden_layers)) // 3
+            selected = hidden_layers[start:end]
+        elif strategy == "last_5":
+            if len(hidden_layers) < 5:
+                raise ValueError(
+                    "control_layers.strategy=last_5 requires at least 5 hidden layers."
+                )
+            selected = hidden_layers[:5]
+        elif strategy == "explicit":
+            ids = control_cfg.get("ids")
+            if not isinstance(ids, list) or not ids:
+                raise ValueError(
+                    "control_layers.strategy=explicit requires non-empty list 'ids'."
+                )
+            if not all(isinstance(layer_id, int) for layer_id in ids):
+                raise ValueError("control_layers.ids must contain only integers.")
+            invalid_ids = [layer_id for layer_id in ids if layer_id not in hidden_layers]
+            if invalid_ids:
+                raise ValueError(
+                    f"control_layers.ids contains values outside detected hidden layers: {invalid_ids}"
+                )
+            selected = ids
+        else:
+            raise ValueError(
+                f"Unsupported control_layers strategy: {strategy}. "
+                "Supported strategies: middle_third, last_5, explicit."
+            )
+
+        if not selected:
+            raise ValueError(
+                "Control layer selection resolved to empty layers. "
+                "Check model depth or control_layers config."
+            )
+
+        return selected
 
     def _setup_gpu_components(self, config: ExperimentConfig):
         """Setup GPU-dependent components: models, emotion readers, pipeline"""
@@ -252,6 +302,12 @@ class EmotionExperiment:
         num_hidden_layers = ModelLayerDetector.num_layers(self.model)
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
+        self.control_layers = self._select_control_layers(
+            self.hidden_layers, self.repe_config
+        )
+        self.logger.info(
+            f"Using control layers (strategy={self.repe_config.get('control_layers', {}).get('strategy', 'middle_third')}): {self.control_layers}"
+        )
 
         if self.neutral_only:
             self.emotion_rep_readers = {}
@@ -289,10 +345,7 @@ class EmotionExperiment:
             "rep-control-vllm" if self.is_vllm else "rep-control",
             model=self.model,
             tokenizer=self.tokenizer,  # Use basic tokenizer instead of tokenizer_temp
-            # layers=[self.hidden_layers[len(self.hidden_layers) // 2]],
-            layers=self.hidden_layers[
-                len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
-            ],
+            layers=self.control_layers,
             block_name=self.repe_config["block_name"],
             control_method=self.repe_config["control_method"],
         )

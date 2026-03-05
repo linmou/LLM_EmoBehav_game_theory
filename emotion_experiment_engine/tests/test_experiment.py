@@ -98,6 +98,84 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         mock_load_emotion_readers.assert_called_once()
         mock_get_pipeline.assert_called_once()
 
+    def test_select_control_layers_defaults_to_middle_third(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure missing control_layers config preserves middle-third behavior.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        selected = experiment._select_control_layers(hidden_layers, {})
+
+        self.assertEqual(selected, [-5, -6, -7, -8])
+
+    def test_select_control_layers_uses_last_5_strategy(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure strategy=last_5 targets exactly the five latest layers.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        selected = experiment._select_control_layers(
+            hidden_layers,
+            {"control_layers": {"strategy": "last_5"}},
+        )
+
+        self.assertEqual(selected, [-1, -2, -3, -4, -5])
+
+    def test_select_control_layers_accepts_explicit_ids(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure explicit layer ids are accepted and preserved in order.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        selected = experiment._select_control_layers(
+            hidden_layers,
+            {"control_layers": {"strategy": "explicit", "ids": [-2, -5, -9]}},
+        )
+
+        self.assertEqual(selected, [-2, -5, -9])
+
+    def test_select_control_layers_rejects_short_models_for_last_5(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: fail fast when last_5 is requested but fewer than 5 layers exist.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = [-1, -2, -3, -4]
+        with self.assertRaisesRegex(ValueError, "at least 5 hidden layers"):
+            experiment._select_control_layers(
+                hidden_layers,
+                {"control_layers": {"strategy": "last_5"}},
+            )
+
+    def test_select_control_layers_rejects_invalid_strategy(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: enforce strict strategy validation with no fallback behavior.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        with self.assertRaisesRegex(ValueError, "Unsupported control_layers strategy"):
+            experiment._select_control_layers(
+                hidden_layers,
+                {"control_layers": {"strategy": "last_n"}},
+            )
+
+    def test_select_control_layers_rejects_out_of_range_explicit_ids(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure explicit ids must be valid members of detected hidden layers.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        with self.assertRaisesRegex(ValueError, "outside detected hidden layers"):
+            experiment._select_control_layers(
+                hidden_layers,
+                {"control_layers": {"strategy": "explicit", "ids": [-1, -99]}},
+            )
+
     @patch("emotion_experiment_engine.experiment.setup_model_and_tokenizer")
     @patch("emotion_experiment_engine.experiment.ModelLayerDetector")
     @patch("emotion_experiment_engine.experiment.load_emotion_readers")
