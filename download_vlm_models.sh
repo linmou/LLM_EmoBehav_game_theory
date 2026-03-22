@@ -30,7 +30,6 @@ MODELS=(
   "Qwen/Qwen3-VL-2B-Instruct"
   "Qwen/Qwen3-VL-4B-Instruct"
   "Qwen/Qwen3-VL-4B-Thinking"
-  "Qwen/Qwen3-VL-8B-Instruct-FP8"
   "OpenGVLab/InternVL3-1B"
   "OpenGVLab/InternVL3-2B"
   "OpenGVLab/InternVL3-8B-AWQ"
@@ -40,8 +39,9 @@ MODELS=(
   # "OpenGVLab/InternVL3.5-8B"
 
 )
-# Base directory for saving models
-BASE_DIR="$HOME/huggingface_models"
+# Base directory for saving models.
+# Keep this aligned with config/vlm_mm_game_theory.yaml.
+BASE_DIR="/home/jjl7137/huggingface_models"
 
 for MODEL in "${MODELS[@]}"; do
   LOCAL_DIR="$BASE_DIR/$MODEL"
