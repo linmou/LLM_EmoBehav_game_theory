@@ -1,6 +1,6 @@
 # Result Analysis Directory
 
-Last updated: 2025-12-27 (commit 4c8051b)
+Last updated: 2026-03-21
 
 This directory contains all post-experiment analysis scripts and results for the LLM Emotional Behavior Game Theory experiments.
 
@@ -10,7 +10,7 @@ This directory contains all post-experiment analysis scripts and results for the
 - `analyze_switches_detailed.py` - Analyzes switching patterns between activation_only and context_and_activation conditions
 - `analyze_choice_patterns.py` - Comprehensive analysis of choice patterns across all conditions
 - `analyze_choice_differences.py` - Finds cases where choices differ between conditions
-- `generate_game_theory_impact_report.py` - Builds option/behavior impact tables vs neutral from `summary_choice_ratio.csv` / `summary_behavior_ratio.csv`
+- `generate_game_theory_impact_report.py` - Builds option/behavior impact tables vs neutral from `summary_choice_ratio.csv` / `summary_behavior_ratio.csv` and writes summary heatmaps
 - `postprocess_prob_argmax_from_existing_csv.py` - Postprocess existing argmax-match CSV with behavior labels + predicted argmax distributions
 - `trust_game_trustor_expected_score.py` - Report-driven Trust Game (Trustor) item-level decision shift vs neutral (trust_none=0, trust_low=1, trust_high=2)
 - `trust_game_trustee_expected_score.py` - Report-driven Trust Game (Trustee) item-level decision shift vs neutral (return_none=0, return_medium=1, return_high=2)
@@ -117,6 +117,8 @@ This writes into the `--root` folder:
 - `option_impacted_by_emo_vs_neutral_latest.csv`
 - `behavior_impacted_emo_vs_neutral_latest.csv` (only if `summary_behavior_ratio.csv` exists)
 - `expected_score_delta_vs_neutral_by_emotion_intensity_latest.csv` (only if `raw_results.json` exists for supported games: Trust Game + Ultimatum Game)
+- `option_delta_heatmap_vs_neutral_latest.png`
+- `behavior_delta_heatmap_vs_neutral_latest.png` (only if `summary_behavior_ratio.csv` exists)
 - `game_theory_impact_report.md` (includes which runs were used + any skipped runs missing `neutral`)
 
 ## Original Experiment Results Location

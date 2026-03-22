@@ -32,6 +32,12 @@ from pathlib import Path
 from statistics import mean
 from typing import Dict, Iterable, List, Optional, Tuple
 
+import matplotlib
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+
 
 _EXPECTED_SCORE_SPECS: Dict[str, Dict[str, float]] = {
     "Trust_Game_Trustor": {"trust_none": 0.0, "trust_low": 1.0, "trust_high": 2.0},
@@ -102,7 +108,12 @@ def _load_collapsed_behavior_ratios(path: Path) -> Dict[str, Dict[str, float]]:
         reader = csv.DictReader(handle)
         for row in reader:
             emotion = str(row["emotion"])
-            behavior = str(row["behavior_label"])
+            behavior_value = row.get("behavior_label")
+            if behavior_value is None:
+                behavior_value = row.get("behavior")
+            if behavior_value is None:
+                raise KeyError("summary_behavior_ratio.csv missing behavior column")
+            behavior = str(behavior_value)
             ratio = float(row["ratio"])
             acc.setdefault(emotion, {}).setdefault(behavior, []).append(ratio)
     return {emo: {b: mean(vals) for b, vals in m.items()} for emo, m in acc.items()}
@@ -288,6 +299,59 @@ def _write_csv(rows: List[Dict[str, object]], path: Path) -> None:
         writer.writerows(rows)
 
 
+def _as_str(value: object) -> str:
+    return str(value)
+
+
+def _as_float(value: object) -> float:
+    return float(str(value))
+
+
+def _render_delta_heatmap(
+    *,
+    rows: List[Dict[str, object]],
+    value_key: str,
+    column_key: str,
+    title: str,
+    out_path: Path,
+) -> None:
+    if not rows:
+        return
+
+    row_labels = sorted({f"{str(row['task'])} | {str(row['model'])}" for row in rows})
+    col_labels = sorted({str(row[column_key]) for row in rows})
+    values: Dict[Tuple[str, str], float] = {}
+    for row in rows:
+        row_label = f"{str(row['task'])} | {str(row['model'])}"
+        col_label = str(row[column_key])
+        values[(row_label, col_label)] = _as_float(row[value_key])
+
+    matrix = [[values.get((row_label, col_label), 0.0) for col_label in col_labels] for row_label in row_labels]
+
+    height = max(4.0, 0.35 * len(row_labels) + 1.5)
+    width = max(6.0, 1.2 * len(col_labels) + 2.0)
+    fig, ax = plt.subplots(figsize=(width, height))
+    vmax = max(abs(v) for row in matrix for v in row) if matrix and matrix[0] else 1.0
+    if vmax == 0.0:
+        vmax = 1.0
+    image = ax.imshow(matrix, cmap="coolwarm", vmin=-vmax, vmax=vmax, aspect="auto")
+    ax.set_title(title)
+    ax.set_xticks(range(len(col_labels)))
+    ax.set_xticklabels(col_labels, rotation=45, ha="right")
+    ax.set_yticks(range(len(row_labels)))
+    ax.set_yticklabels(row_labels)
+
+    for row_idx, row_vals in enumerate(matrix):
+        for col_idx, value in enumerate(row_vals):
+            ax.text(col_idx, row_idx, f"{value:+.2f}", ha="center", va="center", fontsize=8)
+
+    fig.colorbar(image, ax=ax, label="Delta vs neutral")
+    fig.tight_layout()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
 def _render_markdown(
     *,
     root: Path,
@@ -334,19 +398,19 @@ def _render_markdown(
         lines.append(f"## Strongest {label} Effects (Top {top_n} by delta_range)")
         lines.append(f"| game_setting | model | {key_col} | neutral | best (Δ) | worst (Δ) | range |")
         lines.append("|---|---|---|---:|---|---|---:|")
-        top = sorted(rows, key=lambda r: float(r["delta_range"]), reverse=True)[:top_n]
+        top = sorted(rows, key=lambda r: _as_float(r["delta_range"]), reverse=True)[:top_n]
         for r in top:
             lines.append(
                 "| {task} | {model} | {k} | {neutral:.3f} | {best} ({best_delta:+.3f}) | {worst} ({worst_delta:+.3f}) | {rng:.3f} |".format(
-                    task=r["task"],
-                    model=r["model"],
-                    k=r[key_col],
-                    neutral=float(r["neutral_ratio"]),
-                    best=r["best_emotion"],
-                    best_delta=float(r["best_delta_vs_neutral"]),
-                    worst=r["worst_emotion"],
-                    worst_delta=float(r["worst_delta_vs_neutral"]),
-                    rng=float(r["delta_range"]),
+                    task=_as_str(r["task"]),
+                    model=_as_str(r["model"]),
+                    k=_as_str(r[key_col]),
+                    neutral=_as_float(r["neutral_ratio"]),
+                    best=_as_str(r["best_emotion"]),
+                    best_delta=_as_float(r["best_delta_vs_neutral"]),
+                    worst=_as_str(r["worst_emotion"]),
+                    worst_delta=_as_float(r["worst_delta_vs_neutral"]),
+                    rng=_as_float(r["delta_range"]),
                 )
             )
         lines.append("")
@@ -355,27 +419,27 @@ def _render_markdown(
             lines.append(f"## Per Game Setting {label} (Top {per_game_n} by delta_range)")
         else:
             lines.append(f"## Per Game Setting {label} (All models)")
-        tasks = sorted({r["task"] for r in rows})
+        tasks = sorted({_as_str(r["task"]) for r in rows})
         for task in tasks:
             lines.append(f"### {task}")
             lines.append(f"| model | {key_col} | neutral | best (Δ) | worst (Δ) | range |")
             lines.append("|---|---|---:|---|---|---:|")
-            task_rows = [r for r in rows if r["task"] == task]
+            task_rows = [r for r in rows if _as_str(r["task"]) == task]
             if per_game_n > 0:
-                task_rows = sorted(task_rows, key=lambda r: float(r["delta_range"]), reverse=True)[:per_game_n]
+                task_rows = sorted(task_rows, key=lambda r: _as_float(r["delta_range"]), reverse=True)[:per_game_n]
             else:
                 task_rows = sorted(task_rows, key=lambda r: (str(r["model"]), str(r[key_col])))
             for r in task_rows:
                 lines.append(
                     "| {model} | {k} | {neutral:.3f} | {best} ({best_delta:+.3f}) | {worst} ({worst_delta:+.3f}) | {rng:.3f} |".format(
-                        model=r["model"],
-                        k=r[key_col],
-                        neutral=float(r["neutral_ratio"]),
-                        best=r["best_emotion"],
-                        best_delta=float(r["best_delta_vs_neutral"]),
-                        worst=r["worst_emotion"],
-                        worst_delta=float(r["worst_delta_vs_neutral"]),
-                        rng=float(r["delta_range"]),
+                        model=_as_str(r["model"]),
+                        k=_as_str(r[key_col]),
+                        neutral=_as_float(r["neutral_ratio"]),
+                        best=_as_str(r["best_emotion"]),
+                        best_delta=_as_float(r["best_delta_vs_neutral"]),
+                        worst=_as_str(r["worst_emotion"]),
+                        worst_delta=_as_float(r["worst_delta_vs_neutral"]),
+                        rng=_as_float(r["delta_range"]),
                     )
                 )
             lines.append("")
@@ -398,18 +462,18 @@ def _render_markdown(
         lines.append("")
         lines.append("| game_setting | model | emotion | intensity | Δ mean | neutral mean | score mean | n_items |")
         lines.append("|---|---|---|---:|---:|---:|---:|---:|")
-        top = sorted(expected_score_rows, key=lambda r: abs(float(r["delta_mean"])), reverse=True)[:top_n]
+        top = sorted(expected_score_rows, key=lambda r: abs(_as_float(r["delta_mean"])), reverse=True)[:top_n]
         for r in top:
             lines.append(
                 "| {task} | {model} | {emo} | {intensity:.3f} | {delta:+.3f} | {neutral:.3f} | {score:.3f} | {n} |".format(
-                    task=r["task"],
-                    model=r["model"],
-                    emo=r["emotion"],
-                    intensity=float(r["intensity"]),
-                    delta=float(r["delta_mean"]),
-                    neutral=float(r["neutral_score_mean"]),
-                    score=float(r["score_mean"]),
-                    n=int(float(r["n_items"])),
+                    task=_as_str(r["task"]),
+                    model=_as_str(r["model"]),
+                    emo=_as_str(r["emotion"]),
+                    intensity=_as_float(r["intensity"]),
+                    delta=_as_float(r["delta_mean"]),
+                    neutral=_as_float(r["neutral_score_mean"]),
+                    score=_as_float(r["score_mean"]),
+                    n=int(_as_float(r["n_items"])),
                 )
             )
         lines.append("")
@@ -470,12 +534,30 @@ def generate_game_theory_impact_report(
         root / "expected_score_delta_vs_neutral_by_emotion_intensity_latest.csv" if expected_score_rows else None
     )
     report_out = root / "game_theory_impact_report.md"
+    option_heatmap_out = root / "option_delta_heatmap_vs_neutral_latest.png"
+    behavior_heatmap_out = root / "behavior_delta_heatmap_vs_neutral_latest.png"
 
     _write_csv(option_rows, option_out)
     if behavior_out is not None:
         _write_csv(behavior_rows, behavior_out)
     if expected_out is not None:
         _write_csv(expected_score_rows, expected_out)
+
+    _render_delta_heatmap(
+        rows=option_rows,
+        value_key="delta_range",
+        column_key="option_id",
+        title="Option Delta Range vs Neutral",
+        out_path=option_heatmap_out,
+    )
+    if behavior_rows:
+        _render_delta_heatmap(
+            rows=behavior_rows,
+            value_key="delta_range",
+            column_key="behavior_label",
+            title="Behavior Delta Range vs Neutral",
+            out_path=behavior_heatmap_out,
+        )
 
     report_out.write_text(
         _render_markdown(

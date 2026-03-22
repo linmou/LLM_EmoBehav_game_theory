@@ -205,3 +205,90 @@ def test_missing_neutral_in_run_is_skipped(tmp_path: Path) -> None:
     out = generate_game_theory_impact_report(root=root)
     md = out.report_path.read_text(encoding="utf-8")
     assert "Skipped runs (missing neutral)" in md
+
+
+def test_generate_heatmaps_from_evaluated_behavior_and_choice_ratios(tmp_path: Path) -> None:
+    """Tests for result_analysis/generate_game_theory_impact_report.py: emit heatmap PNGs from evaluated ratios."""
+    root = tmp_path / "results" / "vlm_mm_game_theory_decision" / "sample300"
+
+    run_dir = root / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 0.0, 1, 0.7],
+            ["neutral", 0.0, 2, 0.3],
+            ["anger", 0.8, 1, 0.4],
+            ["anger", 0.8, 2, 0.6],
+            ["anger", 1.5, 1, 0.2],
+            ["anger", 1.5, 2, 0.8],
+            ["happiness", 0.8, 1, 0.8],
+            ["happiness", 0.8, 2, 0.2],
+            ["happiness", 1.5, 1, 0.9],
+            ["happiness", 1.5, 2, 0.1],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior_label", "ratio"],
+        [
+            ["neutral", 0.0, "cooperate", 0.7],
+            ["neutral", 0.0, "defect", 0.3],
+            ["anger", 0.8, "cooperate", 0.4],
+            ["anger", 0.8, "defect", 0.6],
+            ["anger", 1.5, "cooperate", 0.2],
+            ["anger", 1.5, "defect", 0.8],
+            ["happiness", 0.8, "cooperate", 0.8],
+            ["happiness", 0.8, "defect", 0.2],
+            ["happiness", 1.5, "cooperate", 0.9],
+            ["happiness", 1.5, "defect", 0.1],
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root)
+
+    assert out.option_csv_path.exists()
+    assert out.behavior_csv_path is not None
+    assert out.report_path.exists()
+
+    behavior_heatmap = root / "behavior_delta_heatmap_vs_neutral_latest.png"
+    option_heatmap = root / "option_delta_heatmap_vs_neutral_latest.png"
+
+    assert behavior_heatmap.exists()
+    assert option_heatmap.exists()
+    assert behavior_heatmap.stat().st_size > 0
+    assert option_heatmap.stat().st_size > 0
+
+
+def test_generate_report_accepts_behavior_column_from_evaluated_outputs(tmp_path: Path) -> None:
+    """Tests for result_analysis/generate_game_theory_impact_report.py: accept evaluated behavior CSV header `behavior`."""
+    root = tmp_path / "results" / "vlm_mm_game_theory_decision" / "sample300"
+    run_dir = root / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 0.0, 1, 0.7],
+            ["neutral", 0.0, 2, 0.3],
+            ["anger", 1.5, 1, 0.4],
+            ["anger", 1.5, 2, 0.6],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior", "count", "ratio"],
+        [
+            ["neutral", 0.0, "cooperate", 70, 0.7],
+            ["neutral", 0.0, "defect", 30, 0.3],
+            ["anger", 1.5, "cooperate", 40, 0.4],
+            ["anger", 1.5, "defect", 60, 0.6],
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root)
+
+    assert out.behavior_csv_path is not None
+    behavior_text = out.behavior_csv_path.read_text(encoding="utf-8")
+    assert "cooperate" in behavior_text
+    assert "defect" in behavior_text
