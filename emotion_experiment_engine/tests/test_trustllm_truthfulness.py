@@ -6,6 +6,7 @@ Responsible for: emotion_experiment_engine/datasets/trustllm_truthfulness.py
 
 from __future__ import annotations
 
+import os
 import json
 import sys
 import types
@@ -14,7 +15,7 @@ from pathlib import Path
 if "openai" not in sys.modules:
     sys.modules["openai"] = types.SimpleNamespace(api_key="", OpenAI=object, AzureOpenAI=object)
 
-sys.path.insert(0, str(Path("/data/home/jjl7137/TrustLLM/trustllm_pkg")))
+sys.path.insert(0, str(Path(os.path.expandvars("${USER_HOME}/TrustLLM/trustllm_pkg").replace("${USER_HOME}", "/home/jjl7137"))))
 
 from emotion_experiment_engine.data_models import BenchmarkConfig, ResultRecord
 from emotion_experiment_engine.datasets.trustllm_truthfulness import TrustLLMTruthfulnessDataset

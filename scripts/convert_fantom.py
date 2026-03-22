@@ -3,7 +3,7 @@
 Convert original FANToM JSON files to project JSONL formats used by FantomDataset.
 
 Source directory (read-only):
-    /data/home/jjl7137/fantom/data/fantom
+    ${USER_HOME}/fantom/data/fantom
 
 Outputs (JSONL) in repo:
     data/fantom/fantom_short_answerability_binary_inaccessible.jsonl
@@ -21,13 +21,14 @@ Design (KISS):
 
 from __future__ import annotations
 
+import os
 import argparse
 import json
 from pathlib import Path
 from typing import Iterable
 
 
-SRC_DIR = Path("/data/home/jjl7137/fantom/data/fantom")
+SRC_DIR = Path(os.path.expandvars("${USER_HOME}/fantom/data/fantom").replace("${USER_HOME}", "/home/jjl7137"))
 OUT_DIR = Path("data/fantom")
 
 

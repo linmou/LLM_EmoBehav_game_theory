@@ -21,7 +21,7 @@ models:
 benchmarks:
   - name: trustllm_ethics
     task_type: implicit_ethics
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/ethics/implicit_ETHICS.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/ethics/implicit_ETHICS.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -31,7 +31,7 @@ benchmarks:
 
   - name: trustllm_ethics
     task_type: social_norm
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/ethics/implicit_SocialChemistry101.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/ethics/implicit_SocialChemistry101.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -41,7 +41,7 @@ benchmarks:
 
   - name: trustllm_ethics
     task_type: explicit_low
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/ethics/explicit_moralchoice.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/ethics/explicit_moralchoice.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8
@@ -51,7 +51,7 @@ benchmarks:
 
   - name: trustllm_ethics
     task_type: explicit_high
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/ethics/explicit_moralchoice.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/ethics/explicit_moralchoice.json
     enable_auto_truncation: false
     truncation_strategy: right
     preserve_ratio: 0.8

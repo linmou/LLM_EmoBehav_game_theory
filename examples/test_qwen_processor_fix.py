@@ -13,7 +13,7 @@ import sys
 import os
 
 # Add project root to path
-sys.path.append('/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal')
+sys.path.append(os.path.expandvars('').replace('', '/home/jjl7137'))
 
 from transformers import AutoModel, AutoProcessor, AutoTokenizer
 
@@ -261,7 +261,7 @@ def test_emotion_extraction_scenario():
     print("TESTING EMOTION EXTRACTION SCENARIO")
     print("="*80)
     
-    model_path = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+    model_path = os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct").replace("${USER_HOME}", "/home/jjl7137")
     
     if not os.path.exists(model_path):
         print(f"❌ Model not found at: {model_path}")
@@ -308,7 +308,7 @@ def demonstrate_token_alignment():
     print("DEMONSTRATING TOKEN-FEATURE ALIGNMENT")
     print("="*80)
     
-    model_path = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+    model_path = os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct").replace("${USER_HOME}", "/home/jjl7137")
     
     if not os.path.exists(model_path):
         print(f"❌ Model not found at: {model_path}")
@@ -385,7 +385,7 @@ def main():
         print("3. Model is compatible with AutoProcessor")
     
     print(f"\nFor detailed implementation guidance, see:")
-    print(f"/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal/docs/QWEN_VL_PROCESSOR_USAGE_GUIDE.md")
+    print(os.path.expandvars("${USER_HOME}/LLM_EmoBehav_game_theory_multimodal/docs/QWEN_VL_PROCESSOR_USAGE_GUIDE.md").replace("${USER_HOME}", "/home/jjl7137"))
 
 
 if __name__ == "__main__":

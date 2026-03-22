@@ -3,9 +3,9 @@ description: "Diplomacy trust game (trustor/trustee) via game_theory benchmark u
 version: "1.0.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
 
 emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
 intensities: [1.5]

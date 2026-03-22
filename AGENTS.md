@@ -6,11 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Important**: Always activate the conda environment before running Python commands:
 ```bash
-<<<<<<< HEAD
-conda activate llm_behav
-=======
 conda activate llm_fresh
->>>>>>> main
 ```
 
 **Memory**:
@@ -38,13 +34,13 @@ python examples/run_choice_selection_experiment.py
 ```bash
 # Basic start (make sure conda env llm_fresh is active)
 python -m openai_server \
-    --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+    --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
     --model_name Qwen2.5-0.5B-anger \
     --emotion anger
 
 # Start in background with logging
 nohup python -m openai_server \
-    --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+    --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
     --model_name Qwen2.5-0.5B-anger \
     --emotion anger > server.log 2>&1 &
 ```
@@ -52,7 +48,7 @@ nohup python -m openai_server \
 #### Method 2: Init script (backward compatibility)
 ```bash
 python init_openai_server.py \
-    --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+    --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
     --model_name Qwen2.5-0.5B-anger \
     --emotion anger
 ```
@@ -63,7 +59,7 @@ python init_openai_server.py \
 bash -c "source /usr/local/anaconda3/etc/profile.d/conda.sh && \
     conda activate llm_fresh && \
     python -m openai_server \
-    --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+    --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
     --model_name Qwen2.5-0.5B-anger \
     --emotion anger"
 ```

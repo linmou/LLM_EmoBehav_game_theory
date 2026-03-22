@@ -86,8 +86,6 @@ benchmarks:
     task_type: "Ultimatum_Game_Responder"
     augmentation_config:
       shuffle_options: true
-      previous_actions_length: 1
-      previous_offer_level: 2
     enable_auto_truncation: false
     truncation_strategy: "right"
     preserve_ratio: 1.0
@@ -123,6 +121,9 @@ generation_config:
   enable_thinking: false
 
 batch_size: 800
+
+repe_eng_config:
+  data_dir: "data/stimulus/crowd-enVent_textlike"
 
 output_dir: "results/new_game_theory/shuffle_800_samples"
 sanity_check: false

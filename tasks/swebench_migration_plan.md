@@ -2,7 +2,7 @@
 
 
 ## Purpose
-Establish a repeatable pathway to run SWE-bench evaluations (the SWE repo is at: /data/home/jjl7137/SWE-bench) under the RepE/vLLM emotion control infrastructure so we can compare neutral versus emotion-activated models using the official SWE-bench harness.
+Establish a repeatable pathway to run SWE-bench evaluations (the SWE repo is at: ${USER_HOME}/SWE-bench) under the RepE/vLLM emotion control infrastructure so we can compare neutral versus emotion-activated models using the official SWE-bench harness.
 
 ## Overview
 This migration connects the existing `emotion_experiment_engine` (inference, RepE control, batching) with the SWE-bench repository (dataset access and Docker-based evaluation). The end state is a scripted workflow that, for each emotion/intensity, generates patches with `rep-control-vllm` and immediately scores them with the SWE-bench harness.
@@ -96,7 +96,7 @@ TDD (Phase 2)
 - [x] Evaluate generated predictions via SWE-bench harness (deferred step):
   - Use the offline helper in `emotion_experiment_engine/swebench_evaluation.py` to wrap `python -m swebench.harness.run_evaluation` and capture reports.
   - Example (adjust paths):
-    - `python - <<'PY'\nfrom pathlib import Path\nfrom emotion_experiment_engine import swebench_evaluation\nswebench_evaluation.evaluate_swebench_run(\n    run_dir=Path('results/swebench/Qwen2.5-0.5B-Instruct_swebench_patch_20250101_000000'),\n    swebench_repo=Path('/data/home/jjl7137/SWE-bench'),\n    dataset_name='SWE-bench/SWE-bench_Lite',\n    split='test',\n    results_root=Path('results/swebench_evaluations'),\n    python_executable='python',\n    max_workers=8,\n)\nPY`
+    - `python - <<'PY'\nfrom pathlib import Path\nfrom emotion_experiment_engine import swebench_evaluation\nswebench_evaluation.evaluate_swebench_run(\n    run_dir=Path('results/swebench/Qwen2.5-0.5B-Instruct_swebench_patch_20250101_000000'),\n    swebench_repo=Path('${USER_HOME}/SWE-bench'),\n    dataset_name='SWE-bench/SWE-bench_Lite',\n    split='test',\n    results_root=Path('results/swebench_evaluations'),\n    python_executable='python',\n    max_workers=8,\n)\nPY`
 - [x] Merge harness report JSON into experiment summaries (resolved counts, pass@1).
 - [x] Create a result manifest at `results/swebench/<model>/<timestamp>.json` storing emotion, intensity, predictions path, harness run ID, and pass rate.
 - [x] Hook the evaluation + merge into an optional follow-up step or helper script consistent with the deferred workflow (see `emotion_experiment_engine/swebench_evaluation.py`).

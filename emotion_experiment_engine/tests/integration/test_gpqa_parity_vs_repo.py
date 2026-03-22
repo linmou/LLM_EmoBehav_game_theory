@@ -5,6 +5,7 @@ E2E parity vs upstream GPQA repo (zero-shot CoT):
   providing the same CoT reasoning string via augmentation_config.
 """
 
+import os
 import csv
 import tempfile
 from pathlib import Path
@@ -42,7 +43,7 @@ def test_gpqa_parity_against_repo_shuffle_and_cot(tmp_path):
     try:
         # Load baseline repo helper (shuffles with provided seed)
         import sys
-        sys.path.insert(0, "/data/home/jjl7137/gpqa/baselines")
+        sys.path.insert(0, os.path.expandvars("${USER_HOME}/gpqa/baselines").replace("${USER_HOME}", "/home/jjl7137"))
         import utils as gpqa_utils  # type: ignore
 
         seed = 1234

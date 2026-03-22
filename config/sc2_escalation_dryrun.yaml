@@ -3,9 +3,9 @@ description: "Dry run for SC2 escalation benchmark via emotion_experiment_engine
 version: "0.1.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
 
 emotions: ["anger", "happiness", "sadness", "surprise", "fear", "disgust"]
 intensities: [1.0, 1.5, 2.0]

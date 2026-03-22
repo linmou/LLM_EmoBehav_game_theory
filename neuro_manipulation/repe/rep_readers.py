@@ -240,17 +240,40 @@ class RandomRepReader(RepReader):
     """Get random directions for each hidden layer. Do not use hidden 
     states or train labels of any kind."""
 
-    def __init__(self, needs_hiddens=True):
+    def __init__(
+        self,
+        needs_hiddens=True,
+        mean=0.0,
+        std=1.0,
+        seed=None,
+        normalize_l2=True,
+    ):
         super().__init__()
 
         self.n_components = 1
         self.needs_hiddens = needs_hiddens
+        self.mean = float(mean)
+        self.std = float(std)
+        if self.std < 0:
+            raise ValueError("RandomRepReader std must be >= 0")
+        self.seed = None if seed is None else int(seed)
+        self.normalize_l2 = bool(normalize_l2)
 
     def get_rep_directions(self, model, tokenizer, hidden_states, hidden_layers, **kwargs):
 
+        rng = np.random.default_rng(self.seed)
         directions = {}
         for layer in hidden_layers:
-            directions[layer] = np.expand_dims(np.random.randn(model.config.hidden_size), 0)
+            direction = rng.normal(
+                loc=self.mean,
+                scale=self.std,
+                size=model.config.hidden_size,
+            )
+            if self.normalize_l2:
+                norm = float(np.linalg.norm(direction))
+                if norm > 0.0 and np.isfinite(norm):
+                    direction = direction / norm
+            directions[layer] = np.expand_dims(direction.astype(np.float32, copy=False), 0)
 
         return directions
 

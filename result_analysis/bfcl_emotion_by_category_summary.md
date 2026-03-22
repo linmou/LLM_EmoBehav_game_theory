@@ -7,7 +7,7 @@ Scope
 - Metric: mean_of_means per emotion; deltas vs neutral (pp); averages across runs per model+category.
 
 ## Llama-3.2-1B-Instruct
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_simple_20250928_022825
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_simple_20250928_022825
   - Neutral baseline: 0.39%
   - Anger: -0.39 pp
   - Disgust: -0.39 pp
@@ -15,7 +15,7 @@ Scope
   - Happiness: -0.39 pp
   - Sadness: -0.39 pp
   - Surprise: -0.39 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_multiple_20250927_183933
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_multiple_20250927_183933
   - Neutral baseline: 0.08%
   - Anger: -0.08 pp
   - Disgust: -0.08 pp
@@ -23,7 +23,7 @@ Scope
   - Happiness: -0.08 pp
   - Sadness: -0.08 pp
   - Surprise: -0.08 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_20250927_225146
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_20250927_225146
   - Neutral baseline: 5.00%
   - Anger: -5.00 pp
   - Disgust: -5.00 pp
@@ -31,7 +31,7 @@ Scope
   - Happiness: -5.00 pp
   - Sadness: -5.00 pp
   - Surprise: -5.00 pp
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_multiple_20250927_233538
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_multiple_20250927_233538
   - Neutral baseline: 0.00%
   - Anger: 0.00 pp
   - Disgust: 0.00 pp
@@ -41,7 +41,7 @@ Scope
   - Surprise: 0.00 pp
 
 ## Llama-3.2-3B-Instruct
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_simple_20250928_023959
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_simple_20250928_023959
   - Neutral baseline: 39.38%
   - Anger: -25.87 pp
   - Disgust: -39.12 pp
@@ -49,7 +49,7 @@ Scope
   - Happiness: -20.33 pp
   - Sadness: -14.54 pp
   - Surprise: -8.75 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_multiple_20250927_191031
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_multiple_20250927_191031
   - Neutral baseline: 20.99%
   - Anger: -3.89 pp
   - Disgust: -14.25 pp
@@ -57,7 +57,7 @@ Scope
   - Happiness: 4.59 pp
   - Sadness: 1.63 pp
   - Surprise: -19.43 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_parallel_20250927_225522
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_parallel_20250927_225522
   - Neutral baseline: 38.75%
   - Anger: -1.25 pp
   - Disgust: -38.75 pp
@@ -67,7 +67,7 @@ Scope
   - Surprise: -28.75 pp
 
 ## Phi-3.5-mini-instruct
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_simple_20250928_024739
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_simple_20250928_024739
   - Neutral baseline: 64.86%
   - Anger: -1.03 pp
   - Disgust: -0.64 pp
@@ -75,7 +75,7 @@ Scope
   - Happiness: 0.00 pp
   - Sadness: -1.03 pp
   - Surprise: -1.93 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_multiple_20250927_193348
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_multiple_20250927_193348
   - Neutral baseline: 1.01%
   - Anger: 0.95 pp
   - Disgust: 1.46 pp
@@ -83,7 +83,7 @@ Scope
   - Happiness: 0.51 pp
   - Sadness: -0.15 pp
   - Surprise: 2.79 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_parallel_20250927_225922
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_parallel_20250927_225922
   - Neutral baseline: 23.75%
   - Anger: -1.25 pp
   - Disgust: -5.00 pp
@@ -93,7 +93,7 @@ Scope
   - Surprise: 1.25 pp
 
 ## Phi-4-mini-instruct
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_simple_20250928_025806
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_simple_20250928_025806
   - Neutral baseline: 64.35%
   - Anger: -2.57 pp
   - Disgust: -11.20 pp
@@ -101,7 +101,7 @@ Scope
   - Happiness: 2.83 pp
   - Sadness: 3.73 pp
   - Surprise: 2.57 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_multiple_20250927_204952
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_multiple_20250927_204952
   - Neutral baseline: 0.06%
   - Anger: 0.09 pp
   - Disgust: 0.27 pp
@@ -109,7 +109,7 @@ Scope
   - Happiness: 0.11 pp
   - Sadness: 0.25 pp
   - Surprise: 0.23 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_20250927_230437
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_20250927_230437
   - Neutral baseline: 50.00%
   - Anger: 10.00 pp
   - Disgust: 18.75 pp
@@ -117,7 +117,7 @@ Scope
   - Happiness: -2.50 pp
   - Sadness: -3.75 pp
   - Surprise: -5.00 pp
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_multiple_20250927_235857
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_multiple_20250927_235857
   - Neutral baseline: 1.04%
   - Anger: -0.61 pp
   - Disgust: 0.19 pp
@@ -127,7 +127,7 @@ Scope
   - Surprise: -0.08 pp
 
 ## Qwen2.5-0.5B-Instruct
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_simple_20250928_014158
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_simple_20250928_014158
   - Neutral baseline: 12.10%
   - Anger: -10.94 pp
   - Disgust: -11.33 pp
@@ -135,7 +135,7 @@ Scope
   - Happiness: -9.01 pp
   - Sadness: -9.78 pp
   - Surprise: -9.65 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_multiple_20250927_163827
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_multiple_20250927_163827
   - Neutral baseline: 0.00%
   - Anger: 0.00 pp
   - Disgust: 0.00 pp
@@ -143,7 +143,7 @@ Scope
   - Happiness: 0.00 pp
   - Sadness: 0.00 pp
   - Surprise: 0.00 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_20250927_222411
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_20250927_222411
   - Neutral baseline: 6.25%
   - Anger: -6.25 pp
   - Disgust: -6.25 pp
@@ -151,7 +151,7 @@ Scope
   - Happiness: -6.25 pp
   - Sadness: -6.25 pp
   - Surprise: -6.25 pp
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_multiple_20250927_231438
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_multiple_20250927_231438
   - Neutral baseline: 0.83%
   - Anger: -0.83 pp
   - Disgust: -0.83 pp
@@ -161,7 +161,7 @@ Scope
   - Surprise: -0.83 pp
 
 ## Qwen2.5-1.5B-Instruct
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_simple_20250928_015012
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_simple_20250928_015012
   - Neutral baseline: 54.18%
   - Anger: 0.13 pp
   - Disgust: -2.70 pp
@@ -169,7 +169,7 @@ Scope
   - Happiness: 0.26 pp
   - Sadness: 2.96 pp
   - Surprise: -1.67 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_multiple_20250927_170318
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_multiple_20250927_170318
   - Neutral baseline: 32.85%
   - Anger: -4.14 pp
   - Disgust: 0.08 pp
@@ -177,7 +177,7 @@ Scope
   - Happiness: -3.30 pp
   - Sadness: 1.59 pp
   - Surprise: -5.54 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_20250927_222749
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_20250927_222749
   - Neutral baseline: 33.75%
   - Anger: 7.50 pp
   - Disgust: 3.75 pp
@@ -185,7 +185,7 @@ Scope
   - Happiness: 10.00 pp
   - Sadness: 3.75 pp
   - Surprise: -8.75 pp
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_multiple_20250927_231827
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_multiple_20250927_231827
   - Neutral baseline: 25.00%
   - Anger: -0.83 pp
   - Disgust: -4.17 pp
@@ -195,7 +195,7 @@ Scope
   - Surprise: 4.17 pp
 
 ## Qwen2.5-3B-Instruct
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_simple_20250928_015717
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_simple_20250928_015717
   - Neutral baseline: 61.90%
   - Anger: -4.63 pp
   - Disgust: -1.16 pp
@@ -203,7 +203,7 @@ Scope
   - Happiness: -6.82 pp
   - Sadness: -7.72 pp
   - Surprise: -3.47 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_multiple_20250927_171605
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_multiple_20250927_171605
   - Neutral baseline: 47.17%
   - Anger: -10.70 pp
   - Disgust: 3.93 pp
@@ -211,7 +211,7 @@ Scope
   - Happiness: -8.24 pp
   - Sadness: -5.98 pp
   - Surprise: -0.15 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_20250927_223007
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_20250927_223007
   - Neutral baseline: 18.75%
   - Anger: -10.00 pp
   - Disgust: 6.25 pp
@@ -219,7 +219,7 @@ Scope
   - Happiness: 0.00 pp
   - Sadness: -18.75 pp
   - Surprise: 0.00 pp
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_multiple_20250927_232034
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_multiple_20250927_232034
   - Neutral baseline: 22.50%
   - Anger: -10.00 pp
   - Disgust: 5.00 pp
@@ -229,7 +229,7 @@ Scope
   - Surprise: 1.67 pp
 
 ## Qwen3-0.6B
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_simple_20250928_020225
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_simple_20250928_020225
   - Neutral baseline: 55.86%
   - Anger: -8.37 pp
   - Disgust: -4.25 pp
@@ -237,7 +237,7 @@ Scope
   - Happiness: -9.14 pp
   - Sadness: -9.40 pp
   - Surprise: -3.73 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_multiple_20250927_173130
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_multiple_20250927_173130
   - Neutral baseline: 0.99%
   - Anger: 0.00 pp
   - Disgust: -0.17 pp
@@ -245,7 +245,7 @@ Scope
   - Happiness: -0.78 pp
   - Sadness: -0.99 pp
   - Surprise: 1.44 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_20250927_223353
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_20250927_223353
   - Neutral baseline: 25.00%
   - Anger: -2.50 pp
   - Disgust: -12.50 pp
@@ -253,7 +253,7 @@ Scope
   - Happiness: 17.50 pp
   - Sadness: -15.00 pp
   - Surprise: -2.50 pp
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_multiple_20250927_232318
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_multiple_20250927_232318
   - Neutral baseline: 20.83%
   - Anger: -11.67 pp
   - Disgust: -8.33 pp
@@ -263,7 +263,7 @@ Scope
   - Surprise: -6.67 pp
 
 ## Qwen3-1.7B
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_simple_20250928_020940
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_simple_20250928_020940
   - Neutral baseline: 59.97%
   - Anger: -0.13 pp
   - Disgust: 0.26 pp
@@ -271,7 +271,7 @@ Scope
   - Happiness: 0.13 pp
   - Sadness: 0.51 pp
   - Surprise: 1.16 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_multiple_20250927_175148
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_multiple_20250927_175148
   - Neutral baseline: 18.94%
   - Anger: 3.76 pp
   - Disgust: -5.90 pp
@@ -279,7 +279,7 @@ Scope
   - Happiness: 0.49 pp
   - Sadness: 1.40 pp
   - Surprise: -1.35 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_20250927_223958
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_20250927_223958
   - Neutral baseline: 25.00%
   - Anger: 6.25 pp
   - Disgust: 6.25 pp
@@ -287,7 +287,7 @@ Scope
   - Happiness: 6.25 pp
   - Sadness: 6.25 pp
   - Surprise: 0.00 pp
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_multiple_20250927_232821
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_multiple_20250927_232821
   - Neutral baseline: 12.50%
   - Anger: 4.17 pp
   - Disgust: -0.83 pp
@@ -297,17 +297,17 @@ Scope
   - Surprise: 4.17 pp
 
 ## Qwen3-32B-AWQ
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_simple_20250929_024031
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_simple_20250929_024031
   - Neutral baseline: 74.39%
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_022046, /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_023139
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_022046, ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_023139
   - Neutral baseline: 75.81%
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_20250929_023557
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_20250929_023557
   - Neutral baseline: 81.25%
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_multiple_20250929_023821
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_multiple_20250929_023821
   - Neutral baseline: 29.17%
 
 ## Qwen3-4B
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_simple_20250928_021346
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_simple_20250928_021346
   - Neutral baseline: 69.88%
   - Anger: 1.16 pp
   - Disgust: -2.57 pp
@@ -315,7 +315,7 @@ Scope
   - Happiness: 0.51 pp
   - Sadness: -0.64 pp
   - Surprise: 1.03 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_multiple_20250927_181341
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_multiple_20250927_181341
   - Neutral baseline: 68.42%
   - Anger: 0.61 pp
   - Disgust: -1.82 pp
@@ -323,7 +323,7 @@ Scope
   - Happiness: -0.80 pp
   - Sadness: -0.06 pp
   - Surprise: -1.63 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_20250927_224519
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_20250927_224519
   - Neutral baseline: 62.50%
   - Anger: 0.00 pp
   - Disgust: -6.25 pp
@@ -331,7 +331,7 @@ Scope
   - Happiness: 6.25 pp
   - Sadness: 0.00 pp
   - Surprise: 3.75 pp
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_multiple_20250927_233117
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_multiple_20250927_233117
   - Neutral baseline: 45.00%
   - Anger: 5.00 pp
   - Disgust: 5.00 pp
@@ -341,7 +341,7 @@ Scope
   - Surprise: -1.67 pp
 
 ## Qwen3-8B
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-8B_bfcl_live_simple_20250928_022005
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-8B_bfcl_live_simple_20250928_022005
   - Neutral baseline: 71.17%
   - Anger: 0.39 pp
   - Disgust: 1.42 pp
@@ -351,7 +351,7 @@ Scope
   - Surprise: 1.03 pp
 
 ## gemma-3-1b-it
-- simple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_simple_20250928_030328
+- simple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_simple_20250928_030328
   - Neutral baseline: 20.33%
   - Anger: 0.00 pp
   - Disgust: 0.13 pp
@@ -359,7 +359,7 @@ Scope
   - Happiness: 0.00 pp
   - Sadness: -0.51 pp
   - Surprise: -0.39 pp
-- multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_multiple_20250927_215130
+- multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_multiple_20250927_215130
   - Neutral baseline: 2.11%
   - Anger: 0.28 pp
   - Disgust: 0.06 pp
@@ -367,7 +367,7 @@ Scope
   - Happiness: -0.09 pp
   - Sadness: -0.08 pp
   - Surprise: 0.00 pp
-- parallel: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_20250927_230947
+- parallel: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_20250927_230947
   - Neutral baseline: 31.25%
   - Anger: 0.00 pp
   - Disgust: 0.00 pp
@@ -375,7 +375,7 @@ Scope
   - Happiness: 0.00 pp
   - Sadness: 0.00 pp
   - Surprise: 0.00 pp
-- parallel_multiple: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_multiple_20250928_010240
+- parallel_multiple: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_multiple_20250928_010240
   - Neutral baseline: 9.03%
   - Anger: 0.00 pp
   - Disgust: 0.09 pp
@@ -386,52 +386,52 @@ Scope
 
 
 References (run directories)
-- Base: /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live
-- Llama-3.2-1B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_multiple_20250927_183933
-- Llama-3.2-1B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_20250927_225146
-- Llama-3.2-1B-Instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_multiple_20250927_233538
-- Llama-3.2-1B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_simple_20250928_022825
-- Llama-3.2-3B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_multiple_20250927_191031
-- Llama-3.2-3B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_parallel_20250927_225522
-- Llama-3.2-3B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_simple_20250928_023959
-- Phi-3.5-mini-instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_multiple_20250927_193348
-- Phi-3.5-mini-instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_parallel_20250927_225922
-- Phi-3.5-mini-instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_simple_20250928_024739
-- Phi-4-mini-instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_multiple_20250927_204952
-- Phi-4-mini-instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_20250927_230437
-- Phi-4-mini-instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_multiple_20250927_235857
-- Phi-4-mini-instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_simple_20250928_025806
-- Qwen2.5-0.5B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_multiple_20250927_163827
-- Qwen2.5-0.5B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_20250927_222411
-- Qwen2.5-0.5B-Instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_multiple_20250927_231438
-- Qwen2.5-0.5B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_simple_20250928_014158
-- Qwen2.5-1.5B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_multiple_20250927_170318
-- Qwen2.5-1.5B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_20250927_222749
-- Qwen2.5-1.5B-Instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_multiple_20250927_231827
-- Qwen2.5-1.5B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_simple_20250928_015012
-- Qwen2.5-3B-Instruct | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_multiple_20250927_171605
-- Qwen2.5-3B-Instruct | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_20250927_223007
-- Qwen2.5-3B-Instruct | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_multiple_20250927_232034
-- Qwen2.5-3B-Instruct | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_simple_20250928_015717
-- Qwen3-0.6B | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_multiple_20250927_173130
-- Qwen3-0.6B | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_20250927_223353
-- Qwen3-0.6B | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_multiple_20250927_232318
-- Qwen3-0.6B | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_simple_20250928_020225
-- Qwen3-1.7B | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_multiple_20250927_175148
-- Qwen3-1.7B | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_20250927_223958
-- Qwen3-1.7B | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_multiple_20250927_232821
-- Qwen3-1.7B | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_simple_20250928_020940
-- Qwen3-32B-AWQ | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_022046
-- Qwen3-32B-AWQ | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_023139
-- Qwen3-32B-AWQ | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_20250929_023557
-- Qwen3-32B-AWQ | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_multiple_20250929_023821
-- Qwen3-32B-AWQ | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_simple_20250929_024031
-- Qwen3-4B | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_multiple_20250927_181341
-- Qwen3-4B | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_20250927_224519
-- Qwen3-4B | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_multiple_20250927_233117
-- Qwen3-4B | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_simple_20250928_021346
-- Qwen3-8B | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-8B_bfcl_live_simple_20250928_022005
-- gemma-3-1b-it | live_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_multiple_20250927_215130
-- gemma-3-1b-it | live_parallel | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_20250927_230947
-- gemma-3-1b-it | live_parallel_multiple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_multiple_20250928_010240
-- gemma-3-1b-it | live_simple | /data/home/jjl7137/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_simple_20250928_030328
+- Base: ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live
+- Llama-3.2-1B-Instruct | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_multiple_20250927_183933
+- Llama-3.2-1B-Instruct | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_20250927_225146
+- Llama-3.2-1B-Instruct | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_parallel_multiple_20250927_233538
+- Llama-3.2-1B-Instruct | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-1B-Instruct_bfcl_live_simple_20250928_022825
+- Llama-3.2-3B-Instruct | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_multiple_20250927_191031
+- Llama-3.2-3B-Instruct | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_parallel_20250927_225522
+- Llama-3.2-3B-Instruct | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Llama-3.2-3B-Instruct_bfcl_live_simple_20250928_023959
+- Phi-3.5-mini-instruct | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_multiple_20250927_193348
+- Phi-3.5-mini-instruct | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_parallel_20250927_225922
+- Phi-3.5-mini-instruct | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-3.5-mini-instruct_bfcl_live_simple_20250928_024739
+- Phi-4-mini-instruct | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_multiple_20250927_204952
+- Phi-4-mini-instruct | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_20250927_230437
+- Phi-4-mini-instruct | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_parallel_multiple_20250927_235857
+- Phi-4-mini-instruct | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Phi-4-mini-instruct_bfcl_live_simple_20250928_025806
+- Qwen2.5-0.5B-Instruct | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_multiple_20250927_163827
+- Qwen2.5-0.5B-Instruct | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_20250927_222411
+- Qwen2.5-0.5B-Instruct | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_parallel_multiple_20250927_231438
+- Qwen2.5-0.5B-Instruct | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-0.5B-Instruct_bfcl_live_simple_20250928_014158
+- Qwen2.5-1.5B-Instruct | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_multiple_20250927_170318
+- Qwen2.5-1.5B-Instruct | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_20250927_222749
+- Qwen2.5-1.5B-Instruct | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_parallel_multiple_20250927_231827
+- Qwen2.5-1.5B-Instruct | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-1.5B-Instruct_bfcl_live_simple_20250928_015012
+- Qwen2.5-3B-Instruct | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_multiple_20250927_171605
+- Qwen2.5-3B-Instruct | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_20250927_223007
+- Qwen2.5-3B-Instruct | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_parallel_multiple_20250927_232034
+- Qwen2.5-3B-Instruct | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen2.5-3B-Instruct_bfcl_live_simple_20250928_015717
+- Qwen3-0.6B | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_multiple_20250927_173130
+- Qwen3-0.6B | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_20250927_223353
+- Qwen3-0.6B | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_parallel_multiple_20250927_232318
+- Qwen3-0.6B | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-0.6B_bfcl_live_simple_20250928_020225
+- Qwen3-1.7B | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_multiple_20250927_175148
+- Qwen3-1.7B | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_20250927_223958
+- Qwen3-1.7B | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_parallel_multiple_20250927_232821
+- Qwen3-1.7B | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-1.7B_bfcl_live_simple_20250928_020940
+- Qwen3-32B-AWQ | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_022046
+- Qwen3-32B-AWQ | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_multiple_20250929_023139
+- Qwen3-32B-AWQ | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_20250929_023557
+- Qwen3-32B-AWQ | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_parallel_multiple_20250929_023821
+- Qwen3-32B-AWQ | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-32B-AWQ_bfcl_live_simple_20250929_024031
+- Qwen3-4B | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_multiple_20250927_181341
+- Qwen3-4B | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_20250927_224519
+- Qwen3-4B | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_parallel_multiple_20250927_233117
+- Qwen3-4B | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-4B_bfcl_live_simple_20250928_021346
+- Qwen3-8B | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/Qwen3-8B_bfcl_live_simple_20250928_022005
+- gemma-3-1b-it | live_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_multiple_20250927_215130
+- gemma-3-1b-it | live_parallel | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_20250927_230947
+- gemma-3-1b-it | live_parallel_multiple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_parallel_multiple_20250928_010240
+- gemma-3-1b-it | live_simple | ${USER_HOME}/LLM_EmoBehav_game_theory/results/bfcl/live/gemma-3-1b-it_bfcl_live_simple_20250928_030328

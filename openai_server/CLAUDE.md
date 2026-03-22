@@ -16,14 +16,14 @@ conda activate llm_fresh
 
 # Start with emotion control (BOTH --model and --model_name are REQUIRED)
 python -m openai_server \
-    --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+    --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
     --model_name Qwen2.5-0.5B-anger \
     --emotion anger \
     --port 8000
 
 # Start in background with logging
 nohup python -m openai_server \
-    --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+    --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
     --model_name Qwen2.5-0.5B-happiness \
     --emotion happiness > server.log 2>&1 &
 ```
@@ -87,7 +87,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 ## Configuration Parameters
 
 ### Required Arguments
-- `--model`: Path to the model directory (e.g., `/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct`)
+- `--model`: Path to the model directory (e.g., `${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct`)
 - `--model_name`: API endpoint name (e.g., `Qwen2.5-0.5B-anger`)
 
 ### Emotion Control

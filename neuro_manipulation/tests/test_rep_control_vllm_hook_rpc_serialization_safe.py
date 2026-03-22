@@ -72,3 +72,59 @@ class TestRepControlVllmHookRpcSerializationSafe(unittest.TestCase):
         self.assertIsInstance(state, dict)
         self.assertIsInstance(state.get("controller"), list)
         self.assertIsInstance(state.get("mask"), list)
+
+    def test_call_serializes_kwargs_recursively_for_rpc(self):
+        # Responsible file: neuro_manipulation/repe/rep_control_vllm_hook.py
+        # Purpose: kwargs passed through state must be RPC-serializable (no tensors/ndarrays).
+        import numpy as np
+        import torch
+
+        from neuro_manipulation.repe.rep_control_vllm_hook import RepControlVLLMHook
+
+        model = _FakeLLM()
+        rep_control = RepControlVLLMHook(
+            model=model,
+            tokenizer=None,
+            layers=[0],
+            block_name="decoder_block",
+            control_method="reading_vec",
+            tensor_parallel_size=1,
+        )
+
+        _ = rep_control(
+            ["hi"],
+            activations={0: torch.ones(4, dtype=torch.float32)},
+            masks=torch.ones(4, dtype=torch.float32),
+            max_new_tokens=1,
+            position_ids=torch.tensor([[0, 1, 2]]),
+            nested={"arr": np.zeros((2,), dtype=np.float32)},
+        )
+
+        set_calls = [c for c in model.llm_engine.calls if c[0] == "_nm_repcontrol_set_state"]
+        self.assertEqual(len(set_calls), 1)
+        _method, _timeout, args, _kwargs = set_calls[0]
+        state = args[2]
+        self.assertIsInstance(state.get("kwargs"), dict)
+        self.assertIsInstance(state["kwargs"]["position_ids"], list)
+        self.assertIsInstance(state["kwargs"]["nested"]["arr"], list)
+
+    def test_neutral_call_still_resets_repcontrol_state(self):
+        # Responsible file: neuro_manipulation/repe/rep_control_vllm_hook.py
+        # Purpose: neutral/inactive calls must hard-reset worker state to avoid control leakage.
+        from neuro_manipulation.repe.rep_control_vllm_hook import RepControlVLLMHook
+
+        model = _FakeLLM()
+        rep_control = RepControlVLLMHook(
+            model=model,
+            tokenizer=None,
+            layers=[0, 1],
+            block_name="decoder_block",
+            control_method="reading_vec",
+            tensor_parallel_size=1,
+        )
+        model.llm_engine.calls.clear()
+
+        _ = rep_control(["hi"], activations=None, max_new_tokens=1)
+
+        reset_calls = [c for c in model.llm_engine.calls if c[0] == "_nm_repcontrol_reset_state"]
+        self.assertEqual(len(reset_calls), 2)

@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
+from dotenv import load_dotenv
 # Optional: only needed when downloading remote models.
 # Importing transformers can transitively import torch/OpenMP, which may SIGABRT
 # in sandboxed environments (e.g., missing shared memory). Defer to runtime.
@@ -81,6 +82,16 @@ def _apply_vllm_env_overrides(loading_config: VLLMLoadingConfig) -> None:
             os.environ["PYTHONPATH"] = (
                 repo_root if not old_pp else f"{repo_root}{os.pathsep}{old_pp}"
             )
+
+def _expand_env_placeholders(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {k: _expand_env_placeholders(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_expand_env_placeholders(v) for v in value]
+    if isinstance(value, str):
+        expanded = os.path.expanduser(os.path.expandvars(value))
+        return expanded.replace("${USER_HOME}", "/home/jjl7137")
+    return value
 
 
 class ExperimentStatus:
@@ -390,6 +401,7 @@ class MemoryExperimentSeriesRunner:
         self.config_path = config_path
         self.series_name = series_name or f"memory_experiment_series"
         self.dry_run = dry_run
+        load_dotenv(override=False)
 
         # Initialize shutdown flag
         self.shutdown_requested = False
@@ -412,7 +424,9 @@ class MemoryExperimentSeriesRunner:
         if self.config_path:
             try:
                 with open(self.config_path, "r") as _cf:
-                    new_config_if_provided = yaml.safe_load(_cf)
+                    new_config_if_provided = _expand_env_placeholders(
+                        yaml.safe_load(_cf)
+                    )
             except Exception as e:
                 self.logger.warning(f"Failed to load --config for comparison: {e}")
 
@@ -532,7 +546,7 @@ class MemoryExperimentSeriesRunner:
         """Load configuration from YAML file"""
         assert self.config_path is not None
         with open(self.config_path, "r") as f:
-            self.base_config = yaml.safe_load(f)
+            self.base_config = _expand_env_placeholders(yaml.safe_load(f))
 
         # Validate required sections
         if "models" not in self.base_config:
@@ -1103,6 +1117,22 @@ class MemoryExperimentSeriesRunner:
         ]
         return any(char in task_type for char in pattern_chars)
 
+    @staticmethod
+    def _resolve_data_path_for_log(benchmark: BenchmarkConfig) -> str:
+        """
+        Resolve a printable benchmark data path for diagnostics.
+
+        This must never raise because dry-run logging should not convert a valid
+        setup into a failed configuration.
+        """
+        data_path = getattr(benchmark, "data_path", None)
+        if data_path is not None:
+            return str(data_path)
+        try:
+            return str(benchmark.get_data_path())
+        except Exception:
+            return "<unresolved>"
+
     def _create_temporary_benchmark_for_discovery(
         self, benchmark_config: Dict[str, Any], pattern: str
     ) -> BenchmarkConfig:
@@ -1207,8 +1237,11 @@ class MemoryExperimentSeriesRunner:
                     f"   ✅ Config {i+1}: {benchmark_config['name']}_{benchmark_config['task_type']} + {model_name}"
                 )
                 self.logger.info(f"      📁 Output: {experiment.config.output_dir}")
+                data_path_for_log = self._resolve_data_path_for_log(
+                    experiment.config.benchmark
+                )
                 self.logger.info(
-                    f"      🎯 Data path: {experiment.config.benchmark.get_data_path()}"
+                    f"      🎯 Data path: {data_path_for_log}"
                 )
                 
                 # Log first dataset item if emotion_datasets exist (dry-run mode)

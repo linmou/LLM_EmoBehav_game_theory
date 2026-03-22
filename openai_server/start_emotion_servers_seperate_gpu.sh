@@ -1,9 +1,10 @@
 #!/bin/bash
 # Start Emotion Servers on Different CUDA Devices
 # Usage: ./start_emotion_servers_single_gpu.sh [start|stop|status|restart]
+USER_HOME="${USER_HOME:-/home/jjl7137}"
 
 # Configuration
-MODEL_PATH="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+MODEL_PATH="${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
 MODEL_NAME="Qwen2.5-0.5B-Instruct"
 GPU_MEMORY_UTIL=0.5
 BATCH_SIZE=32
@@ -68,7 +69,7 @@ start_server() {
     fi
     
     # Change to project root directory
-    cd /data/home/jjl7137/LLM_EmoBehav_game_theory
+    cd ${USER_HOME}/LLM_EmoBehav_game_theory
     
     # Start server with specific CUDA device and reduced memory footprint
     CUDA_VISIBLE_DEVICES=$gpu_id nohup python -m openai_server \

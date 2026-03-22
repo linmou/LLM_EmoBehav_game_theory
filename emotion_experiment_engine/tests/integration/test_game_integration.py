@@ -356,6 +356,59 @@ def test_ultimatum_previous_actions_is_property_contract() -> None:
     assert "Previous Actions:" in str(responder)
 
 
+def test_ultimatum_responder_defaults_enable_dataset_loading(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Test for games/game_configs.py and emotion_experiment_engine/datasets/games.py:
+    # Ultimatum responder should load even when raw scenarios omit previous-action fields.
+    responder_game_config = deepcopy(get_game_config("Ultimatum_Game_Responder"))
+    responder_game_config["scenarios"] = [
+        {
+            "id": "ug-responder-1",
+            "scenario": "Task split",
+            "description": "Alex proposes a split to Casey.",
+            "participants": [
+                {"role": "Proposer", "name": "Alex", "profile": "Manager"},
+                {"role": "Responder", "name": "Casey", "profile": "Member"},
+            ],
+            "proposer_behavior_choices": {
+                "offer_low": "Offer 10%",
+                "offer_medium": "Offer 40%",
+                "offer_high": "Offer 50%",
+            },
+            "responder_behavior_choices": {"accept": "Accept", "reject": "Reject"},
+            "payoff_matrix": {},
+        }
+    ]
+
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.get_game_config",
+        lambda _: responder_game_config,
+    )
+
+    config = BenchmarkConfig(
+        name="game_theory",
+        task_type="Ultimatum_Game_Responder",
+        data_path=None,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=1.0,
+        llm_eval_config=None,
+    )
+
+    dataset = GameTheoryDataset(config=config, prompt_wrapper=None, answer_wrapper=None)
+    assert len(dataset) == 1
+    first_item = dataset[0]["item"]
+    assert first_item.metadata is not None
+    assert first_item.metadata.get("previous_actions_length") == 1
+    previous_actions = first_item.metadata.get("previous_actions")
+    assert isinstance(previous_actions, list)
+    assert previous_actions[0][0] == "Alex"
+
+
 @pytest.mark.parametrize(
     "scenario_cls, scenario_payload",
     [

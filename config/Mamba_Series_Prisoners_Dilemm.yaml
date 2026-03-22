@@ -7,12 +7,12 @@ experiment:
   
   # List of models to run experiments with
   models:
-    # - "/data/home/jjl7137/huggingface_models/state-spaces/mamba-370m-hf"
-    - "/data/home/jjl7137/huggingface_models/state-spaces/mamba-790m-hf"
-      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba-1.4b-hf"
-      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba-2.8b-hf"
-      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba2-370m"
-      #- "/data/home/jjl7137/huggingface_models/state-spaces/mamba2-780m"
+    # - "${USER_HOME}/huggingface_models/state-spaces/mamba-370m-hf"
+    - "${USER_HOME}/huggingface_models/state-spaces/mamba-790m-hf"
+      #- "${USER_HOME}/huggingface_models/state-spaces/mamba-1.4b-hf"
+      #- "${USER_HOME}/huggingface_models/state-spaces/mamba-2.8b-hf"
+      #- "${USER_HOME}/huggingface_models/state-spaces/mamba2-370m"
+      #- "${USER_HOME}/huggingface_models/state-spaces/mamba2-780m"
 
   game:
     name: "Prisoners_Dilemma"  # Default game if needed

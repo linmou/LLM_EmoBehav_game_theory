@@ -9,14 +9,14 @@ Integrate GPQA (main/extended/diamond) as a first-class benchmark in `emotion_ex
 GPQA is single-answer multiple-choice. We treat it as MC1 and reuse the existing TruthfulQA MC1 prompt formatting to avoid reinventing formatting logic. Evaluation is strict, case-insensitive exact-text match.
 
 ## Data Sources
-- Local zip: `/data/home/jjl7137/gpqa/dataset.zip` (password: `deserted-untie-orchid`)
+- Local zip: `${USER_HOME}/gpqa/dataset.zip` (password: `deserted-untie-orchid`)
   - Files inside: `dataset/gpqa_main.csv`, `dataset/gpqa_extended.csv`, `dataset/gpqa_diamond.csv`
 - Optional: You can point `BenchmarkConfig.data_path` directly to any CSV subset you prepare.
 
 Extraction example:
 ```bash
-unzip -P deserted-untie-orchid /data/home/jjl7137/gpqa/dataset.zip -d /data/home/jjl7137/gpqa/
-# CSVs at: /data/home/jjl7137/gpqa/dataset/gpqa_*.csv
+unzip -P deserted-untie-orchid ${USER_HOME}/gpqa/dataset.zip -d ${USER_HOME}/gpqa/
+# CSVs at: ${USER_HOME}/gpqa/dataset/gpqa_*.csv
 ```
 
 ## Target Architecture
@@ -65,8 +65,8 @@ from emotion_experiment_engine.benchmark_component_registry import create_benchm
 config = BenchmarkConfig(
     name="gpqa",
     task_type="main",  # or "extended", "diamond"
-    data_path=Path("/data/home/jjl7137/gpqa/dataset/gpqa_main.csv"),
-    base_data_dir="/data/home/jjl7137/gpqa/dataset",
+    data_path=Path("${USER_HOME}/gpqa/dataset/gpqa_main.csv"),
+    base_data_dir="${USER_HOME}/gpqa/dataset",
     sample_limit=None,
     augmentation_config=None,
     enable_auto_truncation=False,

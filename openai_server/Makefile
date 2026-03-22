@@ -9,6 +9,7 @@ PYTHON := python3
 MODULE := openai_server
 TEST_DIR := tests
 COVERAGE_DIR := htmlcov
+USER_HOME ?= /home/jjl7137
 
 # Default target
 all: lint type-check test
@@ -82,7 +83,7 @@ clean:
 server:
 	@echo "Starting optimized test server..."
 	VLLM_GPU_MEMORY_UTILIZATION=0.9 $(PYTHON) -m $(MODULE) \
-		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
 		--model_name test-model \
 		--emotion happiness \
 		--port 8000 \
@@ -95,7 +96,7 @@ server:
 server-anger:
 	@echo "Starting optimized server with anger emotion..."
 	VLLM_GPU_MEMORY_UTILIZATION=0.9 $(PYTHON) -m $(MODULE) \
-		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
 		--model_name test-model-anger \
 		--emotion anger \
 		--port 8000 \
@@ -108,7 +109,7 @@ server-anger:
 server-fast:
 	@echo "Starting high-performance server..."
 	VLLM_GPU_MEMORY_UTILIZATION=0.95 $(PYTHON) -m $(MODULE) \
-		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
 		--model_name test-model-fast \
 		--emotion happiness \
 		--port 8000 \
@@ -122,7 +123,7 @@ server-fast:
 server-no-batch:
 	@echo "Starting server without batching..."
 	VLLM_GPU_MEMORY_UTILIZATION=0.9 $(PYTHON) -m $(MODULE) \
-		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
 		--model_name test-model-nobatch \
 		--emotion happiness \
 		--port 8000 \
@@ -134,7 +135,7 @@ server-no-batch:
 server-multigpu:
 	@echo "Starting multi-GPU balanced server..."
 	VLLM_GPU_MEMORY_UTILIZATION=0.8 $(PYTHON) -m $(MODULE) \
-		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
 		--model_name test-model-multigpu \
 		--emotion happiness \
 		--port 8000 \
@@ -148,7 +149,7 @@ server-multigpu:
 server-multigpu-fast:
 	@echo "Starting multi-GPU high-performance server..."
 	VLLM_GPU_MEMORY_UTILIZATION=0.85 $(PYTHON) -m $(MODULE) \
-		--model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
+		--model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct \
 		--model_name test-model-multigpu-fast \
 		--emotion happiness \
 		--port 8000 \

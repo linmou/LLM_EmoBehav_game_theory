@@ -516,7 +516,10 @@ def get_rep_reader(
     rep_token=-1,
     n_difference=1,
     direction_method="pca",
+    direction_finder_kwargs=None,
 ):
+    if direction_finder_kwargs is None:
+        direction_finder_kwargs = {}
     rep_reader = rep_reading_pipeline.get_directions(
         train_data["data"],
         rep_token=rep_token,
@@ -524,6 +527,7 @@ def get_rep_reader(
         n_difference=n_difference,
         train_labels=train_data["labels"],
         direction_method=direction_method,
+        direction_finder_kwargs=direction_finder_kwargs,
     )
 
     result, _ = test_direction(
@@ -1295,6 +1299,7 @@ def all_emotion_rep_reader(
     rep_token,
     n_difference,
     direction_method,
+    direction_finder_kwargs=None,
     save_path="exp_records/emotion_rep_reader.pkl",
     read_args=None,
 ):
@@ -1313,14 +1318,16 @@ def all_emotion_rep_reader(
     #             if emotion_rep_readers['args'] == args:
     #                 return emotion_rep_readers
 
+    if direction_finder_kwargs is None:
+        direction_finder_kwargs = {}
+
     emotion_rep_readers = {"layer_acc": {}}
-    for emotion in tqdm(emotions):
-        if emotion not in data:
-            continue
+    for emo_idx, emotion in enumerate(tqdm(emotions)):
         train_data = data[emotion]["train"]
         test_data = data[emotion]["test"]
-        if not train_data["data"] or not train_data["labels"]:
-            continue
+        per_emotion_kwargs = dict(direction_finder_kwargs)
+        if direction_method == "random" and "seed" in per_emotion_kwargs and per_emotion_kwargs["seed"] is not None:
+            per_emotion_kwargs["seed"] = int(per_emotion_kwargs["seed"]) + emo_idx
         rep_reader, layer_acc = get_rep_reader(
             rep_reading_pipeline=rep_reading_pipeline,
             train_data=train_data,
@@ -1329,6 +1336,7 @@ def all_emotion_rep_reader(
             rep_token=rep_token,
             n_difference=n_difference,
             direction_method=direction_method,
+            direction_finder_kwargs=per_emotion_kwargs,
         )
 
         emotion_rep_readers[emotion] = rep_reader

@@ -1,12 +1,12 @@
 # this config is for the chat-template-aware data construction, use it with delta_activation_engine/cli_chat.py
 
-model_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+model_path: "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
 emotions: ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
 intensities: [0.0, 1.0, 1.5]
 output_dir: "results/delta_activations/quick_compare/chat-3B"
 
 loading_config:
-  model_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  model_path: "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
   max_model_len: 4096
 
 repe_eng_config: {}

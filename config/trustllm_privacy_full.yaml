@@ -12,21 +12,21 @@ models:
 benchmarks:
   - name: trustllm_privacy
     task_type: privacy_awareness_confAide
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/privacy/privacy_awareness_confAIde.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/privacy/privacy_awareness_confAIde.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0
 
   - name: trustllm_privacy
     task_type: privacy_awareness_query
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/privacy/privacy_awareness_query.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/privacy/privacy_awareness_query.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0
 
   - name: trustllm_privacy
     task_type: privacy_leakage
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/privacy/privacy_leakage.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/privacy/privacy_leakage.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0

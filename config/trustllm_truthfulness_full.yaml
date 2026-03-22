@@ -12,14 +12,14 @@ models:
 benchmarks:
   - name: trustllm_truthfulness
     task_type: external
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/truthfulness/external.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/truthfulness/external.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0
 
   - name: trustllm_truthfulness
     task_type: hallucination
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/truthfulness/hallucination.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/truthfulness/hallucination.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0

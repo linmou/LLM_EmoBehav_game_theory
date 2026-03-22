@@ -19,7 +19,7 @@ from pathlib import Path
 # Add project root to path
 import sys
 import os
-sys.path.append('/data/home/jjl7137/LLM_EmoBehav_game_theory_multimodal')
+sys.path.append(os.path.expandvars('').replace('', '/home/jjl7137'))
 
 from neuro_manipulation.repe.pipelines import repe_pipeline_registry
 from neuro_manipulation.repe.rep_readers import PCARepReader, ClusterMeanRepReader
@@ -241,7 +241,7 @@ def example_basic_extraction():
     
     # Note: This example assumes you have a Qwen2.5-VL model available
     # You can modify the model path as needed
-    model_path = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+    model_path = os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct").replace("${USER_HOME}", "/home/jjl7137")
     
     if not os.path.exists(model_path):
         print(f"❌ Model not found at: {model_path}")
@@ -304,7 +304,7 @@ def example_with_real_images():
         print("Skipping real image example...")
         return True  # Not a failure, just skip
     
-    model_path = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+    model_path = os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct").replace("${USER_HOME}", "/home/jjl7137")
     extractor = MultimodalEmotionExtractor(model_path)
     
     if not extractor.setup_pipeline():

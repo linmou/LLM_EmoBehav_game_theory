@@ -27,7 +27,7 @@ def start_server(emotion, port=8000):
     """Start OpenAI server with specified emotion."""
     logger.info(f"Starting server with emotion: {emotion} on port {port}")
     
-    model_path = "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+    model_path = os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137")
     model_name = "Qwen2.5-0.5B-Instruct"
     
     # Set environment variables for better memory management

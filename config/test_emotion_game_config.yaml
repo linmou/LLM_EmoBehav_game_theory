@@ -4,7 +4,7 @@ experiment:
     name: prisoners_dilemma  # Using prisoners dilemma as test game
   
   llm:
-    model_name: /data/home/jjl7137/huggingface_models/RWKV/rwkv-4-world-7b
+    model_name: ${USER_HOME}/huggingface_models/RWKV/rwkv-4-world-7b
     generation_config:
       max_new_tokens: 100
       do_sample: true

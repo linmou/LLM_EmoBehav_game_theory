@@ -12,28 +12,28 @@ models:
 benchmarks:
   - name: trustllm_robustness
     task_type: advinstruction
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/robustness/AdvInstruction.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/robustness/AdvInstruction.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0
 
   - name: trustllm_robustness
     task_type: advglue
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/robustness/AdvGLUE.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/robustness/AdvGLUE.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0
 
   - name: trustllm_robustness
     task_type: ood_detection
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/robustness/ood_detection.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/robustness/ood_detection.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0
 
   - name: trustllm_robustness
     task_type: ood_generalization
-    data_path: /data/home/jjl7137/TrustLLM/data/TrustLLM/dataset/robustness/ood_generalization.json
+    data_path: ${USER_HOME}/TrustLLM/data/TrustLLM/dataset/robustness/ood_generalization.json
     llm_eval_config:
       model: gpt-4o-mini
       temperature: 0.0

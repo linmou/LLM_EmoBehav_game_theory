@@ -6,6 +6,7 @@ This shows how to define configurations directly in Python code
 without using YAML files.
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -21,7 +22,7 @@ def create_configs():
     
     # 1. Representation Engineering Configuration
     repe_eng_config = {
-        'model_name_or_path': '/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct',
+        'model_name_or_path': os.path.expandvars('').replace('', '/home/jjl7137'),
         'tensor_parallel_size': 1,
         'gpu_memory_utilization': 0.85,
         'max_num_seqs': 16,

@@ -403,6 +403,17 @@ class GameTheoryDataset(BaseBenchmarkDataset):
     def _extract_option_from_response(
         response: str, options: Sequence[str]
     ) -> Optional[int]:
+        # Content-first: if the raw response contains a single option text,
+        # prefer that before parsing any ids.
+        response_norm = response.lower()
+        matched_ids: List[int] = []
+        for idx, option in enumerate(options, start=1):
+            opt_norm = option.lower().strip()
+            if opt_norm and opt_norm in response_norm:
+                matched_ids.append(idx)
+        if len(matched_ids) == 1:
+            return matched_ids[0]
+
         candidates = []
         for pattern in (_DECISION_PATTERN, _SINGLE_QUOTE_PATTERN):
             match = pattern.search(response)
@@ -417,6 +428,10 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 candidates.append(match.group(1).strip())
 
         for candidate in candidates:
+            matched = GameTheoryDataset._match_option(candidate, options)
+            if matched is not None:
+                return matched
+
             candidate_stripped = candidate.strip()
             if candidate_stripped.isdigit():
                 option_id = int(candidate_stripped)
@@ -431,6 +446,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
             matched = GameTheoryDataset._match_option(candidate, options)
             if matched is not None:
                 return matched
+        
         return None
 
     @staticmethod
@@ -671,7 +687,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         )
 
         try:
-            from neuro_manipulation.utils import oai_response
+            from neuro_manipulation.utils import oai_response  # type: ignore
 
             result = oai_response(
                 prompt,
@@ -886,6 +902,16 @@ class GameTheoryCompletionOptionIdDataset(GameTheoryDataset):
     def _extract_option_from_response(
         response: str, options: Sequence[str]
     ) -> Optional[int]:
+        # Some base checkpoints emit chat-style speaker tags despite using
+        # completion prompts, e.g. "Human: 1" or "Assistant: Option 2".
+        response = re.sub(
+            r"^\s*(?:human|user|assistant|system)\s*:\s*",
+            "",
+            response,
+            flags=re.IGNORECASE,
+        )
+        response = re.sub(r"^\s*(?:answer|final)\s*:\s*", "", response, flags=re.IGNORECASE)
+
         # Start with the strict JSON decision parsing from the base class.
         choice = GameTheoryDataset._extract_option_from_response(response, options)
         if choice is not None:

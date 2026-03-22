@@ -7,8 +7,8 @@ experiment:
   
   # List of models to run experiments with
   models: 
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-14B-AWQ"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-32B-AWQ"
+    - "${USER_HOME}/huggingface_models/Qwen/Qwen3-14B-AWQ"
+    - "${USER_HOME}/huggingface_models/Qwen/Qwen3-32B-AWQ"
   
   game:
     name: "Prisoners_Dilemma"

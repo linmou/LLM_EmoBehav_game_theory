@@ -82,6 +82,12 @@ class GameNames(Enum):
         SymmetryType.SYMMETRIC,
     )
     STAG_HUNT = ("Stag_Hunt", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
+    BEAUTY_CONTEST = ("Beauty_Contest", GameType.SIMULTANEOUS, SymmetryType.SYMMETRIC)
+    SEALED_AUCTION = (
+        "Sealed_Auction",
+        GameType.SIMULTANEOUS,
+        SymmetryType.SYMMETRIC,
+    )
 
     # Sequential Games
     ESCALATION_GAME = ("Escalation_Game", GameType.SEQUENTIAL, SymmetryType.SYMMETRIC)

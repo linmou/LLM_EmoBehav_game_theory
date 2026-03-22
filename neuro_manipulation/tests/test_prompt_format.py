@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import patch, MagicMock
 from transformers import AutoTokenizer
@@ -509,7 +510,7 @@ class TestPromptFormatFallbackRegression(unittest.TestCase):
         """I am starting with a failing test. This is the Red phase."""
 
         class _TokenizerDropsSystem:
-            name_or_path = "/data/home/jjl7137/huggingface_models/meta-llama/Llama-3.2-1B-Instruct"
+            name_or_path = os.path.expandvars("${USER_HOME}/huggingface_models/meta-llama/Llama-3.2-1B-Instruct").replace("${USER_HOME}", "/home/jjl7137")
 
             def apply_chat_template(
                 self,
@@ -540,3 +541,22 @@ class TestPromptFormatFallbackRegression(unittest.TestCase):
         # Regression assertion: even if apply_chat_template drops system content,
         # PromptFormat should fall back and keep the system prompt in the final prompt.
         self.assertIn(system_prompt, prompt)
+
+    def test_llama3_base_model_without_template_uses_llama3_format(self):
+        # neuro_manipulation/tests/test_prompt_format.py: ensure Llama3 base model names without chat templates still resolve to Llama3InstFormat.
+        class _TokenizerNoTemplate:
+            name_or_path = "meta-llama/Llama-3.2-1B"
+
+            def apply_chat_template(self, *args, **kwargs):
+                raise ValueError(
+                    "Cannot use chat template functions because tokenizer.chat_template is not set and no template argument was passed!"
+                )
+
+        model_name = _TokenizerNoTemplate.name_or_path
+        self.assertIs(ManualPromptFormat.get(model_name), Llama3InstFormat)
+
+        prompt_format = PromptFormat(_TokenizerNoTemplate())
+        result = prompt_format.build("You are a helpful assistant.", ["Hello?"])
+
+        self.assertIn("<|begin_of_text|>", result)
+        self.assertIn("Hello?", result)

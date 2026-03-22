@@ -3,6 +3,7 @@
 Run comparison experiment with 50 scenarios each for anger and happiness
 """
 
+import os
 import json
 import logging
 import random
@@ -156,7 +157,7 @@ def main():
     logger.info("ANGER CONDITION COMPLETE")
     logger.info("Please stop anger server and start happiness server:")
     logger.info("1. Kill current server")
-    logger.info("2. Run: python -m openai_server --model /data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct --emotion happiness --port 8000")
+    logger.info("2. Run: python -m openai_server --model ${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct --emotion happiness --port 8000")
     logger.info("="*60)
     
     input("\nPress Enter when happiness server is running...")

@@ -7,11 +7,11 @@ experiment:
   
   # List of models to run experiments with
   models: 
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B-AWQ"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B-AWQ"
-    - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-14B-AWQ"
+    - "${USER_HOME}/huggingface_models/Qwen/Qwen3-0.6B"
+    - "${USER_HOME}/huggingface_models/Qwen/Qwen3-1.7B"
+    - "${USER_HOME}/huggingface_models/Qwen/Qwen3-4B-AWQ"
+    - "${USER_HOME}/huggingface_models/Qwen/Qwen3-8B-AWQ"
+    - "${USER_HOME}/huggingface_models/Qwen/Qwen3-14B-AWQ"
   
   game:
     name: "Prisoners_Dilemma"

@@ -10,6 +10,7 @@ Offline-first: requires local MbppPlus.jsonl.gz path. We rely on EvalPlus for
 parsing/parity and evaluation (base_only toggles behaviour).
 """
 
+import os
 import gzip
 import hashlib
 import json
@@ -43,7 +44,7 @@ def _import_evalplus() -> Any:
         import evalplus  # type: ignore
         return evalplus
     except Exception:
-        ep_path = "/data/home/jjl7137/evalplus"
+        ep_path = os.path.expandvars("${USER_HOME}/evalplus").replace("${USER_HOME}", "/home/jjl7137")
         if ep_path not in sys.path:
             sys.path.insert(0, ep_path)
         import evalplus  # type: ignore

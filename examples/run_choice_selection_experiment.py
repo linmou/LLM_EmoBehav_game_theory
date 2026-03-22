@@ -3,12 +3,16 @@ import yaml
 import logging
 from pathlib import Path
 import sys
+from dotenv import load_dotenv
 
 # Add project root to path for imports, so we can find the neuro_manipulation module
 project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
 
-from neuro_manipulation.configs.experiment_config import get_repe_eng_config
+from neuro_manipulation.configs.experiment_config import (
+    expand_env_placeholders,
+    get_repe_eng_config,
+)
 from neuro_manipulation.experiments.choice_selection_experiment import (
     ChoiceSelectionExperiment,
 )
@@ -45,8 +49,9 @@ def main():
 
     # Load configuration from YAML file
     try:
+        load_dotenv(override=False)
         with open(args.config, "r") as f:
-            config = yaml.safe_load(f)
+            config = expand_env_placeholders(yaml.safe_load(f))
     except FileNotFoundError:
         print(f"Error: Configuration file not found at {args.config}")
         sys.exit(1)

@@ -2,7 +2,7 @@ description: "Diplomacy PD: greedy decoding with intensity sweep"
 version: "0.1.0"
 
 models:
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
 
 benchmarks:
   - name: "diplomacy_pd"

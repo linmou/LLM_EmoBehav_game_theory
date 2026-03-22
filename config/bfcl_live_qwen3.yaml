@@ -9,10 +9,10 @@ description: "Config for BFCL live_* tasks (function calling)"
 version: "1.0.0"
 
 models:
-  #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-0.6B"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-1.7B"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-4B"
-    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen3-8B"
+  #- "${USER_HOME}/huggingface_models/Qwen/Qwen3-0.6B"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen3-1.7B"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen3-4B"
+    #- "${USER_HOME}/huggingface_models/Qwen/Qwen3-8B"
 
 benchmarks:
   # Option A: expand all live_* tasks from data/BFCL automatically

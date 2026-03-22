@@ -10,10 +10,10 @@ version: "1.0.0"
 
 models:
   # You may switch among Qwen2.5 sizes as needed
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
-  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
-    #- "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-1.5B-Instruct"
+  - "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-3B-Instruct"
+    #- "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-7B-Instruct"
 
 benchmarks:
   # Option A: expand all live_* tasks from data/BFCL automatically

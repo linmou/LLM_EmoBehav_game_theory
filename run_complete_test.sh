@@ -14,6 +14,7 @@
 #
 
 set -e  # Exit on any error
+USER_HOME="${USER_HOME:-/home/jjl7137}"
 
 echo "🔍 Complete LangGraph & AG2 Compatibility Test Runner"
 echo "=================================================="
@@ -38,7 +39,7 @@ fi
 echo "✅ Conda environment activated"
 
 # Set model path (same as in init_openai_server.sh)
-MODEL_PATH="/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+MODEL_PATH="${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
 MODEL_NAME="qwen2.5-0.5B-anger"
 EMOTION="anger"
 
@@ -54,8 +55,8 @@ if [ ! -d "$MODEL_PATH" ] && [ ! -f "$MODEL_PATH" ]; then
     echo "⚠️  Warning: Model path does not exist: $MODEL_PATH"
     echo "Please update the MODEL_PATH variable in this script to point to your model."
     echo ""
-    echo "Available models in /data/home/jjl7137/huggingface_models/:"
-    ls -la /data/home/jjl7137/huggingface_models/ 2>/dev/null || echo "Directory not accessible"
+    echo "Available models in ${USER_HOME}/huggingface_models/:"
+    ls -la ${USER_HOME}/huggingface_models/ 2>/dev/null || echo "Directory not accessible"
     echo ""
     echo "Continuing anyway (model path might be valid for your system)..."
 fi

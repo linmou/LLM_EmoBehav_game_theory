@@ -5,6 +5,7 @@ Allows users to define experiment configurations in YAML format.
 DEPRECATED: This module is deprecated and only used for tests.
 Production code uses direct yaml.safe_load() in emotion_experiment_series_runner.py.
 """
+import os
 import warnings
 import yaml
 from pathlib import Path
@@ -110,7 +111,7 @@ class EmotionMemoryConfigLoader:
         sample_config = {
             'experiment': {
                 'name': 'Emotion_Memory_Benchmark_Experiment',
-                'model_path': '/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct',
+                'model_path': os.path.expandvars('').replace('', '/home/jjl7137'),
                 
                 'emotions': [
                     'anger',
@@ -125,7 +126,7 @@ class EmotionMemoryConfigLoader:
                 
                 'benchmark': {
                     'name': 'infinitebench',
-                    'data_path': '/data/home/jjl7137/memory_benchmarks/InfiniteBench/data/passkey.jsonl',
+                    'data_path': os.path.expandvars('').replace('', '/home/jjl7137'),
                     'task_type': 'passkey',
                     'evaluation_method': 'get_score_one_passkey',
                     'sample_limit': 100,

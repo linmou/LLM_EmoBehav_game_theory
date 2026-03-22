@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import json
 import subprocess
 from datetime import datetime
@@ -135,7 +136,7 @@ def _build_harness_command(
 def evaluate_swebench_run(
     *,
     run_dir: Path,
-    swebench_repo: Path = Path("/data/home/jjl7137/SWE-bench"),
+    swebench_repo: Path = Path(os.path.expandvars("${USER_HOME}/SWE-bench").replace("${USER_HOME}", "/home/jjl7137")),
     dataset_name: str = "SWE-bench/SWE-bench_Lite",
     split: str = "test",
     results_root: Optional[Path] = None,
@@ -270,8 +271,8 @@ def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     p.add_argument(
         "--swebench-repo",
         type=Path,
-        default=Path("/data/home/jjl7137/SWE-bench"),
-        help="Path to the local SWE-bench repository (default: /data/home/jjl7137/SWE-bench)",
+        default=Path(os.path.expandvars("${USER_HOME}/SWE-bench").replace("${USER_HOME}", "/home/jjl7137")),
+        help="Path to the local SWE-bench repository (default: ${USER_HOME}/SWE-bench)",
     )
     p.add_argument(
         "--dataset-name",

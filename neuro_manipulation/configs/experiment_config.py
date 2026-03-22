@@ -1,5 +1,25 @@
+import os
+from typing import Any
+
 import yaml
+from dotenv import load_dotenv
 from games.game_configs import get_game_config
+
+
+DEFAULT_USER_HOME = "/home/jjl7137"
+
+
+def expand_env_placeholders(value: Any) -> Any:
+    """Recursively expand env vars in YAML-derived config values."""
+    if isinstance(value, dict):
+        return {k: expand_env_placeholders(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [expand_env_placeholders(v) for v in value]
+    if isinstance(value, str):
+        expanded = os.path.expanduser(os.path.expandvars(value))
+        # Fallback if USER_HOME is not exported in current shell.
+        return expanded.replace("${USER_HOME}", DEFAULT_USER_HOME)
+    return value
 
 def update_repe_config_from_yaml(base_repe_config, yaml_config):
     """
@@ -54,7 +74,7 @@ def get_repe_eng_config(model_name, yaml_config_path=None, yaml_config=None):
     # Base configuration
     base_config = {
         'emotions': ["happiness", "sadness", "anger", "fear", "disgust", "surprise"],
-        'data_dir': "./data/stimulus/text",
+        'data_dir': "data/stimulus/crowd-enVent_textlike",
         'model_name_or_path': model_name,
         'coeffs': [0.5, 1, 1.5],
         'max_new_tokens': 450,
@@ -91,5 +111,7 @@ def get_model_config(model_name):
     return control_layer_id
 
 def get_exp_config(config_path):
+    load_dotenv(override=False)
     with open(config_path, 'r') as file:
-        return yaml.safe_load(file)
+       raw_config = yaml.safe_load(file)
+    return expand_env_placeholders(raw_config)

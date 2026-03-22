@@ -34,9 +34,9 @@ experiment:
   # List of Gemma 3 models to test (multimodal variants only)
   # Note: Only 4B, 12B, and 27B support multimodal; 270M and 1B are text-only
   models: 
-    - "/data/home/jjl7137/huggingface_models/google/gemma-3-4b-it"
-    - "/data/home/jjl7137/huggingface_models/google/gemma-3-12b-it"
-    - "/data/home/jjl7137/huggingface_models/google/gemma-3-27b-it"
+    - "${USER_HOME}/huggingface_models/google/gemma-3-4b-it"
+    - "${USER_HOME}/huggingface_models/google/gemma-3-12b-it"
+    - "${USER_HOME}/huggingface_models/google/gemma-3-27b-it"
     # Add more models as needed
   
   data:

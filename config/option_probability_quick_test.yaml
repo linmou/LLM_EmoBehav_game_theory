@@ -29,7 +29,7 @@ experiment:
 
 # Use smaller model for quick testing
 repe_config:
-  model_name_or_path: "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
+  model_name_or_path: "${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct"
   
   # vLLM settings optimized for speed
   tensor_parallel_size: 1

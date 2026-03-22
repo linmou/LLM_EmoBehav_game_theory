@@ -4,6 +4,7 @@ Integration test for GPQA dataset using a real tokenizer and PromptFormat.
 Validates full pipeline: CSV -> dataset -> prompt formatting -> evaluation.
 """
 
+import os
 import csv
 import tempfile
 from pathlib import Path
@@ -14,7 +15,7 @@ from neuro_manipulation.prompt_formats import PromptFormat
 from emotion_experiment_engine.data_models import BenchmarkConfig
 from emotion_experiment_engine.benchmark_component_registry import create_benchmark_components
 
-_LOCAL_QWEN_PATH = Path("/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct")
+_LOCAL_QWEN_PATH = Path(os.path.expandvars("${USER_HOME}/huggingface_models/Qwen/Qwen2.5-0.5B-Instruct").replace("${USER_HOME}", "/home/jjl7137"))
 
 
 def _resolve_qwen_model(preferred: str = "Qwen/Qwen2.5-1.5B-Instruct") -> str:
