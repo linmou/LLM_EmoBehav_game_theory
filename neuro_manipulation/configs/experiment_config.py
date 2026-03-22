@@ -20,9 +20,11 @@ def update_repe_config_from_yaml(base_repe_config, yaml_config):
     """
     updated_config = base_repe_config.copy()
     
-    if 'repe_config' in yaml_config: 
-        # back compatability for experiments in neuro_manipulation 
+    if 'repe_config' in yaml_config:
+        # back compatability for experiments in neuro_manipulation
         repe_section = yaml_config['repe_config']
+    elif 'repe_eng_config' in yaml_config:
+        repe_section = yaml_config['repe_eng_config']
     else:
         # Direct repe_config section updates
         repe_section = yaml_config
@@ -30,6 +32,10 @@ def update_repe_config_from_yaml(base_repe_config, yaml_config):
     for key, value in repe_section.items():
         updated_config[key] = value
         print(f"✓ Updated repe_config.{key} = {value}")
+
+    if 'emotions' in yaml_config and 'emotions' not in repe_section:
+        updated_config['emotions'] = yaml_config['emotions']
+        print(f"✓ Updated repe_config.emotions = {yaml_config['emotions']}")
         
     return updated_config
 

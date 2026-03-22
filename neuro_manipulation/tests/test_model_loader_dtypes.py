@@ -64,3 +64,26 @@ def test_qwen_vl_remains_float16(patch_transformers, monkeypatch):
 
     assert captured["torch_dtype"] == torch.float16
 
+
+def test_internvl_uses_bfloat16(patch_transformers):
+    from neuro_manipulation.utils import load_model_tokenizer
+
+    captured = patch_transformers
+
+    load_model_tokenizer("OpenGVLab/InternVL3-2B", auto_load_multimodal=False)
+
+    assert captured["torch_dtype"] == torch.bfloat16
+
+
+def test_explicit_loading_config_dtype_is_honored(patch_transformers):
+    from neuro_manipulation.utils import load_model_tokenizer
+
+    captured = patch_transformers
+
+    load_model_tokenizer(
+        "Qwen/Qwen2.5-VL-3B-Instruct",
+        auto_load_multimodal=False,
+        loading_config={"dtype": "bfloat16"},
+    )
+
+    assert captured["torch_dtype"] == torch.bfloat16

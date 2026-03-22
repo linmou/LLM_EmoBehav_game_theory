@@ -251,8 +251,10 @@ class EmotionExperiment:
         )
         from neuro_manipulation.repe.pipelines import get_pipeline  # type: ignore
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
+        repe_yaml_config = dict(config.repe_eng_config or {})
+        repe_yaml_config.setdefault("emotions", list(config.emotions))
         self.repe_config = get_repe_eng_config(
-            config.model_path, yaml_config=config.repe_eng_config
+            config.model_path, yaml_config=repe_yaml_config
         )
 
         # Ensure loading_config has the model path if it exists

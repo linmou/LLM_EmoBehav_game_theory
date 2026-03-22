@@ -13,6 +13,20 @@ class RepReadingPipeline(Pipeline):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def __call__(self, inputs, *args, **kwargs):
+        if self._is_multimodal_input(inputs) and isinstance(inputs, list):
+            results = []
+            item_kwargs = dict(kwargs)
+            item_kwargs["batch_size"] = 1
+            for item in inputs:
+                item_result = super().__call__(item, *args, **item_kwargs)
+                if isinstance(item_result, list):
+                    results.extend(item_result)
+                else:
+                    results.append(item_result)
+            return results
+        return super().__call__(inputs, *args, **kwargs)
+
     def _get_hidden_states(
             self, 
             outputs,
@@ -369,8 +383,32 @@ class RepReadingPipeline(Pipeline):
             model_kwargs = dict(model_inputs)
             if "use_cache" in inspect.signature(self.model.forward).parameters:
                 model_kwargs["use_cache"] = False
+            if "input_mode" in inspect.signature(self.model.forward).parameters and "input_mode" not in model_kwargs:
+                model_name = str(getattr(getattr(self.model, "config", None), "_name_or_path", "")).lower()
+                if ("phi-4" in model_name) and ("multimodal" in model_name):
+                    model_kwargs["input_mode"] = 0
+            forward_parameters = inspect.signature(self.model.forward).parameters
+            model_name = str(getattr(getattr(self.model, "config", None), "_name_or_path", "")).lower()
+            model_type = str(getattr(getattr(self.model, "config", None), "model_type", "")).lower()
+            is_internvl_model = ("internvl" in model_name) or ("internvl" in model_type)
 
-            outputs = self.model(**model_kwargs, output_hidden_states=True)
+            if is_internvl_model and "pixel_values" not in model_kwargs and hasattr(self.model, "language_model"):
+                language_model_kwargs = {
+                    key: value
+                    for key, value in model_kwargs.items()
+                    if key in inspect.signature(self.model.language_model.forward).parameters
+                }
+                if "use_cache" in inspect.signature(self.model.language_model.forward).parameters:
+                    language_model_kwargs["use_cache"] = False
+                outputs = self.model.language_model(**language_model_kwargs, output_hidden_states=True)
+            else:
+                if is_internvl_model:
+                    if "pixel_values" in forward_parameters and "pixel_values" not in model_kwargs:
+                        model_kwargs["pixel_values"] = None
+                    if "image_flags" in forward_parameters and "image_flags" not in model_kwargs:
+                        model_kwargs["image_flags"] = None
+
+                outputs = self.model(**model_kwargs, output_hidden_states=True)
             
             # MEMORY OPTIMIZATION: Extract hidden states immediately and clear outputs
             hidden_states = self._get_hidden_states(outputs, rep_token, hidden_layers, which_hidden_states)

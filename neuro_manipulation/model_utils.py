@@ -8,6 +8,7 @@ from neuro_manipulation.prompt_formats import PromptFormat
 from neuro_manipulation.repe.pipelines import get_pipeline
 from neuro_manipulation.utils import (
     all_emotion_rep_reader,
+    detect_emotion_data_type,
     dict_to_unique_code,
     load_model_tokenizer,
     load_tokenizer_only,
@@ -130,13 +131,26 @@ def load_emotion_readers(
     try:
         if not config.get("rebuild", False):
             emotion_rep_readers = pickle.load(open(cache_filename, "rb"))
-            if emotion_rep_readers.get("args") == args:
+            cached_emotions = set(
+                key for key in emotion_rep_readers.keys() if isinstance(key, str)
+            )
+            requested_emotions = set(args["emotions"])
+            has_requested_readers = requested_emotions.issubset(cached_emotions)
+            if emotion_rep_readers.get("args") == args and has_requested_readers:
                 print("✓ Loaded cached emotion readers")
                 return emotion_rep_readers
     except:
         pass
 
     # Generate emotion dataset with auto-detection
+    requested_emotions = list(config.get("emotions", Emotions.get_emotions()))
+    dataset_emotions = requested_emotions
+    if len(requested_emotions) == 1:
+        data_status = detect_emotion_data_type(config["data_dir"])
+        available_emotions = data_status.get("available_emotions", [])
+        if requested_emotions[0] in available_emotions and len(available_emotions) >= 2:
+            dataset_emotions = available_emotions
+
     data = primary_emotions_concept_dataset(
         config["data_dir"],
         model_name=config["model_name_or_path"],
@@ -144,7 +158,7 @@ def load_emotion_readers(
         seed=emotion_data_seed,
         enable_thinking=enable_thinking,
         multimodal_intent=(experiment_mode == "multimodal"),
-        emotions=config.get("emotions"),
+        emotions=dataset_emotions,
     )
 
     # Create appropriate pipeline based on experiment mode
@@ -167,7 +181,7 @@ def load_emotion_readers(
 
     return all_emotion_rep_reader(
         data,
-        config["emotions"],
+        requested_emotions,
         rep_reading_pipeline,
         hidden_layers,
         config["rep_token"],

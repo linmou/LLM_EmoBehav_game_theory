@@ -1,6 +1,7 @@
 import base64
 import glob
 import hashlib
+import importlib.util
 import json
 import os
 import pickle
@@ -169,13 +170,24 @@ def get_optimal_tensor_parallel_size(model_path):
         # Get model config
         config, _ = get_model_config(model_path)
 
-        # Get number of attention heads from config
-        # Different models might store this in different keys
+        # Get number of attention heads from config.
+        # Newer multimodal models often store the text/LLM config under a nested key.
         num_heads = None
         possible_keys = ["num_attention_heads", "n_head", "num_heads", "n_heads"]
-        for key in possible_keys:
-            if key in config:
-                num_heads = config[key]
+        candidate_configs = [
+            config,
+            config.get("text_config", {}),
+            config.get("llm_config", {}),
+            config.get("language_config", {}),
+        ]
+        for candidate in candidate_configs:
+            if not isinstance(candidate, dict):
+                continue
+            for key in possible_keys:
+                if key in candidate:
+                    num_heads = candidate[key]
+                    break
+            if num_heads is not None:
                 break
 
         if num_heads is None:
@@ -707,7 +719,12 @@ def load_tokenizer_only(
     # Load tokenizer (same logic as in load_model_tokenizer)
     # Some VLM tokenizers can fail in slow mode (e.g., missing merges/vocab_file), so prefer fast.
     model_lower = str(model_name_or_path).lower()
-    use_fast_tokenizer = ("phi" in model_lower) or ("internvl" in model_lower)
+    use_fast_tokenizer = (
+        ("phi" in model_lower)
+        or ("internvl" in model_lower)
+        or ("qwen3-vl" in model_lower)
+        or ("qwen3_vl" in model_lower)
+    )
     tokenizer = AutoTokenizer.from_pretrained(
         model_name_or_path,
         use_fast=use_fast_tokenizer,
@@ -858,7 +875,7 @@ def load_model_only(
             ) from e
 
     # Check if this should be a causal LM / vision2seq model based on its config
-    from transformers import AutoConfig, AutoModelForCausalLM
+    from transformers import AutoConfig, AutoModel, AutoModelForCausalLM
     try:
         from transformers import AutoModelForVision2Seq
     except Exception:  # pragma: no cover - older transformers
@@ -882,67 +899,109 @@ def load_model_only(
                 hf_torch_dtype = torch.float32
             elif dtype_key in {"float16", "fp16"}:
                 hf_torch_dtype = torch.float16
+    name_lower = str(model_name_or_path).lower()
+    force_single_gpu = (
+        ("glm-edge" in name_lower)
+        or ("internvl" in name_lower)
+        or (("phi-4" in name_lower) and ("multimodal" in name_lower))
+    )
+    single_gpu_map = {"": 0} if force_single_gpu else "auto"
+    preferred_dtype = hf_torch_dtype
+    if ("gemma-3" in name_lower) or ("internvl" in name_lower):
+        preferred_dtype = torch.bfloat16
+
     try:
         config = AutoConfig.from_pretrained(
             model_name_or_path, token=True, trust_remote_code=True
         )
-        # Some multimodal HF models break when sharded across GPUs because they
-        # assume all multimodal tensors live on one device (e.g., InternVL uses
-        # boolean indexing between vision outputs and `image_flags`).
-        name_lower = str(model_name_or_path).lower()
-        single_gpu_map = {"": 0} if (("glm-edge" in name_lower) or ("internvl" in name_lower)) else "auto"
-
-        # DTYPE POLICY: Prefer bfloat16 for Gemma-3 to avoid NaNs; float16 otherwise
-        preferred_dtype = torch.bfloat16 if ("gemma-3" in name_lower) else torch.float16
-        # Check if the model has architectures that suggest it's a causal LM / vision2seq
-        if hasattr(config, "architectures") and config.architectures:
-            if any(
-                ("ForConditionalGeneration" in arch) or ("ForVision2Seq" in arch)
-                for arch in config.architectures
-            ) and AutoModelForVision2Seq is not None:
-                return AutoModelForVision2Seq.from_pretrained(
-                    model_name_or_path,
-                    torch_dtype=preferred_dtype,
-                    device_map=single_gpu_map,
-                    token=True,
-                    trust_remote_code=True,
-                ).eval()
-            # If any architecture name contains "ForCausalLM", use AutoModelForCausalLM
-            if any("ForCausalLM" in arch for arch in config.architectures):
-                return AutoModelForCausalLM.from_pretrained(
-                    model_name_or_path,
-                    torch_dtype=preferred_dtype,
-                    device_map=single_gpu_map,
-                    token=True,
-                    trust_remote_code=True,
-                ).eval()
-            return AutoModel.from_pretrained(
-                model_name_or_path,
-                torch_dtype=preferred_dtype,
-                device_map=single_gpu_map,
-                token=True,
-                trust_remote_code=True,
-            ).eval()
-
-        # Fallback to AutoModel if we can't determine
+    except Exception:
+        # If config loading itself fails, fall back to the generic AutoModel path.
         return AutoModel.from_pretrained(
             model_name_or_path,
-            torch_dtype=preferred_dtype,
+            torch_dtype=hf_torch_dtype,
             device_map=single_gpu_map,
             token=True,
             trust_remote_code=True,
         ).eval()
-    except:
-        # If config loading fails, fallback to AutoModel
-        name_lower = str(model_name_or_path).lower()
-        fallback_device_map = {"": 0} if (("glm-edge" in name_lower) or ("internvl" in name_lower)) else "auto"
+
+    # Some multimodal HF models break when sharded across GPUs because they
+    # assume all multimodal tensors live on one device (e.g., InternVL uses
+    # boolean indexing between vision outputs and `image_flags`).
+    # DTYPE POLICY: Prefer bfloat16 for Gemma-3 to avoid NaNs; float16 otherwise.
+    loader_kwargs = {
+        "torch_dtype": preferred_dtype,
+        "device_map": single_gpu_map,
+        "token": True,
+        "trust_remote_code": True,
+    }
+    if ("phi" in name_lower) and (("vision" in name_lower) or ("multimodal" in name_lower)):
+        if importlib.util.find_spec("flash_attn") is None:
+            if hasattr(config, "_attn_implementation"):
+                config._attn_implementation = "eager"
+            if hasattr(config, "_attn_implementation_internal"):
+                config._attn_implementation_internal = "eager"
+            loader_kwargs["config"] = config
+            loader_kwargs["attn_implementation"] = "eager"
+
+    if ("phi-4" in name_lower) and ("multimodal" in name_lower):
+        try:
+            from transformers.dynamic_module_utils import get_class_from_dynamic_module
+
+            phi4mm_model_cls = get_class_from_dynamic_module(
+                "modeling_phi4mm.Phi4MMModel",
+                model_name_or_path,
+                token=True,
+                trust_remote_code=True,
+            )
+
+            if not hasattr(phi4mm_model_cls, "prepare_inputs_for_generation"):
+                def _prepare_inputs_for_generation(
+                    self,
+                    input_ids=None,
+                    past_key_values=None,
+                    attention_mask=None,
+                    inputs_embeds=None,
+                    **kwargs,
+                ):
+                    model_inputs = dict(kwargs)
+                    if inputs_embeds is not None and past_key_values is None:
+                        model_inputs["inputs_embeds"] = inputs_embeds
+                    elif input_ids is not None:
+                        model_inputs["input_ids"] = input_ids
+                    if past_key_values is not None:
+                        model_inputs["past_key_values"] = past_key_values
+                    if attention_mask is not None:
+                        model_inputs["attention_mask"] = attention_mask
+                    return model_inputs
+
+                phi4mm_model_cls.prepare_inputs_for_generation = _prepare_inputs_for_generation
+        except Exception:
+            pass
+
+    if hasattr(config, "architectures") and config.architectures:
+        if any(
+            ("ForConditionalGeneration" in arch) or ("ForVision2Seq" in arch)
+            for arch in config.architectures
+        ) and AutoModelForVision2Seq is not None:
+            return AutoModelForVision2Seq.from_pretrained(
+                model_name_or_path,
+                **loader_kwargs,
+            ).eval()
+        if any("ForCausalLM" in arch for arch in config.architectures):
+            return AutoModelForCausalLM.from_pretrained(
+                model_name_or_path,
+                **loader_kwargs,
+            ).eval()
         return AutoModel.from_pretrained(
             model_name_or_path,
-            torch_dtype=hf_torch_dtype,
-            device_map=fallback_device_map,
-            token=True,
-            trust_remote_code=True,
+            **loader_kwargs,
         ).eval()
+
+    # Fallback to AutoModel if the config gives us no architectural hint.
+    return AutoModel.from_pretrained(
+        model_name_or_path,
+        **loader_kwargs,
+    ).eval()
 
     raise AssertionError("Unreachable")
 
