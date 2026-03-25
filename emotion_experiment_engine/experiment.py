@@ -327,6 +327,7 @@ class EmotionExperiment:
         self.control_layers = self._select_control_layers(
             self.hidden_layers, self.repe_config
         )
+        self.repe_config["control_layer_id"] = list(self.control_layers)
         self.logger.info(
             f"Using control layers (strategy={self.repe_config.get('control_layers', {}).get('strategy', 'middle_third')}): {self.control_layers}"
         )
@@ -1185,6 +1186,9 @@ class EmotionExperiment:
     def _save_experiment_config(self):
         """Save the complete experiment configuration to the results folder"""
         config_filename = self.output_dir / "experiment_config.json"
+        repe_config = dict(self.repe_config or {})
+        if self.control_layers:
+            repe_config["control_layer_id"] = list(self.control_layers)
 
         # Convert the experiment config to a serializable dictionary
         config_dict = {
@@ -1207,7 +1211,7 @@ class EmotionExperiment:
             "batch_size": self.config.batch_size,
             "generation_config": self.generation_config,
             "loading_config": self._serialize_loading_config(),
-            "repe_eng_config": self.repe_config,
+            "repe_eng_config": repe_config,
             "max_evaluation_workers": self.config.max_evaluation_workers,
             "pipeline_queue_size": self.config.pipeline_queue_size,
             "defer_evaluation": self.defer_evaluation,

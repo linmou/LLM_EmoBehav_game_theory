@@ -34,3 +34,9 @@ def test_get_repe_eng_config_keeps_explicit_repe_emotions_when_provided():
     repe_config = get_repe_eng_config("fake/model", yaml_config=config)
 
     assert repe_config["emotions"] == ["fear", "surprise"]
+
+
+def test_get_repe_eng_config_does_not_inject_default_control_layer_id():
+    repe_config = get_repe_eng_config("fake/model")
+
+    assert "control_layer_id" not in repe_config

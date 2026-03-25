@@ -2,6 +2,7 @@
 Unit tests for the main experiment class.
 """
 
+import json
 import shutil
 import tempfile
 import unittest
@@ -175,6 +176,44 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
                 hidden_layers,
                 {"control_layers": {"strategy": "explicit", "ids": [-1, -99]}},
             )
+
+    def test_save_experiment_config_uses_runtime_control_layers(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure experiment_config.json records runtime-selected layers, not stale defaults.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        temp_dir = Path(tempfile.mkdtemp())
+        self.temp_dirs.append(temp_dir)
+        experiment.output_dir = temp_dir
+
+        config = create_mock_experiment_config("passkey", 3)
+        self.configs.append(config.benchmark)
+        experiment.config = config
+        experiment.generation_config = config.generation_config
+        experiment.loading_config = config.loading_config
+        experiment.repe_config = {
+            "control_layers": {"strategy": "middle_third"},
+            "control_layer_id": list(range(-11, -30, -1)),
+        }
+        experiment.control_layers = [-5, -6, -7, -8]
+        experiment.sample_num = config.benchmark.sample_limit
+        experiment.enable_thinking = False
+        experiment.max_context_length = None
+        experiment.truncation_strategy = "right"
+        experiment.hidden_layers = list(range(-1, -13, -1))
+        experiment.is_vllm = True
+        experiment.defer_evaluation = False
+        experiment.repeat_runs = 1
+        experiment.repeat_seed_base = None
+
+        experiment._save_experiment_config()
+
+        saved = json.loads((temp_dir / "experiment_config.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            saved["repe_eng_config"]["control_layer_id"],
+            experiment.control_layers,
+        )
 
     @patch("emotion_experiment_engine.experiment.setup_model_and_tokenizer")
     @patch("emotion_experiment_engine.experiment.ModelLayerDetector")

@@ -85,7 +85,6 @@ def get_repe_eng_config(model_name, yaml_config_path=None, yaml_config=None):
         'n_difference': 1,
         'direction_method': 'pca',
         'rep_token': -1,
-        'control_layer_id': get_model_config(model_name)
     }
     
     # Update from YAML if provided
@@ -97,18 +96,6 @@ def get_repe_eng_config(model_name, yaml_config_path=None, yaml_config=None):
     else:
         return base_config
 
-def get_model_config(model_name):
-    """
-    Deprecated. 
-    Now we use the middel 1/3 layers by default to control.    
-    """
-    
-    if 'mistral-7b' in model_name.lower() or 'llama-3' in model_name.lower():
-        control_layer_id = list(range(-5, -18, -1))
-    else:  # llama default
-        control_layer_id = list(range(-11, -30, -1))
-    
-    return control_layer_id
 
 def get_exp_config(config_path):
     load_dotenv(override=False)
