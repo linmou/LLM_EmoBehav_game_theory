@@ -94,6 +94,43 @@ def _expand_env_placeholders(value: Any) -> Any:
     return value
 
 
+def _resolve_resume_series_config(series_config: Any) -> Dict[str, Any]:
+    """Normalize embedded resume config, including merged-report snapshots."""
+    if not isinstance(series_config, dict):
+        return {}
+
+    normalized = copy.deepcopy(series_config)
+    if "benchmarks" in normalized and "models" in normalized:
+        return normalized
+
+    source_report = normalized.get("source_report")
+    if source_report:
+        source_path = Path(str(source_report)).expanduser().resolve()
+        if source_path.exists():
+            with open(source_path, "r", encoding="utf-8") as handle:
+                return _resolve_resume_series_config(json.load(handle).get("series_config"))
+
+    merged_configs = normalized.get("merged_from_series_configs", [])
+    if isinstance(merged_configs, list):
+        for candidate in merged_configs:
+            resolved = _resolve_resume_series_config(candidate)
+            if "benchmarks" in resolved and "models" in resolved:
+                return resolved
+
+    source_reports = normalized.get("source_reports", [])
+    if isinstance(source_reports, list):
+        for candidate in source_reports:
+            candidate_path = Path(str(candidate)).expanduser().resolve()
+            if not candidate_path.exists():
+                continue
+            with open(candidate_path, "r", encoding="utf-8") as handle:
+                resolved = _resolve_resume_series_config(json.load(handle).get("series_config"))
+            if "benchmarks" in resolved and "models" in resolved:
+                return resolved
+
+    return normalized
+
+
 class ExperimentStatus:
     PENDING = "pending"
     RUNNING = "running"
@@ -401,6 +438,8 @@ class MemoryExperimentSeriesRunner:
         self.config_path = config_path
         self.series_name = series_name or f"memory_experiment_series"
         self.dry_run = dry_run
+        self._allowed_resume_experiment_ids: Optional[set[str]] = None
+        self._stop_model_on_failure = False
         load_dotenv(override=False)
 
         # Initialize shutdown flag
@@ -440,7 +479,8 @@ class MemoryExperimentSeriesRunner:
                 raise ValueError(
                     "Loaded report does not contain a 'series_config' snapshot; cannot resume from report."
                 )
-            resume_cfg = copy.deepcopy(self.report.series_config)
+            self._allowed_resume_experiment_ids = set(self.report.experiments)
+            resume_cfg = _resolve_resume_series_config(self.report.series_config)
 
             # If a new config is provided and we are interactive, show diff and ask
             if new_config_if_provided is not None and hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
@@ -506,6 +546,9 @@ class MemoryExperimentSeriesRunner:
             )
 
         self._apply_early_vllm_env_from_base_config()
+        self._stop_model_on_failure = bool(
+            self.base_config.get("stop_model_on_failure", False)
+        )
 
     def _apply_early_vllm_env_from_base_config(self) -> None:
         """
@@ -1360,6 +1403,12 @@ class MemoryExperimentSeriesRunner:
                         )
                         exp_id = f"{benchmark_name}_{task_type}_{model_folder_name.replace('/', '_')}"
 
+                        if (
+                            self._allowed_resume_experiment_ids is not None
+                            and exp_id not in self._allowed_resume_experiment_ids
+                        ):
+                            continue
+
                         # Only add if not resuming or not already in report
                         if not self._resuming or exp_id not in self.report.experiments:
                             self.report.add_experiment(
@@ -1384,12 +1433,20 @@ class MemoryExperimentSeriesRunner:
         pending_experiments = self.report.get_incomplete_experiments()
         total_experiments = len(pending_experiments)
         self.logger.info(f"Total pending experiments: {total_experiments}")
+        blocked_models: set[str] = set()
 
         # Run each experiment
         for i, exp in enumerate(pending_experiments):
             if self.shutdown_requested:
                 self.logger.info("Shutdown requested. Stopping experiment series.")
                 break
+
+            if self._stop_model_on_failure and exp["model_name"] in blocked_models:
+                self.logger.info(
+                    "Skipping experiment because its model already failed in this run: "
+                    f"{exp['benchmark_name']}, {exp['model_name']}"
+                )
+                continue
 
             resolved_model_path = exp.get("resolved_model_path")
             model_name = exp["model_name"]
@@ -1468,6 +1525,8 @@ class MemoryExperimentSeriesRunner:
                     self.logger.info(
                         f"❌ Experiment failed but series continues: {exp['benchmark_name']}, {exp['model_name']}"
                     )
+                    if self._stop_model_on_failure:
+                        blocked_models.add(exp["model_name"])
                     exp_record = self.report.experiments.get(exp["exp_id"])
                     if not exp_record or exp_record.get("status") != ExperimentStatus.FAILED:
                         self.report.update_experiment(
@@ -1488,6 +1547,8 @@ class MemoryExperimentSeriesRunner:
 
                 try:
                     # Try to update the experiment report with the series-level error
+                    if self._stop_model_on_failure:
+                        blocked_models.add(exp["model_name"])
                     self.report.update_experiment(
                         exp["exp_id"],
                         status=ExperimentStatus.FAILED,

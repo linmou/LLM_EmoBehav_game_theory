@@ -8,7 +8,7 @@ Responsible file: emotion_experiment_engine/emotion_experiment_series_runner.py
 This suite verifies two behaviors:
 1) The report JSON persists a `series_config` snapshot of the original config.
 2) A new runner can resume from a saved report JSON by executing only the
-   experiments that are still marked as pending in the report.
+   experiments that are still not completed in the report.
 """
 
 import json
@@ -148,3 +148,284 @@ def test_report_includes_series_config_and_resume_from_report_executes_pendings(
     # Final summary should show no pending experiments
     summary = resumed.report.get_summary()
     assert summary["pending"] == 0
+
+
+@pytest.mark.integration
+def test_resume_from_split_report_does_not_reintroduce_missing_experiments():
+    tmpdir = tempfile.mkdtemp()
+    report_path = Path(tmpdir) / "split_resume_report.json"
+
+    payload = {
+        "last_updated": "2026-03-23T16:00:00",
+        "series_start_time": "2026-03-23T15:00:00",
+        "series_duration_seconds": 3600.0,
+        "series_name": "split_series_gpu0",
+        "series_config": _basic_config(tmpdir, num_benchmarks=2),
+        "sessions": [],
+        "experiments": {
+            "bench_0_task_0_dummy_model": {
+                "benchmark_name": "bench_0_task_0",
+                "model_name": "dummy/model",
+                "resolved_model_path": "/resolved/model",
+                "status": "pending",
+                "start_time": None,
+                "end_time": None,
+                "time_cost_seconds": None,
+                "error": None,
+                "output_dir": None,
+                "exp_id": "bench_0_task_0_dummy_model",
+            }
+        },
+    }
+    report_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    with patch(
+        "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner._check_model_existence",
+        return_value="/resolved/model",
+    ):
+        calls = []
+
+        def _run_pending_only(benchmark_config, model_name, exp_id):
+            calls.append(exp_id)
+            return True
+
+        with patch(
+            "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner.run_single_experiment",
+            side_effect=_run_pending_only,
+        ):
+            resumed = MemoryExperimentSeriesRunner(
+                config_path=None,
+                series_name="split_series_gpu0",
+                resume=str(report_path),
+                dry_run=False,
+            )
+            resumed.run_experiment_series()
+
+    assert calls == ["bench_0_task_0_dummy_model"]
+    assert set(resumed.report.experiments.keys()) == {"bench_0_task_0_dummy_model"}
+
+
+@pytest.mark.integration
+def test_resume_from_report_reruns_failed_experiments():
+    tmpdir = tempfile.mkdtemp()
+    report_path = Path(tmpdir) / "resume_failed_report.json"
+
+    payload = {
+        "last_updated": "2026-03-23T16:00:00",
+        "series_start_time": "2026-03-23T15:00:00",
+        "series_duration_seconds": 3600.0,
+        "series_name": "resume_failed_series",
+        "series_config": _basic_config(tmpdir, num_benchmarks=2),
+        "sessions": [],
+        "experiments": {
+            "bench_0_task_0_dummy_model": {
+                "benchmark_name": "bench_0_task_0",
+                "model_name": "dummy/model",
+                "resolved_model_path": "/resolved/model",
+                "status": "failed",
+                "start_time": "2026-03-23T15:00:00",
+                "end_time": "2026-03-23T15:01:00",
+                "time_cost_seconds": 60.0,
+                "error": "oom",
+                "output_dir": "/tmp/old_failed_run",
+                "exp_id": "bench_0_task_0_dummy_model",
+            },
+            "bench_1_task_1_dummy_model": {
+                "benchmark_name": "bench_1_task_1",
+                "model_name": "dummy/model",
+                "resolved_model_path": "/resolved/model",
+                "status": "completed",
+                "start_time": "2026-03-23T15:02:00",
+                "end_time": "2026-03-23T15:03:00",
+                "time_cost_seconds": 60.0,
+                "error": None,
+                "output_dir": "/tmp/old_completed_run",
+                "exp_id": "bench_1_task_1_dummy_model",
+            },
+        },
+    }
+    report_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    with patch(
+        "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner._check_model_existence",
+        return_value="/resolved/model",
+    ):
+        calls = []
+
+        def _run_failed_again(benchmark_config, model_name, exp_id):
+            calls.append(exp_id)
+            return True
+
+        with patch(
+            "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner.run_single_experiment",
+            side_effect=_run_failed_again,
+        ):
+            resumed = MemoryExperimentSeriesRunner(
+                config_path=None,
+                series_name="resume_failed_series",
+                resume=str(report_path),
+                dry_run=False,
+            )
+            resumed.run_experiment_series()
+
+    assert calls == ["bench_0_task_0_dummy_model"]
+    assert resumed.report.experiments["bench_0_task_0_dummy_model"]["status"] == "completed"
+    assert resumed.report.experiments["bench_1_task_1_dummy_model"]["status"] == "completed"
+
+
+@pytest.mark.integration
+def test_resume_from_report_stops_scheduling_same_model_after_first_failure():
+    tmpdir = tempfile.mkdtemp()
+    report_path = Path(tmpdir) / "resume_stop_model_report.json"
+    payload = {
+        "last_updated": "2026-03-25T10:00:00",
+        "series_start_time": "2026-03-25T09:00:00",
+        "series_duration_seconds": 3600.0,
+        "series_name": "resume_stop_model_series",
+        "series_config": {
+            **_basic_config(tmpdir, num_benchmarks=3),
+            "stop_model_on_failure": True,
+        },
+        "sessions": [],
+        "experiments": {
+            "bench_0_task_0_dummy_model": {
+                "benchmark_name": "bench_0_task_0",
+                "model_name": "dummy/model",
+                "resolved_model_path": "/resolved/model",
+                "status": "pending",
+                "start_time": None,
+                "end_time": None,
+                "time_cost_seconds": None,
+                "error": None,
+                "output_dir": None,
+                "exp_id": "bench_0_task_0_dummy_model",
+            },
+            "bench_1_task_1_dummy_model": {
+                "benchmark_name": "bench_1_task_1",
+                "model_name": "dummy/model",
+                "resolved_model_path": "/resolved/model",
+                "status": "pending",
+                "start_time": None,
+                "end_time": None,
+                "time_cost_seconds": None,
+                "error": None,
+                "output_dir": None,
+                "exp_id": "bench_1_task_1_dummy_model",
+            },
+            "bench_2_task_2_other_model": {
+                "benchmark_name": "bench_2_task_2",
+                "model_name": "other/model",
+                "resolved_model_path": "/resolved/other-model",
+                "status": "pending",
+                "start_time": None,
+                "end_time": None,
+                "time_cost_seconds": None,
+                "error": None,
+                "output_dir": None,
+                "exp_id": "bench_2_task_2_other_model",
+            },
+        },
+    }
+    report_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    calls: list[str] = []
+
+    def _run_with_first_failure(_benchmark_config, _model_name, exp_id):
+        calls.append(exp_id)
+        return exp_id != "bench_0_task_0_dummy_model"
+
+    with patch(
+        "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner._check_model_existence",
+        side_effect=lambda model_name: f"/resolved/{model_name.replace('/', '-')}",
+    ):
+        with patch(
+            "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner.run_single_experiment",
+            side_effect=_run_with_first_failure,
+        ):
+            resumed = MemoryExperimentSeriesRunner(
+                config_path=None,
+                series_name="resume_stop_model_series",
+                resume=str(report_path),
+                dry_run=False,
+            )
+            resumed.run_experiment_series()
+
+    assert calls == [
+        "bench_0_task_0_dummy_model",
+        "bench_2_task_2_other_model",
+    ]
+    assert resumed.report.experiments["bench_0_task_0_dummy_model"]["status"] == "failed"
+    assert resumed.report.experiments["bench_1_task_1_dummy_model"]["status"] == "pending"
+    assert resumed.report.experiments["bench_2_task_2_other_model"]["status"] == "completed"
+
+
+@pytest.mark.integration
+def test_resume_from_merged_report_uses_embedded_source_benchmarks():
+    """Responsible for emotion_experiment_series_runner.py merged-report resume behavior."""
+    tmpdir = tempfile.mkdtemp()
+    report_path = Path(tmpdir) / "merged_resume_report.json"
+    source_cfg = _basic_config(tmpdir, num_benchmarks=2)
+
+    payload = {
+        "last_updated": "2026-03-25T00:00:00",
+        "series_start_time": "2026-03-25T00:00:00",
+        "series_duration_seconds": 0.0,
+        "series_name": "merged_resume_series",
+        "series_config": {
+            "source_reports": [str(Path(tmpdir) / "source_a.json"), str(Path(tmpdir) / "source_b.json")],
+            "merged_from_series_configs": [source_cfg],
+        },
+        "sessions": [],
+        "experiments": {
+            "bench_0_task_0_dummy_model": {
+                "benchmark_name": "bench_0_task_0",
+                "model_name": "dummy/model",
+                "resolved_model_path": "/resolved/model",
+                "status": "failed",
+                "start_time": "2026-03-25T00:00:00",
+                "end_time": "2026-03-25T00:01:00",
+                "time_cost_seconds": 60.0,
+                "error": "old loader error",
+                "output_dir": "/tmp/old_failed_run",
+                "exp_id": "bench_0_task_0_dummy_model",
+            },
+            "bench_1_task_1_dummy_model": {
+                "benchmark_name": "bench_1_task_1",
+                "model_name": "dummy/model",
+                "resolved_model_path": "/resolved/model",
+                "status": "completed",
+                "start_time": "2026-03-25T00:01:00",
+                "end_time": "2026-03-25T00:02:00",
+                "time_cost_seconds": 60.0,
+                "error": None,
+                "output_dir": "/tmp/old_completed_run",
+                "exp_id": "bench_1_task_1_dummy_model",
+            },
+        },
+    }
+    report_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    with patch(
+        "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner._check_model_existence",
+        return_value="/resolved/model",
+    ):
+        calls = []
+
+        def _run_failed_again(benchmark_config, model_name, exp_id):
+            calls.append((benchmark_config["name"], benchmark_config["task_type"], model_name, exp_id))
+            return True
+
+        with patch(
+            "emotion_experiment_engine.emotion_experiment_series_runner.MemoryExperimentSeriesRunner.run_single_experiment",
+            side_effect=_run_failed_again,
+        ):
+            resumed = MemoryExperimentSeriesRunner(
+                config_path=None,
+                series_name="merged_resume_series",
+                resume=str(report_path),
+                dry_run=False,
+            )
+            resumed.run_experiment_series()
+
+    assert calls == [("bench_0", "task_0", "/resolved/model", "bench_0_task_0_dummy_model")]
+    assert resumed.report.experiments["bench_0_task_0_dummy_model"]["status"] == "completed"

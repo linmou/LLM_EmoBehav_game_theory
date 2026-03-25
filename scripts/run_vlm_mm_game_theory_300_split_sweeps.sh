@@ -55,7 +55,7 @@ CUDA_VISIBLE_DEVICES=2,3 python -m emotion_experiment_engine.emotion_experiment_
   --name "memory_experiment_series_gpu23" >"$GPU23_RUN_LOG" 2>&1 &
 GPU23_RUN_PID=$!
 
-python -m emotion_experiment_engine.split_series_workflow launch-eval-watchers \
+python -m emotion_experiment_engine.resource_recursive_workflow launch-eval-watchers \
   --report "$GPU01_REPORT" \
   --report "$GPU23_REPORT" \
   --env-name llm-test \
@@ -74,7 +74,7 @@ echo "gpu23 run pid: $GPU23_RUN_PID"
 
 wait "$GPU01_RUN_PID" "$GPU23_RUN_PID"
 
-python -m emotion_experiment_engine.split_series_workflow wait-and-merge \
+python -m emotion_experiment_engine.resource_recursive_workflow wait-and-merge \
   --report "$GPU01_REPORT" \
   --report "$GPU23_REPORT" \
   --merged-output-dir "$MERGED_OUTPUT_DIR" \
