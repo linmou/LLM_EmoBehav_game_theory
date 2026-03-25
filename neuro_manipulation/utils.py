@@ -881,6 +881,10 @@ def load_model_only(
     # Check if this should be a causal LM / vision2seq model based on its config
     from transformers import AutoConfig, AutoModel, AutoModelForCausalLM
     try:
+        from transformers import AutoModelForImageTextToText
+    except Exception:  # pragma: no cover - older transformers
+        AutoModelForImageTextToText = None  # type: ignore
+    try:
         from transformers import AutoModelForVision2Seq
     except Exception:  # pragma: no cover - older transformers
         AutoModelForVision2Seq = None  # type: ignore
@@ -947,6 +951,16 @@ def load_model_only(
             loader_kwargs["config"] = config
             loader_kwargs["attn_implementation"] = "eager"
 
+    if ("phi-4" in name_lower) and ("mini-instruct" in name_lower):
+        import transformers.utils as transformers_utils
+        if not hasattr(transformers_utils, "LossKwargs"):
+            from typing import TypedDict
+
+            # Phi-4 mini remote code expects LossKwargs from newer transformers.
+            # In older installs it is only used as a TypedDict mixin, so an empty
+            # compatibility shim is sufficient.
+            transformers_utils.LossKwargs = TypedDict("LossKwargs", {})
+
     if ("phi-4" in name_lower) and ("multimodal" in name_lower):
         try:
             from transformers.dynamic_module_utils import get_class_from_dynamic_module
@@ -983,6 +997,15 @@ def load_model_only(
             pass
 
     if hasattr(config, "architectures") and config.architectures:
+        if (
+            getattr(config, "model_type", None) == "gemma3"
+            and any("ForConditionalGeneration" in arch for arch in config.architectures)
+            and AutoModelForImageTextToText is not None
+        ):
+            return AutoModelForImageTextToText.from_pretrained(
+                model_name_or_path,
+                **loader_kwargs,
+            ).eval()
         if any(
             ("ForConditionalGeneration" in arch) or ("ForVision2Seq" in arch)
             for arch in config.architectures
