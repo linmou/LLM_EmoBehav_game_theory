@@ -155,9 +155,17 @@ models need more VRAM after failing. The pipeline allocates work at
 `--min-resource-gpus`, reruns failed-model work at doubled resources, and keeps
 its own planning state under the series `output_dir`.
 
+Resume behavior:
+- rerunning the same `run-recursive` command for the same `output_dir` resumes automatically from `output_dir/resource_pipeline/`
+- resume uses the latest stable round checkpoint, defined as a round directory with `round_manifest.json` and a live `next_planning_report`
+- if the previous run stopped mid-round, the pipeline salvages partial shard progress from `resource_round_manifest.json`, keeps completed experiments, and reruns only failed/pending experiments in that round
+- if `final/final_report.json` already exists, rerunning returns it immediately without scheduling new work
+- persisted scheduling topology must match on resume: `gpu_pool`, `min_resource_gpus`, and `max_resource_gpus` are treated as immutable for that pipeline root
+- operational knobs such as polling intervals and worker count can change between resumes
+
 You can start from either:
 - `--config` to bootstrap a fresh planning report from a YAML series config
-- `--report` to resume from an existing series report
+- `--report` to resume from an existing series report, including retrying source experiments that already failed at the current tier and may need promotion
 
 Fresh bootstrap example:
 
@@ -184,6 +192,7 @@ Pipeline behavior:
 - failed-model work is promoted by resource tier, not by error-message heuristics
 - completed work is preserved and not rerun
 - if a model still fails at max resources, the failed attempt stays `failed`; blocked siblings remain `pending`
+- partial progress inside an interrupted round is reused from shard progress files; only non-completed experiments in that round are scheduled again
 
 Output contract:
 - experiment result directories stay under `series_config.output_dir`

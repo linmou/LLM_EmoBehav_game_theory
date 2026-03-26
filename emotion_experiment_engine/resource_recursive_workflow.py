@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import difflib
 import json
 import logging
 import os
@@ -28,6 +29,19 @@ from .evaluate_saved_series import _is_terminal, _load_report, process_report
 
 
 LOGGER = logging.getLogger(__name__)
+_PIPELINE_ONLY_CONFIG_KEYS = {
+    "source_report",
+    "resource_pipeline",
+    "gpu_pool",
+    "min_resource_gpus",
+    "max_resource_gpus",
+    "current_round_gpu_count",
+    "resource_round_index",
+    "workflow_role",
+    "assigned_gpu_ids",
+    "split_shard_label",
+    "deferred_models",
+}
 
 
 def _load_payloads(report_paths: Sequence[Path | str]) -> list[dict]:
@@ -772,6 +786,8 @@ def _has_schedulable_work(
         status = str(experiment.get("status", "")).strip().lower()
         if status == "completed":
             continue
+        if status == "failed" and current_round_gpu_count >= max_resource_gpus:
+            continue
         required_gpu_count = int(experiment.get("required_gpu_count", 1) or 1)
         if required_gpu_count == current_round_gpu_count and required_gpu_count <= max_resource_gpus:
             return True
@@ -1028,6 +1044,307 @@ def _derive_pipeline_series_base(
     return cfg_path.stem
 
 
+def _load_json_if_exists(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    payload = _load_report(path)
+    if not isinstance(payload, dict):
+        raise ValueError(f"Expected JSON object at {path}")
+    return payload
+
+
+def _has_existing_pipeline_state(pipeline_root: Path) -> bool:
+    if not pipeline_root.exists():
+        return False
+    return any(pipeline_root.iterdir())
+
+
+def _normalize_pipeline_settings(
+    *,
+    pipeline_root: Path,
+    source_report: Path | str | None,
+    config_path: Path | str | None,
+    pipeline_series_base: str,
+    gpu_pool: Sequence[str],
+    min_resource_gpus: int,
+    max_resource_gpus: int,
+    conda_env: str,
+    poll_seconds: float,
+    stall_seconds: float,
+    idle_util_threshold: float,
+    max_workers: int,
+) -> dict[str, Any]:
+    return {
+        "source_report": str(source_report) if source_report is not None else None,
+        "config_path": str(config_path) if config_path else None,
+        "pipeline_root": str(pipeline_root),
+        "pipeline_series_base": pipeline_series_base,
+        "gpu_pool": list(gpu_pool),
+        "min_resource_gpus": int(min_resource_gpus),
+        "max_resource_gpus": int(max_resource_gpus),
+        "conda_env": conda_env,
+        "poll_seconds": poll_seconds,
+        "stall_seconds": stall_seconds,
+        "idle_util_threshold": idle_util_threshold,
+        "max_workers": int(max_workers),
+    }
+
+
+def _validate_resume_settings(
+    existing_config: dict[str, Any],
+    requested_config: dict[str, Any],
+) -> None:
+    immutable_keys = (
+        "pipeline_root",
+        "gpu_pool",
+        "min_resource_gpus",
+        "max_resource_gpus",
+    )
+    for key in immutable_keys:
+        if existing_config.get(key) != requested_config.get(key):
+            raise ValueError(
+                f"Existing recursive pipeline {key}={existing_config.get(key)!r} "
+                f"does not match requested {requested_config.get(key)!r}"
+            )
+
+
+def _configs_equal(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    try:
+        return json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True)
+    except Exception:
+        return a == b
+
+
+def _show_config_diff(old_cfg: dict[str, Any], new_cfg: dict[str, Any]) -> None:
+    try:
+        old_text = yaml.safe_dump(old_cfg, sort_keys=True)
+        new_text = yaml.safe_dump(new_cfg, sort_keys=True)
+        diff = difflib.unified_diff(
+            old_text.splitlines(),
+            new_text.splitlines(),
+            fromfile="pipeline(source_report)",
+            tofile="new --config",
+            lineterm="",
+        )
+        LOGGER.info("Configuration differences detected:")
+        for line in diff:
+            LOGGER.info(line)
+    except Exception as exc:
+        LOGGER.warning("Could not render recursive pipeline config diff: %s", exc)
+
+
+def _runner_series_config_only(series_config: dict[str, Any]) -> dict[str, Any]:
+    return {
+        key: copy.deepcopy(value)
+        for key, value in series_config.items()
+        if key not in _PIPELINE_ONLY_CONFIG_KEYS
+    }
+
+
+def _apply_runner_config_to_report(report_path: Path, runner_config: dict[str, Any]) -> None:
+    payload = _load_report(report_path)
+    updated_series_config = copy.deepcopy(payload.get("series_config", {}))
+    for key in list(updated_series_config):
+        if key not in _PIPELINE_ONLY_CONFIG_KEYS:
+            updated_series_config.pop(key)
+    updated_series_config.update(copy.deepcopy(runner_config))
+    payload["series_config"] = updated_series_config
+    _write_json(report_path, payload)
+
+
+def _maybe_update_resumed_source_report(
+    *,
+    source_report_path: Path,
+    report_path: Path | str | None,
+    config_path: Path | str | None,
+) -> dict[str, Any] | None:
+    source_payload = _load_report(source_report_path)
+    existing_series_config = _resolve_runner_series_config(source_payload)
+
+    if report_path:
+        requested_payload = _load_report(Path(str(report_path)).expanduser().resolve())
+        requested_series_config = _resolve_runner_series_config(requested_payload)
+        if not _configs_equal(existing_series_config, requested_series_config):
+            raise ValueError(
+                "Existing recursive pipeline source report differs from the requested --report; "
+                "use the original source report or start a new pipeline root."
+            )
+        return None
+
+    if not config_path:
+        return None
+
+    with open(Path(str(config_path)).expanduser().resolve(), "r", encoding="utf-8") as handle:
+        requested_config = yaml.safe_load(handle) or {}
+    if not isinstance(requested_config, dict):
+        raise ValueError("Config payload must be a mapping")
+
+    existing_runner_config = _runner_series_config_only(existing_series_config)
+    if _configs_equal(existing_runner_config, requested_config):
+        return None
+
+    use_new = False
+    if hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
+        _show_config_diff(existing_runner_config, requested_config)
+        try:
+            answer = input("Configs differ. Use new --config to resume recursive pipeline? [y/N]: ").strip().lower()
+            use_new = answer in ("y", "yes")
+        except Exception:
+            use_new = False
+
+    if not use_new:
+        return None
+
+    _apply_runner_config_to_report(source_report_path, requested_config)
+    return requested_config
+
+
+def _round_index_from_dir(round_dir: Path) -> int:
+    parts = round_dir.name.split("_")
+    if len(parts) < 2:
+        raise ValueError(f"Cannot infer round index from {round_dir}")
+    digits = "".join(ch for ch in parts[1] if ch.isdigit())
+    if not digits:
+        raise ValueError(f"Cannot infer round index from {round_dir}")
+    return int(digits)
+
+
+def _salvage_interrupted_round_report(round_dir: Path) -> tuple[Path, int, int]:
+    manifest_path = round_dir / "resource_round_manifest.json"
+    manifest = _load_json_if_exists(manifest_path)
+    if manifest is None:
+        raise ValueError(f"Missing interrupted round manifest: {manifest_path}")
+
+    source_report_value = manifest.get("source_report")
+    carry_forward_value = manifest.get("carry_forward_report")
+    shard_report_values = manifest.get("shard_reports", [])
+    if (
+        not source_report_value
+        or not carry_forward_value
+        or not isinstance(shard_report_values, list)
+    ):
+        raise ValueError(f"Interrupted round manifest is incomplete: {manifest_path}")
+
+    source_report = Path(str(source_report_value)).expanduser().resolve()
+    carry_forward_report = Path(str(carry_forward_value)).expanduser().resolve()
+    shard_reports = [Path(str(path)).expanduser().resolve() for path in shard_report_values]
+    resource_gpus = int(manifest.get("resource_gpus", 1) or 1)
+    round_index = _round_index_from_dir(round_dir)
+
+    merged_report = merge_round_reports_for_state(
+        source_report,
+        carry_forward_report=carry_forward_report,
+        shard_reports=shard_reports,
+        merged_output_dir=round_dir,
+        merged_series_name=f"{source_report.stem}_interrupted_state",
+    )
+    merged_payload = _load_report(merged_report)
+    experiments = merged_payload.get("experiments", {})
+    if not isinstance(experiments, dict):
+        raise ValueError("Interrupted round experiments payload must be a mapping")
+
+    salvaged_experiments: dict[str, dict[str, Any]] = {}
+    for exp_id, experiment in experiments.items():
+        if not isinstance(experiment, dict):
+            raise ValueError(f"Experiment payload must be a mapping: {exp_id}")
+        status = str(experiment.get("status", "")).strip().lower()
+        salvaged_experiments[exp_id] = (
+            copy.deepcopy(experiment) if status == "completed" else _reset_experiment_for_resume(experiment)
+        )
+
+    merged_payload["series_name"] = f"{source_report.stem}_interrupted_resume"
+    merged_payload["experiments"] = salvaged_experiments
+    merged_payload["last_updated"] = datetime.now().isoformat()
+    merged_payload.setdefault("series_config", {})
+    merged_payload["series_config"]["source_report"] = str(source_report)
+    merged_payload["series_config"]["current_round_gpu_count"] = resource_gpus
+    merged_payload["series_config"]["resource_round_index"] = round_index
+    salvaged_report = _write_json(round_dir / "interrupted_round_resume_report.json", merged_payload)
+    return salvaged_report, round_index, resource_gpus
+
+
+def _resume_planning_state(
+    *,
+    pipeline_root: Path,
+    source_report_path: Path,
+    final_dir: Path,
+    rounds_dir: Path,
+) -> tuple[Path | None, int | None, int | None]:
+    final_report = final_dir / "final_report.json"
+    if final_report.exists():
+        return final_report, None, None
+
+    latest_round_index = 0
+    latest_planning_report: Path | None = None
+    interrupted_round_dir: Path | None = None
+
+    if rounds_dir.exists():
+        round_dirs = sorted(
+            (
+                path
+                for path in rounds_dir.iterdir()
+                if path.is_dir() and path.name.startswith("round_")
+            ),
+            key=lambda path: path.name,
+        )
+        for round_dir in round_dirs:
+            manifest_path = round_dir / "round_manifest.json"
+            if not manifest_path.exists():
+                if (round_dir / "resource_round_manifest.json").exists():
+                    interrupted_round_dir = round_dir
+                continue
+            manifest = _load_json_if_exists(manifest_path)
+            if manifest is None:
+                continue
+            planning_report_value = manifest.get("next_planning_report")
+            if not planning_report_value:
+                continue
+            planning_report = Path(str(planning_report_value)).expanduser().resolve()
+            if not planning_report.exists():
+                continue
+            latest_round_index = int(manifest.get("round_index", latest_round_index + 1) or 0)
+            latest_planning_report = planning_report
+
+    if interrupted_round_dir is not None:
+        return _salvage_interrupted_round_report(interrupted_round_dir)
+
+    if latest_planning_report is None:
+        planning_report = source_report_path
+        payload = _load_report(planning_report)
+        current_round_gpu_count = int(
+            payload.get("series_config", {}).get("current_round_gpu_count", 1) or 1
+        )
+        return planning_report, 1, current_round_gpu_count
+
+    payload = _load_report(latest_planning_report)
+    current_round_gpu_count = int(
+        payload.get("series_config", {}).get("current_round_gpu_count", 1) or 1
+    )
+    return latest_planning_report, latest_round_index + 1, current_round_gpu_count
+
+
+def _persist_pipeline_settings(
+    *,
+    pipeline_config_path: Path,
+    requested_config: dict[str, Any],
+    resumed: bool,
+    last_stable_round_index: int,
+) -> dict[str, Any]:
+    existing = _load_json_if_exists(pipeline_config_path) or {}
+    resume_count = int(existing.get("resume_count", 0) or 0)
+    if resumed:
+        resume_count += 1
+
+    persisted = dict(existing)
+    persisted.update(requested_config)
+    persisted["resumed_from_pipeline_root"] = resumed
+    persisted["resume_count"] = resume_count
+    persisted["last_resume_started_at"] = datetime.now().isoformat()
+    persisted["last_stable_round_index"] = last_stable_round_index
+    _write_json(pipeline_config_path, persisted)
+    return persisted
+
+
 def orchestrate_resource_pipeline(
     *,
     report_path: Path | str | None = None,
@@ -1051,6 +1368,7 @@ def orchestrate_resource_pipeline(
         report_path=report_path,
         config_path=config_path,
     )
+    pipeline_had_state = _has_existing_pipeline_state(pipeline_root)
     pipeline_series_base = _derive_pipeline_series_base(
         report_path=report_path,
         config_path=config_path,
@@ -1064,51 +1382,88 @@ def orchestrate_resource_pipeline(
         directory.mkdir(parents=True, exist_ok=True)
 
     source_report_path = source_dir / "source_report.json"
-    if report_path:
-        source_report = Path(report_path).expanduser().resolve()
-        planning_report = _copy_source_report(source_report, source_report_path)
-    else:
-        assert resolved_config_path is not None
-        with open(resolved_config_path, "r", encoding="utf-8") as handle:
-            cfg = yaml.safe_load(handle) or {}
-        derived_series_name = str(cfg.get("experiment_name") or resolved_config_path.stem)
-        source_report = resolved_config_path
-        planning_report = _bootstrap_source_report_from_config(
-            config_path=resolved_config_path,
-            destination=source_report_path,
-            series_name=derived_series_name,
-            gpu_pool=gpu_pool_list,
-            min_resource_gpus=min_resource_gpus,
-            max_resource_gpus=max_resource_gpus,
-        )
+    pipeline_config_path = meta_dir / "pipeline_config.json"
+    resumed = pipeline_had_state and pipeline_config_path.exists()
 
-    _write_json(
-        meta_dir / "pipeline_config.json",
-        {
-            "source_report": str(source_report),
-            "config_path": str(config_path) if config_path else None,
-            "pipeline_root": str(pipeline_root),
-            "pipeline_series_base": pipeline_series_base,
-            "gpu_pool": gpu_pool_list,
-            "min_resource_gpus": min_resource_gpus,
-            "max_resource_gpus": max_resource_gpus,
-            "conda_env": conda_env,
-            "poll_seconds": poll_seconds,
-            "stall_seconds": stall_seconds,
-            "idle_util_threshold": idle_util_threshold,
-            "max_workers": max_workers,
-        },
+    requested_settings = _normalize_pipeline_settings(
+        pipeline_root=pipeline_root,
+        source_report=Path(report_path).expanduser().resolve() if report_path else resolved_config_path,
+        config_path=config_path,
+        pipeline_series_base=pipeline_series_base,
+        gpu_pool=gpu_pool_list,
+        min_resource_gpus=min_resource_gpus,
+        max_resource_gpus=max_resource_gpus,
+        conda_env=conda_env,
+        poll_seconds=poll_seconds,
+        stall_seconds=stall_seconds,
+        idle_util_threshold=idle_util_threshold,
+        max_workers=max_workers,
     )
 
-    top_manifest: dict[str, Any] = {
-        "source_report": str(source_report),
-        "planning_report": str(planning_report),
-        "gpu_pool": gpu_pool_list,
-        "rounds": [],
-    }
+    if resumed:
+        existing_settings = _load_json_if_exists(pipeline_config_path)
+        if existing_settings is None:
+            raise ValueError(f"Missing pipeline config for existing recursive pipeline: {pipeline_config_path}")
+        _validate_resume_settings(existing_settings, requested_settings)
+        approved_runner_config = _maybe_update_resumed_source_report(
+            source_report_path=source_report_path,
+            report_path=report_path,
+            config_path=config_path,
+        )
+        planning_report, round_index, current_round_gpu_count = _resume_planning_state(
+            pipeline_root=pipeline_root,
+            source_report_path=source_report_path,
+            final_dir=final_dir,
+            rounds_dir=rounds_dir,
+        )
+        if planning_report is None:
+            raise ValueError(f"Could not resolve resume planning report under {pipeline_root}")
+        if round_index is None or current_round_gpu_count is None:
+            return final_dir / "final_report.json"
+        if approved_runner_config is not None:
+            _apply_runner_config_to_report(planning_report, approved_runner_config)
+        source_report = source_report_path
+        existing_manifest = _load_json_if_exists(pipeline_root / "manifest.json") or {}
+        top_manifest = dict(existing_manifest)
+        top_manifest.setdefault("rounds", [])
+        top_manifest["source_report"] = str(source_report)
+        top_manifest["planning_report"] = str(planning_report)
+        top_manifest["gpu_pool"] = gpu_pool_list
+    else:
+        if pipeline_had_state and not pipeline_config_path.exists():
+            raise ValueError(f"Existing recursive pipeline state is missing {pipeline_config_path}")
+        if report_path:
+            source_report = Path(report_path).expanduser().resolve()
+            planning_report = _copy_source_report(source_report, source_report_path)
+        else:
+            assert resolved_config_path is not None
+            with open(resolved_config_path, "r", encoding="utf-8") as handle:
+                cfg = yaml.safe_load(handle) or {}
+            derived_series_name = str(cfg.get("experiment_name") or resolved_config_path.stem)
+            source_report = resolved_config_path
+            planning_report = _bootstrap_source_report_from_config(
+                config_path=resolved_config_path,
+                destination=source_report_path,
+                series_name=derived_series_name,
+                gpu_pool=gpu_pool_list,
+                min_resource_gpus=min_resource_gpus,
+                max_resource_gpus=max_resource_gpus,
+            )
+        top_manifest = {
+            "source_report": str(source_report),
+            "planning_report": str(planning_report),
+            "gpu_pool": gpu_pool_list,
+            "rounds": [],
+        }
+        current_round_gpu_count = min_resource_gpus
+        round_index = 1
 
-    current_round_gpu_count = min_resource_gpus
-    round_index = 1
+    _persist_pipeline_settings(
+        pipeline_config_path=pipeline_config_path,
+        requested_config=requested_settings,
+        resumed=resumed,
+        last_stable_round_index=max(0, round_index - 1),
+    )
 
     while _has_schedulable_work(
         planning_report,
@@ -1175,6 +1530,13 @@ def orchestrate_resource_pipeline(
             payload.get("series_config", {}).get("current_round_gpu_count", current_round_gpu_count * 2)
         )
         round_index += 1
+
+        _persist_pipeline_settings(
+            pipeline_config_path=pipeline_config_path,
+            requested_config=requested_settings,
+            resumed=resumed,
+            last_stable_round_index=round_index - 1,
+        )
 
     final_payload = _load_report(planning_report)
     final_payload["series_name"] = f"{pipeline_series_base}_final"
