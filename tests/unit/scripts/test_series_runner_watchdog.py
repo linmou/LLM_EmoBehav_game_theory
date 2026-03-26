@@ -70,3 +70,24 @@ def test_should_restart_when_one_tp_gpu_is_dead_for_long_time() -> None:
         idle_util_threshold=5.0,
         stall_seconds=600.0,
     )
+
+
+def test_resolve_gpu_ids_maps_local_visible_ids_to_parent_cuda_visible_devices() -> None:
+    resolve_gpu_ids = _MODULE._resolve_gpu_ids
+
+    assert resolve_gpu_ids("0", inherited_cuda_visible_devices="2,3") == "2"
+    assert resolve_gpu_ids("1", inherited_cuda_visible_devices="2,3") == "3"
+    assert resolve_gpu_ids("0,1", inherited_cuda_visible_devices="2,3") == "2,3"
+
+
+def test_resolve_gpu_ids_keeps_requested_ids_when_parent_mapping_is_not_applicable() -> None:
+    resolve_gpu_ids = _MODULE._resolve_gpu_ids
+
+    assert resolve_gpu_ids("2,3", inherited_cuda_visible_devices="2,3") == "2,3"
+    assert resolve_gpu_ids("2", inherited_cuda_visible_devices=None) == "2"
+
+
+def test_resolve_gpu_ids_keeps_explicit_physical_ids_under_narrowed_parent_mask() -> None:
+    resolve_gpu_ids = _MODULE._resolve_gpu_ids
+
+    assert resolve_gpu_ids("2,3", inherited_cuda_visible_devices="1,2,3,4") == "2,3"

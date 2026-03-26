@@ -126,6 +126,34 @@ def _query_gpu_utils(gpu_ids: str) -> list[float]:
     return utils
 
 
+def _resolve_gpu_ids(
+    requested_gpu_ids: str,
+    *,
+    inherited_cuda_visible_devices: str | None,
+) -> str:
+    normalized_requested = ",".join(
+        token.strip() for token in requested_gpu_ids.split(",") if token.strip()
+    )
+    if not inherited_cuda_visible_devices:
+        return normalized_requested
+
+    inherited_tokens = [
+        token.strip()
+        for token in inherited_cuda_visible_devices.split(",")
+        if token.strip()
+    ]
+    requested_tokens = [token.strip() for token in normalized_requested.split(",") if token.strip()]
+    if not requested_tokens:
+        return normalized_requested
+
+    if (
+        all(token.isdigit() and int(token) < len(inherited_tokens) for token in requested_tokens)
+        and not all(token in inherited_tokens for token in requested_tokens)
+    ):
+        return ",".join(inherited_tokens[int(token)] for token in requested_tokens)
+    return normalized_requested
+
+
 def _iter_descendants(root_pid: int) -> list[int]:
     result = subprocess.run(
         ["ps", "-eo", "pid=,ppid="],
@@ -255,11 +283,16 @@ def main() -> int:
     previous_signature = _report_signature(payload)
     last_progress_ts = _report_last_updated(payload, report_path)
 
+    effective_gpu_ids = _resolve_gpu_ids(
+        args.gpus,
+        inherited_cuda_visible_devices=os.environ.get("CUDA_VISIBLE_DEVICES"),
+    )
+
     runner_pid = args.initial_pid
     runner_proc: subprocess.Popen[str] | None = None
-    monitor_proc = _start_gpu_monitor(args.gpus, monitor_log)
+    monitor_proc = _start_gpu_monitor(effective_gpu_ids, monitor_log)
     if runner_pid is None:
-        runner_proc = _start_runner(report_path, args.series_name, args.gpus, run_log)
+        runner_proc = _start_runner(report_path, args.series_name, effective_gpu_ids, run_log)
         runner_pid = runner_proc.pid
 
     try:
@@ -274,7 +307,7 @@ def main() -> int:
                 previous_signature = current_signature
                 last_progress_ts = max(last_progress_ts, report_ts)
 
-            gpu_utils = _query_gpu_utils(args.gpus)
+            gpu_utils = _query_gpu_utils(effective_gpu_ids)
             now_ts = datetime.now(timezone.utc).timestamp()
 
             if _should_restart(
@@ -294,7 +327,7 @@ def main() -> int:
                 elif runner_pid is not None:
                     _terminate_pid_tree(runner_pid)
 
-                runner_proc = _start_runner(report_path, args.series_name, args.gpus, run_log)
+                runner_proc = _start_runner(report_path, args.series_name, effective_gpu_ids, run_log)
                 runner_pid = runner_proc.pid
                 previous_signature = _report_signature(_load_report(report_path))
                 last_progress_ts = datetime.now(timezone.utc).timestamp()
