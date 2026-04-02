@@ -818,6 +818,129 @@ def test_merge_reports_for_resume_preserves_source_series_config_and_current_sta
     assert merged_payload["experiments"]["exp_pending_small"]["error"] == "CUDA out of memory while loading model"
 
 
+def test_bootstrap_source_report_from_config_preserves_completed_seed_and_requeues_incomplete_work(
+    tmp_path: Path,
+) -> None:
+    source_dir = tmp_path / "seed_source"
+    source_dir.mkdir()
+    completed_run = _make_run_dir(source_dir, "completed_run")
+
+    seed_report = source_dir / "merged_seed_report.json"
+    _write_report(
+        seed_report,
+        series_name="merged_seed_series",
+        series_config={
+            "models": ["model_alpha", "model_beta"],
+            "benchmarks": [
+                {"name": "bench_a", "task_type": "task_x"},
+                {"name": "bench_a", "task_type": "task_y"},
+            ],
+            "output_dir": str(source_dir),
+        },
+        experiments={
+            "bench_a_task_x_model_alpha": {
+                "exp_id": "bench_a_task_x_model_alpha",
+                "status": "completed",
+                "output_dir": str(completed_run),
+                "model_name": "model_alpha",
+                "benchmark_name": "bench_a_task_x",
+                "start_time": "2026-04-02T00:00:00",
+                "end_time": "2026-04-02T00:02:00",
+                "time_cost_seconds": 120.0,
+                "error": None,
+            },
+            "bench_a_task_x_model_beta": {
+                "exp_id": "bench_a_task_x_model_beta",
+                "status": "failed",
+                "output_dir": str(source_dir / "failed_run"),
+                "model_name": "model_beta",
+                "benchmark_name": "bench_a_task_x",
+                "start_time": "2026-04-02T00:02:00",
+                "end_time": "2026-04-02T00:03:00",
+                "time_cost_seconds": 60.0,
+                "error": "oom",
+            },
+            "bench_a_task_y_model_alpha": {
+                "exp_id": "bench_a_task_y_model_alpha",
+                "status": "running",
+                "output_dir": str(source_dir / "running_run"),
+                "model_name": "model_alpha",
+                "benchmark_name": "bench_a_task_y",
+                "start_time": "2026-04-02T00:04:00",
+                "end_time": None,
+                "time_cost_seconds": None,
+                "error": None,
+            },
+        },
+    )
+
+    config_path = tmp_path / "updated_config.yaml"
+    config_path.write_text(
+        """
+experiment_name: "seeded_bootstrap"
+models:
+  - "model_alpha"
+  - "model_beta"
+benchmarks:
+  - name: "bench_a"
+    task_type: "task_x"
+  - name: "bench_a"
+    task_type: "task_y"
+output_dir: "__OUTPUT_DIR__"
+emotions: []
+intensities: [0.0]
+loading_config:
+  gpu_memory_utilization: 0.8
+  enforce_eager: true
+  quantization: null
+  max_model_len: 1024
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 1
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+        """.strip().replace("__OUTPUT_DIR__", str(tmp_path / "results")),
+        encoding="utf-8",
+    )
+
+    from emotion_experiment_engine.resource_recursive_workflow import _bootstrap_source_report_from_config
+
+    bootstrapped_report = _bootstrap_source_report_from_config(
+        config_path=config_path,
+        destination=tmp_path / "bootstrapped_source_report.json",
+        series_name="seeded_bootstrap",
+        gpu_pool=["0", "1", "2", "3"],
+        min_resource_gpus=1,
+        max_resource_gpus=4,
+        seed_report_path=seed_report,
+    )
+
+    payload = json.loads(bootstrapped_report.read_text(encoding="utf-8"))
+    assert payload["series_config"]["models"] == ["model_alpha", "model_beta"]
+    assert payload["series_config"]["benchmarks"] == [
+        {"name": "bench_a", "task_type": "task_x"},
+        {"name": "bench_a", "task_type": "task_y"},
+    ]
+
+    experiments = payload["experiments"]
+    assert set(experiments) == {
+        "bench_a_task_x_model_alpha",
+        "bench_a_task_x_model_beta",
+        "bench_a_task_y_model_alpha",
+        "bench_a_task_y_model_beta",
+    }
+
+    assert experiments["bench_a_task_x_model_alpha"]["status"] == "completed"
+    assert experiments["bench_a_task_x_model_alpha"]["output_dir"] == str(completed_run)
+    assert experiments["bench_a_task_x_model_beta"]["status"] == "pending"
+    assert experiments["bench_a_task_x_model_beta"]["output_dir"] is None
+    assert experiments["bench_a_task_x_model_beta"]["error"] is None
+    assert experiments["bench_a_task_y_model_alpha"]["status"] == "pending"
+    assert experiments["bench_a_task_y_model_alpha"]["output_dir"] is None
+    assert experiments["bench_a_task_y_model_alpha"]["start_time"] is None
+    assert experiments["bench_a_task_y_model_beta"]["status"] == "pending"
+
+
 def test_split_filtered_resume_restores_runner_config_from_merged_state_report(
     tmp_path: Path,
 ) -> None:

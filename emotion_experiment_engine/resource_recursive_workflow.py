@@ -800,6 +800,53 @@ def _copy_source_report(source_report: Path, destination: Path) -> Path:
     return destination
 
 
+def _seed_bootstrap_report(
+    *,
+    runner: MemoryExperimentSeriesRunner,
+    models: Sequence[str],
+    benchmarks: Sequence[dict[str, Any]],
+    min_resource_gpus: int,
+    seed_report_path: Path | str | None,
+) -> None:
+    seed_experiments: dict[str, dict[str, Any]] = {}
+    if seed_report_path is not None:
+        seed_payload = _load_report(Path(str(seed_report_path)).expanduser().resolve())
+        loaded_experiments = seed_payload.get("experiments", {})
+        if not isinstance(loaded_experiments, dict):
+            raise ValueError("Seed report experiments payload must be a mapping")
+        seed_experiments = loaded_experiments
+
+    for benchmark_config in benchmarks:
+        benchmark_name = benchmark_config["name"]
+        task_type = benchmark_config["task_type"]
+        benchmark_id = f"{benchmark_name}_{task_type}"
+        for model_name in models:
+            model_folder_name = runner._format_model_name_for_folder(model_name)
+            exp_id = f"{benchmark_name}_{task_type}_{model_folder_name.replace('/', '_')}"
+            seeded_experiment = seed_experiments.get(exp_id)
+            if isinstance(seeded_experiment, dict):
+                experiment = copy.deepcopy(seeded_experiment)
+                if experiment.get("status") != "completed":
+                    experiment = _reset_experiment_for_resume(experiment)
+                experiment["exp_id"] = exp_id
+                experiment["benchmark_name"] = benchmark_id
+                experiment["model_name"] = model_name
+                runner.report.experiments[exp_id] = experiment
+            else:
+                runner.report.add_experiment(
+                    benchmark_id,
+                    model_name,
+                    exp_id,
+                    resolved_model_path=None,
+                )
+            runner.report.update_experiment(
+                exp_id,
+                required_gpu_count=min_resource_gpus,
+                last_attempt_gpu_count=None,
+                resource_failure_blocked=False,
+            )
+
+
 def _bootstrap_source_report_from_config(
     *,
     config_path: Path,
@@ -808,6 +855,7 @@ def _bootstrap_source_report_from_config(
     gpu_pool: Sequence[str],
     min_resource_gpus: int,
     max_resource_gpus: int,
+    seed_report_path: Path | str | None = None,
 ) -> Path:
     runner = MemoryExperimentSeriesRunner(
         config_path=str(config_path),
@@ -825,26 +873,17 @@ def _bootstrap_source_report_from_config(
     augmented_config["max_resource_gpus"] = max_resource_gpus
     augmented_config["current_round_gpu_count"] = min_resource_gpus
     augmented_config["resource_round_index"] = 1
+    if seed_report_path is not None:
+        augmented_config["bootstrap_seed_report"] = str(Path(str(seed_report_path)).expanduser().resolve())
     runner.report.attach_series_config(augmented_config, series_name)
 
-    for benchmark_config in benchmarks:
-        benchmark_name = benchmark_config["name"]
-        task_type = benchmark_config["task_type"]
-        for model_name in models:
-            model_folder_name = runner._format_model_name_for_folder(model_name)
-            exp_id = f"{benchmark_name}_{task_type}_{model_folder_name.replace('/', '_')}"
-            runner.report.add_experiment(
-                f"{benchmark_name}_{task_type}",
-                model_name,
-                exp_id,
-                resolved_model_path=None,
-            )
-            runner.report.update_experiment(
-                exp_id,
-                required_gpu_count=min_resource_gpus,
-                last_attempt_gpu_count=None,
-                resource_failure_blocked=False,
-            )
+    _seed_bootstrap_report(
+        runner=runner,
+        models=models,
+        benchmarks=benchmarks,
+        min_resource_gpus=min_resource_gpus,
+        seed_report_path=seed_report_path,
+    )
 
     try:
         runner.report.end_session("completed")
@@ -1349,6 +1388,7 @@ def orchestrate_resource_pipeline(
     *,
     report_path: Path | str | None = None,
     config_path: Path | str | None = None,
+    seed_report_path: Path | str | None = None,
     gpu_pool: Sequence[str] | str,
     min_resource_gpus: int,
     max_resource_gpus: int,
@@ -1448,6 +1488,7 @@ def orchestrate_resource_pipeline(
                 gpu_pool=gpu_pool_list,
                 min_resource_gpus=min_resource_gpus,
                 max_resource_gpus=max_resource_gpus,
+                seed_report_path=seed_report_path,
             )
         top_manifest = {
             "source_report": str(source_report),
@@ -1559,6 +1600,7 @@ def _main(argv: list[str] | None = None) -> int:
     recursive_parser = subparsers.add_parser("run-recursive")
     recursive_parser.add_argument("--report")
     recursive_parser.add_argument("--config")
+    recursive_parser.add_argument("--seed-report")
     recursive_parser.add_argument("--gpu-pool", required=True, help="Comma-separated GPU ids, e.g. 0,1,2,3")
     recursive_parser.add_argument("--min-resource-gpus", type=int, default=1)
     recursive_parser.add_argument("--max-resource-gpus", type=int, required=True)
@@ -1609,6 +1651,7 @@ def _main(argv: list[str] | None = None) -> int:
         final_report = orchestrate_resource_pipeline(
             report_path=args.report,
             config_path=args.config,
+            seed_report_path=args.seed_report,
             gpu_pool=args.gpu_pool,
             min_resource_gpus=args.min_resource_gpus,
             max_resource_gpus=args.max_resource_gpus,

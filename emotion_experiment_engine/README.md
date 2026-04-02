@@ -167,11 +167,28 @@ You can start from either:
 - `--config` to bootstrap a fresh planning report from a YAML series config
 - `--report` to resume from an existing series report, including retrying source experiments that already failed at the current tier and may need promotion
 
+Seeded bootstrap behavior:
+- `--seed-report <final_or_series_report.json>` can be combined with `--config` to preserve completed experiment ids from prior work while still expanding the full updated config
+- matching `completed` experiments stay completed and are skipped
+- matching `failed`, `running`, and `pending` experiments are reset and requeued
+- experiments present only in the new config are added as fresh pending work
+
 Fresh bootstrap example:
 
 ```bash
 python -m emotion_experiment_engine.resource_recursive_workflow run-recursive \
   --config config/new_game_theory_decision_config.yaml \
+  --gpu-pool 0,1,2,3 \
+  --min-resource-gpus 1 \
+  --max-resource-gpus 4
+```
+
+Seeded fresh-bootstrap example:
+
+```bash
+python -m emotion_experiment_engine.resource_recursive_workflow run-recursive \
+  --config config/new_game_theory_decision_config.yaml \
+  --seed-report results/old_series/resource_pipeline/final/final_report.json \
   --gpu-pool 0,1,2,3 \
   --min-resource-gpus 1 \
   --max-resource-gpus 4
