@@ -11,6 +11,7 @@ This directory contains all post-experiment analysis scripts and results for the
 - `analyze_choice_patterns.py` - Comprehensive analysis of choice patterns across all conditions
 - `analyze_choice_differences.py` - Finds cases where choices differ between conditions
 - `generate_game_theory_impact_report.py` - Builds option/behavior impact tables vs neutral (plus intensity tables, filtering, and heatmaps)
+- `game_metric_ndm_nad_compare.py` - Computes per-(model, game) normalized decision magnitude/alignment (`NDM`, `NAD`) and writes a GT-vs-decision comparison LaTeX table
 - `postprocess_prob_argmax_from_existing_csv.py` - Postprocess existing argmax-match CSV with behavior labels + predicted argmax distributions
 - `trust_game_trustor_expected_score.py` - Report-driven Trust Game (Trustor) item-level decision shift vs neutral (trust_none=0, trust_low=1, trust_high=2)
 - `trust_game_trustee_expected_score.py` - Report-driven Trust Game (Trustee) item-level decision shift vs neutral (return_none=0, return_medium=1, return_high=2)
@@ -125,6 +126,30 @@ Optional:
 - Use `--write_heatmaps` to write one behavior-change heatmap PDF per game setting under `out_dir/heatmaps/`.
   - Heatmap cells are peak-`|Δ|` across intensities per `(model, emotion)` for a target “direction” behavior (binary: `defect/escalation`; otherwise: `offer_none/reject`).
   - Default heatmap normalization is symmetric-log; tune with `--heatmap_symlog_linthresh` or override via `--heatmap_norm linear`.
+- If a `raw_results.json` file contains one valid top-level JSON array followed by trailing junk or an accidentally concatenated second JSON value, the report loader now recovers the first array and warns on stderr instead of dropping significance or crashing the markdown step.
+
+## Per-Game NDM/NAD Comparison
+
+This compares the latest usable run for each `(model, game)` pair across:
+- `results/new_game_theory/shuffle_300_samples`
+- `results/new_game_theory_decision/shuffle_300_samples`
+
+It uses the focal human-direction map from `behavior_shift_alignment.py` and scores:
+- `NDM`: mean `|y_i^(e) - y_i^(0)| / R_i`
+- `NAD`: mean `d_i^human * (y_i^(e) - y_i^(0)) / R_i`
+
+```bash
+python -m result_analysis.game_metric_ndm_nad_compare
+```
+
+Default output:
+- `result_analysis/_tmp_reports/game_metric_ndm_nad_compare_shuffle_300_samples.tex`
+- `result_analysis/_tmp_reports/game_metric_ndm_nad_compare_shuffle_300_samples.csv`
+
+The loader is defensive in the same way as the neutral-impact report:
+- incomplete timestamped run dirs without `raw_results.json` are skipped
+- if the newest usable run cannot produce neutral-paired scoreable rows, older usable runs for the same `(model, game)` are tried
+- if `raw_results.json` contains one valid top-level JSON array followed by trailing junk, the first array is recovered and the trailing data is ignored with a stderr warning
 
 ## Original Experiment Results Location
 

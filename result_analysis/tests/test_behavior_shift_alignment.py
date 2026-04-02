@@ -15,6 +15,7 @@ from result_analysis.behavior_shift_alignment import (
 
 def test_default_alignment_specs_use_enums_and_behavior_choice_field_names() -> None:
     pd_spec = DEFAULT_ALIGNMENT_SPECS[GameNames.PRISONERS_DILEMMA]
+    stag_spec = DEFAULT_ALIGNMENT_SPECS[GameNames.STAG_HUNT]
     trustor_spec = DEFAULT_ALIGNMENT_SPECS[GameNames.TRUST_GAME_TRUSTOR]
     trustee_spec = DEFAULT_ALIGNMENT_SPECS[GameNames.TRUST_GAME_TRUSTEE]
     proposer_spec = DEFAULT_ALIGNMENT_SPECS[GameNames.ULTIMATUM_GAME_PROPOSER]
@@ -24,6 +25,12 @@ def test_default_alignment_specs_use_enums_and_behavior_choice_field_names() -> 
     assert pd_spec.game is GameNames.PRISONERS_DILEMMA
     assert pd_spec.focal_behavior == "cooperate"
     assert pd_spec.expected_by_emotion[Emotions.ANGER] == -1
+    assert stag_spec.game is GameNames.STAG_HUNT
+    assert stag_spec.focal_behavior == "cooperate"
+    assert stag_spec.expected_by_emotion[Emotions.HAPPINESS] == 1
+    assert stag_spec.expected_by_emotion[Emotions.ANGER] == -1
+    assert stag_spec.expected_by_emotion[Emotions.DISGUST] == -1
+    assert stag_spec.expected_by_emotion[Emotions.FEAR] == 0
     assert trustor_spec.focal_behavior == "trust_high"
     assert trustee_spec.focal_behavior == "return_high"
     assert trustee_spec.expected_by_emotion[Emotions.HAPPINESS] == 1

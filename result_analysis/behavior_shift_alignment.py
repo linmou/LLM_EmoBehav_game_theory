@@ -25,7 +25,7 @@ DEFAULT_ALIGNMENT_SPECS: dict[GameNames, AlignmentSpec] = {
         game=GameNames.PRISONERS_DILEMMA,
         focal_behavior="cooperate",
         expected_by_emotion={
-            Emotions.HAPPINESS: -1,
+            Emotions.HAPPINESS: 1,
             Emotions.ANGER: -1,
             Emotions.DISGUST: -1,
             Emotions.FEAR: 0,
@@ -38,9 +38,9 @@ DEFAULT_ALIGNMENT_SPECS: dict[GameNames, AlignmentSpec] = {
         focal_behavior="cooperate",
         expected_by_emotion={
             Emotions.HAPPINESS: 1,
-            Emotions.ANGER: 0,
-            Emotions.DISGUST: 0,
-            Emotions.FEAR: -1,
+            Emotions.ANGER: -1,
+            Emotions.DISGUST: -1,
+            Emotions.FEAR: 0,
             Emotions.SADNESS: 0,
             Emotions.SURPRISE: 0,
         },

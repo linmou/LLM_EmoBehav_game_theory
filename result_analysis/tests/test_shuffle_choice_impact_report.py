@@ -7,7 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from result_analysis.generate_game_theory_impact_report import generate_game_theory_impact_report
+from result_analysis.generate_game_theory_impact_report import (
+    _discover_latest_runs,
+    generate_game_theory_impact_report,
+)
 
 
 def _write_csv(path: Path, header: list[str], rows: list[list[object]]) -> None:
@@ -16,6 +19,44 @@ def _write_csv(path: Path, header: list[str], rows: list[list[object]]) -> None:
     for row in rows:
         lines.append(",".join(str(x) for x in row))
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def test_discover_latest_runs_uses_top_level_run_dirs_only(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: discover flat run dirs without being confused by nested folders."""
+    root = tmp_path / "results" / "new_game_theory" / "shuffle_300_samples"
+    pd_dir = root / "FooModel_game_theory_Prisoners_Dilemma_20250102_010101"
+    sh_dir = root / "FooModel_game_theory_Stag_Hunt_20250102_010102"
+    nested_pd_dir = root / "heatmaps" / "FooModel_game_theory_Prisoners_Dilemma_20250103_010101"
+
+    _write_csv(
+        pd_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [["neutral", 0.0, 1, 1.0]],
+    )
+    _write_csv(
+        sh_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [["neutral", 0.0, 1, 1.0]],
+    )
+    _write_csv(
+        nested_pd_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [["neutral", 0.0, 1, 1.0]],
+    )
+
+    runs = _discover_latest_runs(root)
+
+    assert {(run.model, run.task) for run in runs} == {
+        ("FooModel", "Prisoners_Dilemma"),
+        ("FooModel", "Stag_Hunt"),
+    }
+    assert {
+        (run.task, run.timestamp, run.dir_path.relative_to(root).as_posix())
+        for run in runs
+    } == {
+        ("Prisoners_Dilemma", "20250102_010101", "FooModel_game_theory_Prisoners_Dilemma_20250102_010101"),
+        ("Stag_Hunt", "20250102_010102", "FooModel_game_theory_Stag_Hunt_20250102_010102"),
+    }
 
 
 def test_generate_shuffle_choice_impact_report_selects_latest_and_renames_outputs(tmp_path: Path) -> None:
@@ -119,6 +160,46 @@ def test_generate_shuffle_choice_impact_report_selects_latest_and_renames_output
     assert len(cooperate) == 1
     assert cooperate[0][idx_best] == "anger"
     assert float(cooperate[0][idx_best_delta]) == pytest.approx(-0.2, abs=1e-6)
+
+
+def test_generate_shuffle_choice_impact_report_discovers_symlinked_runs(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: treat symlinked timestamped run dirs like normal dirs."""
+    root = tmp_path / "results" / "symlink_root"
+    backing = tmp_path / "backing_runs"
+    run_dir = backing / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 1.0, 1, 0.6],
+            ["neutral", 1.0, 2, 0.4],
+            ["anger", 1.0, 1, 0.2],
+            ["anger", 1.0, 2, 0.8],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior_label", "ratio"],
+        [
+            ["neutral", 1.0, "cooperate", 0.6],
+            ["neutral", 1.0, "defect", 0.4],
+            ["anger", 1.0, "cooperate", 0.2],
+            ["anger", 1.0, "defect", 0.8],
+        ],
+    )
+
+    root.mkdir(parents=True, exist_ok=True)
+    symlink_dir = root / run_dir.name
+    try:
+        symlink_dir.symlink_to(run_dir, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"symlink creation is unavailable in this environment: {exc}")
+
+    out = generate_game_theory_impact_report(root=root)
+
+    assert out.option_csv_path.exists()
+    assert "FooModel" in out.option_csv_path.read_text(encoding="utf-8")
 
 
 def test_generate_shuffle_choice_impact_report_includes_intensity_deltas(tmp_path: Path) -> None:
@@ -560,6 +641,442 @@ def test_significance_annotation_is_in_per_game_tables_when_raw_results_exist(tm
     # Delta-desc order: anger (positive) appears before sadness (0.0) in the same cell.
     line = next(l for l in md.splitlines() if "anger:+1.000" in l)
     assert line.find("anger:+1.000") < line.find("sadness:+0.000")
+
+
+def test_significance_annotation_survives_trailing_json_garbage(tmp_path: Path) -> None:
+    """Responsible for result_analysis/generate_game_theory_impact_report.py recovering the first JSON value from raw_results.json with trailing extra data."""
+    root = tmp_path / "results" / "new_game_theory_decision" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    raw = []
+    for item_id in range(10):
+        options = [
+            {"id": 1, "text": "Cooperate", "behavior": "cooperate"},
+            {"id": 2, "text": "Defect", "behavior": "defect"},
+        ]
+        raw.append(
+            {
+                "emotion": "neutral",
+                "intensity": 0.0,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": '{"decision":"Cooperate"}',
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+                "score": 1.0,
+                "error": "",
+                "prompt": "",
+                "ground_truth": "",
+            }
+        )
+        raw.append(
+            {
+                "emotion": "anger",
+                "intensity": 1.5,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": '{"decision":"Defect"}',
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+                "score": 1.0,
+                "error": "",
+                "prompt": "",
+                "ground_truth": "",
+            }
+        )
+
+    raw_payload = __import__("json").dumps(raw) + "\n" + __import__("json").dumps({"garbage": True})
+    (run_dir / "raw_results.json").write_text(raw_payload, encoding="utf-8")
+
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 1.5, 1, 1.0],
+            ["neutral", 1.5, 2, 0.0],
+            ["anger", 1.5, 1, 0.0],
+            ["anger", 1.5, 2, 1.0],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior_label", "ratio"],
+        [
+            ["neutral", 1.5, "cooperate", 1.0],
+            ["neutral", 1.5, "defect", 0.0],
+            ["anger", 1.5, "cooperate", 0.0],
+            ["anger", 1.5, "defect", 1.0],
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root)
+    md = out.report_path.read_text(encoding="utf-8")
+
+    assert "anger:+1.000" in md
+    assert "anger:+1.000!" in md or "anger:+1.000!!" in md or "anger:+1.000!!!" in md
+
+
+def test_markdown_keeps_all_emotions_when_significance_exists_for_only_a_subset(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: keep all collapsed emotions and decorate only the subset with significance."""
+    root = tmp_path / "results" / "new_game_theory_decision" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    raw = []
+    significant_emotions = {"anger", "fear"}
+    all_emotions = ["anger", "disgust", "fear", "sadness", "surprise", "happiness"]
+    for item_id in range(12):
+        options = [
+            {"id": 1, "text": "Cooperate", "behavior": "cooperate"},
+            {"id": 2, "text": "Defect", "behavior": "defect"},
+        ]
+        raw.append(
+            {
+                "emotion": "neutral",
+                "intensity": 0.0,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": '{"decision":"Cooperate"}',
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+        for emotion in significant_emotions:
+            raw.append(
+                {
+                    "emotion": emotion,
+                    "intensity": 1.0,
+                    "item_id": item_id,
+                    "repeat_id": 0,
+                    "task_name": "Prisoners_Dilemma",
+                    "response": '{"decision":"Defect"}',
+                    "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+                }
+            )
+
+    (run_dir / "raw_results.json").write_text(__import__("json").dumps(raw), encoding="utf-8")
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 0.0, 1, 1.0],
+            ["neutral", 0.0, 2, 0.0],
+            ["anger", 1.0, 1, 0.0],
+            ["anger", 1.0, 2, 1.0],
+            ["disgust", 1.0, 1, 0.8],
+            ["disgust", 1.0, 2, 0.2],
+            ["fear", 1.0, 1, 0.0],
+            ["fear", 1.0, 2, 1.0],
+            ["sadness", 1.0, 1, 0.7],
+            ["sadness", 1.0, 2, 0.3],
+            ["surprise", 1.0, 1, 0.6],
+            ["surprise", 1.0, 2, 0.4],
+            ["happiness", 1.0, 1, 0.9],
+            ["happiness", 1.0, 2, 0.1],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior_label", "ratio"],
+        [
+            ["neutral", 0.0, "cooperate", 1.0],
+            ["neutral", 0.0, "defect", 0.0],
+            ["anger", 1.0, "cooperate", 0.0],
+            ["anger", 1.0, "defect", 1.0],
+            ["disgust", 1.0, "cooperate", 0.8],
+            ["disgust", 1.0, "defect", 0.2],
+            ["fear", 1.0, "cooperate", 0.0],
+            ["fear", 1.0, "defect", 1.0],
+            ["sadness", 1.0, "cooperate", 0.7],
+            ["sadness", 1.0, "defect", 0.3],
+            ["surprise", 1.0, "cooperate", 0.6],
+            ["surprise", 1.0, "defect", 0.4],
+            ["happiness", 1.0, "cooperate", 0.9],
+            ["happiness", 1.0, "defect", 0.1],
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root)
+    md = out.report_path.read_text(encoding="utf-8")
+    section = md.split("## Per Game Setting Behavior (All models)", 1)[1].split("## Behavior Intensity Sensitivity", 1)[0]
+    line = next(l for l in section.splitlines() if "| FooModel | cooperate |" in l)
+
+    for emotion in all_emotions:
+        assert f"{emotion}:" in line
+    assert "anger:-1.000!" in line or "anger:-1.000!!" in line or "anger:-1.000!!!" in line
+    assert "fear:-1.000!" in line or "fear:-1.000!!" in line or "fear:-1.000!!!" in line
+    assert "disgust:-0.200" in line
+    assert "sadness:-0.300" in line
+    assert "surprise:-0.400" in line
+    assert "happiness:-0.100" in line
+
+
+def test_markdown_significance_uses_peak_delta_intensity(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: use the peak-|delta| intensity for significance, not raw-record order."""
+    root = tmp_path / "results" / "new_game_theory_decision" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    raw = []
+    for item_id in range(10):
+        options = [
+            {"id": 1, "text": "Cooperate", "behavior": "cooperate"},
+            {"id": 2, "text": "Defect", "behavior": "defect"},
+        ]
+        raw.append(
+            {
+                "emotion": "neutral",
+                "intensity": 0.0,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": '{"decision":"Cooperate"}',
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+        raw.append(
+            {
+                "emotion": "anger",
+                "intensity": 1.5,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": '{"decision":"Defect"}',
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+        raw.append(
+            {
+                "emotion": "anger",
+                "intensity": 0.1,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": '{"decision":"Cooperate"}',
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+
+    (run_dir / "raw_results.json").write_text(__import__("json").dumps(raw), encoding="utf-8")
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 0.0, 1, 1.0],
+            ["neutral", 0.0, 2, 0.0],
+            ["anger", 0.1, 1, 1.0],
+            ["anger", 0.1, 2, 0.0],
+            ["anger", 1.5, 1, 0.0],
+            ["anger", 1.5, 2, 1.0],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior_label", "ratio"],
+        [
+            ["neutral", 0.0, "cooperate", 1.0],
+            ["neutral", 0.0, "defect", 0.0],
+            ["anger", 0.1, "cooperate", 1.0],
+            ["anger", 0.1, "defect", 0.0],
+            ["anger", 1.5, "cooperate", 0.0],
+            ["anger", 1.5, "defect", 1.0],
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root)
+    md = out.report_path.read_text(encoding="utf-8")
+
+    assert "anger:+1.000!" in md or "anger:+1.000!!" in md or "anger:+1.000!!!" in md
+
+
+def test_markdown_significance_accepts_dict_response_with_decision(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: parse dict-shaped responses with a decision field."""
+    root = tmp_path / "results" / "new_game_theory_decision" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    raw = []
+    for item_id in range(10):
+        options = [
+            {"id": 1, "text": "Cooperate", "behavior": "cooperate"},
+            {"id": 2, "text": "Defect", "behavior": "defect"},
+        ]
+        raw.append(
+            {
+                "emotion": "neutral",
+                "intensity": 0.0,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": {"rational": "stay safe", "decision": "Cooperate"},
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+        raw.append(
+            {
+                "emotion": "anger",
+                "intensity": 1.0,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": {"rational": "retaliate", "decision": "Defect"},
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+
+    (run_dir / "raw_results.json").write_text(__import__("json").dumps(raw), encoding="utf-8")
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 0.0, 1, 1.0],
+            ["neutral", 0.0, 2, 0.0],
+            ["anger", 1.0, 1, 0.0],
+            ["anger", 1.0, 2, 1.0],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior_label", "ratio"],
+        [
+            ["neutral", 0.0, "cooperate", 1.0],
+            ["neutral", 0.0, "defect", 0.0],
+            ["anger", 1.0, "cooperate", 0.0],
+            ["anger", 1.0, "defect", 1.0],
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root)
+    md = out.report_path.read_text(encoding="utf-8")
+
+    assert "anger:+1.000!" in md or "anger:+1.000!!" in md or "anger:+1.000!!!" in md
+
+
+def test_markdown_significance_matches_decision_text_with_trailing_punctuation(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: ignore trivial terminal punctuation when matching option text."""
+    root = tmp_path / "results" / "new_game_theory_decision" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    raw = []
+    for item_id in range(10):
+        options = [
+            {"id": 1, "text": "Release a stable, tested firmware update on schedule", "behavior": "cooperate"},
+            {"id": 2, "text": "Release a new feature-rich but less tested firmware update early", "behavior": "defect"},
+        ]
+        raw.append(
+            {
+                "emotion": "neutral",
+                "intensity": 0.0,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": {"rational": "stay safe", "decision": "Release a stable, tested firmware update on schedule."},
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+        raw.append(
+            {
+                "emotion": "anger",
+                "intensity": 1.0,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": {"rational": "retaliate", "decision": "Release a new feature-rich but less tested firmware update early."},
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+
+    (run_dir / "raw_results.json").write_text(__import__("json").dumps(raw), encoding="utf-8")
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 0.0, 1, 1.0],
+            ["neutral", 0.0, 2, 0.0],
+            ["anger", 1.0, 1, 0.0],
+            ["anger", 1.0, 2, 1.0],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior_label", "ratio"],
+        [
+            ["neutral", 0.0, "cooperate", 1.0],
+            ["neutral", 0.0, "defect", 0.0],
+            ["anger", 1.0, "cooperate", 0.0],
+            ["anger", 1.0, "defect", 1.0],
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root)
+    md = out.report_path.read_text(encoding="utf-8")
+
+    assert "anger:+1.000!" in md or "anger:+1.000!!" in md or "anger:+1.000!!!" in md
+
+
+def test_markdown_significance_accepts_python_dict_string_response(tmp_path: Path) -> None:
+    """result_analysis/generate_game_theory_impact_report.py: parse Python-dict-style response strings with a decision field."""
+    root = tmp_path / "results" / "new_game_theory_decision" / "shuffle_choices"
+    run_dir = root / "FooModel_game_theory_decision_Prisoners_Dilemma_20250102_010101"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    raw = []
+    for item_id in range(10):
+        options = [
+            {"id": 1, "text": "Cooperate", "behavior": "cooperate"},
+            {"id": 2, "text": "Defect", "behavior": "defect"},
+        ]
+        raw.append(
+            {
+                "emotion": "neutral",
+                "intensity": 0.0,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": "{'rational': 'stay safe', 'decision': 'Cooperate'}",
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+        raw.append(
+            {
+                "emotion": "anger",
+                "intensity": 1.0,
+                "item_id": item_id,
+                "repeat_id": 0,
+                "task_name": "Prisoners_Dilemma",
+                "response": "{'rational': 'retaliate', 'decision': 'Defect'}",
+                "metadata": {"item_metadata": {"options": options}, "repeat_id": 0, "benchmark": "game_theory_decision"},
+            }
+        )
+
+    (run_dir / "raw_results.json").write_text(__import__("json").dumps(raw), encoding="utf-8")
+    _write_csv(
+        run_dir / "summary_choice_ratio.csv",
+        ["emotion", "intensity", "option_id", "ratio"],
+        [
+            ["neutral", 0.0, 1, 1.0],
+            ["neutral", 0.0, 2, 0.0],
+            ["anger", 1.0, 1, 0.0],
+            ["anger", 1.0, 2, 1.0],
+        ],
+    )
+    _write_csv(
+        run_dir / "summary_behavior_ratio.csv",
+        ["emotion", "intensity", "behavior_label", "ratio"],
+        [
+            ["neutral", 0.0, "cooperate", 1.0],
+            ["neutral", 0.0, "defect", 0.0],
+            ["anger", 1.0, "cooperate", 0.0],
+            ["anger", 1.0, "defect", 1.0],
+        ],
+    )
+
+    out = generate_game_theory_impact_report(root=root)
+    md = out.report_path.read_text(encoding="utf-8")
+
+    assert "anger:+1.000!" in md or "anger:+1.000!!" in md or "anger:+1.000!!!" in md
 
 
 def test_item_change_block_is_rendered_in_behavior_sections(tmp_path: Path) -> None:
