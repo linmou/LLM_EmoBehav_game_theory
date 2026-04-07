@@ -14,15 +14,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from auto_experiments.pd_selfreport_pd_coupling_multimodel.experiment_paths import (
-    EXPERIMENT_ROOT,
-    RESULTS_ROOT,
-)
-
-
 DEFAULT_MARGIN_COLUMN = "delta_p_target_vs_top_p_non_target_mean"
 DEFAULT_INTENSITIES = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 40.0, 80.0]
 DEFAULT_EMOTIONS = ["anger", "happiness", "sadness", "fear", "disgust", "surprise"]
+DEFAULT_RESULTS_ROOT = PROJECT_ROOT / "results" / "auto_experiments" / "pd_selfreport_pd_coupling_multimodel"
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "scripts" / "qwen25_positive_margin_table" / "outputs"
 
 
 def _format_intensity(value: float) -> str:
@@ -167,8 +163,8 @@ def format_positive_margin_markdown(table: pd.DataFrame) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--results-root", type=Path, default=RESULTS_ROOT)
-    parser.add_argument("--output-dir", type=Path, default=EXPERIMENT_ROOT / "analysis")
+    parser.add_argument("--results-root", type=Path, default=DEFAULT_RESULTS_ROOT)
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--margin-column", type=str, default=DEFAULT_MARGIN_COLUMN)
     args = parser.parse_args()
 

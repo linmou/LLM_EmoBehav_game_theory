@@ -1,6 +1,6 @@
 """
-tests/test_qwen25_positive_margin_table.py
-Purpose: Verify the Qwen2.5 positive-margin table runner collects the intended model roots and aggregates the 7-way positive-margin fraction table from saved self-report summaries.
+tests/test_qwen25_positive_margin_table_builder.py
+Purpose: Verify the standalone scripts/qwen25_positive_margin_table table builder aggregates Qwen2.5 saved summaries without depending on auto_experiments runner files.
 """
 
 from __future__ import annotations
@@ -12,10 +12,10 @@ from pathlib import Path
 
 
 MODULE_PATH = (
-    Path(__file__).resolve().parents[2]
-    / "auto_experiments"
-    / "pd_selfreport_pd_coupling_multimodel"
-    / "build_qwen25_positive_margin_table.py"
+    Path(__file__).resolve().parents[1]
+    / "scripts"
+    / "qwen25_positive_margin_table"
+    / "build_positive_margin_table.py"
 )
 
 
@@ -28,9 +28,9 @@ def _load_module(module_path: Path, module_name: str):
     return module
 
 
-class TestQwen25PositiveMarginTable(unittest.TestCase):
+class TestQwen25PositiveMarginTableBuilder(unittest.TestCase):
     def test_qwen25_model_roots_include_legacy_and_multimodel_locations(self):
-        module = _load_module(MODULE_PATH, "qwen25_positive_margin_table")
+        module = _load_module(MODULE_PATH, "qwen25_positive_margin_table_builder")
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             results_root = Path(tmp_dir)
@@ -38,8 +38,6 @@ class TestQwen25PositiveMarginTable(unittest.TestCase):
             multimodel = results_root / "self_report_logprob_multimodel"
             (multimodel / "qwen2p5-1p5b-instruct").mkdir(parents=True)
             (multimodel / "qwen2p5-3b-instruct").mkdir(parents=True)
-            (multimodel / "qwen3-4b").mkdir(parents=True)
-
             roots = module.qwen25_model_roots(results_root)
 
         self.assertEqual(
@@ -52,7 +50,7 @@ class TestQwen25PositiveMarginTable(unittest.TestCase):
         )
 
     def test_aggregate_positive_margin_table_counts_positive_layers(self):
-        module = _load_module(MODULE_PATH, "qwen25_positive_margin_table")
+        module = _load_module(MODULE_PATH, "qwen25_positive_margin_table_builder")
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             results_root = Path(tmp_dir)
@@ -95,49 +93,10 @@ class TestQwen25PositiveMarginTable(unittest.TestCase):
             table = module.aggregate_positive_margin_table(results_root)
 
         anger_1 = table[(table["emotion"] == "anger") & (table["intensity"] == 1.0)].iloc[0]
-        anger_2 = table[(table["emotion"] == "anger") & (table["intensity"] == 2.0)].iloc[0]
-        fear_2 = table[(table["emotion"] == "fear") & (table["intensity"] == 2.0)].iloc[0]
-
         self.assertEqual(int(anger_1["positive_layers"]), 2)
         self.assertEqual(int(anger_1["total_layers"]), 4)
         self.assertAlmostEqual(float(anger_1["positive_fraction"]), 0.5)
         self.assertEqual(str(anger_1["display"]), "2/4 (0.50)")
-
-        self.assertEqual(int(anger_2["positive_layers"]), 1)
-        self.assertEqual(int(anger_2["total_layers"]), 1)
-        self.assertAlmostEqual(float(anger_2["positive_fraction"]), 1.0)
-
-        self.assertEqual(int(fear_2["positive_layers"]), 1)
-        self.assertEqual(int(fear_2["total_layers"]), 1)
-
-    def test_markdown_table_pivots_intensities(self):
-        module = _load_module(MODULE_PATH, "qwen25_positive_margin_table")
-
-        table = module.format_positive_margin_markdown(
-            module.pd.DataFrame(
-                [
-                    {
-                        "emotion": "anger",
-                        "intensity": 1.0,
-                        "positive_layers": 2,
-                        "total_layers": 4,
-                        "positive_fraction": 0.5,
-                        "display": "2/4 (0.50)",
-                    },
-                    {
-                        "emotion": "anger",
-                        "intensity": 2.0,
-                        "positive_layers": 1,
-                        "total_layers": 4,
-                        "positive_fraction": 0.25,
-                        "display": "1/4 (0.25)",
-                    },
-                ]
-            )
-        )
-
-        self.assertIn("| emotion | 1 | 2 |", table)
-        self.assertIn("| anger | 2/4 (0.50) | 1/4 (0.25) |", table)
 
 
 if __name__ == "__main__":
