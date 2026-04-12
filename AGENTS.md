@@ -307,3 +307,12 @@ Iteration: You will continue this cycle for each new piece of functionality, ens
 
 # Keep documents updated
 Every time you are going to commit a change, review the document markdown or claude_doc folder closest to the modified files. To see if the docs needs to be updated. For a single readme markdown. Besides updating the contents, also updating the beginning doc string with updating date and the commit ID. For complex doc folder like claude_doc folder, besides modify the doc contents, please create a seperate file  /claude_doc/doc_update_record/documentation_update_record_v....md to record the change. Also with date inside.
+
+## Active Technologies
+- Python 3.x in the repository conda environment (`llm_behav`) + Standard library (`argparse`, `json`, `pathlib`, `concurrent.futures`), `pydantic`, `python-dotenv`, `openai`-compatible client stack already used in-repo (002-social-game-transform)
+- Local files: source JSONL input, success dataset JSON, failure/skipped artifact JSONL or JSON, run metadata JSON (002-social-game-transform)
+- Python 3.10+ in the repository conda environment used for data-generation scripts (`llm` on the current machine) + Standard library (`argparse`, `json`, `pathlib`, `concurrent.futures`, `datetime`), `python-dotenv`, OpenAI-compatible `openai` client stack already used in-repo, existing `games/beauty_contest.py` scenario class (002-social-game-transform)
+- Local files: source JSONL input, success dataset JSON, failure/skipped artifact JSONL, run metadata JSON (002-social-game-transform)
+
+## Recent Changes
+- 002-social-game-transform: Added Python 3.x in the repository conda environment (`llm_behav`) + Standard library (`argparse`, `json`, `pathlib`, `concurrent.futures`), `pydantic`, `python-dotenv`, `openai`-compatible client stack already used in-repo

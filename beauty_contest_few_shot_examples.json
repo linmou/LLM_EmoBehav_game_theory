@@ -1,0 +1,71 @@
+[
+  {
+    "input": {
+      "episode_type": "BEAUTY_CONTEST",
+      "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN",
+      "players": ["ITALY", "AUSTRIA", "FRANCE"],
+      "labels": {
+        "mechanism_name": "BC2_COOP_RELATIVE",
+        "winners": ["ITALY"]
+      }
+    },
+    "output": {
+      "scenario": "Adriatic Coalition Push",
+      "description": "You are a Italy commander. Austria and France both expect you to contribute to a coordinated push, but every added commitment also narrows your room to protect your own frontier. A minimal contribution keeps flexibility but weakens your influence over the operation. A stronger contribution can improve your standing if the push succeeds, yet it also leaves you carrying more of the risk if the coalition fragments.",
+      "participants": [
+        {"name": "Italy"},
+        {"name": "Austria"},
+        {"name": "France"}
+      ],
+      "behavior_choices": {
+        "commit_0": "Commit no units to the coordinated push this phase.",
+        "commit_1": "Commit one unit to the coordinated push this phase.",
+        "commit_2": "Commit two units to the coordinated push this phase.",
+        "commit_3": "Commit three units to the coordinated push this phase."
+      },
+      "previous_actions": [],
+      "game_category": "BC2",
+      "game_name": "Beauty_Contest"
+    }
+  },
+  {
+    "input": {
+      "episode_type": "BEAUTY_DOGPILE",
+      "variant_name": "OVER_TWO_AGENTS_MULTI_TURN",
+      "players": ["ITALY", "AUSTRIA", "RUSSIA", "TURKEY"],
+      "labels": {
+        "mechanism_name": "BC1_DOGPILE",
+        "victim": "TURKEY"
+      }
+    },
+    "output": {
+      "scenario": "Eastern Mediterranean Dogpile",
+      "description": "You are a Italy commander. Reports from the eastern Mediterranean suggest that Turkey is absorbing pressure from several directions, and the coalition expects you to decide how much force to add this round. Holding back preserves your own defenses but may reduce your share of any gains if the pressure succeeds. A larger commitment can improve your leverage over the outcome, while also increasing the cost if allies hesitate or the target stabilizes.",
+      "participants": [
+        {"name": "Italy"},
+        {"name": "Austria"},
+        {"name": "Russia"},
+        {"name": "Turkey"}
+      ],
+      "behavior_choices": {
+        "commit_0": "Commit no units against Turkey this phase.",
+        "commit_1": "Commit one unit against Turkey this phase.",
+        "commit_2": "Commit two units against Turkey this phase.",
+        "commit_3": "Commit three units against Turkey this phase."
+      },
+      "previous_actions": [
+        {
+          "time": "S1905M",
+          "participant_actions": [
+            ["Austria", "Committed one unit of pressure toward Turkey."],
+            ["Russia", "Committed two units of pressure toward Turkey."],
+            ["Italy", "Committed one unit of pressure toward Turkey."]
+          ],
+          "round_summary": "Russia gained the strongest relative leverage in the last round."
+        }
+      ],
+      "game_category": "DogPile",
+      "game_name": "Beauty_Contest"
+    }
+  }
+]
