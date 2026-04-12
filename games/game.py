@@ -10,7 +10,7 @@ from .payoff_matrices import PayoffMatrix
 
 class BehaviorChoices(BaseModel, ABC):
     """Abstract base class for behavior choices in a game"""
-
+    model_config = ConfigDict(extra="forbid")
     @abstractmethod
     def is_valid_choice(self, choice: str) -> bool:
         """Check if a choice is valid"""

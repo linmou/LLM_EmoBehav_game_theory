@@ -1,6 +1,6 @@
 from typing import Any, ClassVar, Dict, List, Optional
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from games.game import BehaviorChoices, GameDecision, GameScenario
 
@@ -27,6 +27,11 @@ class BeautyContestScenario(GameScenario):
     description: str
     participants: List[Dict[str, Any]]
     behavior_choices: BeautyContestBehaviorChoices
+    previous_actions_data: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        alias="previous_actions",
+        serialization_alias="previous_actions",
+    )
     payoff_matrix: Dict[str, Any]
     game_name: str = "Beauty_Contest"
 
@@ -50,6 +55,74 @@ class BeautyContestScenario(GameScenario):
     def get_behavior_choices(self) -> BeautyContestBehaviorChoices:
         return self.behavior_choices
 
+    @model_validator(mode="after")
+    def _validate_previous_actions(self) -> "BeautyContestScenario":
+        for round_index, round_record in enumerate(self.previous_actions_data):
+            if not isinstance(round_record, dict):
+                raise ValueError(
+                    "previous_actions must be a list of round dictionaries"
+                )
+
+            round_time = round_record.get("time")
+            if not isinstance(round_time, str) or not round_time.strip():
+                raise ValueError(
+                    "previous_actions entries must include a non-empty string 'time'"
+                )
+
+            participant_actions = round_record.get("participant_actions")
+            if not isinstance(participant_actions, list):
+                raise ValueError(
+                    "previous_actions entries must include a list 'participant_actions'"
+                )
+
+            for action_index, action in enumerate(participant_actions):
+                if not isinstance(action, (list, tuple)) or len(action) != 2:
+                    raise ValueError(
+                        "previous_actions participant_actions must contain "
+                        "[participant_name, action_description] pairs"
+                    )
+
+                participant_name, action_description = action
+                if not isinstance(participant_name, str) or not participant_name.strip():
+                    raise ValueError(
+                        "previous_actions participant name must be a non-empty string"
+                    )
+                if not isinstance(action_description, str) or not action_description.strip():
+                    raise ValueError(
+                        "previous_actions action description must be a non-empty string"
+                    )
+
+                participant_actions[action_index] = [
+                    participant_name,
+                    action_description,
+                ]
+
+            round_summary = round_record.get("round_summary")
+            if round_summary is not None and (
+                not isinstance(round_summary, str) or not round_summary.strip()
+            ):
+                raise ValueError(
+                    "previous_actions round_summary must be a non-empty string when present"
+                )
+
+            self.previous_actions_data[round_index] = round_record
+        return self
+
+    def previous_actions(self) -> List[Dict[str, Any]]:
+        return self.previous_actions_data
+
+    def __str__(self):
+        info = self.get_scenario_info()
+        previous_actions = f"Previous Actions: {self.previous_actions()}" if self.previous_actions() else ""
+        return f"""
+        Scenario: {info.get('scenario', 'Unnamed')}
+        Description: {info.get('description', 'No description')}
+        Participants: {self.get_participants()}
+        {previous_actions} 
+        Behavior Choices: {self.get_behavior_choices().get_choices()}
+        
+        """
+
     @staticmethod
     def example() -> dict:
         return {
@@ -65,6 +138,7 @@ class BeautyContestScenario(GameScenario):
                 {"name": "10 Other Ops Teams"},
             ],
             "behavior_choices": BeautyContestBehaviorChoices.example(),
+            "previous_actions": [],
         }
 
 
