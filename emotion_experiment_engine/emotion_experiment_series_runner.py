@@ -50,6 +50,39 @@ def _ensure_openmp_shm_compat() -> None:
     os.environ.setdefault("KMP_USE_SHM", "0")
 
 
+def _apply_vllm_env_overrides(loading_config: VLLMLoadingConfig) -> None:
+    """
+    Apply vLLM configuration that must be set before importing vLLM.
+
+    vLLM caches environment variables after initialization; setting these too late
+    (e.g., inside model-loading helpers) may not take effect for worker processes.
+    """
+    attn_backend = loading_config.additional_vllm_kwargs.get("attention_backend")
+    if attn_backend:
+        if str(attn_backend).upper() == "TORCH_SDPA":
+            raise ValueError(
+                "VLLM_ATTENTION_BACKEND=TORCH_SDPA is not valid for LLM attention in vLLM."
+            )
+        os.environ["VLLM_ATTENTION_BACKEND"] = str(attn_backend)
+
+    mm_encoder_attn_backend = loading_config.additional_vllm_kwargs.get(
+        "mm_encoder_attn_backend"
+    )
+    if mm_encoder_attn_backend and str(mm_encoder_attn_backend).upper() != "FLASH_ATTN":
+        # vLLM's ViT attention currently auto-upgrades to FlashAttention on CUDA
+        # if Transformers reports flash_attn is available. We disable that when
+        # the user explicitly requests a different ViT backend.
+        os.environ["VLLM_DISABLE_FLASH_ATTN"] = "1"
+        # Ensure `sitecustomize.py` in the repo root is importable in vLLM worker
+        # processes (spawn). This is required for VLLM_DISABLE_FLASH_ATTN to take
+        # effect reliably across workers.
+        repo_root = str(Path(__file__).resolve().parents[1])
+        old_pp = os.environ.get("PYTHONPATH", "")
+        if repo_root not in old_pp.split(os.pathsep):
+            os.environ["PYTHONPATH"] = (
+                repo_root if not old_pp else f"{repo_root}{os.pathsep}{old_pp}"
+            )
+
 def _expand_env_placeholders(value: Any) -> Any:
     if isinstance(value, dict):
         return {k: _expand_env_placeholders(v) for k, v in value.items()}
@@ -59,6 +92,43 @@ def _expand_env_placeholders(value: Any) -> Any:
         expanded = os.path.expanduser(os.path.expandvars(value))
         return expanded.replace("${USER_HOME}", "/home/jjl7137")
     return value
+
+
+def _resolve_resume_series_config(series_config: Any) -> Dict[str, Any]:
+    """Normalize embedded resume config, including merged-report snapshots."""
+    if not isinstance(series_config, dict):
+        return {}
+
+    normalized = copy.deepcopy(series_config)
+    if "benchmarks" in normalized and "models" in normalized:
+        return normalized
+
+    source_report = normalized.get("source_report")
+    if source_report:
+        source_path = Path(str(source_report)).expanduser().resolve()
+        if source_path.exists():
+            with open(source_path, "r", encoding="utf-8") as handle:
+                return _resolve_resume_series_config(json.load(handle).get("series_config"))
+
+    merged_configs = normalized.get("merged_from_series_configs", [])
+    if isinstance(merged_configs, list):
+        for candidate in merged_configs:
+            resolved = _resolve_resume_series_config(candidate)
+            if "benchmarks" in resolved and "models" in resolved:
+                return resolved
+
+    source_reports = normalized.get("source_reports", [])
+    if isinstance(source_reports, list):
+        for candidate in source_reports:
+            candidate_path = Path(str(candidate)).expanduser().resolve()
+            if not candidate_path.exists():
+                continue
+            with open(candidate_path, "r", encoding="utf-8") as handle:
+                resolved = _resolve_resume_series_config(json.load(handle).get("series_config"))
+            if "benchmarks" in resolved and "models" in resolved:
+                return resolved
+
+    return normalized
 
 
 class ExperimentStatus:
@@ -368,6 +438,8 @@ class MemoryExperimentSeriesRunner:
         self.config_path = config_path
         self.series_name = series_name or f"memory_experiment_series"
         self.dry_run = dry_run
+        self._allowed_resume_experiment_ids: Optional[set[str]] = None
+        self._stop_model_on_failure = False
         load_dotenv(override=False)
 
         # Initialize shutdown flag
@@ -407,7 +479,8 @@ class MemoryExperimentSeriesRunner:
                 raise ValueError(
                     "Loaded report does not contain a 'series_config' snapshot; cannot resume from report."
                 )
-            resume_cfg = copy.deepcopy(self.report.series_config)
+            self._allowed_resume_experiment_ids = set(self.report.experiments)
+            resume_cfg = _resolve_resume_series_config(self.report.series_config)
 
             # If a new config is provided and we are interactive, show diff and ask
             if new_config_if_provided is not None and hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
@@ -471,6 +544,46 @@ class MemoryExperimentSeriesRunner:
                 config_source="config",
                 config_changed=False,
             )
+
+        self._apply_early_vllm_env_from_base_config()
+        self._stop_model_on_failure = bool(
+            self.base_config.get("stop_model_on_failure", False)
+        )
+
+    def _apply_early_vllm_env_from_base_config(self) -> None:
+        """
+        Apply env vars that must be set before importing vLLM.
+
+        This runner imports RepE pipelines (which import vLLM) during CLI startup.
+        vLLM snapshots environment variables at import time, so we must set these
+        as early as possible after reading config.
+        """
+        loading_cfg = self.base_config.get("loading_config", {}) or {}
+        loading_config = VLLMLoadingConfig(
+            model_path=loading_cfg.get("model_path", "unknown"),
+            gpu_memory_utilization=loading_cfg.get("gpu_memory_utilization", 0.90),
+            tensor_parallel_size=loading_cfg.get("tensor_parallel_size", 1),
+            max_model_len=loading_cfg.get("max_model_len", 32768),
+            enforce_eager=loading_cfg.get("enforce_eager", True),
+            quantization=loading_cfg.get("quantization"),
+            trust_remote_code=loading_cfg.get("trust_remote_code", True),
+            dtype=loading_cfg.get("dtype", "float16"),
+            seed=loading_cfg.get("seed", 42),
+            disable_custom_all_reduce=loading_cfg.get(
+                "disable_custom_all_reduce", False
+            ),
+            additional_vllm_kwargs=loading_cfg.get("additional_vllm_kwargs", {}) or {},
+        )
+
+        _apply_vllm_env_overrides(loading_config)
+
+        if self.base_config.get("repe_eng_config") is not None:
+            os.environ.setdefault("VLLM_ALLOW_INSECURE_SERIALIZATION", "1")
+
+    def register_pipelines(self) -> None:
+        from neuro_manipulation.repe.pipelines import repe_pipeline_registry
+
+        repe_pipeline_registry()
 
     def _load_config(self) -> None:
         """Load configuration from YAML file"""
@@ -746,6 +859,7 @@ class MemoryExperimentSeriesRunner:
         )
 
         # Import and create experiment with dry_run parameter
+        _apply_vllm_env_overrides(loading_config)
         from .experiment import EmotionExperiment
 
         # Allow configuring repeat runs and seed base from config. Support both
@@ -1289,6 +1403,12 @@ class MemoryExperimentSeriesRunner:
                         )
                         exp_id = f"{benchmark_name}_{task_type}_{model_folder_name.replace('/', '_')}"
 
+                        if (
+                            self._allowed_resume_experiment_ids is not None
+                            and exp_id not in self._allowed_resume_experiment_ids
+                        ):
+                            continue
+
                         # Only add if not resuming or not already in report
                         if not self._resuming or exp_id not in self.report.experiments:
                             self.report.add_experiment(
@@ -1313,12 +1433,20 @@ class MemoryExperimentSeriesRunner:
         pending_experiments = self.report.get_incomplete_experiments()
         total_experiments = len(pending_experiments)
         self.logger.info(f"Total pending experiments: {total_experiments}")
+        blocked_models: set[str] = set()
 
         # Run each experiment
         for i, exp in enumerate(pending_experiments):
             if self.shutdown_requested:
                 self.logger.info("Shutdown requested. Stopping experiment series.")
                 break
+
+            if self._stop_model_on_failure and exp["model_name"] in blocked_models:
+                self.logger.info(
+                    "Skipping experiment because its model already failed in this run: "
+                    f"{exp['benchmark_name']}, {exp['model_name']}"
+                )
+                continue
 
             resolved_model_path = exp.get("resolved_model_path")
             model_name = exp["model_name"]
@@ -1397,6 +1525,8 @@ class MemoryExperimentSeriesRunner:
                     self.logger.info(
                         f"❌ Experiment failed but series continues: {exp['benchmark_name']}, {exp['model_name']}"
                     )
+                    if self._stop_model_on_failure:
+                        blocked_models.add(exp["model_name"])
                     exp_record = self.report.experiments.get(exp["exp_id"])
                     if not exp_record or exp_record.get("status") != ExperimentStatus.FAILED:
                         self.report.update_experiment(
@@ -1417,6 +1547,8 @@ class MemoryExperimentSeriesRunner:
 
                 try:
                     # Try to update the experiment report with the series-level error
+                    if self._stop_model_on_failure:
+                        blocked_models.add(exp["model_name"])
                     self.report.update_experiment(
                         exp["exp_id"],
                         status=ExperimentStatus.FAILED,
@@ -1507,11 +1639,6 @@ def main():
     )
 
     args = parser.parse_args()
-
-    # Register pipelines only when not dry-run (avoids torch dependency during validation)
-    if not args.dry_run:
-        from neuro_manipulation.repe.pipelines import repe_pipeline_registry
-        repe_pipeline_registry()
     if not args.resume and not args.config:
         parser.error("either --config or --resume must be provided")
 
@@ -1521,6 +1648,8 @@ def main():
         resume=args.resume,
         dry_run=args.dry_run,
     )
+    if not args.dry_run:
+        runner.register_pipelines()
     runner.run_experiment_series()
 
 

@@ -6,34 +6,36 @@ from itertools import islice
 import torch
 
 def project_onto_direction(H, direction):
-    """Project matrix H (n, d_1) onto direction vector (d_2,)"""
-    if not isinstance(H, torch.Tensor):
-        H = torch.as_tensor(H, dtype=torch.float32)
-    if not isinstance(direction, torch.Tensor):
-        direction = torch.as_tensor(direction, dtype=torch.float32, device=H.device)
-    else:
-        direction = direction.to(device=H.device, dtype=torch.float32)
+    Ht = H if isinstance(H, torch.Tensor) else torch.as_tensor(H, dtype=torch.float32)
+    Ht = Ht.to(dtype=torch.float32)
 
-    H = H.to(dtype=torch.float32)
-    mag = torch.norm(direction)
+    dt = (
+        direction
+        if isinstance(direction, torch.Tensor)
+        else torch.as_tensor(direction, dtype=torch.float32)
+    )
+    dt = dt.to(device=Ht.device, dtype=torch.float32)
+
+    mag = torch.norm(dt)
     if not torch.isfinite(mag) or mag.item() == 0:
         raise ValueError("Direction vector norm is non-finite or zero")
-    return H.matmul(direction) / mag
+    return Ht.matmul(dt) / mag
+
 
 def recenter(x, mean=None):
-    if not isinstance(x, torch.Tensor):
-        x = torch.as_tensor(x, dtype=torch.float32)
-    else:
-        x = x.to(dtype=torch.float32)
+    xt = x if isinstance(x, torch.Tensor) else torch.as_tensor(x, dtype=torch.float32)
+    xt = xt.to(dtype=torch.float32)
 
     if mean is None:
-        mean_t = torch.mean(x, axis=0, keepdims=True)
+        mean_t = torch.mean(xt, dim=0, keepdim=True)
     else:
-        if isinstance(mean, torch.Tensor):
-            mean_t = mean.to(device=x.device, dtype=torch.float32)
-        else:
-            mean_t = torch.as_tensor(mean, dtype=torch.float32, device=x.device)
-    return x - mean_t
+        mean_t = (
+            mean
+            if isinstance(mean, torch.Tensor)
+            else torch.as_tensor(mean, dtype=torch.float32)
+        )
+        mean_t = mean_t.to(device=xt.device, dtype=torch.float32)
+    return xt - mean_t
 
 class RepReader(ABC):
     """Class to identify and store concept directions.
@@ -238,17 +240,40 @@ class RandomRepReader(RepReader):
     """Get random directions for each hidden layer. Do not use hidden 
     states or train labels of any kind."""
 
-    def __init__(self, needs_hiddens=True):
+    def __init__(
+        self,
+        needs_hiddens=True,
+        mean=0.0,
+        std=1.0,
+        seed=None,
+        normalize_l2=True,
+    ):
         super().__init__()
 
         self.n_components = 1
         self.needs_hiddens = needs_hiddens
+        self.mean = float(mean)
+        self.std = float(std)
+        if self.std < 0:
+            raise ValueError("RandomRepReader std must be >= 0")
+        self.seed = None if seed is None else int(seed)
+        self.normalize_l2 = bool(normalize_l2)
 
     def get_rep_directions(self, model, tokenizer, hidden_states, hidden_layers, **kwargs):
 
+        rng = np.random.default_rng(self.seed)
         directions = {}
         for layer in hidden_layers:
-            directions[layer] = np.expand_dims(np.random.randn(model.config.hidden_size), 0)
+            direction = rng.normal(
+                loc=self.mean,
+                scale=self.std,
+                size=model.config.hidden_size,
+            )
+            if self.normalize_l2:
+                norm = float(np.linalg.norm(direction))
+                if norm > 0.0 and np.isfinite(norm):
+                    direction = direction / norm
+            directions[layer] = np.expand_dims(direction.astype(np.float32, copy=False), 0)
 
         return directions
 

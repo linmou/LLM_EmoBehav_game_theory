@@ -23,4 +23,4 @@ class TestLoadModelOnlyVllmFailure(unittest.TestCase):
                     loading_config=fake_loading_config,
                 )
 
-        self.assertIn("vLLM loading failed: boom", str(ctx.exception))
+        self.assertIn("vLLM loading failed for /does/not/matter: boom", str(ctx.exception))

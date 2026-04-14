@@ -239,7 +239,15 @@ class EmotionGameExperiment:
         self.logger.info("Starting experiment")
         results = []
 
-        for emotion in self.exp_config["experiment"]["emotions"]:
+        # Use only emotions for which we have rep readers
+        configured_emotions = self.exp_config["experiment"]["emotions"]
+        emotions_to_run = [e for e in configured_emotions if e in self.emotion_rep_readers]
+
+        if not emotions_to_run:
+            self.logger.warning("No valid emotions available in emotion_rep_readers; skipping experiment body.")
+            return self._save_results([])
+
+        for emotion in emotions_to_run:
             self.logger.info(f"Processing emotion: {emotion}")
             rep_reader = self.emotion_rep_readers[emotion]
             self.cur_emotion = emotion
@@ -251,10 +259,12 @@ class EmotionGameExperiment:
                 self.cur_coeff = coeff
                 results.extend(self._infer_with_activation(rep_reader, data_loader))
 
-        self.cur_emotion = "Neutral"
-        self.cur_coeff = 0
-        self.logger.info(f"Processing Null Emotion")
-        results.extend(self._infer_with_activation(rep_reader, data_loader))
+        # Process Null Emotion using the last available rep_reader
+        if emotions_to_run:
+            self.cur_emotion = "Neutral"
+            self.cur_coeff = 0
+            self.logger.info(f"Processing Null Emotion")
+            results.extend(self._infer_with_activation(rep_reader, data_loader))
 
         return self._save_results(results)
 
@@ -274,16 +284,13 @@ class EmotionGameExperiment:
         else:
             device = self.model.device
 
-        activations = {
-            layer: torch.tensor(
-                self.cur_coeff
-                * rep_reader.directions[layer]
-                * rep_reader.direction_signs[layer]
-            )
-            .to(device)
-            .half()
-            for layer in self.hidden_layers
-        }
+        # Match activation dtype/device to model dtype/device to avoid type mismatches
+        model_dtype = next(self.model.parameters()).dtype if hasattr(self.model, "parameters") else torch.float16
+        activations = {}
+        for layer in self.hidden_layers:
+            base = self.cur_coeff * rep_reader.directions[layer] * rep_reader.direction_signs[layer]
+            act = torch.tensor(base, dtype=model_dtype, device=device)
+            activations[layer] = act
 
         return self._forward_dataloader(data_loader, activations)
 
@@ -562,10 +569,15 @@ class EmotionGameExperiment:
 
         df = pd.DataFrame(results)
         csv_filename = f"{self.output_dir}/exp_results.csv"
-        df.to_csv(csv_filename, index=False)
-        self.logger.info(f"Results saved to {csv_filename}")
-
-        stats_results = self._run_statistical_analysis(csv_filename)
+        # Guard: if no results, write empty CSV with safe columns and skip stats
+        if df.empty:
+            df.to_csv(csv_filename, index=False)
+            self.logger.warning("No results generated; skipping statistical analysis.")
+            stats_results = {}
+        else:
+            df.to_csv(csv_filename, index=False)
+            self.logger.info(f"Results saved to {csv_filename}")
+            stats_results = self._run_statistical_analysis(csv_filename)
         stats_filename = f"{self.output_dir}/stats_analysis.json"
         with open(stats_filename, "w") as f:
             json.dump(stats_results, f, indent=2)
@@ -601,9 +613,12 @@ class EmotionGameExperiment:
         try:
             # Run experiment with reduced sample
             results = []
-            test_emotion = self.repe_eng_config["emotions"][
-                0
-            ]  # Test with first emotion
+            # Select first available emotion that has a rep reader
+            available = [e for e in self.repe_eng_config["emotions"] if e in self.emotion_rep_readers]
+            if not available:
+                self.logger.warning("No available emotions in emotion_rep_readers for sanity check; aborting.")
+                return self._save_results([])
+            test_emotion = available[0]
             self.logger.info(f"Testing with emotion: {test_emotion}")
 
             rep_reader = self.emotion_rep_readers[test_emotion]

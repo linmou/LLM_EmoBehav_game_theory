@@ -1,6 +1,7 @@
 import base64
 import glob
 import hashlib
+import importlib.util
 import json
 import os
 import pickle
@@ -169,13 +170,24 @@ def get_optimal_tensor_parallel_size(model_path):
         # Get model config
         config, _ = get_model_config(model_path)
 
-        # Get number of attention heads from config
-        # Different models might store this in different keys
+        # Get number of attention heads from config.
+        # Newer multimodal models often store the text/LLM config under a nested key.
         num_heads = None
         possible_keys = ["num_attention_heads", "n_head", "num_heads", "n_heads"]
-        for key in possible_keys:
-            if key in config:
-                num_heads = config[key]
+        candidate_configs = [
+            config,
+            config.get("text_config", {}),
+            config.get("llm_config", {}),
+            config.get("language_config", {}),
+        ]
+        for candidate in candidate_configs:
+            if not isinstance(candidate, dict):
+                continue
+            for key in possible_keys:
+                if key in candidate:
+                    num_heads = candidate[key]
+                    break
+            if num_heads is not None:
                 break
 
         if num_heads is None:
@@ -200,7 +212,9 @@ def primary_emotions_concept_dataset(
     system_prompt=None,
     seed=0,
     multimodal_intent=False,
+    image_base_path=None,
     enable_thinking=False,
+    emotions=None,
 ):
     """
     Create dataset of emotion scenarios using proper model-specific prompt formatting.
@@ -226,7 +240,6 @@ def primary_emotions_concept_dataset(
     import os
     import random
 
-    import numpy as np
     from transformers import AutoTokenizer
 
     from neuro_manipulation.prompt_formats import ManualPromptFormat, PromptFormat
@@ -251,7 +264,14 @@ def primary_emotions_concept_dataset(
         assistant_tag = ""
         prompt_format = None  # Will use manual formatting
 
-    emotions = ["happiness", "sadness", "anger", "fear", "disgust", "surprise"]
+    emotions = emotions or [
+        "happiness",
+        "sadness",
+        "anger",
+        "fear",
+        "disgust",
+        "surprise",
+    ]
 
     # Auto-detect data type directly from content in data_dir
     data_status = detect_emotion_data_type(data_dir, emotions)
@@ -286,7 +306,8 @@ def primary_emotions_concept_dataset(
         emotion_file = os.path.join(data_dir, f"{emotion}.json")
         if os.path.exists(emotion_file):
             with open(emotion_file, "r", encoding="utf-8") as file:
-                raw_data[emotion] = list(set(json.load(file)))
+                loaded = json.load(file)
+                raw_data[emotion] = loaded if isinstance(loaded, list) else []
 
     formatted_data = {}
     for emotion in emotions:
@@ -299,56 +320,69 @@ def primary_emotions_concept_dataset(
         if not other_emotions_data:
             continue  # Skip if no other emotions have data
 
-        c_e, o_e = raw_data[emotion], np.concatenate(other_emotions_data)
+        c_e = list(raw_data[emotion])
+        o_e = []
+        for v in other_emotions_data:
+            o_e.extend(v)
         random.shuffle(o_e)
 
-        data = [[c, o] for c, o in zip(c_e, o_e)]
+        pairs = [[c, o] for c, o in zip(c_e, o_e)]
         train_labels = []
-        for d in data:
-            true_s = d[0]
-            random.shuffle(d)
-            train_labels.append([s == true_s for s in d])
+        if len(pairs) == 0:
+            # Skip emotion if we can't form any pairs
+            continue
+        for p in pairs:
+            true_s = p[0]
+            random.shuffle(p)
+            train_labels.append([s == true_s for s in p])
 
-        data = np.concatenate(data).tolist()
-        data_ = np.concatenate([[c, o] for c, o in zip(c_e, o_e)]).tolist()
+        flat_train = [x for pair in pairs for x in pair]
+        data_ = [x for pair in zip(c_e, o_e) for x in pair]
 
         # Helper function to format a single scenario
         def format_scenario(scenario):
             if should_use_multimodal and is_multimodal_data:
-                # Scenario is an image path - load the image relative to data_dir
                 try:
-                    # Image paths in JSON are relative to data_dir
-                    full_image_path = Path(data_dir) / scenario
+                    image_path = None
+                    extra_text = None
+
+                    if isinstance(scenario, dict):
+                        image_path = (
+                            scenario.get("image")
+                            or scenario.get("image_path")
+                            or (scenario.get("images", [None])[0] if isinstance(scenario.get("images"), list) else None)
+                        )
+                        extra_text = (
+                            scenario.get("text")
+                            or scenario.get("prompt")
+                            or scenario.get("caption")
+                        )
+                    elif isinstance(scenario, str):
+                        image_path = scenario
+
+                    if not isinstance(image_path, str) or not image_path:
+                        raise ValueError(f"Invalid multimodal scenario (missing image path): {scenario!r}")
+
+                    base = Path(image_base_path) if image_base_path is not None else Path(data_dir)
+                    image_path_obj = Path(image_path)
+                    full_image_path = image_path_obj if image_path_obj.is_absolute() else (base / image_path_obj)
 
                     if full_image_path.exists():
                         pil_image = Image.open(full_image_path).convert("RGB")
-
-                        # Use same user_message structure as text mode for consistency
-                        user_message = f"Consider the emotion of the following scenario:\nScenario: [IMAGE]\nAnswer:"
-
-                        # Format text prompt
-                        if prompt_format is not None:
-                            formatted_prompt = prompt_format.build(
-                                system_prompt, [user_message], [], [pil_image]
-                            )
-                        else:
-                            if system_prompt:
-                                formatted_prompt = f"{user_tag} {system_prompt}\n\n{user_message} {assistant_tag} "
-                            else:
-                                formatted_prompt = (
-                                    f"{user_tag} {user_message} {assistant_tag} "
-                                )
-
-                        return {"images": [pil_image], "text": formatted_prompt}
+                        user_message = "Consider the emotion of the following scenario:\n[IMAGE]"
+                        if extra_text:
+                            user_message = f"{user_message}\n{extra_text}"
+                        return {"images": [pil_image], "text": user_message}
                     else:
                         print(f"⚠️  Image not found: {full_image_path}")
                         return None
-
                 except Exception as e:
                     print(f"⚠️  Failed to load image {scenario}: {e}")
                     return None
             else:
                 # Text-only processing (scenario is text content)
+                if isinstance(scenario, dict):
+                    scenario = scenario.get("text") or scenario.get("prompt") or str(scenario)
                 user_message = f"Consider the emotion of the following scenario:\nScenario: {scenario}\nAnswer:"
 
                 # Format text prompt
@@ -376,16 +410,26 @@ def primary_emotions_concept_dataset(
             if formatted_data_item is not None:
                 emotion_test_data.append(formatted_data_item)
 
-        for scenario in data:
-            formatted_data_item = format_scenario(scenario)
-            if formatted_data_item is not None:
-                emotion_train_data.append(formatted_data_item)
+        # Format training data in pairs to keep labels aligned and filter invalid items
+        kept_labels = []
+        for idx in range(0, len(flat_train), 2):
+            s0 = format_scenario(flat_train[idx])
+            s1 = format_scenario(flat_train[idx + 1]) if idx + 1 < len(flat_train) else None
+            if s0 is not None and s1 is not None:
+                emotion_train_data.extend([s0, s1])
+                # Each idx//2 corresponds to a pair label
+                kept_labels.append(train_labels[idx // 2])
+
+        if len(emotion_train_data) == 0 or len(kept_labels) == 0:
+            # Skip emotion if nothing valid remains
+            continue
 
         formatted_data[emotion] = {
-            "train": {"data": emotion_train_data, "labels": train_labels},
+            "train": {"data": emotion_train_data, "labels": kept_labels},
             "test": {
                 "data": emotion_test_data,
-                "labels": [[1, 0] * len(emotion_test_data)],
+                # Placeholder labels; not used for PCA fitting
+                "labels": [[1, 0] * (len(emotion_test_data) // 2)],
             },
         }
 
@@ -406,17 +450,60 @@ def test_direction(
     results = {layer: {} for layer in hidden_layers}
     rep_readers_means = {layer: 0 for layer in hidden_layers}
 
+    # Prepare labels for evaluation if provided
+    raw_labels = test_data.get("labels")
+
     for layer in hidden_layers:
-        H_test = [H[layer] for H in H_tests]
-        rep_readers_means[layer] = np.mean(H_test)
-        H_test = [H_test[i : i + 2] for i in range(0, len(H_test), 2)]
+        # Flatten per-sample projections for this layer
+        layer_vals = [H[layer] for H in H_tests]
+        rep_readers_means[layer] = np.mean(layer_vals)
+        # Group into pairs
+        pairs = [layer_vals[i : i + 2] for i in range(0, len(layer_vals), 2)]
 
-        sign = rep_reader.direction_signs[layer]
+        # Resolve sign to scalar (+1 or -1)
+        sign_val = rep_reader.direction_signs.get(layer, 1)
+        try:
+            sign_scalar = float(np.ravel(sign_val)[0])
+        except Exception:
+            sign_scalar = float(sign_val)
 
-        eval_func = min if sign == -1 else max
-        cors = np.mean([eval_func(H) == H[0] for H in H_test])
+        eval_func = min if sign_scalar == -1.0 else max
 
-        results[layer] = cors
+        # Determine true index per pair from labels when available
+        true_indices = []
+        if raw_labels is not None:
+            # Case A: list of pair lists (e.g., [[1,0],[0,1],...])
+            if isinstance(raw_labels, list) and len(raw_labels) > 0 and isinstance(raw_labels[0], (list, np.ndarray)) and len(raw_labels) == len(pairs):
+                for lab in raw_labels:
+                    try:
+                        true_indices.append(int(list(lab).index(1)))
+                    except ValueError:
+                        true_indices.append(0)
+            else:
+                # Case B: flattened labels possibly nested once: [[1,0,1,0,...]] or [1,0,1,0,...]
+                flat = None
+                try:
+                    if isinstance(raw_labels, list) and len(raw_labels) == 1 and isinstance(raw_labels[0], (list, np.ndarray)):
+                        flat = list(raw_labels[0])
+                    elif isinstance(raw_labels, (list, np.ndarray)):
+                        flat = list(raw_labels)
+                except Exception:
+                    flat = None
+                if flat is not None and len(flat) >= 2 * len(pairs):
+                    for i in range(len(pairs)):
+                        sl = flat[2 * i : 2 * i + 2]
+                        try:
+                            true_indices.append(int(list(sl).index(1)))
+                        except ValueError:
+                            true_indices.append(0)
+        # Default when labels unavailable or malformed
+        if not true_indices:
+            true_indices = [0 for _ in pairs]
+
+        correctness = [
+            (eval_func(pair) == pair[idx_true]) for pair, idx_true in zip(pairs, true_indices)
+        ]
+        results[layer] = float(np.mean(correctness)) if correctness else 0.0
 
     return results, rep_readers_means
 
@@ -429,7 +516,10 @@ def get_rep_reader(
     rep_token=-1,
     n_difference=1,
     direction_method="pca",
+    direction_finder_kwargs=None,
 ):
+    if direction_finder_kwargs is None:
+        direction_finder_kwargs = {}
     rep_reader = rep_reading_pipeline.get_directions(
         train_data["data"],
         rep_token=rep_token,
@@ -437,6 +527,7 @@ def get_rep_reader(
         n_difference=n_difference,
         train_labels=train_data["labels"],
         direction_method=direction_method,
+        direction_finder_kwargs=direction_finder_kwargs,
     )
 
     result, _ = test_direction(
@@ -513,6 +604,7 @@ def detect_multimodal_model(model_name_or_path):
         "gemma-3-4b",
         "gemma-3-12b",
         "gemma-3-27b",
+        "glm-edge",  # GLM Edge VLMs
     ]
 
     model_name_upper = str(model_name_or_path).upper()
@@ -558,6 +650,11 @@ def auto_load_processor(model_name_or_path, vram_optimized=True):
         processor = AutoProcessor.from_pretrained(
             model_name_or_path, trust_remote_code=True
         )
+
+        # Verify processor has image capability; otherwise return None
+        if not (hasattr(processor, "image_processor") or hasattr(processor, "feature_extractor")):
+            print(f"⚠️  Loaded processor lacks image capability for {model_name_or_path}; returning None")
+            return None
 
         # Apply VRAM optimizations
         if vram_optimized and hasattr(processor, "image_processor"):
@@ -624,7 +721,14 @@ def load_tokenizer_only(
                - processor_or_none: AutoProcessor for multimodal models, None for text-only
     """
     # Load tokenizer (same logic as in load_model_tokenizer)
-    use_fast_tokenizer = False
+    # Some VLM tokenizers can fail in slow mode (e.g., missing merges/vocab_file), so prefer fast.
+    model_lower = str(model_name_or_path).lower()
+    use_fast_tokenizer = (
+        ("phi" in model_lower)
+        or ("internvl" in model_lower)
+        or ("qwen3-vl" in model_lower)
+        or ("qwen3_vl" in model_lower)
+    )
     tokenizer = AutoTokenizer.from_pretrained(
         model_name_or_path,
         use_fast=use_fast_tokenizer,
@@ -650,8 +754,12 @@ def load_tokenizer_only(
             if processor:
                 print(f"✓ Detected multimodal model: {model_name_or_path}")
             else:
-                raise Exception(
-                    f"Multimodal model detected but processor loading failed: {model_name_or_path}"
+                # Some multimodal models (e.g., InternVL) may not expose an
+                # image-capable AutoProcessor in HuggingFace metadata. We can
+                # still run by relying on vLLM's multimodal input handling.
+                print(
+                    f"⚠️  Multimodal model detected but processor unavailable: {model_name_or_path} "
+                    "(will rely on vLLM multimodal preprocessing)"
                 )
         else:
             print(f"✓ Detected text-only model: {model_name_or_path}")
@@ -676,10 +784,21 @@ def load_model_only(
     Returns:
         model: Loaded model (vLLM LLM or HuggingFace model)
     """
-    model = None
     if from_vllm:
         try:
             _ensure_repo_root_on_pythonpath()
+            # vLLM uses NCCL process groups internally; make sure we don't carry
+            # an old one across sequential model loads.
+            try:
+                if torch.distributed.is_available() and torch.distributed.is_initialized():
+                    torch.distributed.destroy_process_group()
+            except Exception:
+                pass
+            # vLLM uses multiprocessing; if CUDA has already been initialized in this
+            # process (e.g., from HF model loading for RepE readers), forking will
+            # crash with "Cannot re-initialize CUDA in forked subprocess".
+            # Force vLLM to use spawn workers to avoid that failure.
+            os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
             # Use VLLMLoadingConfig.to_vllm_kwargs() method
             if loading_config and hasattr(loading_config, "to_vllm_kwargs"):
                 vllm_kwargs = loading_config.to_vllm_kwargs()
@@ -698,7 +817,7 @@ def load_model_only(
                     "tensor_parallel_size": get_optimal_tensor_parallel_size(
                         model_name_or_path
                     ),
-                    "max_model_len": 32768,
+                    "max_model_len": 8192,
                     "trust_remote_code": True,
                     "enforce_eager": True,
                     "gpu_memory_utilization": 0.90,
@@ -706,83 +825,212 @@ def load_model_only(
                     "seed": 42,
                     "disable_custom_all_reduce": False,
                 }
+            # DTYPE POLICY for vLLM: prefer bfloat16 for Gemma-3
+            name_lower = str(model_name_or_path).lower()
+            if "gemma-3" in name_lower:
+                vllm_kwargs["dtype"] = "bfloat16"
 
-            # vLLM selects attention backend via env var; allow forcing through config.
-            attention_backend = vllm_kwargs.pop("attention_backend", None)
-            if attention_backend:
-                os.environ["VLLM_ATTENTION_BACKEND"] = str(attention_backend)
+            # Allow forcing vLLM attention backend via config without relying on shell env.
+            # vLLM reads this from the env var (see vllm.envs.VLLM_ATTENTION_BACKEND).
+            attn_backend = vllm_kwargs.pop("attention_backend", None)
+            if attn_backend:
+                if str(attn_backend).upper() == "TORCH_SDPA":
+                    raise ValueError(
+                        "VLLM_ATTENTION_BACKEND=TORCH_SDPA is not a valid choice for LLM attention in vLLM; "
+                        "use XFORMERS or TRITON_ATTN instead."
+                    )
+                os.environ["VLLM_ATTENTION_BACKEND"] = str(attn_backend)
 
-            model = LLM(**vllm_kwargs)
+            # vLLM enforces gpu_memory_utilization <= (free_vram / total_vram) on startup.
+            # HF model loading for RepE readers may reserve VRAM before vLLM starts, so clamp.
+            try:
+                if (
+                    torch.cuda.is_available()
+                    and isinstance(vllm_kwargs.get("gpu_memory_utilization"), (float, int))
+                ):
+                    requested = float(vllm_kwargs["gpu_memory_utilization"])
+                    free_fracs = []
+                    for i in range(max(1, int(torch.cuda.device_count()))):
+                        free, total = torch.cuda.mem_get_info(i)
+                        if total:
+                            free_fracs.append(float(free) / float(total))
+                    if free_fracs:
+                        # Keep a small margin to avoid fluctuations during init.
+                        max_util = max(0.05, min(free_fracs) - 0.02)
+                        if requested > max_util:
+                            vllm_kwargs["gpu_memory_utilization"] = max_util
+            except Exception:
+                pass
+
+            return LLM(**vllm_kwargs)
 
         except Exception as e:
-            raise RuntimeError(f"vLLM loading failed: {e}") from e
+            if isinstance(e, ValueError):
+                raise
+            hint = ""
+            msg = str(e)
+            if "headdim not being a multiple of 32" in msg:
+                hint = (
+                    " (Hint: set loading_config.additional_vllm_kwargs.attention_backend "
+                    "to TRITON_ATTN (or XFORMERS) to avoid FlashAttention limits.)"
+                )
+            raise RuntimeError(
+                f"vLLM loading failed for {model_name_or_path}: {e}{hint}"
+            ) from e
 
-    if not model:
-        # Check if this should be a causal LM model based on its config
-        from transformers import AutoConfig, AutoModelForCausalLM
+    # Check if this should be a causal LM / vision2seq model based on its config
+    from transformers import AutoConfig, AutoModel, AutoModelForCausalLM
+    try:
+        from transformers import AutoModelForImageTextToText
+    except Exception:  # pragma: no cover - older transformers
+        AutoModelForImageTextToText = None  # type: ignore
+    try:
+        from transformers import AutoModelForVision2Seq
+    except Exception:  # pragma: no cover - older transformers
+        AutoModelForVision2Seq = None  # type: ignore
 
-        # Determine HF torch dtype, defaulting to float16 when unspecified
-        hf_torch_dtype = torch.float16
-        if loading_config is not None:
-            if isinstance(loading_config, dict):
-                dtype_value = loading_config.get("dtype")
-            else:
-                dtype_value = getattr(loading_config, "dtype", None)
+    # Determine HF torch dtype, defaulting to float16 when unspecified
+    hf_torch_dtype = torch.float16
+    if loading_config is not None:
+        if isinstance(loading_config, dict):
+            dtype_value = loading_config.get("dtype")
+        else:
+            dtype_value = getattr(loading_config, "dtype", None)
 
-            if isinstance(dtype_value, torch.dtype):
-                hf_torch_dtype = dtype_value
-            elif isinstance(dtype_value, str):
-                dtype_key = dtype_value.lower()
-                if dtype_key in {"bfloat16", "bf16"}:
-                    hf_torch_dtype = torch.bfloat16
-                elif dtype_key in {"float32", "fp32"}:
-                    hf_torch_dtype = torch.float32
-                elif dtype_key in {"float16", "fp16"}:
-                    hf_torch_dtype = torch.float16
+        if isinstance(dtype_value, torch.dtype):
+            hf_torch_dtype = dtype_value
+        elif isinstance(dtype_value, str):
+            dtype_key = dtype_value.lower()
+            if dtype_key in {"bfloat16", "bf16"}:
+                hf_torch_dtype = torch.bfloat16
+            elif dtype_key in {"float32", "fp32"}:
+                hf_torch_dtype = torch.float32
+            elif dtype_key in {"float16", "fp16"}:
+                hf_torch_dtype = torch.float16
+    name_lower = str(model_name_or_path).lower()
+    force_single_gpu = (
+        ("glm-edge" in name_lower)
+        or ("internvl" in name_lower)
+        or (("phi-4" in name_lower) and ("multimodal" in name_lower))
+    )
+    single_gpu_map = {"": 0} if force_single_gpu else "auto"
+    preferred_dtype = hf_torch_dtype
+    if ("gemma-3" in name_lower) or ("internvl" in name_lower):
+        preferred_dtype = torch.bfloat16
+
+    try:
+        config = AutoConfig.from_pretrained(
+            model_name_or_path, token=True, trust_remote_code=True
+        )
+    except Exception:
+        # If config loading itself fails, fall back to the generic AutoModel path.
+        return AutoModel.from_pretrained(
+            model_name_or_path,
+            torch_dtype=hf_torch_dtype,
+            device_map=single_gpu_map,
+            token=True,
+            trust_remote_code=True,
+        ).eval()
+
+    # Some multimodal HF models break when sharded across GPUs because they
+    # assume all multimodal tensors live on one device (e.g., InternVL uses
+    # boolean indexing between vision outputs and `image_flags`).
+    # DTYPE POLICY: Prefer bfloat16 for Gemma-3 to avoid NaNs; float16 otherwise.
+    loader_kwargs = {
+        "torch_dtype": preferred_dtype,
+        "device_map": single_gpu_map,
+        "token": True,
+        "trust_remote_code": True,
+    }
+    if ("phi" in name_lower) and (("vision" in name_lower) or ("multimodal" in name_lower)):
+        if importlib.util.find_spec("flash_attn") is None:
+            if hasattr(config, "_attn_implementation"):
+                config._attn_implementation = "eager"
+            if hasattr(config, "_attn_implementation_internal"):
+                config._attn_implementation_internal = "eager"
+            loader_kwargs["config"] = config
+            loader_kwargs["attn_implementation"] = "eager"
+
+    if ("phi-4" in name_lower) and ("mini-instruct" in name_lower):
+        import transformers.utils as transformers_utils
+        if not hasattr(transformers_utils, "LossKwargs"):
+            from typing import TypedDict
+
+            # Phi-4 mini remote code expects LossKwargs from newer transformers.
+            # In older installs it is only used as a TypedDict mixin, so an empty
+            # compatibility shim is sufficient.
+            transformers_utils.LossKwargs = TypedDict("LossKwargs", {})
+
+    if ("phi-4" in name_lower) and ("multimodal" in name_lower):
         try:
-            config = AutoConfig.from_pretrained(
-                model_name_or_path, token=True, trust_remote_code=True
-            )
-            # Check if the model has architectures that suggest it's a causal LM
-            if hasattr(config, "architectures") and config.architectures:
-                # If any architecture name contains "ForCausalLM", use AutoModelForCausalLM
-                if any("ForCausalLM" in arch for arch in config.architectures):
-                    model = AutoModelForCausalLM.from_pretrained(
-                        model_name_or_path,
-                        torch_dtype=hf_torch_dtype,
-                        device_map="auto",
-                        token=True,
-                        trust_remote_code=True,
-                    ).eval()
-                else:
-                    model = AutoModel.from_pretrained(
-                        model_name_or_path,
-                        torch_dtype=hf_torch_dtype,
-                        device_map="auto",
-                        token=True,
-                        trust_remote_code=True,
-                    ).eval()
-            else:
-                # Fallback to AutoModel if we can't determine
-                model = AutoModel.from_pretrained(
-                    model_name_or_path,
-                    torch_dtype=hf_torch_dtype,
-                    device_map="auto",
-                    token=True,
-                    trust_remote_code=True,
-                ).eval()
-        except:
-            # If config loading fails, fallback to AutoModel
+            from transformers.dynamic_module_utils import get_class_from_dynamic_module
 
-            model = AutoModel.from_pretrained(
+            phi4mm_model_cls = get_class_from_dynamic_module(
+                "modeling_phi4mm.Phi4MMModel",
                 model_name_or_path,
-                torch_dtype=hf_torch_dtype,
-                device_map="auto",
                 token=True,
                 trust_remote_code=True,
-            ).eval()
+            )
 
-    return model
+            if not hasattr(phi4mm_model_cls, "prepare_inputs_for_generation"):
+                def _prepare_inputs_for_generation(
+                    self,
+                    input_ids=None,
+                    past_key_values=None,
+                    attention_mask=None,
+                    inputs_embeds=None,
+                    **kwargs,
+                ):
+                    model_inputs = dict(kwargs)
+                    if inputs_embeds is not None and past_key_values is None:
+                        model_inputs["inputs_embeds"] = inputs_embeds
+                    elif input_ids is not None:
+                        model_inputs["input_ids"] = input_ids
+                    if past_key_values is not None:
+                        model_inputs["past_key_values"] = past_key_values
+                    if attention_mask is not None:
+                        model_inputs["attention_mask"] = attention_mask
+                    return model_inputs
+
+                phi4mm_model_cls.prepare_inputs_for_generation = _prepare_inputs_for_generation
+        except Exception:
+            pass
+
+    if hasattr(config, "architectures") and config.architectures:
+        if (
+            getattr(config, "model_type", None) == "gemma3"
+            and any("ForConditionalGeneration" in arch for arch in config.architectures)
+            and AutoModelForImageTextToText is not None
+        ):
+            return AutoModelForImageTextToText.from_pretrained(
+                model_name_or_path,
+                **loader_kwargs,
+            ).eval()
+        if any(
+            ("ForConditionalGeneration" in arch) or ("ForVision2Seq" in arch)
+            for arch in config.architectures
+        ) and AutoModelForVision2Seq is not None:
+            return AutoModelForVision2Seq.from_pretrained(
+                model_name_or_path,
+                **loader_kwargs,
+            ).eval()
+        if any("ForCausalLM" in arch for arch in config.architectures):
+            return AutoModelForCausalLM.from_pretrained(
+                model_name_or_path,
+                **loader_kwargs,
+            ).eval()
+        return AutoModel.from_pretrained(
+            model_name_or_path,
+            **loader_kwargs,
+        ).eval()
+
+    # Fallback to AutoModel if the config gives us no architectural hint.
+    return AutoModel.from_pretrained(
+        model_name_or_path,
+        **loader_kwargs,
+    ).eval()
+
+    raise AssertionError("Unreachable")
 
 
 def load_model_tokenizer(
@@ -872,7 +1120,7 @@ def detect_emotion_data_type(data_dir, emotions=None):
             # Sample first few items to determine data type
             sample_items = data[: min(3, len(data))]
 
-            # Check if items look like file paths (contain common image extensions or path separators)
+            # Check if items look like image paths / multimodal objects.
             image_indicators = [
                 ".jpg",
                 ".jpeg",
@@ -883,16 +1131,24 @@ def detect_emotion_data_type(data_dir, emotions=None):
                 "/",
                 "\\",
             ]
-            looks_like_paths = 0
+            looks_like_image = 0
 
             for item in sample_items:
                 if isinstance(item, str):
                     item_lower = item.lower()
                     if any(indicator in item_lower for indicator in image_indicators):
-                        looks_like_paths += 1
+                        looks_like_image += 1
+                elif isinstance(item, dict):
+                    image_field = (
+                        item.get("image")
+                        or item.get("image_path")
+                        or (item.get("images", [None])[0] if isinstance(item.get("images"), list) else None)
+                    )
+                    if isinstance(image_field, str) and image_field:
+                        looks_like_image += 1
 
             # Determine data type for this emotion
-            if looks_like_paths >= len(sample_items) * 0.7:  # 70% threshold
+            if looks_like_image >= len(sample_items) * 0.7:  # 70% threshold
                 emotion_data_type = "image"
             else:
                 emotion_data_type = "text"
@@ -1066,6 +1322,7 @@ def all_emotion_rep_reader(
     rep_token,
     n_difference,
     direction_method,
+    direction_finder_kwargs=None,
     save_path="exp_records/emotion_rep_reader.pkl",
     read_args=None,
 ):
@@ -1084,10 +1341,16 @@ def all_emotion_rep_reader(
     #             if emotion_rep_readers['args'] == args:
     #                 return emotion_rep_readers
 
+    if direction_finder_kwargs is None:
+        direction_finder_kwargs = {}
+
     emotion_rep_readers = {"layer_acc": {}}
-    for emotion in tqdm(emotions):
+    for emo_idx, emotion in enumerate(tqdm(emotions)):
         train_data = data[emotion]["train"]
         test_data = data[emotion]["test"]
+        per_emotion_kwargs = dict(direction_finder_kwargs)
+        if direction_method == "random" and "seed" in per_emotion_kwargs and per_emotion_kwargs["seed"] is not None:
+            per_emotion_kwargs["seed"] = int(per_emotion_kwargs["seed"]) + emo_idx
         rep_reader, layer_acc = get_rep_reader(
             rep_reading_pipeline=rep_reading_pipeline,
             train_data=train_data,
@@ -1096,6 +1359,7 @@ def all_emotion_rep_reader(
             rep_token=rep_token,
             n_difference=n_difference,
             direction_method=direction_method,
+            direction_finder_kwargs=per_emotion_kwargs,
         )
 
         emotion_rep_readers[emotion] = rep_reader

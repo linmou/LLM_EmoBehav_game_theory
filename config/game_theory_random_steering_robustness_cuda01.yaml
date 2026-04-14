@@ -1,0 +1,60 @@
+experiment_name: "game_theory_random_steering_robustness_cuda01"
+description: "Game-theory decision experiment with random Gaussian steering for robustness testing on cuda0:1."
+version: "1.0.0"
+
+models:
+  - "${USER_HOME}/huggingface_models/google/gemma-3-270m-it"
+
+emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
+intensities:
+  - 1.5
+
+benchmarks:
+  - name: "game_theory_decision"
+    task_type: "Prisoners_Dilemma"
+    sample_limit: 80
+    augmentation_config:
+      shuffle_options: true
+    llm_eval_config:
+      client: "gemini"
+      model: "gemini-2.5-flash-lite"
+      temperature: 0.0
+
+loading_config:
+  gpu_memory_utilization: 0.7
+  enforce_eager: true
+  quantization: null
+  max_model_len: 4096
+  trust_remote_code: true
+  dtype: "bfloat16"
+  seed: 7
+  disable_custom_all_reduce: false
+  tensor_parallel_size: 2
+  additional_vllm_kwargs: {}
+
+repe_eng_config:
+  direction_method: "random"
+  direction_finder_kwargs:
+    needs_hiddens: false
+    mean: 0.0
+    std: 1.0
+    seed: 7
+  rebuild: true
+
+repeat_runs: 3
+
+generation_config:
+  temperature: 0.1
+  max_new_tokens: 1000
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 80
+output_dir: "results/new_game_theory_decision/random_steering_cuda01_run2"
+defer_evaluation: false

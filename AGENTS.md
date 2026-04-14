@@ -301,7 +301,6 @@ Iteration: You will continue this cycle for each new piece of functionality, ens
 ## Test Writing Guidelines
 - Every time you build a new test, write in the beginning comment that which file and purpose it is responsible for.
 - everytime you refactor some code, mypy test for your modification
-
 - don't set default value in the definition of dataclass. it is not safe because we may miss setting some fields in production. The setting of default value should happen each time when instantialise a dataclass
 - in most case , just implement the feature itself, don't consider backward backward compatibility.
 

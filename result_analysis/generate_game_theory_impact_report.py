@@ -26,6 +26,7 @@ Outputs (written under root):
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import json
 import math
@@ -37,6 +38,11 @@ from pathlib import Path
 from statistics import mean
 from typing import Dict, Iterable, List, Optional, Tuple
 
+import matplotlib
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
 from result_analysis.game_theory_impact_heatmaps import write_behavior_change_heatmap_pdf
 from result_analysis.game_theory_ratio_loading import (
     collapse_behavior_over_intensity,
@@ -105,6 +111,10 @@ def _norm_text(s: str) -> str:
     return " ".join((s or "").strip().lower().split())
 
 
+def _norm_decision_match_text(s: str) -> str:
+    return _norm_text(s).rstrip(" .,!?:;\"'")
+
+
 def _format_ranked_deltas(deltas: List[Tuple[str, float, float]]) -> str:
     """
     Format (emotion, delta_vs_neutral, ratio) into a stable, readable string.
@@ -145,7 +155,7 @@ def _parse_run_dir(name: str) -> Optional[Tuple[str, str, str]]:
 
 def _discover_latest_runs(root: Path) -> List[RunRef]:
     latest: Dict[Tuple[str, str], RunRef] = {}
-    for run_dir in root.glob("**/"):
+    for run_dir in root.iterdir():
         if not run_dir.is_dir():
             continue
         parsed = _parse_run_dir(run_dir.name)
@@ -212,6 +222,28 @@ def _load_chosen_behavior_from_detailed_csv(path: Path) -> List[Tuple[str, int, 
     return out
 
 
+def _load_raw_results_list(raw_path: Path) -> List[object]:
+    text = raw_path.read_text(encoding="utf-8")
+    try:
+        raw = json.loads(text)
+    except json.JSONDecodeError as exc:
+        decoder = json.JSONDecoder()
+        try:
+            raw, end = decoder.raw_decode(text)
+        except json.JSONDecodeError:
+            print(f"WARNING: skipping invalid JSON: {raw_path} ({exc})", file=sys.stderr)
+            return []
+        trailing = text[end:].strip()
+        if trailing:
+            print(
+                f"WARNING: recovered first JSON value from {raw_path} and ignored trailing data after char {end}",
+                file=sys.stderr,
+            )
+    if not isinstance(raw, list):
+        return []
+    return raw
+
+
 def _item_change_rates_for_run(run: RunRef) -> Dict[str, Tuple[float, int]]:
     """
     Per emotion: fraction of paired items where chosen_behavior != neutral chosen_behavior.
@@ -226,8 +258,8 @@ def _item_change_rates_for_run(run: RunRef) -> Dict[str, Tuple[float, int]]:
         raw_path = run.dir_path / "raw_results.json"
         if not raw_path.exists():
             return {}
-        raw = json.loads(raw_path.read_text(encoding="utf-8"))
-        if not isinstance(raw, list):
+        raw = _load_raw_results_list(raw_path)
+        if not raw:
             return {}
         for rec in raw:
             if not isinstance(rec, dict):
@@ -303,20 +335,29 @@ def _extract_choice_and_behavior(record: Dict[str, object]) -> Tuple[Optional[in
         text = o.get("text")
         if not isinstance(text, str):
             continue
-        opt_by_text[_norm_text(text)] = o
+        opt_by_text[_norm_decision_match_text(text)] = o
 
     resp = record.get("response")
     decision_text: Optional[str] = None
-    if isinstance(resp, str):
+    if isinstance(resp, dict) and isinstance(resp.get("decision"), str):
+        decision_text = resp["decision"]
+    elif isinstance(resp, str):
         try:
             parsed = json.loads(resp)
             if isinstance(parsed, dict) and isinstance(parsed.get("decision"), str):
                 decision_text = parsed["decision"]
         except Exception:
-            decision_text = resp
+            try:
+                parsed = ast.literal_eval(resp)
+                if isinstance(parsed, dict) and isinstance(parsed.get("decision"), str):
+                    decision_text = parsed["decision"]
+                else:
+                    decision_text = resp
+            except Exception:
+                decision_text = resp
     if not decision_text:
         return None, None
-    chosen = opt_by_text.get(_norm_text(decision_text))
+    chosen = opt_by_text.get(_norm_decision_match_text(decision_text))
     if not chosen:
         return None, None
     opt_id = chosen.get("id")
@@ -328,7 +369,81 @@ def _extract_choice_and_behavior(record: Dict[str, object]) -> Tuple[Optional[in
     return opt_id, behavior
 
 
-def _sig_maps_for_run(run: RunRef) -> Tuple[Dict[int, Dict[str, SigEntry]], Dict[str, Dict[str, SigEntry]]]:
+def _peak_choice_sig_intensities(
+    csv_path: Path,
+    *,
+    unknown_threshold: Optional[float],
+) -> Dict[Tuple[int, str], float]:
+    by_intensity, _ = load_choice_by_intensity(csv_path, unknown_threshold=unknown_threshold)
+    if "neutral" not in by_intensity:
+        return {}
+    neutral_ints = sorted(by_intensity["neutral"])
+    option_ids = sorted({option_id for emo in by_intensity for intensity in by_intensity[emo] for option_id in by_intensity[emo][intensity]})
+    for intensity in neutral_ints:
+        for option_id in option_ids:
+            by_intensity["neutral"][intensity].setdefault(option_id, 0.0)
+    neutral_base = {
+        option_id: mean([by_intensity["neutral"][intensity][option_id] for intensity in neutral_ints])
+        for option_id in option_ids
+    }
+
+    chosen: Dict[Tuple[int, str], float] = {}
+    for emo in sorted(e for e in by_intensity if e != "neutral"):
+        for option_id in option_ids:
+            best_delta: Optional[float] = None
+            best_intensity: Optional[float] = None
+            for intensity, ratios in by_intensity[emo].items():
+                delta = float(ratios.get(option_id, 0.0)) - neutral_base[option_id]
+                if best_delta is None or abs(delta) > abs(best_delta) or (
+                    abs(delta) == abs(best_delta) and best_intensity is not None and intensity < best_intensity
+                ):
+                    best_delta = delta
+                    best_intensity = float(intensity)
+            if best_intensity is not None:
+                chosen[(option_id, emo)] = best_intensity
+    return chosen
+
+
+def _peak_behavior_sig_intensities(
+    csv_path: Path,
+    *,
+    unknown_threshold: Optional[float],
+) -> Dict[Tuple[str, str], float]:
+    by_intensity, _ = load_behavior_by_intensity(csv_path, unknown_threshold=unknown_threshold)
+    if "neutral" not in by_intensity:
+        return {}
+    neutral_ints = sorted(by_intensity["neutral"])
+    behaviors = sorted({behavior for emo in by_intensity for intensity in by_intensity[emo] for behavior in by_intensity[emo][intensity]})
+    for intensity in neutral_ints:
+        for behavior in behaviors:
+            by_intensity["neutral"][intensity].setdefault(behavior, 0.0)
+    neutral_base = {
+        behavior: mean([by_intensity["neutral"][intensity][behavior] for intensity in neutral_ints])
+        for behavior in behaviors
+    }
+
+    chosen: Dict[Tuple[str, str], float] = {}
+    for emo in sorted(e for e in by_intensity if e != "neutral"):
+        for behavior in behaviors:
+            best_delta: Optional[float] = None
+            best_intensity: Optional[float] = None
+            for intensity, ratios in by_intensity[emo].items():
+                delta = float(ratios.get(behavior, 0.0)) - neutral_base[behavior]
+                if best_delta is None or abs(delta) > abs(best_delta) or (
+                    abs(delta) == abs(best_delta) and best_intensity is not None and intensity < best_intensity
+                ):
+                    best_delta = delta
+                    best_intensity = float(intensity)
+            if best_intensity is not None:
+                chosen[(behavior, emo)] = best_intensity
+    return chosen
+
+
+def _sig_maps_for_run(
+    run: RunRef,
+    *,
+    unknown_threshold: Optional[float],
+) -> Tuple[Dict[int, Dict[str, SigEntry]], Dict[str, Dict[str, SigEntry]]]:
     """
     Compute significance maps (vs neutral) from raw per-item results.
 
@@ -340,27 +455,36 @@ def _sig_maps_for_run(run: RunRef) -> Tuple[Dict[int, Dict[str, SigEntry]], Dict
     if not raw_path.exists():
         return {}, {}
 
-    try:
-        raw = json.loads(raw_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as e:
-        print(f"WARNING: skipping significance for invalid JSON: {raw_path} ({e})", file=sys.stderr)
-        return {}, {}
-    if not isinstance(raw, list):
+    raw = _load_raw_results_list(raw_path)
+    if not raw:
         return {}, {}
 
-    # Pairing note: in many experiments neutral has intensity=0.0 while emotions use 1.5.
-    # For significance vs neutral we pair by scenario identity, not by intensity.
-    # (emotion, item_id, repeat_id) -> chosen option/behavior
-    obs: Dict[Tuple[str, int, int], Tuple[int, str]] = {}
+    choice_csv = run.dir_path / "summary_choice_ratio.csv"
+    behavior_csv = run.dir_path / "summary_behavior_ratio.csv"
+    peak_choice_intensity = (
+        _peak_choice_sig_intensities(choice_csv, unknown_threshold=unknown_threshold) if choice_csv.exists() else {}
+    )
+    peak_behavior_intensity = (
+        _peak_behavior_sig_intensities(behavior_csv, unknown_threshold=unknown_threshold) if behavior_csv.exists() else {}
+    )
+
+    # Pair neutral by scenario identity, but evaluate each emotion row at its peak-|delta| intensity.
+    # (emotion, intensity, item_id, repeat_id) -> chosen option/behavior
+    obs: Dict[Tuple[str, float, int, int], Tuple[int, str]] = {}
     option_ids: set[int] = set()
     behaviors: set[str] = set()
     emotions: set[str] = set()
+    neutral_by_key: Dict[Tuple[int, int], Tuple[float, Tuple[int, str]]] = {}
     for rec in raw:
         if not isinstance(rec, dict):
             continue
         emo = rec.get("emotion")
         if not isinstance(emo, str):
             continue
+        try:
+            intensity = float(rec.get("intensity", 0.0))  # type: ignore[arg-type]
+        except Exception:
+            intensity = 0.0
         emotions.add(emo)
         try:
             item_id = int(rec.get("item_id"))  # type: ignore[arg-type]
@@ -372,16 +496,15 @@ def _sig_maps_for_run(run: RunRef) -> Tuple[Dict[int, Dict[str, SigEntry]], Dict
             continue
         option_ids.add(opt_id)
         behaviors.add(beh)
-        obs[(emo, item_id, repeat_id)] = (opt_id, beh)
+        obs[(emo, intensity, item_id, repeat_id)] = (opt_id, beh)
+        if emo == "neutral":
+            key = (item_id, repeat_id)
+            current = neutral_by_key.get(key)
+            if current is None or intensity < current[0]:
+                neutral_by_key[key] = (intensity, (opt_id, beh))
 
     if "neutral" not in emotions:
         return {}, {}
-
-    # pair by (item_id, repeat_id)
-    base_by_key: Dict[Tuple[int, int], Tuple[int, str]] = {}
-    for (emo, item_id, repeat_id), val in obs.items():
-        if emo == "neutral":
-            base_by_key[(item_id, repeat_id)] = val
 
     option_sig: Dict[int, Dict[str, SigEntry]] = {oid: {} for oid in sorted(option_ids)}
     behavior_sig: Dict[str, Dict[str, SigEntry]] = {b: {} for b in sorted(behaviors)}
@@ -390,19 +513,19 @@ def _sig_maps_for_run(run: RunRef) -> Tuple[Dict[int, Dict[str, SigEntry]], Dict
     behavior_pvals: List[Tuple[Tuple[str, object, str], float]] = []
 
     for emo in sorted(e for e in emotions if e != "neutral"):
-        # collect paired keys for this emotion
-        pairs: List[Tuple[Tuple[int, str], Tuple[int, str]]] = []
-        for key, neutral_val in base_by_key.items():
-            v = obs.get((emo, key[0], key[1]))
-            if v is None:
-                continue
-            pairs.append((neutral_val, v))
-        if not pairs:
-            continue
-
-        n_pairs = len(pairs)
-
         for oid in option_sig:
+            chosen_intensity = peak_choice_intensity.get((oid, emo))
+            if chosen_intensity is None:
+                continue
+            pairs: List[Tuple[Tuple[int, str], Tuple[int, str]]] = []
+            for (item_id, repeat_id), (_neutral_intensity, neutral_val) in neutral_by_key.items():
+                v = obs.get((emo, float(chosen_intensity), item_id, repeat_id))
+                if v is None:
+                    continue
+                pairs.append((neutral_val, v))
+            if not pairs:
+                continue
+            n_pairs = len(pairs)
             neutral_inds: List[int] = []
             emo_inds: List[int] = []
             deltas: List[int] = []
@@ -439,12 +562,24 @@ def _sig_maps_for_run(run: RunRef) -> Tuple[Dict[int, Dict[str, SigEntry]], Dict
                 option_pvals.append((("option", oid, emo), p))
 
         for beh in behavior_sig:
+            chosen_intensity = peak_behavior_intensity.get((beh, emo))
+            if chosen_intensity is None:
+                continue
+            beh_pairs: List[Tuple[Tuple[int, str], Tuple[int, str]]] = []
+            for (item_id, repeat_id), (_neutral_intensity, neutral_val) in neutral_by_key.items():
+                v = obs.get((emo, float(chosen_intensity), item_id, repeat_id))
+                if v is None:
+                    continue
+                beh_pairs.append((neutral_val, v))
+            if not beh_pairs:
+                continue
+            n_pairs = len(beh_pairs)
             neutral_inds = []
             emo_inds = []
             deltas = []
             n01 = 0
             n10 = 0
-            for (_, n_beh), (_, e_beh) in pairs:
+            for (_, n_beh), (_, e_beh) in beh_pairs:
                 n_i = 1 if n_beh == beh else 0
                 e_i = 1 if e_beh == beh else 0
                 neutral_inds.append(n_i)
@@ -487,14 +622,22 @@ def _sig_maps_for_run(run: RunRef) -> Tuple[Dict[int, Dict[str, SigEntry]], Dict
     return option_sig, behavior_sig
 
 
-def _format_all_emotions_cell(sig_by_emotion: Dict[str, SigEntry]) -> str:
+def _format_all_emotions_cell(
+    deltas: List[Tuple[str, float, float]],
+    sig_by_emotion: Optional[Dict[str, SigEntry]] = None,
+) -> str:
+    sig_by_emotion = sig_by_emotion or {}
     parts: List[Tuple[str, float, str]] = []
-    for emo, e in sig_by_emotion.items():
-        if emo == "unknown" and e.emotion_rate < UNKNOWN_MIN_RATIO:
+    for emo, delta, ratio in deltas:
+        if emo == "unknown" and ratio < UNKNOWN_MIN_RATIO:
             continue
-        stars = e.stars()
-        part = f"{emo}:{e.delta:+.3f}{stars}[{e.ci_low:+.3f},{e.ci_high:+.3f}]"
-        parts.append((emo, e.delta, part))
+        sig = sig_by_emotion.get(emo)
+        if sig is not None:
+            stars = sig.stars()
+            part = f"{emo}:{sig.delta:+.3f}{stars}[{sig.ci_low:+.3f},{sig.ci_high:+.3f}]"
+            parts.append((emo, sig.delta, part))
+            continue
+        parts.append((emo, delta, f"{emo}:{delta:+.6f}"))
     parts.sort(key=lambda x: (-x[1], x[0]))
     return "; ".join(p for _, _, p in parts)
 
@@ -508,6 +651,7 @@ def _load_collapsed_choice_ratios(path: Path) -> Dict[str, Dict[int, float]]:
 
 
 def _load_collapsed_behavior_ratios(path: Path) -> Dict[str, Dict[str, float]]:
+    acc: Dict[str, Dict[str, List[float]]] = {}
     collapsed, _ = collapse_behavior_over_intensity(path, unknown_threshold=None)
     return collapsed
 
@@ -537,10 +681,7 @@ def _impact_rows_for_choice(
             continue
         best = max(deltas, key=lambda x: x[1])
         worst = min(deltas, key=lambda x: x[1])
-        if option_sig is not None and o in option_sig and option_sig[o]:
-            all_deltas = _format_all_emotions_cell(option_sig[o])
-        else:
-            all_deltas = _format_ranked_deltas(deltas)
+        all_deltas = _format_all_emotions_cell(deltas, option_sig.get(o) if option_sig is not None else None)
         rows.append(
             {
                 "task": run.task,
@@ -586,10 +727,7 @@ def _impact_rows_for_behavior(
             continue
         best = max(deltas, key=lambda x: x[1])
         worst = min(deltas, key=lambda x: x[1])
-        if behavior_sig is not None and b in behavior_sig and behavior_sig[b]:
-            all_deltas = _format_all_emotions_cell(behavior_sig[b])
-        else:
-            all_deltas = _format_ranked_deltas(deltas)
+        all_deltas = _format_all_emotions_cell(deltas, behavior_sig.get(b) if behavior_sig is not None else None)
         rows.append(
             {
                 "task": run.task,
@@ -738,6 +876,59 @@ def _write_csv(rows: List[Dict[str, object]], path: Path) -> None:
         writer.writerows(rows)
 
 
+def _as_str(value: object) -> str:
+    return str(value)
+
+
+def _as_float(value: object) -> float:
+    return float(str(value))
+
+
+def _render_delta_heatmap(
+    *,
+    rows: List[Dict[str, object]],
+    value_key: str,
+    column_key: str,
+    title: str,
+    out_path: Path,
+) -> None:
+    if not rows:
+        return
+
+    row_labels = sorted({f"{str(row['task'])} | {str(row['model'])}" for row in rows})
+    col_labels = sorted({str(row[column_key]) for row in rows})
+    values: Dict[Tuple[str, str], float] = {}
+    for row in rows:
+        row_label = f"{str(row['task'])} | {str(row['model'])}"
+        col_label = str(row[column_key])
+        values[(row_label, col_label)] = _as_float(row[value_key])
+
+    matrix = [[values.get((row_label, col_label), 0.0) for col_label in col_labels] for row_label in row_labels]
+
+    height = max(4.0, 0.35 * len(row_labels) + 1.5)
+    width = max(6.0, 1.2 * len(col_labels) + 2.0)
+    fig, ax = plt.subplots(figsize=(width, height))
+    vmax = max(abs(v) for row in matrix for v in row) if matrix and matrix[0] else 1.0
+    if vmax == 0.0:
+        vmax = 1.0
+    image = ax.imshow(matrix, cmap="coolwarm", vmin=-vmax, vmax=vmax, aspect="auto")
+    ax.set_title(title)
+    ax.set_xticks(range(len(col_labels)))
+    ax.set_xticklabels(col_labels, rotation=45, ha="right")
+    ax.set_yticks(range(len(row_labels)))
+    ax.set_yticklabels(row_labels)
+
+    for row_idx, row_vals in enumerate(matrix):
+        for col_idx, value in enumerate(row_vals):
+            ax.text(col_idx, row_idx, f"{value:+.2f}", ha="center", va="center", fontsize=8)
+
+    fig.colorbar(image, ax=ax, label="Delta vs neutral")
+    fig.tight_layout()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
 def _render_markdown(
     *,
     root: Path,
@@ -794,19 +985,19 @@ def _render_markdown(
         lines.append(f"## Strongest {label} Effects (Top {top_n} by delta_range)")
         lines.append(f"| game_setting | model | {key_col} | neutral | best (Δ) | worst (Δ) | range |")
         lines.append("|---|---|---|---:|---|---|---:|")
-        top = sorted(rows, key=lambda r: float(r["delta_range"]), reverse=True)[:top_n]
+        top = sorted(rows, key=lambda r: _as_float(r["delta_range"]), reverse=True)[:top_n]
         for r in top:
             lines.append(
                 "| {task} | {model} | {k} | {neutral:.3f} | {best} ({best_delta:+.3f}) | {worst} ({worst_delta:+.3f}) | {rng:.3f} |".format(
-                    task=r["task"],
-                    model=r["model"],
-                    k=r[key_col],
-                    neutral=float(r["neutral_ratio"]),
-                    best=r["best_emotion"],
-                    best_delta=float(r["best_delta_vs_neutral"]),
-                    worst=r["worst_emotion"],
-                    worst_delta=float(r["worst_delta_vs_neutral"]),
-                    rng=float(r["delta_range"]),
+                    task=_as_str(r["task"]),
+                    model=_as_str(r["model"]),
+                    k=_as_str(r[key_col]),
+                    neutral=_as_float(r["neutral_ratio"]),
+                    best=_as_str(r["best_emotion"]),
+                    best_delta=_as_float(r["best_delta_vs_neutral"]),
+                    worst=_as_str(r["worst_emotion"]),
+                    worst_delta=_as_float(r["worst_delta_vs_neutral"]),
+                    rng=_as_float(r["delta_range"]),
                 )
             )
         lines.append("")
@@ -815,24 +1006,24 @@ def _render_markdown(
             lines.append(f"## Per Game Setting {label} (Top {per_game_n} by delta_range)")
         else:
             lines.append(f"## Per Game Setting {label} (All models)")
-        tasks = sorted({r["task"] for r in rows})
+        tasks = sorted({_as_str(r["task"]) for r in rows})
         for task in tasks:
             lines.append(f"### {task}")
             lines.append(f"| model | {key_col} | neutral | all emotion deltas (Δ vs neutral) | range |")
             lines.append("|---|---|---:|---|---:|")
-            task_rows = [r for r in rows if r["task"] == task]
+            task_rows = [r for r in rows if _as_str(r["task"]) == task]
             if per_game_n > 0:
-                task_rows = sorted(task_rows, key=lambda r: float(r["delta_range"]), reverse=True)[:per_game_n]
+                task_rows = sorted(task_rows, key=lambda r: _as_float(r["delta_range"]), reverse=True)[:per_game_n]
             else:
                 task_rows = sorted(task_rows, key=lambda r: (str(r["model"]), str(r[key_col])))
             for r in task_rows:
                 lines.append(
                     "| {model} | {k} | {neutral:.3f} | {deltas} | {rng:.3f} |".format(
-                        model=r["model"],
-                        k=r[key_col],
-                        neutral=float(r["neutral_ratio"]),
+                        model=_as_str(r["model"]),
+                        k=_as_str(r[key_col]),
+                        neutral=_as_float(r["neutral_ratio"]),
                         deltas=str(r.get("all_emotion_deltas_vs_neutral", "")),
-                        rng=float(r["delta_range"]),
+                        rng=_as_float(r["delta_range"]),
                     )
                 )
             lines.append("")
@@ -869,19 +1060,19 @@ def _render_markdown(
         lines.append(f"## {label} Intensity Sensitivity (Top {top_n} by delta_range_across_intensity)")
         lines.append(f"| game_setting | model | emotion | {key_col} | best (intensity, Δ) | worst (intensity, Δ) | range |")
         lines.append("|---|---|---|---|---|---|---:|")
-        top = sorted(rows, key=lambda r: float(r["delta_range_across_intensity"]), reverse=True)[:top_n]
+        top = sorted(rows, key=lambda r: _as_float(r["delta_range_across_intensity"]), reverse=True)[:top_n]
         for r in top:
             lines.append(
                 "| {task} | {model} | {emo} | {k} | {best_i:g} ({best_delta:+.3f}) | {worst_i:g} ({worst_delta:+.3f}) | {rng:.3f} |".format(
-                    task=r["task"],
-                    model=r["model"],
-                    emo=r["emotion"],
-                    k=r[key_col],
-                    best_i=float(r["best_intensity"]),
-                    best_delta=float(r["best_delta_vs_neutral"]),
-                    worst_i=float(r["worst_intensity"]),
-                    worst_delta=float(r["worst_delta_vs_neutral"]),
-                    rng=float(r["delta_range_across_intensity"]),
+                    task=_as_str(r["task"]),
+                    model=_as_str(r["model"]),
+                    emo=_as_str(r["emotion"]),
+                    k=_as_str(r[key_col]),
+                    best_i=_as_float(r["best_intensity"]),
+                    best_delta=_as_float(r["best_delta_vs_neutral"]),
+                    worst_i=_as_float(r["worst_intensity"]),
+                    worst_delta=_as_float(r["worst_delta_vs_neutral"]),
+                    rng=_as_float(r["delta_range_across_intensity"]),
                 )
             )
         lines.append("")
@@ -921,7 +1112,7 @@ def generate_game_theory_impact_report(
     behavior_intensity_rows: List[Dict[str, object]] = []
     skipped_missing_neutral: List[Path] = []
     for run in runs:
-        option_sig, behavior_sig = _sig_maps_for_run(run)
+        option_sig, behavior_sig = _sig_maps_for_run(run, unknown_threshold=unknown_threshold)
         choice_csv = run.dir_path / "summary_choice_ratio.csv"
         behavior_csv = run.dir_path / "summary_behavior_ratio.csv"
         if choice_csv.exists():
@@ -978,14 +1169,14 @@ def generate_game_theory_impact_report(
             if behavior_csv.exists():
                 by_task.setdefault(run.task, {})[run.model] = behavior_csv
         for task, model_map in sorted(by_task.items()):
-	            write_behavior_change_heatmap_pdf(
-	                task=task,
-	                model_to_behavior_csv=model_map,
-	                out_dir=heatmaps_dir,
-	                unknown_threshold=unknown_threshold,
-	                heatmap_norm=heatmap_norm,
-	                symlog_linthresh=heatmap_symlog_linthresh,
-	            )
+            write_behavior_change_heatmap_pdf(
+                task=task,
+                model_to_behavior_csv=model_map,
+                out_dir=heatmaps_dir,
+                unknown_threshold=unknown_threshold,
+                heatmap_norm=heatmap_norm,
+                symlog_linthresh=heatmap_symlog_linthresh,
+            )
 
     report_out.write_text(
         _render_markdown(

@@ -181,6 +181,26 @@ class EmotionExperiment:
         self._force_evaluate = False
         self._defer_logged = False
 
+    def _require_emotion_readers(self) -> None:
+        if self.neutral_only:
+            return
+        if not isinstance(self.emotion_rep_readers, dict):
+            raise ValueError("Emotion readers not initialized")
+        requested = list(self.config.emotions or [])
+        missing = [e for e in requested if e not in self.emotion_rep_readers]
+        if not missing:
+            return
+        available = sorted(
+            k for k in self.emotion_rep_readers.keys() if isinstance(k, str)
+        )
+        raise ValueError(
+            f"Missing emotion readers for requested emotions: {missing}. "
+            f"Available: {available}. "
+            "Likely causes: `repe_eng_config.data_dir` lacks usable stimulus data for those emotions, "
+            "or dataset generation produced empty train splits. "
+            "If you want a neutral-only run (no RepE activation), set `emotions: []` in the experiment config."
+        )
+
     def _create_dataset_for_emotion(self, emotion: str):
         """Create dataset for a specific emotion using registry-based component assembly"""
         # Use registry to get all three components in one call
@@ -219,7 +239,57 @@ class EmotionExperiment:
         self.rep_control_pipeline = None
         self.is_vllm = False
         self.hidden_layers = []
+        self.control_layers = []
         self.repe_config = None
+
+    def _select_control_layers(
+        self, hidden_layers: List[int], repe_config: Optional[Dict[str, Any]]
+    ) -> List[int]:
+        """Select intervention layers from detected hidden layers."""
+        if not hidden_layers:
+            raise ValueError("No hidden layers detected for control layer selection.")
+
+        repe_config = repe_config or {}
+        control_cfg = repe_config.get("control_layers") or {}
+        strategy = control_cfg.get("strategy", "middle_third")
+
+        if strategy == "middle_third":
+            start = len(hidden_layers) // 3
+            end = (2 * len(hidden_layers)) // 3
+            selected = hidden_layers[start:end]
+        elif strategy == "last_5":
+            if len(hidden_layers) < 5:
+                raise ValueError(
+                    "control_layers.strategy=last_5 requires at least 5 hidden layers."
+                )
+            selected = hidden_layers[:5]
+        elif strategy == "explicit":
+            ids = control_cfg.get("ids")
+            if not isinstance(ids, list) or not ids:
+                raise ValueError(
+                    "control_layers.strategy=explicit requires non-empty list 'ids'."
+                )
+            if not all(isinstance(layer_id, int) for layer_id in ids):
+                raise ValueError("control_layers.ids must contain only integers.")
+            invalid_ids = [layer_id for layer_id in ids if layer_id not in hidden_layers]
+            if invalid_ids:
+                raise ValueError(
+                    f"control_layers.ids contains values outside detected hidden layers: {invalid_ids}"
+                )
+            selected = ids
+        else:
+            raise ValueError(
+                f"Unsupported control_layers strategy: {strategy}. "
+                "Supported strategies: middle_third, last_5, explicit."
+            )
+
+        if not selected:
+            raise ValueError(
+                "Control layer selection resolved to empty layers. "
+                "Check model depth or control_layers config."
+            )
+
+        return selected
 
     def _setup_gpu_components(self, config: ExperimentConfig):
         """Setup GPU-dependent components: models, emotion readers, pipeline"""
@@ -231,8 +301,10 @@ class EmotionExperiment:
         )
         from neuro_manipulation.repe.pipelines import get_pipeline  # type: ignore
         # Setup model and emotion readers (same pattern as emotion_game_experiment)
+        repe_yaml_config = dict(config.repe_eng_config or {})
+        repe_yaml_config.setdefault("emotions", list(config.emotions))
         self.repe_config = get_repe_eng_config(
-            config.model_path, yaml_config=config.repe_eng_config
+            config.model_path, yaml_config=repe_yaml_config
         )
 
         # Ensure loading_config has the model path if it exists
@@ -252,6 +324,13 @@ class EmotionExperiment:
         num_hidden_layers = ModelLayerDetector.num_layers(self.model)
         self.hidden_layers = list(range(-1, -num_hidden_layers - 1, -1))
         self.logger.info(f"Using hidden layers: {self.hidden_layers}")
+        self.control_layers = self._select_control_layers(
+            self.hidden_layers, self.repe_config
+        )
+        self.repe_config["control_layer_id"] = list(self.control_layers)
+        self.logger.info(
+            f"Using control layers (strategy={self.repe_config.get('control_layers', {}).get('strategy', 'middle_third')}): {self.control_layers}"
+        )
 
         if self.neutral_only:
             self.emotion_rep_readers = {}
@@ -264,6 +343,7 @@ class EmotionExperiment:
                 processor,
                 self.enable_thinking,
             )
+            self._require_emotion_readers()
         del self.model  # Save memory
 
         # Load vLLM model for inference with loading config
@@ -289,10 +369,7 @@ class EmotionExperiment:
             "rep-control-vllm" if self.is_vllm else "rep-control",
             model=self.model,
             tokenizer=self.tokenizer,  # Use basic tokenizer instead of tokenizer_temp
-            # layers=[self.hidden_layers[len(self.hidden_layers) // 2]],
-            layers=self.hidden_layers[
-                len(self.hidden_layers) // 3 : 2 * len(self.hidden_layers) // 3
-            ],
+            layers=self.control_layers,
             block_name=self.repe_config["block_name"],
             control_method=self.repe_config["control_method"],
         )
@@ -379,6 +456,23 @@ class EmotionExperiment:
 
         return dataloader
 
+    def _reset_vllm_caches(self, context: str) -> None:
+        """Reset vLLM caches to avoid cross-condition contamination."""
+        if not self.is_vllm or self.model is None:
+            return
+        try:
+            if hasattr(self.model, "reset_prefix_cache"):
+                self.model.reset_prefix_cache()
+            if hasattr(self.model, "reset_mm_cache"):
+                self.model.reset_mm_cache()
+            self.logger.info("Reset vLLM caches before condition: %s", context)
+        except Exception as exc:
+            self.logger.warning(
+                "Failed to reset vLLM caches before condition '%s': %s",
+                context,
+                exc,
+            )
+
     def run_experiment(self) -> pd.DataFrame:
         """Run the complete emotion experiment"""
         self.logger.info("Starting emotion experiment")
@@ -398,6 +492,7 @@ class EmotionExperiment:
             for intensity in self.config.intensities:
                 self.logger.info(f"Processing intensity: {intensity}")
                 self.cur_intensity = intensity
+                self._reset_vllm_caches(f"{emotion}@{intensity}")
                 # Repeat independent runs for this condition
                 for r in range(self.repeat_runs):
                     self.cur_repeat = r
@@ -414,6 +509,7 @@ class EmotionExperiment:
         self.cur_emotion = "neutral"
         self.cur_intensity = 0.0  # set to 0.0 to avoid using activations
         self.logger.info("Processing neutral baseline")
+        self._reset_vllm_caches("neutral@0.0")
 
         # Use the same rep_reader for neutral (with 0 intensity)
         data_loader = self.build_dataloader(self.cur_emotion)
@@ -439,7 +535,11 @@ class EmotionExperiment:
 
         # For vLLM models, use cpu device
         device = torch.device("cpu") if self.is_vllm else self.model.device
-        if rep_reader is None:
+        use_neutral_baseline = (
+            str(self.cur_emotion).lower() == "neutral"
+            or float(self.cur_intensity or 0.0) == 0.0
+        )
+        if rep_reader is None or use_neutral_baseline:
             activations = None
         else:
             activations = {
@@ -465,86 +565,75 @@ class EmotionExperiment:
         def pipeline_worker():
             try:
                 for i, batch in enumerate(data_loader):
-                    try:
-                        # Process batch prompts
-                        start_time = time.time()
-                        # Pass all generation parameters from config
-                        generation_params = {
-                            "temperature": self.generation_config.get(
-                                "temperature", 0.1
-                            ),
-                            "max_new_tokens": self.generation_config.get(
-                                "max_new_tokens", 100
-                            ),
-                            "do_sample": self.generation_config.get("do_sample", False),
-                            "top_p": self.generation_config.get("top_p", 0.9),
-                            "repetition_penalty": self.generation_config.get(
-                                "repetition_penalty", 1.0
-                            ),
-                        }
+                    # Pass all generation parameters from config
+                    generation_params = {
+                        "temperature": self.generation_config.get("temperature", 0.1),
+                        "max_new_tokens": self.generation_config.get(
+                            "max_new_tokens", 100
+                        ),
+                        "do_sample": self.generation_config.get("do_sample", False),
+                        "top_p": self.generation_config.get("top_p", 0.9),
+                        "repetition_penalty": self.generation_config.get(
+                            "repetition_penalty", 1.0
+                        ),
+                    }
 
-                        # Add optional parameters if they exist and are not default
-                        if self.generation_config.get("top_k", -1) != -1:
-                            generation_params["top_k"] = self.generation_config["top_k"]
-                        if self.generation_config.get("min_p", 0.0) != 0.0:
-                            generation_params["min_p"] = self.generation_config["min_p"]
-                        if self.generation_config.get("presence_penalty", 0.0) != 0.0:
-                            generation_params["presence_penalty"] = (
-                                self.generation_config["presence_penalty"]
-                            )
-                        if self.generation_config.get("frequency_penalty", 0.0) != 0.0:
-                            generation_params["frequency_penalty"] = (
-                                self.generation_config["frequency_penalty"]
-                            )
+                    # Add optional parameters if they exist and are not default
+                    if self.generation_config.get("top_k", -1) != -1:
+                        generation_params["top_k"] = self.generation_config["top_k"]
+                    if self.generation_config.get("min_p", 0.0) != 0.0:
+                        generation_params["min_p"] = self.generation_config["min_p"]
+                    if self.generation_config.get("presence_penalty", 0.0) != 0.0:
+                        generation_params["presence_penalty"] = (
+                            self.generation_config["presence_penalty"]
+                        )
+                    if self.generation_config.get("frequency_penalty", 0.0) != 0.0:
+                        generation_params["frequency_penalty"] = (
+                            self.generation_config["frequency_penalty"]
+                        )
 
-                        # Add per-run RNG seed if requested
-                        if getattr(self, "repeat_seed_base", None) is not None and self.is_vllm:
-                            generation_params["random_seed"] = int(self.repeat_seed_base) + int(getattr(self, "cur_repeat", 0))
+                    # Add per-run RNG seed if requested
+                    if getattr(self, "repeat_seed_base", None) is not None and self.is_vllm:
+                        seed = int(self.repeat_seed_base) + int(
+                            getattr(self, "cur_repeat", 0)
+                        )
+                        generation_params["random_seed"] = seed
+                        generation_params["seed"] = seed
 
-                        # Validate batch structure before accessing
-                        if "prompts" not in batch:
+                    # Validate batch structure before accessing
+                    if "prompts" not in batch:
+                        raise ValueError(
+                            f"Batch missing required 'prompts' key. Available keys: {list(batch.keys())}"
+                        )
+
+                    pipeline_inputs = batch["prompts"]
+                    if self.is_vllm and "images" in batch and batch["images"] is not None:
+                        batch_images = batch["images"]
+                        if len(batch_images) != len(pipeline_inputs):
                             raise ValueError(
-                                f"Batch missing required 'prompts' key. Available keys: {list(batch.keys())}"
+                                f"Batch size mismatch for multimodal inputs: prompts={len(pipeline_inputs)} images={len(batch_images)}"
                             )
+                        mm_inputs = []
+                        for prompt, images in zip(pipeline_inputs, batch_images):
+                            if isinstance(images, list):
+                                image_payload = images[0] if len(images) == 1 else images
+                            else:
+                                image_payload = images
+                            mm_inputs.append(
+                                {
+                                    "prompt": prompt,
+                                    "multi_modal_data": {"image": image_payload},
+                                }
+                            )
+                        pipeline_inputs = mm_inputs
 
-                        control_outputs = self.rep_control_pipeline(
-                            batch["prompts"],  # Use formatted prompts from dataset
-                            activations=activations,
-                            batch_size=self.batch_size,
-                            **generation_params,
-                        )
-                        end_time = time.time()
-                        pipeline_queue.put((i, batch, control_outputs))
-
-                    except Exception as batch_error:
-                        # Handle errors for individual batch processing
-                        # This catches AssertionError from benchmark_prompt_wrapper augmentation
-                        # and other batch-level errors, ensuring the pipeline continues
-                        import traceback
-
-                        error_trace = traceback.format_exc()
-                        self.logger.error(
-                            f"🚨 BATCH ERROR in pipeline worker for batch {i}: {str(batch_error)}\n{error_trace}"
-                        )
-
-                        # Create an error batch result to maintain sequence integrity
-                        error_batch = {
-                            "prompts": [
-                                f"ERROR: Batch {i} failed - {str(batch_error)}"
-                            ],
-                            "items": [MagicMock(id=f"error_{i}")],
-                            "ground_truths": ["ERROR"],
-                        }
-                        error_outputs = [
-                            {"generated_text": f"ERROR: {str(batch_error)}"}
-                        ]
-
-                        pipeline_queue.put((i, error_batch, error_outputs))
-
-                        # Continue with next batch instead of crashing the worker thread
-                        self.logger.info(
-                            f"🔄 Continuing pipeline worker with next batch after error in batch {i}"
-                        )
+                    control_outputs = self.rep_control_pipeline(
+                        pipeline_inputs,
+                        activations=activations,
+                        batch_size=self.batch_size,
+                        **generation_params,
+                    )
+                    pipeline_queue.put((i, batch, control_outputs))
 
             except Exception as worker_error:
                 # Handle catastrophic worker thread errors
@@ -573,6 +662,7 @@ class EmotionExperiment:
             max_workers=workers, thread_name_prefix="PostProc"
         ) as post_proc_executor:
             active_post_proc_tasks = 0
+            fatal_error: Exception | None = None
             while True:
                 item = pipeline_queue.get()
 
@@ -589,9 +679,7 @@ class EmotionExperiment:
                     self.logger.error(
                         f"🚨 PIPELINE WORKER FAILED: {error_msg}\n{error_trace}"
                     )
-                    self.logger.info(
-                        "🔄 Main thread continuing despite worker thread failure"
-                    )
+                    fatal_error = RuntimeError(error_msg)
                     break  # Exit main processing loop but don't crash experiment
 
                 batch_idx, batch, control_outputs = item
@@ -611,16 +699,17 @@ class EmotionExperiment:
                     active_post_proc_tasks -= 1
                     results_dict[batch_idx] = result
                 except Exception as e:
-                    self.logger.error(
-                        f"Post-processing failed for batch {batch_idx}: {e}"
-                    )
-                    results_dict[batch_idx] = []  # Store empty list on error
+                    fatal_error = e
+                    break
 
             # Combine results in order
-            for i in sorted(results_dict.keys()):
-                batch_results.extend(results_dict[i])
+            if fatal_error is None:
+                for i in sorted(results_dict.keys()):
+                    batch_results.extend(results_dict[i])
 
         worker.join()
+        if fatal_error is not None:
+            raise fatal_error
         if hasattr(self.dataset, "flush_predictions"):
             try:
                 self.dataset.flush_predictions(self.output_dir)
@@ -681,9 +770,6 @@ class EmotionExperiment:
         cleaned_responses = [empty_think_prefix.sub("", r or "") for r in responses]
 
         force_eval = getattr(self, "_force_evaluate", False)
-        scores: List[Optional[float]]
-        eval_errors: List[Optional[str]]
-        eval_details: List[Any]
         if self.defer_evaluation and not force_eval:
             if not self._defer_logged:
                 self.logger.info(
@@ -692,7 +778,6 @@ class EmotionExperiment:
                 self._defer_logged = True
             scores = [None] * len(responses)
             eval_errors = [None] * len(responses)
-            eval_details = [None] * len(responses)
             if hasattr(self.dataset, "_last_eval_errors"):
                 try:
                     self.dataset._last_eval_errors = eval_errors  # type: ignore[attr-defined]
@@ -701,32 +786,16 @@ class EmotionExperiment:
         else:
             try:
                 task_names = [self.config.benchmark.task_type] * len(responses)
-                if hasattr(self.dataset, "evaluate_batch_with_details"):
-                    scores, eval_errors_raw, eval_details_raw = self.dataset.evaluate_batch_with_details(
-                        cleaned_responses,
-                        batch_ground_truths,
-                        task_names,
-                        batch_prompts,
-                    )
-                else:
-                    scores = self.dataset.evaluate_batch(
-                        cleaned_responses, batch_ground_truths, task_names, batch_prompts
-                    )
-                    eval_errors_raw = getattr(self.dataset, "_last_eval_errors", None)
-                    eval_details_raw = getattr(self.dataset, "_last_eval_details", None)
+                scores = self.dataset.evaluate_batch(
+                    cleaned_responses, batch_ground_truths, task_names, batch_prompts
+                )
             except Exception as e:
                 self.logger.error(f"Batch evaluation failed: {e}")
                 scores = [0.0] * len(responses)
-                eval_errors_raw = None
-                eval_details_raw = None
-            if not eval_errors_raw or len(eval_errors_raw) != len(scores):
+
+            eval_errors = getattr(self.dataset, "_last_eval_errors", None)
+            if not eval_errors or len(eval_errors) != len(scores):
                 eval_errors = [None] * len(scores)
-            else:
-                eval_errors = [str(err) if err is not None else None for err in eval_errors_raw]
-            if not eval_details_raw or len(eval_details_raw) != len(scores):
-                eval_details = [None] * len(scores)
-            else:
-                eval_details = list(eval_details_raw)
 
         # Create result records with batch-computed scores
         for i, (response, score, prompt, item, ground_truth) in enumerate(
@@ -740,10 +809,6 @@ class EmotionExperiment:
                 "benchmark": self.config.benchmark.name,
                 "item_metadata": item.metadata or {},
             }
-            if not (self.defer_evaluation and not force_eval):
-                detail = eval_details[i] if i < len(eval_details) else None
-                if isinstance(detail, dict):
-                    metadata["evaluation"] = detail
 
             if hasattr(self.dataset, "record_model_patch"):
                 try:
@@ -862,11 +927,8 @@ class EmotionExperiment:
                             for opt in options:
                                 if not isinstance(opt, dict):
                                     continue
-                                raw_opt_id = opt.get("id")
-                                if raw_opt_id is None:
-                                    continue
                                 try:
-                                    opt_id = int(raw_opt_id)
+                                    opt_id = int(opt.get("id"))
                                 except Exception:
                                     continue
                                 if opt_id == option_id:
@@ -891,27 +953,6 @@ class EmotionExperiment:
                     "benchmark": (result.metadata or {}).get("benchmark", ""),
                     "repeat_id": getattr(result, "repeat_id", None),
                     "error": getattr(result, "error", None),
-                    "predicted_emotion": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "predicted_emotion"
-                    ),
-                    "eval_confidence": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "confidence"
-                    ),
-                    "emotion_match": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "matched_ground_truth"
-                    ),
-                    "judge_client": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "judge_client"
-                    ),
-                    "judge_model": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "judge_model"
-                    ),
-                    "judge_method": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "judge_method"
-                    ),
-                    "eval_error_detail": ((result.metadata or {}).get("evaluation") or {}).get(
-                        "evaluation_error"
-                    ),
                 }
             )
 
@@ -1111,7 +1152,7 @@ class EmotionExperiment:
             readme_content = (
                 "# Experiment Results Files\n\n"
                 "This folder contains outputs from EmotionExperiment. Files:\n\n"
-                "- detailed_results.csv: Item-level records including emotion, intensity, repeat_id, response, ground_truth, score, and evaluator outputs (predicted_emotion, eval_confidence, judge metadata) when available.\n"
+                "- detailed_results.csv: Item-level records including emotion, intensity, repeat_id, response, ground_truth, score.\n"
                 "- raw_results.json: Full JSON dump of all records with metadata (benchmark, item metadata).\n"
                 "- summary_results.csv: Aggregates per (emotion,intensity) across all repeats (mean, std, count, min, max).\n"
                 "- summary_by_repeat.csv: Aggregates per (emotion,intensity,repeat_id).\n"
@@ -1145,6 +1186,9 @@ class EmotionExperiment:
     def _save_experiment_config(self):
         """Save the complete experiment configuration to the results folder"""
         config_filename = self.output_dir / "experiment_config.json"
+        repe_config = dict(self.repe_config or {})
+        if self.control_layers:
+            repe_config["control_layer_id"] = list(self.control_layers)
 
         # Convert the experiment config to a serializable dictionary
         config_dict = {
@@ -1167,7 +1211,7 @@ class EmotionExperiment:
             "batch_size": self.config.batch_size,
             "generation_config": self.generation_config,
             "loading_config": self._serialize_loading_config(),
-            "repe_eng_config": self.repe_config,
+            "repe_eng_config": repe_config,
             "max_evaluation_workers": self.config.max_evaluation_workers,
             "pipeline_queue_size": self.config.pipeline_queue_size,
             "defer_evaluation": self.defer_evaluation,
@@ -1266,9 +1310,12 @@ class EmotionExperiment:
         if model is not None:
             if self.is_vllm and hasattr(model, "llm_engine"):
                 llm_engine = model.llm_engine
-                shutdown_fn = getattr(llm_engine, "shutdown", None)
-                if callable(shutdown_fn):
-                    _call_with_timeout(shutdown_fn, "vLLM engine shutdown()")
+                # vLLM v1 uses an EngineCoreClient that owns the worker proc(s).
+                # LLMEngine itself may not expose shutdown(), so shut down the core directly.
+                engine_core = getattr(llm_engine, "engine_core", None)
+                engine_core_shutdown = getattr(engine_core, "shutdown", None)
+                if callable(engine_core_shutdown):
+                    _call_with_timeout(engine_core_shutdown, "vLLM engine_core.shutdown()")
                 executor = getattr(llm_engine, "engine_executor", None)
                 executor_shutdown = getattr(executor, "shutdown", None)
                 if callable(executor_shutdown):
@@ -1280,6 +1327,13 @@ class EmotionExperiment:
             shutdown_fn = getattr(model, "shutdown", None)
             if callable(shutdown_fn):
                 _call_with_timeout(shutdown_fn, "model.shutdown()")
+
+            # Ensure distributed process group is cleaned up between experiments.
+            try:
+                if torch.distributed.is_available() and torch.distributed.is_initialized():
+                    torch.distributed.destroy_process_group()
+            except Exception:
+                pass
 
             self.model = None
 

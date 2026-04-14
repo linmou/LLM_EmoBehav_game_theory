@@ -6,11 +6,26 @@ import numpy as np
 from PIL import Image
 from .rep_readers import DIRECTION_FINDERS, RepReader
 from ..prompt_formats import ManualPromptFormat
+from .vlm_adapters import AdapterRegistry, AdapterContext
 
 class RepReadingPipeline(Pipeline):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def __call__(self, inputs, *args, **kwargs):
+        if self._is_multimodal_input(inputs) and isinstance(inputs, list):
+            results = []
+            item_kwargs = dict(kwargs)
+            item_kwargs["batch_size"] = 1
+            for item in inputs:
+                item_result = super().__call__(item, *args, **item_kwargs)
+                if isinstance(item_result, list):
+                    results.extend(item_result)
+                else:
+                    results.append(item_result)
+            return results
+        return super().__call__(inputs, *args, **kwargs)
 
     def _get_hidden_states(
             self, 
@@ -66,6 +81,13 @@ class RepReadingPipeline(Pipeline):
         forward_params =  {}
         postprocess_params = {}
 
+        # Allow adapter to provide default rep token when set to 'auto' or None
+        if rep_token in (None, 'auto'):
+            name = getattr(self.tokenizer, 'name_or_path', '')
+            adapter = AdapterRegistry().get(name)
+            if adapter:
+                rep_token = adapter.rep_token_policy()
+
         forward_params['rep_token'] = rep_token
 
         if not isinstance(hidden_layers, list):
@@ -91,7 +113,10 @@ class RepReadingPipeline(Pipeline):
         return False
 
     def _prepare_multimodal_inputs(self, inputs: Union[Dict, List], **tokenizer_kwargs) -> Dict[str, Any]:
-        """Prepare multimodal inputs using the correct Qwen2.5-VL processor format."""
+        """Prepare multimodal inputs using VLM adapters when available.
+
+        Falls back to existing per-model logic if adapter is not matched.
+        """
         
         if isinstance(inputs, dict):
             images = inputs.get('images', inputs.get('image'))
@@ -106,11 +131,21 @@ class RepReadingPipeline(Pipeline):
                 for img in images:
                     if hasattr(img, 'resize'):
                         # Force resize to very small dimensions to prevent large allocations
-                        compressed_img = img.resize((224, 224), Image.Resampling.LANCZOS)
+                        compressed_img = img.resize((1024, 1024), Image.Resampling.LANCZOS)
                         compressed_images.append(compressed_img)
                     else:
                         compressed_images.append(img)
                 images = compressed_images
+
+            # Try adapter-based processing first
+            try:
+                model_name = getattr(self.tokenizer, 'name_or_path', '')
+                adapter = AdapterRegistry().get(model_name)
+                if adapter is not None:
+                    ctx = AdapterContext(processor=self.image_processor, tokenizer=self.tokenizer, model=self.model)
+                    return adapter.process_multimodal(text=text, images=images, ctx=ctx, **tokenizer_kwargs)
+            except Exception as e:
+                print(f"Adapter processing failed, falling back: {e}")
             
             # Create proper message format for Qwen2.5-VL
             content = []
@@ -297,27 +332,83 @@ class RepReadingPipeline(Pipeline):
         """
         # get model hidden states and optionally transform them with a RepReader
         with torch.no_grad():
-            # Ensure inputs are on the same device as model
-            if hasattr(self.model, 'device'):
-                device = self.model.device
-            else:
-                device = next(self.model.parameters()).device
-            
-            # Move inputs to model device
-            for key, value in model_inputs.items():
-                if isinstance(value, torch.Tensor):
-                    model_inputs[key] = value.to(device)
+            # For accelerate-sharded models (hf_device_map), forcing inputs to a single
+            # device breaks multimodal forward passes (vision on one GPU, flags/tokens on another).
+            # Leave tensors on their original devices and let accelerate handle placement.
+            uses_device_map = bool(getattr(self.model, "hf_device_map", None))
+
+            # InternVL-style models require `pixel_values` and `image_flags` to be on the
+            # same device as the vision module output for boolean indexing.
+            if uses_device_map and isinstance(model_inputs, dict):
+                if "pixel_values" in model_inputs and "image_flags" in model_inputs:
+                    try:
+                        vision_device = None
+                        if hasattr(self.model, "vision_model"):
+                            vision_device = next(self.model.vision_model.parameters()).device
+                        if (vision_device is None) or (str(vision_device) == "meta"):
+                            dm = getattr(self.model, "hf_device_map", None) or {}
+                            if "vision_model" in dm:
+                                v = dm["vision_model"]
+                                vision_device = (
+                                    torch.device(f"cuda:{int(v)}") if isinstance(v, int) else torch.device(str(v))
+                                )
+                        if vision_device is None:
+                            raise RuntimeError("Could not resolve vision device")
+                        if isinstance(model_inputs.get("pixel_values"), torch.Tensor):
+                            model_inputs["pixel_values"] = model_inputs["pixel_values"].to(vision_device)
+                        if isinstance(model_inputs.get("image_flags"), torch.Tensor):
+                            model_inputs["image_flags"] = model_inputs["image_flags"].to(vision_device)
+                    except Exception:
+                        pass
+
+            if not uses_device_map:
+                # Ensure inputs are on the same device as model
+                if hasattr(self.model, 'device'):
+                    device = self.model.device
+                else:
+                    device = next(self.model.parameters()).device
+                
+                # Move inputs to model device
+                for key, value in model_inputs.items():
+                    if isinstance(value, torch.Tensor):
+                        model_inputs[key] = value.to(device)
             
             if hasattr(self.model, "encoder") and hasattr(self.model, "decoder"):
                 decoder_start_token = [self.tokenizer.pad_token] * model_inputs['input_ids'].size(0)
-                decoder_input = self.tokenizer(decoder_start_token, return_tensors="pt").input_ids.to(device)
+                decoder_input = self.tokenizer(decoder_start_token, return_tensors="pt").input_ids
+                if not uses_device_map:
+                    decoder_input = decoder_input.to(device)
                 model_inputs['decoder_input_ids'] = decoder_input
             
             model_kwargs = dict(model_inputs)
             if "use_cache" in inspect.signature(self.model.forward).parameters:
                 model_kwargs["use_cache"] = False
+            if "input_mode" in inspect.signature(self.model.forward).parameters and "input_mode" not in model_kwargs:
+                model_name = str(getattr(getattr(self.model, "config", None), "_name_or_path", "")).lower()
+                if ("phi-4" in model_name) and ("multimodal" in model_name):
+                    model_kwargs["input_mode"] = 0
+            forward_parameters = inspect.signature(self.model.forward).parameters
+            model_name = str(getattr(getattr(self.model, "config", None), "_name_or_path", "")).lower()
+            model_type = str(getattr(getattr(self.model, "config", None), "model_type", "")).lower()
+            is_internvl_model = ("internvl" in model_name) or ("internvl" in model_type)
 
-            outputs = self.model(**model_kwargs, output_hidden_states=True)
+            if is_internvl_model and "pixel_values" not in model_kwargs and hasattr(self.model, "language_model"):
+                language_model_kwargs = {
+                    key: value
+                    for key, value in model_kwargs.items()
+                    if key in inspect.signature(self.model.language_model.forward).parameters
+                }
+                if "use_cache" in inspect.signature(self.model.language_model.forward).parameters:
+                    language_model_kwargs["use_cache"] = False
+                outputs = self.model.language_model(**language_model_kwargs, output_hidden_states=True)
+            else:
+                if is_internvl_model:
+                    if "pixel_values" in forward_parameters and "pixel_values" not in model_kwargs:
+                        model_kwargs["pixel_values"] = None
+                    if "image_flags" in forward_parameters and "image_flags" not in model_kwargs:
+                        model_kwargs["image_flags"] = None
+
+                outputs = self.model(**model_kwargs, output_hidden_states=True)
             
             # MEMORY OPTIMIZATION: Extract hidden states immediately and clear outputs
             hidden_states = self._get_hidden_states(outputs, rep_token, hidden_layers, which_hidden_states)
@@ -500,7 +591,25 @@ class RepReadingPipeline(Pipeline):
                 direction_finder.directions[layer] = direction_finder.directions[layer].astype(np.float32)
 
         if train_labels is not None:
-            direction_finder.direction_signs = direction_finder.get_signs(
-            hidden_states, train_labels, hidden_layers)
+            # Robustly handle empty or ill-formed label lists
+            flat_len = 0
+            try:
+                if isinstance(train_labels, list) and len(train_labels) > 0 and isinstance(train_labels[0], (list, np.ndarray)):
+                    flat_len = len(np.concatenate(train_labels))
+                elif isinstance(train_labels, (list, np.ndarray)):
+                    flat_len = len(train_labels)
+            except ValueError:
+                flat_len = 0
+
+            if flat_len > 0:
+                direction_finder.direction_signs = direction_finder.get_signs(
+                    hidden_states, train_labels, hidden_layers
+                )
+            else:
+                # Default to positive signs when labels are empty
+                n_comp = getattr(direction_finder, 'n_components', 1)
+                direction_finder.direction_signs = {
+                    layer: np.ones(n_comp) for layer in hidden_layers
+                }
         
         return direction_finder

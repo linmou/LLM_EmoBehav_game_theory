@@ -1,0 +1,54 @@
+experiment_name: "game_theory_decision"
+description: "sanity check for Phi-4-mini-instruct on game_theory_decision"
+version: "1.0.0"
+
+models:
+  - "/home/jjl7137/huggingface_models/microsoft/Phi-4-mini-instruct/"
+
+emotions: ["anger", "sadness", "happiness", "surprise", "fear", "disgust"]
+intensities: [0.8, 1.0, 1.2]
+
+benchmarks:
+  - name: "game_theory_decision"
+    task_type: "Prisoners_Dilemma"
+    augmentation_config:
+      shuffle_options: true
+    llm_eval_config: null
+    sample_limit: 300
+
+loading_config:
+  gpu_memory_utilization: 0.79
+  enforce_eager: true
+  quantization: null
+  max_model_len: 8192
+  trust_remote_code: true
+  dtype: "bfloat16"
+  seed: 1
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs: {}
+
+repeat_runs: 1
+
+generation_config:
+  temperature: 0.0
+  max_new_tokens: 500
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 300
+
+repe_eng_config:
+  data_dir: "data/stimulus/crowd-enVent_textlike"
+  control_layers:
+    strategy: "middle_third"
+
+output_dir: "results/new_game_theory_decision/sanity_check_phi4_mini"
+sanity_check: true
+sanity_check_limit: 2
+defer_evaluation: false

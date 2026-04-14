@@ -1,7 +1,7 @@
 # Emotion Memory Experiments
-<!-- Updated: 2026-02-18 | Commit: 36f97ec -->
+<!-- Updated: 2025-12-29 | Commit: 5dfa39c -->
 
-Updated: 2026-02-18 · commit: 36f97ec
+Updated: 2025-12-29 · commit: 5dfa39c
 
 Ultra-simple PyTorch datasets for memory benchmark testing with emotion activation integration.
 
@@ -119,10 +119,126 @@ python -m emotion_experiment_engine.emotion_experiment_series_runner \
   --resume results/memory_experiments/my_series_20240927_12_memory_experiment_report.json
 ```
 
+- Split one partially completed report into disjoint resume shards, then run them on separate GPUs and merge later:
+
+```bash
+python -m emotion_experiment_engine.resource_recursive_workflow split-report \
+  --report results/memory_experiments/my_series_20240927_12_memory_experiment_report.json \
+  --split-output-dir results/memory_experiments/my_series_split \
+  --shard-series-prefix my_series_gpu \
+  --shard-label 0 \
+  --shard-label 1
+
+CUDA_VISIBLE_DEVICES=0 python -m emotion_experiment_engine.emotion_experiment_series_runner \
+  --resume results/memory_experiments/my_series_split/my_series_gpu0_resume_report.json
+
+CUDA_VISIBLE_DEVICES=1 python -m emotion_experiment_engine.emotion_experiment_series_runner \
+  --resume results/memory_experiments/my_series_split/my_series_gpu1_resume_report.json
+
+python -m emotion_experiment_engine.resource_recursive_workflow wait-and-merge \
+  --report results/memory_experiments/my_series_split/my_series_gpu0_resume_report.json \
+  --report results/memory_experiments/my_series_split/my_series_gpu1_resume_report.json \
+  --merged-output-dir results/memory_experiments/my_series_split_merged \
+  --merged-series-name my_series_gpu_merged
+```
+
 Notes:
 - When starting a fresh run, the runner persists a `series_config` snapshot into the report.
 - `--resume` expects a path to a report JSON; it uses the embedded `series_config` and runs only pending experiments listed in that report.
 - If you pass both `--resume <report.json>` and `--config <new.yaml>`, the tool compares configs. If they differ and stdin is interactive, it shows a unified diff and asks whether to use the new config for the resumed run. Choosing the new config updates `series_config` in the report. Pending experiment list still comes from the report.
+- `split-report` keeps completed experiments in shard `0` and redistributes every non-completed experiment as fresh `pending` work so each shard can resume independently without duplicate experiment IDs.
+
+### Recursive Resource Pipeline
+
+Use the recursive pipeline when one GPU is the minimum execution unit but some
+models need more VRAM after failing. The pipeline allocates work at
+`--min-resource-gpus`, reruns failed-model work at doubled resources, and keeps
+its own planning state under the series `output_dir`.
+
+Resume behavior:
+- rerunning the same `run-recursive` command for the same `output_dir` resumes automatically from `output_dir/resource_pipeline/`
+- resume uses the latest stable round checkpoint, defined as a round directory with `round_manifest.json` and a live `next_planning_report`
+- if the previous run stopped mid-round, the pipeline salvages partial shard progress from `resource_round_manifest.json`, keeps completed experiments, and reruns only failed/pending experiments in that round
+- if `final/final_report.json` already exists, rerunning returns it immediately without scheduling new work
+- persisted scheduling topology must match on resume: `gpu_pool`, `min_resource_gpus`, and `max_resource_gpus` are treated as immutable for that pipeline root
+- operational knobs such as polling intervals and worker count can change between resumes
+
+You can start from either:
+- `--config` to bootstrap a fresh planning report from a YAML series config
+- `--report` to resume from an existing series report, including retrying source experiments that already failed at the current tier and may need promotion
+
+Seeded bootstrap behavior:
+- `--seed-report <final_or_series_report.json>` can be combined with `--config` to preserve completed experiment ids from prior work while still expanding the full updated config
+- matching `completed` experiments stay completed and are skipped
+- matching `failed`, `running`, and `pending` experiments are reset and requeued
+- experiments present only in the new config are added as fresh pending work
+
+Fresh bootstrap example:
+
+```bash
+python -m emotion_experiment_engine.resource_recursive_workflow run-recursive \
+  --config config/new_game_theory_decision_config.yaml \
+  --gpu-pool 0,1,2,3 \
+  --min-resource-gpus 1 \
+  --max-resource-gpus 4
+```
+
+Seeded fresh-bootstrap example:
+
+```bash
+python -m emotion_experiment_engine.resource_recursive_workflow run-recursive \
+  --config config/new_game_theory_decision_config.yaml \
+  --seed-report results/old_series/resource_pipeline/final/final_report.json \
+  --gpu-pool 0,1,2,3 \
+  --min-resource-gpus 1 \
+  --max-resource-gpus 4
+```
+
+Resume-from-report example:
+
+```bash
+python -m emotion_experiment_engine.resource_recursive_workflow run-recursive \
+  --report results/memory_experiments/my_series_20240927_12_memory_experiment_report.json \
+  --gpu-pool 0,1,2,3 \
+  --min-resource-gpus 1 \
+  --max-resource-gpus 4
+```
+
+Pipeline behavior:
+- the runner can stop scheduling later same-model experiments in a round after the first failure when `series_config.stop_model_on_failure` is enabled
+- failed-model work is promoted by resource tier, not by error-message heuristics
+- completed work is preserved and not rerun
+- if a model still fails at max resources, the failed attempt stays `failed`; blocked siblings remain `pending`
+- partial progress inside an interrupted round is reused from shard progress files; only non-completed experiments in that round are scheduled again
+
+Output contract:
+- experiment result directories stay under `series_config.output_dir`
+- recursive planning reports, manifests, logs, and round metadata go under `series_config.output_dir/resource_pipeline/`
+
+Output layout:
+
+```text
+<series_config.output_dir>/
+├── <model_game-family experiment dirs...>
+└── resource_pipeline/
+    ├── source/source_report.json
+    ├── meta/
+    │   ├── pipeline_config.json
+    │   ├── summary.json
+    │   └── logs/
+    ├── rounds/
+    │   ├── round_01_g1/
+    │   ├── round_02_g2/
+    │   └── ...
+    └── final/
+        ├── final_report.json
+        ├── final_manifest.json
+        └── unresolved_models.json
+```
+
+Each round keeps its own reports and state files under `resource_pipeline/`.
+The final report preserves the real experiment `output_dir` values instead of
+rewriting them into a separate symlink tree.
 
 Session tracking
 - The report records session starts/ends, shutdown requests (SIGINT), and whether a session resumed from a report or started fresh. See `sessions` in the report JSON for details.
@@ -224,52 +340,6 @@ python -m emotion_experiment_engine.evaluate_saved_series \
 LLM-based evaluation (`llm_eval_config`) accepts a `client` key. Supported
 options: `openai` (default) and `gemini` (uses `GEMINI_CONFIG` from
 `api_configs.py`).
-
-## Emotion Scale Task (Subjective Sentences)
-
-This repo now includes an `emotion_scale` task to test whether RepE steering
-vectors alone can shift the emotional style of responses to subjective prompts.
-
-### Intent
-
-- Measure steering effect on open-ended subjective responses.
-- Classify model outputs into `anger`, `happiness`, `sadness`, `fear`,
-  `disgust`, `surprise`, or `neutral` using Gemini (`gemini-2.5-flash`).
-- Keep prompt text neutral regarding emotion so the effect comes from vectors,
-  not from explicit cue text.
-
-### Dataset and Config
-
-- Dataset: `data/emotion_scales/emotion_check_emotion_scale_subjective_sentences.jsonl`
-- Series config: `config/emotion_scale_subjective_sentences.yaml`
-- RepE source in config:
-  - `repe_eng_config.data_dir: "data/stimulus/crowd-enVent_textlike"`
-
-### Run Command
-
-```bash
-python -m emotion_experiment_engine.emotion_experiment_series_runner \
-  --config config/emotion_scale_subjective_sentences.yaml
-```
-
-### Prompting Rule (Steering-Only)
-
-`emotion_scale` prompts are open-ended and do not include explicit emotion hints
-like `You currently feel <emotion>`. Emotional shift should come from steering
-vectors only.
-
-### Persisted Outputs
-
-For each run directory, important files include:
-
-- `raw_results.json`: full prompt/response records and metadata for replay/audit
-- `detailed_results.csv`: scored row-level results including evaluator output
-- `summary_results.csv`, `summary_overall.csv`, `split_metrics.json`
-- `confusion_matrix_counts_intensity_*.csv`
-
-If you need deeper review of successful steering cases, you can also export a
-compact file such as `matched_cases_analysis.csv` from saved results without
-rerunning GPU inference.
 
 ## Data Format
 

@@ -1,0 +1,59 @@
+experiment_name: "qwen25_vl_mm_stimulus_image_text_smoke"
+description: "Smoke test: Qwen2.5-VL with image+text stimulus JSON entries"
+version: "1.0.0"
+
+models:
+  - "/data/home/jjl7137/huggingface_models/Qwen/Qwen2.5-VL-3B-Instruct"
+
+emotions: ["anger", "happiness"]
+intensities: [1.0]
+
+benchmarks:
+  - name: "game_theory_decision"
+    task_type: "Escalation_Game"
+    data_path: "/data/home/jjl7137/LLM_EmoBehav_sc2_escalation_worktree/auto_experiments/sc2_dataset/generated_sc2_intent_map_samples_5.json"
+    augmentation_config:
+      shuffle_options: true
+      previous_actions_length: 0
+
+loading_config:
+  gpu_memory_utilization: 0.3
+  max_model_len: 16384
+  enforce_eager: true
+  quantization: null
+  trust_remote_code: true
+  dtype: "float16"
+  seed: 1
+  disable_custom_all_reduce: false
+  additional_vllm_kwargs:
+    # Workaround for FlashAttention head-dim constraints on some setups.
+    attention_backend: "TRITON_ATTN"
+    # Force the multimodal encoder (ViT) attention backend to avoid FlashAttention auto-upgrade.
+    mm_encoder_attn_backend: "TORCH_SDPA"
+
+repe_eng_config:
+  # Image paths in the JSON are resolved relative to `data_dir` by default.
+  data_dir: "data/stimulus/repeng_generated_images_with_text"
+  multimodal_intent: true
+  emotions: ["anger", "happiness"]
+  rebuild: true
+
+repeat_runs: 1
+
+generation_config:
+  temperature: 0.1
+  max_new_tokens: 64
+  do_sample: false
+  top_p: 0.9
+  repetition_penalty: 1.0
+  top_k: -1
+  min_p: 0.0
+  presence_penalty: 0.0
+  frequency_penalty: 0.0
+  enable_thinking: false
+
+batch_size: 1
+
+output_dir: "results/qwen25_vl_mm_stimulus_image_text_smoke"
+sanity_check: false
+defer_evaluation: true

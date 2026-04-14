@@ -2,6 +2,7 @@
 Unit tests for the main experiment class.
 """
 
+import json
 import shutil
 import tempfile
 import unittest
@@ -97,6 +98,122 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         self.assertEqual(mock_setup_model.call_count, 2)  # Once for HF, once for vLLM
         mock_load_emotion_readers.assert_called_once()
         mock_get_pipeline.assert_called_once()
+
+    def test_select_control_layers_defaults_to_middle_third(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure missing control_layers config preserves middle-third behavior.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        selected = experiment._select_control_layers(hidden_layers, {})
+
+        self.assertEqual(selected, [-5, -6, -7, -8])
+
+    def test_select_control_layers_uses_last_5_strategy(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure strategy=last_5 targets exactly the five latest layers.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        selected = experiment._select_control_layers(
+            hidden_layers,
+            {"control_layers": {"strategy": "last_5"}},
+        )
+
+        self.assertEqual(selected, [-1, -2, -3, -4, -5])
+
+    def test_select_control_layers_accepts_explicit_ids(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure explicit layer ids are accepted and preserved in order.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        selected = experiment._select_control_layers(
+            hidden_layers,
+            {"control_layers": {"strategy": "explicit", "ids": [-2, -5, -9]}},
+        )
+
+        self.assertEqual(selected, [-2, -5, -9])
+
+    def test_select_control_layers_rejects_short_models_for_last_5(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: fail fast when last_5 is requested but fewer than 5 layers exist.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = [-1, -2, -3, -4]
+        with self.assertRaisesRegex(ValueError, "at least 5 hidden layers"):
+            experiment._select_control_layers(
+                hidden_layers,
+                {"control_layers": {"strategy": "last_5"}},
+            )
+
+    def test_select_control_layers_rejects_invalid_strategy(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: enforce strict strategy validation with no fallback behavior.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        with self.assertRaisesRegex(ValueError, "Unsupported control_layers strategy"):
+            experiment._select_control_layers(
+                hidden_layers,
+                {"control_layers": {"strategy": "last_n"}},
+            )
+
+    def test_select_control_layers_rejects_out_of_range_explicit_ids(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure explicit ids must be valid members of detected hidden layers.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        hidden_layers = list(range(-1, -13, -1))
+        with self.assertRaisesRegex(ValueError, "outside detected hidden layers"):
+            experiment._select_control_layers(
+                hidden_layers,
+                {"control_layers": {"strategy": "explicit", "ids": [-1, -99]}},
+            )
+
+    def test_save_experiment_config_uses_runtime_control_layers(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: ensure experiment_config.json records runtime-selected layers, not stale defaults.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+
+        temp_dir = Path(tempfile.mkdtemp())
+        self.temp_dirs.append(temp_dir)
+        experiment.output_dir = temp_dir
+
+        config = create_mock_experiment_config("passkey", 3)
+        self.configs.append(config.benchmark)
+        experiment.config = config
+        experiment.generation_config = config.generation_config
+        experiment.loading_config = config.loading_config
+        experiment.repe_config = {
+            "control_layers": {"strategy": "middle_third"},
+            "control_layer_id": list(range(-11, -30, -1)),
+        }
+        experiment.control_layers = [-5, -6, -7, -8]
+        experiment.sample_num = config.benchmark.sample_limit
+        experiment.enable_thinking = False
+        experiment.max_context_length = None
+        experiment.truncation_strategy = "right"
+        experiment.hidden_layers = list(range(-1, -13, -1))
+        experiment.is_vllm = True
+        experiment.defer_evaluation = False
+        experiment.repeat_runs = 1
+        experiment.repeat_seed_base = None
+
+        experiment._save_experiment_config()
+
+        saved = json.loads((temp_dir / "experiment_config.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            saved["repe_eng_config"]["control_layer_id"],
+            experiment.control_layers,
+        )
 
     @patch("emotion_experiment_engine.experiment.setup_model_and_tokenizer")
     @patch("emotion_experiment_engine.experiment.ModelLayerDetector")
@@ -239,6 +356,70 @@ class TestEmotionMemoryExperiment(unittest.TestCase):
         self.assertEqual(result.emotion, "neutral")
         self.assertEqual(result.intensity, 0.0)
         self.assertIn("neutral_response", result.response)
+
+    def test_neutral_condition_uses_no_steering_activations(
+        self,
+    ):
+        """Neutral run should bypass control vectors and use activations=None."""
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+        experiment.is_vllm = True
+        experiment.model = MagicMock()
+        experiment.hidden_layers = [-1, -2]
+        experiment.cur_emotion = "neutral"
+        experiment.cur_intensity = 0.0
+        dataloader = object()
+
+        import numpy as np
+
+        dummy_reader = MagicMock()
+        dummy_reader.directions = {-1: np.array([0.1, 0.2]), -2: np.array([0.2, -0.1])}
+        dummy_reader.direction_signs = {-1: np.array([1.0, -1.0]), -2: np.array([1.0, 1.0])}
+
+        captured_activations = []
+
+        def _capture_forward(_dataloader, activations):
+            captured_activations.append(activations)
+            return []
+
+        experiment._forward_dataloader = _capture_forward
+
+        results = experiment._infer_with_activation(dummy_reader, dataloader)
+
+        self.assertEqual(len(results), 0)
+        self.assertEqual(len(captured_activations), 1)
+        self.assertIsNone(captured_activations[0])
+
+    def test_run_experiment_resets_vllm_prefix_cache_between_conditions(self):
+        # Responsible file: emotion_experiment_engine/experiment.py
+        # Purpose: avoid cross-condition contamination when prompts are reused.
+        experiment = EmotionExperiment.__new__(EmotionExperiment)
+        experiment.logger = MagicMock()
+        experiment.is_vllm = True
+        experiment.model = MagicMock()
+        experiment.model.reset_prefix_cache = MagicMock()
+        experiment.model.reset_mm_cache = MagicMock()
+        experiment.config = MagicMock()
+        experiment.config.emotions = ["anger"]
+        experiment.config.intensities = [1.5]
+        experiment.config.benchmark = MagicMock()
+        experiment.config.benchmark.name = "game_theory_decision"
+        experiment.config.benchmark.task_type = "Prisoners_Dilemma"
+        experiment.repeat_runs = 1
+        experiment.cur_repeat = 0
+        experiment.emotion_rep_readers = {"anger": MagicMock()}
+        experiment.defer_evaluation = False
+        experiment._force_evaluate = False
+        experiment.build_dataloader = MagicMock(return_value=object())
+        fake_record = MagicMock()
+        fake_record.metadata = None
+        experiment._infer_with_activation = MagicMock(return_value=[fake_record])
+        experiment._save_results = MagicMock(return_value=pd.DataFrame())
+
+        experiment.run_experiment()
+
+        self.assertEqual(experiment.model.reset_prefix_cache.call_count, 2)
+        self.assertEqual(experiment.model.reset_mm_cache.call_count, 2)
 
     @patch("emotion_experiment_engine.experiment.setup_model_and_tokenizer")
     @patch("emotion_experiment_engine.experiment.ModelLayerDetector")

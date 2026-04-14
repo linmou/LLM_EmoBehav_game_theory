@@ -155,6 +155,92 @@ batch_inputs = [
 ]
 ```
 
+## RepE Stimulus Datasets (On Disk)
+
+The RepE stimulus loader (`neuro_manipulation/utils.py::primary_emotions_concept_dataset`) supports multimodal datasets stored as JSON files (one per emotion) under `repe_eng_config.data_dir`.
+
+### File Layout
+
+```
+data/stimulus/repeng_generated_images_with_text/
+  anger.json
+  happiness.json
+  anger/...
+  happiness/...
+```
+
+### JSON Entry Schemas
+
+Each emotion JSON contains a list of entries. For multimodal (image-based) RepE, entries can be:
+
+1) **Image-only** (string path)
+```json
+[
+  "anger/0001.png",
+  "anger/0002.png"
+]
+```
+
+2) **Image + extra text** (object)
+```json
+[
+  {"image": "anger/0001.png", "text": "Someone is yelling at you."},
+  {"image_path": "anger/0002.png", "caption": "A threatening message on screen."}
+]
+```
+
+Recognized keys:
+- Image path: `image`, `image_path`, or `images[0]`
+- Extra text: `text`, `prompt`, or `caption`
+
+### Path Resolution (No `image_base_path` needed)
+
+If the image path is **relative**, it is resolved relative to `repe_eng_config.data_dir` by default.
+
+### Generated Prompt
+
+For each multimodal entry, RepE uses:
+
+```
+Consider the emotion of the following scenario:
+[IMAGE]
+{extra_text (optional)}
+```
+
+## Running (Qwen2.5-VL image+text smoke config)
+
+Example config: `config/qwen25_vl_mm_stimulus_image_text_smoke.yaml`
+
+```
+bash -c "source /usr/local/anaconda3/etc/profile.d/conda.sh && conda activate llm_fresh && CUDA_VISIBLE_DEVICES=0,1 python -m emotion_experiment_engine.emotion_experiment_series_runner --config config/qwen25_vl_mm_stimulus_image_text_smoke.yaml"
+```
+
+## Multimodal Game-Theory Benchmark Dataset (JSON + images)
+
+To run a **multimodal** game-theory benchmark dataset (where each scenario has image(s) attached), use the dedicated benchmark name `game_theory_mm` so the registry selects `GameTheoryMultimodalDataset`.
+
+### Data Sample Contract
+
+Each record must be a valid game-theory scenario for the `task_type` (same as the text-only game-theory JSON), plus at least one image path.
+
+Required (same as game-theory dataset; exact fields depend on `task_type`’s scenario model):
+- `scenario` / `description` / `participants` / `behavior_choices` (and any other fields your game’s scenario class expects)
+
+Required (multimodal addition):
+- One of:
+  - `image_path`: string path to one image
+  - `image`: string path to one image
+  - `images`: list of string paths (>= 1)
+
+Path rule:
+- If an image path is relative, it’s resolved relative to the repo root (not `repe_eng_config.data_dir`).
+
+## vLLM Notes / Troubleshooting
+
+- **No HF fallback**: the codepath is vLLM-only; vLLM init failures should raise.
+- **vLLM v1 serialization**: RepE hook registration uses `collective_rpc` with callables; vLLM v1 requires `VLLM_ALLOW_INSECURE_SERIALIZATION=1` (the runner sets this automatically when `repe_eng_config` is present).
+- **ViT FlashAttention head-dim constraint**: if your setup hits `headdim not being a multiple of 32`, force the vision encoder attention backend (e.g. `mm_encoder_attn_backend: TORCH_SDPA`) and avoid FlashAttention for ViT.
+
 ## Emotion Templates
 
 ### Standard Template

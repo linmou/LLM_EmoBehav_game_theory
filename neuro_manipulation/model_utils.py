@@ -8,6 +8,7 @@ from neuro_manipulation.prompt_formats import PromptFormat
 from neuro_manipulation.repe.pipelines import get_pipeline
 from neuro_manipulation.utils import (
     all_emotion_rep_reader,
+    detect_emotion_data_type,
     dict_to_unique_code,
     load_model_tokenizer,
     load_tokenizer_only,
@@ -85,8 +86,25 @@ def load_emotion_readers(
 
         processor = auto_load_processor(config["model_name_or_path"])
         if processor is None:
-            print("❌ Multimodal mode selected but processor loading failed")
-            raise ValueError("Cannot load AutoProcessor for multimodal model")
+            model_lower = str(config.get("model_name_or_path", "")).lower()
+            if "internvl" in model_lower:
+                # InternVL AutoProcessor is often tokenizer-only, but we can still build
+                # `pixel_values` via AutoImageProcessor in the InternVL adapter.
+                # Also provide an image processor to transformers Pipeline so batching
+                # can pad `pixel_values` without crashing.
+                from transformers import AutoImageProcessor
+
+                processor = AutoImageProcessor.from_pretrained(
+                    config["model_name_or_path"], trust_remote_code=True
+                )
+                print(
+                    "⚠️  InternVL detected: AutoProcessor unavailable; proceeding in multimodal mode "
+                    "using AutoImageProcessor-based adapter."
+                )
+            else:
+                raise ValueError(
+                    "Multimodal mode requested but AutoProcessor is unavailable for this model."
+                )
 
     print(f"✓ Experiment mode: {experiment_mode}")
     for reason in feasibility["reasons"]:
@@ -94,13 +112,14 @@ def load_emotion_readers(
 
     # Build args dict including multimodal parameters
     args = {
-        "emotions": config['emotions'],
+        "emotions": config.get("emotions", Emotions.get_emotions()),
         "data_dir": config["data_dir"],
         "model_name_or_path": config["model_name_or_path"],
         "rep_token": config["rep_token"],
         "hidden_layers": hidden_layers,
         "n_difference": config["n_difference"],
         "direction_method": config["direction_method"],
+        "direction_finder_kwargs": config.get("direction_finder_kwargs", {}),
         "experiment_mode": experiment_mode,
         "multimodal_intent": multimodal_intent,
         "emotion_data_seed": emotion_data_seed,
@@ -113,13 +132,26 @@ def load_emotion_readers(
     try:
         if not config.get("rebuild", False):
             emotion_rep_readers = pickle.load(open(cache_filename, "rb"))
-            if emotion_rep_readers.get("args") == args:
+            cached_emotions = set(
+                key for key in emotion_rep_readers.keys() if isinstance(key, str)
+            )
+            requested_emotions = set(args["emotions"])
+            has_requested_readers = requested_emotions.issubset(cached_emotions)
+            if emotion_rep_readers.get("args") == args and has_requested_readers:
                 print("✓ Loaded cached emotion readers")
                 return emotion_rep_readers
     except:
         pass
 
     # Generate emotion dataset with auto-detection
+    requested_emotions = list(config.get("emotions", Emotions.get_emotions()))
+    dataset_emotions = requested_emotions
+    if len(requested_emotions) == 1:
+        data_status = detect_emotion_data_type(config["data_dir"])
+        available_emotions = data_status.get("available_emotions", [])
+        if requested_emotions[0] in available_emotions and len(available_emotions) >= 2:
+            dataset_emotions = available_emotions
+
     data = primary_emotions_concept_dataset(
         config["data_dir"],
         model_name=config["model_name_or_path"],
@@ -127,6 +159,7 @@ def load_emotion_readers(
         seed=emotion_data_seed,
         enable_thinking=enable_thinking,
         multimodal_intent=(experiment_mode == "multimodal"),
+        emotions=dataset_emotions,
     )
 
     # Create appropriate pipeline based on experiment mode
@@ -140,16 +173,22 @@ def load_emotion_readers(
         )
     else:
         print("✓ Creating text-only rep-reading pipeline")
-        rep_reading_pipeline = pipeline("rep-reading", model=model, tokenizer=tokenizer)
+        rep_reading_pipeline = pipeline(
+            "rep-reading",
+            model=model,
+            tokenizer=tokenizer,
+            image_processor=processor,
+        )
 
     return all_emotion_rep_reader(
         data,
-        config["emotions"],
+        requested_emotions,
         rep_reading_pipeline,
         hidden_layers,
         config["rep_token"],
         config["n_difference"],
         config["direction_method"],
+        direction_finder_kwargs=config.get("direction_finder_kwargs", {}),
         read_args=args,
         save_path=cache_filename,
     )

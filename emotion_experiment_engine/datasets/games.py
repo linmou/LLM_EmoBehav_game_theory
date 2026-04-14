@@ -443,6 +443,10 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 option_id = int(match.group(1))
                 if 1 <= option_id <= len(options):
                     return option_id
+            matched = GameTheoryDataset._match_option(candidate, options)
+            if matched is not None:
+                return matched
+        
         return None
 
     @staticmethod
@@ -607,6 +611,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                         "emotion": emotion,
                         "intensity": intensity,
                         "behavior_label": behavior,
+                        "count": count,
                         "ratio": count / total,
                     }
                 )
@@ -621,6 +626,7 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                         "intensity": intensity,
                         "repeat_id": repeat_id,
                         "behavior_label": behavior,
+                        "count": count,
                         "ratio": count / total,
                     }
                 )
