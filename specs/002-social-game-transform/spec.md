@@ -15,15 +15,24 @@
 - Q: What should the main transformed dataset contain? → A: Only successful transformed cases; failures and skips live in separate machine-readable artifacts.
 - Q: What is the target-game contract validation rule? → A: Use the real game scenario class constructor, `scenario_class(**data)`, as the contract validation.
 
+### Session 2026-04-17
+
+- Q: What is the first-release support scope now that the current implementation is hardcoded for beauty_contest? → A: Support both `beauty_contest` and `escalation_game` in the first release.
+- Q: How should the pipeline source few-shot examples for `escalation_game` in this release? → A: Reuse the existing `beauty_contest` few-shot asset temporarily.
+- Q: How should game-specific contract fields be produced for supported games in this release? → A: The pipeline fills game-specific contract fields in code from explicit mapping/config.
+- Q: How should `previous_actions_length` be set for `escalation_game` outputs in this release? → A: Let the model generate `previous_actions_length` from the source row.
+- Q: Which escalation-game contract should this feature target in the first release? → A: Support only the plain `Escalation_Game` contract in this feature.
+- Q: When both `previous_actions` and `previous_actions_length` are present for `escalation_game`, which field is authoritative? → A: `previous_actions` is authoritative, and a mismatched `previous_actions_length` is a validation error.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Produce Load-Ready Game Cases (Priority: P1)
 
-A researcher selects a supported social game and transforms every curated source case into scenario records that can be consumed by the corresponding game definition without manual cleanup or field renaming. In the first release, the supported social game is `beauty_contest`.
+A researcher selects a supported social game and transforms every curated source case into scenario records that can be consumed by the corresponding game definition without manual cleanup or field renaming. In the first release, the supported social games are `beauty_contest` and `escalation_game`.
 
 **Why this priority**: The pipeline is only useful if it closes the gap between curated source data and the scenario schema already used by experiments.
 
-**Independent Test**: Can be fully tested by running the pipeline for one supported social game and confirming that successful outputs load directly into the target game scenario class.
+**Independent Test**: Can be fully tested by running the pipeline for each first-release supported social game and confirming that successful outputs load directly into the target game scenario class.
 
 **Acceptance Scenarios**:
 
@@ -45,7 +54,8 @@ A researcher can reuse the same pipeline across different social games by pairin
 **Acceptance Scenarios**:
 
 1. **Given** a supported social game with a shared rubric asset and its own example asset, **When** the researcher runs the pipeline, **Then** the pipeline applies both instruction sources during transformation.
-2. **Given** a second supported social game with a different example asset, **When** the researcher switches the selected social game, **Then** the pipeline reuses the same workflow and enforces the second game's output contract.
+2. **Given** a second supported social game, **When** the researcher switches the selected social game, **Then** the pipeline reuses the same workflow and enforces the second game's output contract.
+3. **Given** first-release support for `escalation_game`, **When** the researcher runs the pipeline for that game, **Then** the pipeline may temporarily reuse the existing `beauty_contest` few-shot asset while still enforcing the `escalation_game` scenario contract.
 
 ---
 
@@ -67,7 +77,8 @@ A researcher can interrupt a long run and resume it later while keeping a comple
 - What happens when a source row is malformed JSON or lacks the metadata needed to identify its origin?
 - What happens when a source row is missing either the top-level record identifier or `source.game_id`, which together define the resume and deduplication identity?
 - What happens when the transformed output is missing required scenario fields, required choice keys, or valid prior-round action structure for a multi-turn game?
-- How does the system handle a supported social game whose example asset is missing or whose target game mapping is undefined?
+- What happens when an `escalation_game` transformed row provides both `previous_actions` and `previous_actions_length`, but the length does not equal the number of explicit prior actions?
+- How does the system handle a supported social game whose example asset is missing or whose target game mapping is undefined, except for the temporary first-release allowance that `escalation_game` may reuse the existing `beauty_contest` few-shot asset?
 - How does the system handle a restart after interruption when some outputs were already written and some failure records already exist?
 - How does the system prevent a rerun from duplicating already transformed successes while still preserving prior failure records for invalid rows?
 - What happens when the transformed narrative uses inconsistent participant names across `description`, `participants`, and prior-round action entries?
@@ -78,14 +89,16 @@ A researcher can interrupt a long run and resume it later while keeping a comple
 ### Functional Requirements
 
 - **FR-001**: System MUST accept a selected social game and process all records from that social game's curated source case file.
-- **FR-001a**: System MUST support `beauty_contest` in the first release.
+- **FR-001a**: System MUST support both `beauty_contest` and `escalation_game` in the first release.
+- **FR-001b**: For `escalation_game`, the first release MUST target only the plain `Escalation_Game` contract and MUST NOT include `Diplomacy_Escalation_Game`.
 - **FR-002**: System MUST transform each successful source record into a scenario record that matches the target game's accepted scenario fields and choice structure.
 - **FR-003**: System MUST validate each transformed record by constructing the target game scenario class with `scenario_class(**data)` before the record is added to the final transformed dataset.
 - **FR-004**: System MUST mark an individual record as failed, rather than silently coercing it, when required fields, choice keys, participant data, or prior-round action structures are missing or invalid.
 - **FR-004a**: System MUST continue processing remaining source records after an individual record fails validation or transformation.
 - **FR-005**: System MUST build transformation instructions from one shared rubric asset plus one social-game-specific example asset for each run.
 - **FR-006**: System MUST allow the social-game-specific example asset to be changed independently of the shared rubric asset and core transformation workflow.
-- **FR-006a**: System MUST treat any social game other than `beauty_contest` as unsupported until that social game has an explicit target-game mapping and its required prompt assets.
+- **FR-006a**: System MUST treat any social game other than `beauty_contest` and `escalation_game` as unsupported until that social game has an explicit target-game mapping and its required prompt assets.
+- **FR-006b**: System MUST allow `escalation_game` to reuse the existing `beauty_contest` few-shot asset temporarily in the first release, while still requiring an explicit target-game mapping and contract validation against the `escalation_game` scenario class.
 - **FR-007**: System MUST preserve source traceability for every successful, failed, or skipped record by storing the source identifier or enough source metadata to recover the originating row.
 - **FR-007a**: System MUST use the combination of the top-level record `id` and `source.game_id` as the identity for resume and deduplication.
 - **FR-007b**: System MUST treat a source record as invalid when either the top-level record `id` or `source.game_id` is missing.
@@ -96,9 +109,14 @@ A researcher can interrupt a long run and resume it later while keeping a comple
 - **FR-010b**: System MUST keep the main transformed dataset limited to successful transformed cases.
 - **FR-010c**: System MUST write failed and skipped records to separate machine-readable artifacts rather than mixing them into the main transformed dataset.
 - **FR-011**: System MUST keep participant naming, behavior-choice wording, and prior-round action descriptions internally consistent within each transformed scenario.
+- **FR-011a**: For `escalation_game`, `previous_actions` MUST be treated as the primary prior-history representation when present. `previous_actions` is optional, but when supplied it MUST drive validation and downstream scenario construction ahead of `previous_actions_length`.
+- **FR-011b**: For `escalation_game`, `previous_actions_length` MAY still be supplied as a simpler fallback representation when explicit `previous_actions` are unavailable.
+- **FR-011c**: When an `escalation_game` transformed row supplies both `previous_actions` and `previous_actions_length`, the system MUST require `previous_actions_length == len(previous_actions)`; otherwise the row MUST fail validation rather than being silently coerced.
 - **FR-012**: System MUST ensure transformed narratives follow the approved style constraints for historical framing, stakeholder tradeoff explanation, and avoidance of explicit game-mechanism jargon.
 - **FR-013**: System MUST produce transformed artifacts that existing game-loading workflows can consume without manual field renaming or hand editing.
 - **FR-013a**: System MUST treat successful output as contract-valid only when the corresponding target game scenario class accepts the transformed record through direct construction.
+- **FR-013b**: System MUST inject deterministic game-specific contract fields from explicit pipeline mapping/config rather than relying on the model to invent them. This includes fields such as canonical game name, payoff data, and other required per-game structural defaults.
+- **FR-013c**: For `escalation_game`, the system MUST let the transformed output carry a model-generated `previous_actions_length` derived from the source row, while still validating the final record through the real scenario constructor.
 - **FR-014**: System MUST record the output dataset location and run metadata needed for downstream experiments to reproduce the transformation run.
 
 ### Key Entities *(include if feature involves data)*
@@ -106,6 +124,7 @@ A researcher can interrupt a long run and resume it later while keeping a comple
 - **Curated Social Game Case**: A structured source record from a selected social game's curated case dataset, including its source metadata, labels, metrics, event history, and the identity pair formed by the top-level `id` and `source.game_id`.
 - **Transformation Prompt Pack**: The instruction bundle used for one run, composed of a shared rubric asset and a selected social-game-specific example asset.
 - **Transformed Game Scenario Case**: A normalized scenario record intended to satisfy the corresponding target game's scenario contract, including scenario text, participant list, behavior choices, optional prior-round actions, and provenance metadata.
+- **Escalation Game History Representation**: For `escalation_game`, prior history may be represented either by optional explicit `previous_actions` or by fallback `previous_actions_length`. When both are present, explicit `previous_actions` is canonical and the fallback length must match it.
 - **Transformation Run Record**: The audit trail for one pipeline execution, including run parameters, progress counters, success/failure/skipped status for each source record, output locations, and diagnostic messages.
 - **Success Dataset**: The main transformed-case artifact containing only records that passed transformation and target-game validation.
 - **Failure Artifact Set**: Separate machine-readable artifacts that store failed and skipped source records with their identity, stage, and diagnostic details.
@@ -119,13 +138,15 @@ A researcher can interrupt a long run and resume it later while keeping a comple
 - **SC-002a**: In a mixed-quality run, valid rows remain present in the transformed dataset while 100% of invalid rows appear in failure artifacts.
 - **SC-002b**: 100% of records present in the main transformed dataset are loadable successful cases.
 - **SC-003**: After an interrupted run is restarted, previously completed records are not duplicated in the final transformed dataset.
-- **SC-004**: A researcher can switch from one supported social game to another by changing the selected game inputs and example asset, while keeping the same transformation workflow and run-accounting behavior.
+- **SC-004**: A researcher can switch between `beauty_contest` and `escalation_game` by changing the selected game inputs, while keeping the same transformation workflow and run-accounting behavior.
 - **SC-005**: For any failed record in a run, a researcher can identify the originating source row and failure reason from the generated artifacts in under 2 minutes.
 
 ## Assumptions
 
-- The first release scope is limited to `beauty_contest`.
+- The first release scope includes `beauty_contest` and `escalation_game`.
+- In the first release, `escalation_game` may temporarily reuse the existing `beauty_contest` few-shot asset.
 - Additional social games will be added only when each one has a corresponding target scenario contract, explicit mapping rules, and required prompt assets.
+- `Diplomacy_Escalation_Game` is out of scope for this feature and should be handled as a separate follow-up if needed.
 - Source records provide both a top-level `id` and `source.game_id`, and that pair is stable enough to support resume, deduplication, and traceability.
 - The first delivery will rely on one approved external transformation provider configured through the repository environment, with no fallback provider or silent degradation path.
 - Social-game-specific example assets are curated separately from the pipeline itself and are treated as required inputs for supported games.

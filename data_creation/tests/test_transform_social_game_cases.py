@@ -59,6 +59,30 @@ def _sample_transformed_row(case_id: str = "sg_case_1", game_id: str = "game_1")
     }
 
 
+def _sample_escalation_transformed_row(case_id: str = "sg_case_1", game_id: str = "game_1") -> dict:
+    return {
+        "scenario": "Border Canal Water Standoff",
+        "description": (
+            "You and a neighboring district are deciding whether to keep normal pumping "
+            "or intensify extraction from the same canal during a drought."
+        ),
+        "participants": [{"name": "You"}, {"name": "Neighbor"}],
+        "behavior_choices": {
+            "escalate": "Pump more water from the shared canal.",
+            "withdraw": "Keep to the normal pumping level.",
+        },
+        "previous_actions": [
+            ["Neighbor", "Pump more water from the shared canal."],
+        ],
+        "previous_actions_length": 1,
+        "game_name": "Escalation_Game",
+        "provenance": {
+            "id": case_id,
+            "source_game_id": game_id,
+        },
+    }
+
+
 @pytest.fixture
 def prompt_assets(tmp_path: Path) -> tuple[Path, Path]:
     rubric = tmp_path / "transform_rubrics.md"
@@ -170,6 +194,45 @@ def test_transform_run_separates_invalid_rows_into_failure_artifacts(tmp_path: P
     assert failure_rows[0]["stage"] == "input_validation"
 
 
+def test_transform_run_writes_success_only_outputs_for_escalation_game(
+    tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: write only loadable Escalation Game rows to the success dataset.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(input_path, [_sample_source_row("sg_case_1", "game_1")])
+    rubric, fewshot = prompt_assets
+
+    monkeypatch.setattr(
+        module,
+        "transform_source_row",
+        lambda *args, **kwargs: _sample_escalation_transformed_row("sg_case_1", "game_1"),
+    )
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    success_rows = json.loads((output_dir / "escalation_game.success.json").read_text(encoding="utf-8"))
+    assert len(success_rows) == 1
+    assert success_rows[0]["game_name"] == "Escalation_Game"
+
+
 def test_main_rejects_unsupported_social_game(tmp_path: Path, prompt_assets: tuple[Path, Path]):
     # data_creation/transform_social_game_cases.py: unsupported social games must fail loudly.
     from data_creation.transform_social_game_cases import main
@@ -216,6 +279,39 @@ def test_build_system_prompt_includes_rubric_and_fewshot(tmp_path: Path, prompt_
     assert "Coordinated Adriatic Push" in prompt
 
 
+def test_load_prompt_pack_supports_escalation_game_with_explicit_mapping(
+    tmp_path: Path, prompt_assets: tuple[Path, Path]
+):
+    # data_creation/transform_social_game_cases.py: support escalation_game through explicit target mapping.
+    from data_creation.transform_social_game_cases import load_prompt_pack
+    from games.escalation_game import EscalationGameScenario
+
+    rubric, fewshot = prompt_assets
+    prompt_pack = load_prompt_pack(
+        social_game="escalation_game",
+        rubric_path=rubric,
+        few_shot_path=fewshot,
+    )
+
+    assert prompt_pack["target_game_name"] == "Escalation_Game"
+    assert prompt_pack["scenario_class"] is EscalationGameScenario
+
+
+def test_social_game_config_derives_runtime_contract_from_game_configs():
+    # data_creation/transform_social_game_cases.py: derive runtime contract constants from games/game_configs.py.
+    from constants import GameNames
+    from data_creation.transform_social_game_cases import social_game_config
+    from games.game_configs import get_game_config
+
+    beauty_cfg = social_game_config("beauty_contest")
+    escalation_cfg = social_game_config("escalation_game")
+
+    assert beauty_cfg["game_name"] is GameNames.BEAUTY_CONTEST
+    assert escalation_cfg["game_name"] is GameNames.ESCALATION_GAME
+    assert beauty_cfg["scenario_class"] is get_game_config(GameNames.BEAUTY_CONTEST)["scenario_class"]
+    assert escalation_cfg["scenario_class"] is get_game_config(GameNames.ESCALATION_GAME)["scenario_class"]
+
+
 def test_resume_skips_completed_successes_without_duplication(tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch):
     # data_creation/transform_social_game_cases.py: use id + source.game_id to skip completed identities.
     from data_creation import transform_social_game_cases as module
@@ -255,6 +351,58 @@ def test_resume_skips_completed_successes_without_duplication(tmp_path: Path, pr
 
     assert exit_code == 0
     success_rows = json.loads((output_dir / "beauty_contest.success.json").read_text(encoding="utf-8"))
+    identities = {(row["provenance"]["id"], row["provenance"]["source_game_id"]) for row in success_rows}
+    assert identities == {("sg_case_1", "game_1"), ("sg_case_2", "game_2")}
+
+
+def test_resume_skips_completed_escalation_successes_without_duplication(
+    tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: preserve resume behavior for escalation_game artifact paths too.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(input_path, [_sample_source_row("sg_case_1", "game_1"), _sample_source_row("sg_case_2", "game_2")])
+    rubric, fewshot = prompt_assets
+
+    _write_json(
+        output_dir / "escalation_game.success.json",
+        [_sample_escalation_transformed_row("sg_case_1", "game_1")],
+    )
+    (output_dir / "escalation_game.failures.jsonl").write_text("", encoding="utf-8")
+    _write_json(
+        output_dir / "run_metadata.json",
+        {
+            "counts": {"total": 1, "success": 1, "failed": 0, "skipped": 0},
+            "completed_identities": ["sg_case_1::game_1"],
+        },
+    )
+
+    monkeypatch.setattr(
+        module,
+        "transform_source_row",
+        lambda *args, **kwargs: _sample_escalation_transformed_row("sg_case_2", "game_2"),
+    )
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    success_rows = json.loads((output_dir / "escalation_game.success.json").read_text(encoding="utf-8"))
     identities = {(row["provenance"]["id"], row["provenance"]["source_game_id"]) for row in success_rows}
     assert identities == {("sg_case_1", "game_1"), ("sg_case_2", "game_2")}
 
@@ -300,5 +448,5 @@ def test_transform_source_row_uses_game_constructor_as_contract(monkeypatch: pyt
         model_name="deepseek-chat",
     )
 
-    assert transformed["game_name"] == "Not_The_Canonical_Name"
+    assert transformed["game_name"] == "Beauty_Contest"
     assert transformed["provenance"]["id"] == "sg_case_1"

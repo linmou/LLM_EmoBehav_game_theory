@@ -11,15 +11,24 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from games.beauty_contest import BeautyContestScenario
+from constants import GameNames
+from games.game_configs import get_game_config
 
 
 SUPPORTED_SOCIAL_GAMES = {
     "beauty_contest": {
-        "target_game_name": "Beauty_Contest",
+        "game_name": GameNames.BEAUTY_CONTEST,
         "success_file": "beauty_contest.success.json",
         "failure_file": "beauty_contest.failures.jsonl",
         "skip_file": "beauty_contest.skipped.jsonl",
+        "prompt_target": "Beauty Contest scenario",
+    },
+    "escalation_game": {
+        "game_name": GameNames.ESCALATION_GAME,
+        "success_file": "escalation_game.success.json",
+        "failure_file": "escalation_game.failures.jsonl",
+        "skip_file": "escalation_game.skipped.jsonl",
+        "prompt_target": "Escalation Game scenario",
     }
 }
 DEFAULT_RUBRIC_PATH = Path(__file__).resolve().parent.parent / "transform_rubrics.md"
@@ -85,13 +94,19 @@ def load_existing_jsonl(path: Path) -> list[dict[str, Any]]:
     return load_jsonl(path)
 
 
-def social_game_config(social_game: str) -> dict[str, str]:
+def social_game_config(social_game: str) -> dict[str, Any]:
     cfg = SUPPORTED_SOCIAL_GAMES.get(social_game)
     if cfg is None:
         raise ValueError(
             f"Unsupported social game: {social_game}. Supported values: {', '.join(sorted(SUPPORTED_SOCIAL_GAMES))}"
         )
-    return cfg
+    game_config = get_game_config(cfg["game_name"])
+    return {
+        **cfg,
+        "target_game_name": game_config["game_name"],
+        "scenario_class": game_config["scenario_class"],
+        "payoff_matrix": game_config["payoff_matrix"],
+    }
 
 
 def load_prompt_pack(
@@ -114,6 +129,9 @@ def load_prompt_pack(
         "few_shot_path": few_shot_path,
         "few_shot_examples": few_shot_examples,
         "target_game_name": cfg["target_game_name"],
+        "scenario_class": cfg["scenario_class"],
+        "payoff_matrix": cfg["payoff_matrix"],
+        "prompt_target": cfg["prompt_target"],
     }
 
 
@@ -196,10 +214,16 @@ def parse_json_text(raw_text: str) -> dict[str, Any]:
     return payload
 
 
-def validate_loadable_with_game_contract(row: dict[str, Any]) -> None:
+def inject_game_fields(row: dict[str, Any], prompt_pack: dict[str, Any]) -> dict[str, Any]:
+    payload = dict(row)
+    payload["game_name"] = prompt_pack["target_game_name"]
+    payload.setdefault("payoff_matrix", prompt_pack["payoff_matrix"])
+    return payload
+
+
+def validate_loadable_with_game_contract(row: dict[str, Any], prompt_pack: dict[str, Any]) -> None:
     scenario_payload = dict(row)
-    scenario_payload.setdefault("payoff_matrix", {})
-    BeautyContestScenario(**scenario_payload)
+    prompt_pack["scenario_class"](**scenario_payload)
 
 
 def transform_source_row(
@@ -211,7 +235,7 @@ def transform_source_row(
 ) -> dict[str, Any]:
     system_prompt = build_system_prompt(prompt_pack)
     user_prompt = (
-        "Transform the following curated social-game case into one loadable Beauty Contest scenario.\n"
+        f"Transform the following curated social-game case into one loadable {prompt_pack['prompt_target']}.\n"
         f"{json.dumps(source_row, ensure_ascii=True)}"
     )
     last_error: Exception | None = None
@@ -226,13 +250,13 @@ def transform_source_row(
                 ],
                 temperature=0.0,
             )
-            payload = parse_json_text(extract_response_text(response))
+            payload = inject_game_fields(parse_json_text(extract_response_text(response)), prompt_pack)
             payload.setdefault("provenance", {})
             payload["provenance"]["id"] = source_row["id"]
             payload["provenance"]["source_game_id"] = source_row["source"]["game_id"]
             payload["provenance"]["source_dataset"] = source_row["source"].get("dataset")
             payload["provenance"]["source_line_number"] = source_row["source"].get("line_number")
-            validate_loadable_with_game_contract(payload)
+            validate_loadable_with_game_contract(payload, prompt_pack)
             return payload
         except Exception as exc:  # noqa: BLE001
             last_error = exc

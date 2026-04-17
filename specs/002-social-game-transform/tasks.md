@@ -1,3 +1,9 @@
+---
+
+description: "Task list for Social Game Case Transformation Pipeline"
+
+---
+
 # Tasks: Social Game Case Transformation Pipeline
 
 **Input**: Design documents from `/specs/002-social-game-transform/`
@@ -10,35 +16,38 @@
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **[Story]**: Which user story this belongs to (e.g. `[US1]`, `[US2]`, `[US3]`)
 - Include exact file paths in descriptions
 
 ## Path Conventions
 
-- Data pipeline code lives under `data_creation/`
-- Data-pipeline tests live under `data_creation/tests/`
-- Game contract validation lives under `tests/games/`
+- CLI pipeline code lives under `data_creation/`
+- CLI tests live under `data_creation/tests/`
+- Game contracts live under `games/`
+- Game contract tests live under `tests/games/`
 - Feature docs live under `specs/002-social-game-transform/`
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Prepare the feature files and fixture locations used by all stories
+**Purpose**: Refresh the feature fixtures and test scaffolds so the implementation work is driven by the current dual-game design rather than the stale beauty-contest-only behavior.
 
-- [x] T001 Create the transform feature test specification in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/features/social_game_transform.feature
-- [x] T002 Create the transform pipeline test module scaffold in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
-- [x] T003 Create the transform CLI module scaffold in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
+- [X] T001 Update the feature coverage notes in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/features/social_game_transform.feature` for `beauty_contest` plus `escalation_game`
+- [X] T002 [P] Review the existing CLI test scaffold in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py` and mark the beauty-contest-only assumptions that must change
+- [X] T003 [P] Review the current `EscalationGameScenario` contract in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/games/escalation_game.py` against the clarified `previous_actions` requirements
 
 ---
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Core shared infrastructure that MUST exist before any user story work
+**Purpose**: Establish the shared mapping and history-normalization primitives that every story depends on.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T004 Implement shared file-loading, prompt-pack loading, and `.env` credential resolution helpers in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T005 Implement source identity, progress rendering, artifact path, and run-metadata helpers in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T006 Implement shared source-row validation, transformed-row validation, and `BeautyContestScenario` load validation helpers in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
+- [X] T004 Extend the social-game mapping structure in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py` to carry scenario class, canonical game name, artifact filenames, prompt wording, and deterministic injected fields
+- [X] T005 [P] Add deterministic game-field injection helpers in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py` for canonical `game_name`, payoff data, and provenance enrichment
+- [X] T006 [P] Add `Escalation_Game` history normalization and validation helpers in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/games/escalation_game.py` so optional `previous_actions` can coexist with fallback `previous_actions_length`
+- [X] T007 Update mapped scenario-class validation in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py` so success rows validate through the explicit target class instead of hardcoded `BeautyContestScenario`
+- [X] T008 [P] Add or update shared test fixtures for Beauty Contest rows and Escalation Game rows in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -46,25 +55,25 @@
 
 ## Phase 3: User Story 1 - Produce Load-Ready Game Cases (Priority: P1) 🎯 MVP
 
-**Goal**: Transform curated `beauty_contest` cases into a success-only dataset that loads through the real Beauty Contest game contract
+**Goal**: Transform curated `beauty_contest` and plain `escalation_game` source rows into success-only datasets that load through their real scenario classes.
 
-**Independent Test**: Run the CLI on a small `beauty_contest` fixture and verify that success outputs load as `BeautyContestScenario` instances while invalid rows land only in failure artifacts
+**Independent Test**: Run the CLI on a small fixture for each supported social game and verify that successful rows load through `BeautyContestScenario(**data)` or `EscalationGameScenario(**data)` while invalid rows land only in failure artifacts.
 
 ### Tests for User Story 1 ⚠️
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [x] T007 [P] [US1] Add failing CLI contract tests for required arguments, success artifact paths, and summary output in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
-- [x] T008 [P] [US1] Add failing integration tests for successful transformation, success-only output, and failure artifact separation in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
-- [x] T009 [P] [US1] Add failing game-load validation coverage for transformed Beauty Contest rows in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/tests/games/test_beauty_contest_game_config.py
+- [X] T009 [P] [US1] Add failing CLI integration coverage for dual-game success datasets in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py`
+- [X] T010 [P] [US1] Add failing Escalation Game history-contract coverage for explicit `previous_actions`, fallback `previous_actions_length`, and mismatch rejection in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/tests/games/test_escalation_game_config.py`
+- [X] T011 [P] [US1] Add failing game-load validation coverage for transformed Escalation Game rows in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/tests/games/test_escalation_game_config.py`
 
 ### Implementation for User Story 1
 
-- [x] T010 [US1] Implement `beauty_contest` prompt-pack assembly from /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/transform_rubrics.md and mapped few-shot assets in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T011 [US1] Implement the DeepSeek chat transformation call, response parsing, and structured output normalization in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T012 [US1] Implement success-dataset writing, failure/skipped artifact writing, and final summary emission in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T013 [US1] Implement the CLI entrypoint and end-to-end row processing flow in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T014 [US1] Run targeted pytest coverage for User Story 1 using /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py and /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/tests/games/test_beauty_contest_game_config.py
+- [X] T012 [US1] Generalize prompt-pack loading and per-game prompt wording in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py` for `beauty_contest` and `escalation_game`
+- [X] T013 [US1] Implement per-game structural field injection and mapped artifact writing in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py`
+- [X] T014 [US1] Extend `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/games/escalation_game.py` so `previous_actions` is optional but authoritative, with `previous_actions_length` fallback support
+- [X] T015 [US1] Update row transformation and constructor validation flow in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py` to support both scenario classes
+- [X] T016 [US1] Run targeted pytest for `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py` and `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/tests/games/test_escalation_game_config.py`
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -72,21 +81,20 @@
 
 ## Phase 4: User Story 2 - Swap Prompt Assets By Social Game (Priority: P2)
 
-**Goal**: Keep the pipeline reusable by explicit mapping, while V1 still supports only `beauty_contest`
+**Goal**: Keep prompt assembly explicit per selected social game, including the temporary first-release rule that `escalation_game` may reuse the Beauty Contest few-shot asset while still enforcing its own runtime contract.
 
-**Independent Test**: Verify that the CLI accepts only explicitly mapped social games, loads the mapped prompt assets for `beauty_contest`, and fails loudly for unsupported games or missing prompt assets
+**Independent Test**: Verify that the CLI accepts the two supported games, rejects unsupported ones, assembles the prompt from the shared rubric plus the selected few-shot asset, and preserves correct runtime validation regardless of asset reuse.
 
 ### Tests for User Story 2 ⚠️
 
-- [x] T015 [P] [US2] Add failing tests for explicit social-game mapping, unsupported social-game rejection, and missing prompt-asset handling in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
-- [x] T016 [P] [US2] Add failing tests that prove the system prompt includes both shared rubric content and game-specific few-shot content in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
+- [X] T017 [P] [US2] Add failing tests for explicit supported-game mapping and unsupported-game rejection in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py`
+- [X] T018 [P] [US2] Add failing tests for prompt-pack assembly with `escalation_game` reusing the Beauty Contest few-shot asset in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py`
 
 ### Implementation for User Story 2
 
-- [x] T017 [US2] Implement explicit social-game-to-target mapping and prompt-asset mapping for `beauty_contest` in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T018 [US2] Implement loud rejection for unsupported social games and missing rubric/few-shot assets in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T019 [US2] Implement prompt rendering that composes shared rubric text with mapped few-shot content in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T020 [US2] Run targeted pytest coverage for User Story 2 using /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
+- [X] T019 [US2] Implement explicit dual-game prompt-asset mapping and unsupported-game rejection in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py`
+- [X] T020 [US2] Keep the prompt-building flow simple in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py` while allowing `escalation_game` to reuse the Beauty Contest few-shot asset by explicit choice
+- [X] T021 [US2] Run targeted pytest for `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py` covering supported-game switching and prompt assembly
 
 **Checkpoint**: At this point, User Stories 1 and 2 should both work independently
 
@@ -94,21 +102,20 @@
 
 ## Phase 5: User Story 3 - Resume And Audit A Long Transformation Run (Priority: P3)
 
-**Goal**: Provide resumability, deterministic row accounting, and reproducible run metadata for long-running transformations
+**Goal**: Preserve deterministic resume behavior, artifact accounting, and run metadata across both supported social games.
 
-**Independent Test**: Run the CLI twice on a partial fixture and confirm that `id + source.game_id` prevents duplicate successes, preserves prior failure records, and writes reconciled run metadata
+**Independent Test**: Run the CLI twice on partial fixtures for each supported game and confirm that completed identities are not duplicated, skipped rows are recorded, and run metadata reconciles to the full processed row count.
 
 ### Tests for User Story 3 ⚠️
 
-- [x] T021 [P] [US3] Add failing tests for resume behavior, duplicate prevention, and `--rerun` override handling in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
-- [x] T022 [P] [US3] Add failing tests for run-metadata counters, provenance retention, and terminal-state bookkeeping in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
+- [X] T022 [P] [US3] Add failing dual-game resume and rerun coverage in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py`
+- [X] T023 [P] [US3] Add failing run-metadata and artifact-accounting coverage for both supported games in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py`
 
 ### Implementation for User Story 3
 
-- [x] T023 [US3] Implement resume-state loading and identity-based skip logic using `id + source.game_id` in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T024 [US3] Implement deterministic failure/skipped terminal records and `--rerun` behavior in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T025 [US3] Implement run-metadata recording, counter reconciliation, and provenance persistence in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T026 [US3] Run targeted pytest coverage for User Story 3 using /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
+- [X] T024 [US3] Generalize artifact path selection and completed-identity bookkeeping in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py` for both supported games
+- [X] T025 [US3] Reconcile success, failure, skipped, and metadata outputs per supported game in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py`
+- [X] T026 [US3] Run targeted pytest for `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py` covering resume, rerun, and artifact accounting
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -116,25 +123,14 @@
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-**Purpose**: Final validation, docs, and research-evidence checks across all stories
+**Purpose**: Final cleanup, regression validation, docs, and research-facing evidence.
 
-- [x] T027 [P] Update quick usage and artifact expectations in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/README.md
-- [x] T028 Refactor /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py for clarity after all story tests pass
-- [x] T029 Run mypy for /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T030 Run quickstart validation from /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/specs/002-social-game-transform/quickstart.md and capture artifact evidence
-- [x] T031 Verify progress output, run metadata, and example artifact contents from /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/specs/002-social-game-transform/quickstart.md against the implemented CLI
-
----
-
-## Phase 7: Contract-Validation Alignment
-
-**Purpose**: Align the implementation with the clarified rule that the real game scenario constructor is the contract boundary
-
-- [x] T032 [P] Add failing validation-alignment coverage in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py
-- [x] T033 [P] Add failing game-contract regression coverage in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/tests/games/test_beauty_contest_game_config.py
-- [x] T034 Simplify transformed-row validation to rely on direct scenario construction in /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py
-- [x] T035 Run targeted pytest coverage for the contract-alignment change using /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py and /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/tests/games/test_beauty_contest_game_config.py
-- [x] T036 Run mypy for /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py after the refactor
+- [X] T027 [P] Update usage documentation in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/README.md` for dual-game support and `Escalation_Game` history semantics
+- [X] T028 [P] Update quick usage and evidence notes in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/specs/002-social-game-transform/quickstart.md` if implementation details shifted during TDD
+- [X] T029 Refactor `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py` and `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/games/escalation_game.py` for clarity after all story tests pass
+- [X] T030 [P] Add any missing regression checks for dual-game artifact structure in `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/tests/test_transform_social_game_cases.py`
+- [X] T031 Run `mypy` for `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/data_creation/transform_social_game_cases.py` and `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/games/escalation_game.py`
+- [X] T032 Run quickstart validation from `/home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/specs/002-social-game-transform/quickstart.md` and capture artifact evidence for both supported games
 
 ---
 
@@ -142,49 +138,50 @@
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: No dependencies; start immediately
-- **Foundational (Phase 2)**: Depends on Setup completion; blocks all user stories
-- **User Story 1 (Phase 3)**: Depends on Foundational completion; this is the MVP
-- **User Story 2 (Phase 4)**: Depends on Foundational completion and reuses the CLI skeleton from User Story 1
-- **User Story 3 (Phase 5)**: Depends on Foundational completion and the artifact flow created in User Story 1
+- **Setup (Phase 1)**: No dependencies - can start immediately
+- **Foundational (Phase 2)**: Depends on Setup completion - blocks all user stories
+- **User Story 1 (Phase 3)**: Depends on Foundational completion - this is the MVP
+- **User Story 2 (Phase 4)**: Depends on Foundational completion and reuses the generalized mapping introduced for US1
+- **User Story 3 (Phase 5)**: Depends on Foundational completion and the artifact flow preserved through US1
 - **Polish (Phase 6)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
-- **User Story 1 (P1)**: Can start after Foundational; no dependency on later stories
-- **User Story 2 (P2)**: Can start after Foundational, but is most efficient after User Story 1 establishes the base CLI path
-- **User Story 3 (P3)**: Can start after Foundational, but depends conceptually on the success/failure artifact model from User Story 1
+- **User Story 1 (P1)**: Can start after Foundational - no dependency on later stories
+- **User Story 2 (P2)**: Can start after Foundational, but is simplest after US1 establishes the dual-game mapping path
+- **User Story 3 (P3)**: Can start after Foundational, but depends conceptually on the success/failure artifact model exercised by US1
 
 ### Within Each User Story
 
-- Tests MUST be written and FAIL before implementation
-- Shared validations and helpers from Foundational phase come before story-specific implementation
-- CLI behavior comes after prompt/mapping logic and row-validation logic
+- Tests MUST be written and fail before implementation
+- Shared mapping and validation helpers come before story-specific behavior
+- Scenario contract changes come before final pipeline validation
 - Story-level pytest verification comes before moving to the next story
 
 ### Parallel Opportunities
 
-- T001 and T002 can run in parallel
-- T007, T008, and T009 can run in parallel
-- T015 and T016 can run in parallel
-- T021 and T022 can run in parallel
-- T027 and T031 can run in parallel once implementation is complete
+- T002 and T003 can run in parallel
+- T005, T006, and T008 can run in parallel after T004 begins defining the mapping shape
+- T009, T010, and T011 can run in parallel
+- T017 and T018 can run in parallel
+- T022 and T023 can run in parallel
+- T027, T028, and T030 can run in parallel once implementation is complete
 
 ---
 
 ## Parallel Example: User Story 1
 
 ```bash
-# Launch all User Story 1 test writing tasks together:
-Task: "T007 [US1] Add CLI contract tests in data_creation/tests/test_transform_social_game_cases.py"
-Task: "T008 [US1] Add integration tests in data_creation/tests/test_transform_social_game_cases.py"
-Task: "T009 [US1] Add game-load validation tests in tests/games/test_beauty_contest_game_config.py"
+# Launch the failing tests for User Story 1 together:
+Task: "T009 [US1] Add failing CLI integration coverage in data_creation/tests/test_transform_social_game_cases.py"
+Task: "T010 [US1] Add failing Escalation Game history-contract coverage in tests/games/test_escalation_game_config.py"
+Task: "T011 [US1] Add failing game-load validation coverage in tests/games/test_escalation_game_config.py"
 
-# After those fail, implement the core User Story 1 work in sequence:
-Task: "T010 [US1] Implement prompt-pack assembly in data_creation/transform_social_game_cases.py"
-Task: "T011 [US1] Implement DeepSeek transformation call in data_creation/transform_social_game_cases.py"
-Task: "T012 [US1] Implement artifact writing in data_creation/transform_social_game_cases.py"
-Task: "T013 [US1] Implement CLI entrypoint in data_creation/transform_social_game_cases.py"
+# After the tests fail, implement the smallest passing changes:
+Task: "T012 [US1] Generalize prompt-pack loading in data_creation/transform_social_game_cases.py"
+Task: "T013 [US1] Implement per-game structural field injection in data_creation/transform_social_game_cases.py"
+Task: "T014 [US1] Extend games/escalation_game.py for optional explicit previous_actions"
+Task: "T015 [US1] Update row transformation and constructor validation flow in data_creation/transform_social_game_cases.py"
 ```
 
 ---
@@ -196,32 +193,32 @@ Task: "T013 [US1] Implement CLI entrypoint in data_creation/transform_social_gam
 1. Complete Phase 1: Setup
 2. Complete Phase 2: Foundational
 3. Complete Phase 3: User Story 1
-4. **STOP and VALIDATE**: Run the User Story 1 pytest targets and confirm success outputs load through `BeautyContestScenario`
-5. Demo the CLI on a small `beauty_contest` fixture
+4. **STOP and VALIDATE**: Run the targeted CLI and scenario-contract tests for both supported games
+5. Demo the CLI on small fixtures for `beauty_contest` and `escalation_game`
 
 ### Incremental Delivery
 
-1. Build the shared CLI and validation foundation
-2. Deliver `beauty_contest` transformation and success-only artifacts as MVP
-3. Add explicit prompt-pack mapping and unsupported-game rejection
-4. Add resume, rerun, and run-metadata accounting
-5. Finish with docs, mypy, and quickstart validation
+1. Build the explicit dual-game mapping and contract-validation foundation
+2. Deliver dual-game loadable transformation as the MVP
+3. Tighten prompt-asset switching and unsupported-game rejection
+4. Reconfirm resume, rerun, and artifact bookkeeping across both games
+5. Finish with docs, `mypy`, and quickstart validation
 
 ### Parallel Team Strategy
 
 With multiple developers:
 
-1. One developer handles Phase 2 shared helpers in `data_creation/transform_social_game_cases.py`
-2. A second developer writes the failing integration tests in `data_creation/tests/test_transform_social_game_cases.py`
-3. A third developer extends `tests/games/test_beauty_contest_game_config.py` for real loader validation
-4. After Foundation is merged, story work can proceed with low conflict because most tasks center on one CLI module and one test module
+1. One developer stabilizes the mapping and artifact logic in `data_creation/transform_social_game_cases.py`
+2. A second developer writes the failing CLI and prompt-asset tests in `data_creation/tests/test_transform_social_game_cases.py`
+3. A third developer extends `games/escalation_game.py` and its contract tests in `tests/games/test_escalation_game_config.py`
+4. After Foundation is merged, story work can proceed with low conflict because the main write scopes are the CLI module, the Escalation game contract, and the test modules
 
 ---
 
 ## Notes
 
-- [P] tasks touch different files or independent test slices
+- `[P]` tasks touch different files or independent test slices
 - Every task includes an exact file path
-- The MVP scope is User Story 1 only
-- The main dataset must remain success-only throughout implementation
-- Avoid adding a service layer, generalized game registry, or fallback identity heuristics in this feature
+- The MVP scope is User Story 1
+- Success datasets must remain success-only throughout implementation
+- Avoid adding a plugin system, auto-discovery, or generic service layer for this feature

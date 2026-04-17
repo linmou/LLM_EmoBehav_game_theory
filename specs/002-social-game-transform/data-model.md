@@ -2,103 +2,147 @@
 
 ## Curated Social Game Case
 
-Purpose: Represents one source row from the curated `beauty_contest` social-game dataset.
+Purpose: Represents one source row from a curated social-game JSONL dataset selected for transformation.
 
 Fields:
 - `id`: string. Curated sample identifier.
-- `source.game_id`: string. Underlying Diplomacy game identifier.
-- `source.dataset`: string. Upstream dataset name.
-- `source.line_number`: integer. Source row provenance.
-- `episode_type`: string. Mechanism family label from the curated source.
-- `variant_name`: string. Variant label from the curated source.
-- `players`: list[string]. Player names in the source case.
-- `phases`: list[string]. Included turns/phases.
-- `events`: list[object]. Structured event history used for prompt input.
-- `labels`: object. Curated annotations such as winners, victim, or mechanism metadata.
-- `metrics`: object. Curated numeric summary information.
+- `source.game_id`: string. Upstream source game identifier.
+- `source.dataset`: string | null. Source dataset label.
+- `source.line_number`: integer | null. Source file provenance.
+- `episode_type`: string | null. Mechanism-family label from the curated data.
+- `variant_name`: string | null. Variant label from the curated data.
+- `players`: list[string] | null. Source participant labels.
+- `phases`: list[string] | null. Source phase markers.
+- `events`: list[object] | null. Structured event history used in the prompt.
+- `labels`: object | null. Curated annotations.
+- `metrics`: object | null. Curated numeric summaries.
 
 Validation rules:
-- `id` is required.
-- `source.game_id` is required.
-- The identity pair for resume/deduplication is `id + source.game_id`.
+- `id` is required and non-empty.
+- `source.game_id` is required and non-empty.
+- The deterministic resume identity is `id + source.game_id`.
 
 ## Prompt Pack
 
-Purpose: Defines the prompt assets used to transform one social game.
+Purpose: Defines the prompt assets and runtime target mapping for one selected social game.
 
 Fields:
-- `social_game`: string. Social game key, initially `beauty_contest`.
-- `rubric_path`: path. Shared rubric file path.
-- `few_shot_path`: path. Game-specific few-shot asset path.
-- `target_game_name`: string. Runtime game mapping, initially `Beauty_Contest`.
+- `social_game`: string. Supported values in this release: `beauty_contest`, `escalation_game`.
+- `rubric_path`: path. Shared rubric file.
+- `few_shot_path`: path. Selected few-shot asset.
+- `few_shot_examples`: list[object]. Parsed few-shot payload.
+- `target_game_name`: string. Canonical runtime game name, for example `Beauty_Contest` or `Escalation_Game`.
+- `scenario_class`: Python scenario class reference. The real contract validator for success rows.
+- `artifact_names`: object. Success/failure/skip output filenames.
 
 Validation rules:
-- V1 accepts only `beauty_contest`.
-- Both prompt asset paths must exist before a run begins.
-- Target game mapping must be explicit rather than inferred from filenames.
+- `social_game` must map explicitly in code; unsupported values fail fast.
+- `rubric_path` must exist.
+- `few_shot_path` must exist.
+- `few_shot_examples` must parse as a JSON list.
+- `escalation_game` may temporarily reuse the Beauty Contest few-shot asset in this release.
 
 ## Transformation Request
 
-Purpose: Represents the immutable inputs for one row transformation call.
+Purpose: Immutable inputs used for one row transformation attempt.
 
 Fields:
-- `identity_key`: string. Deterministic representation of `id + source.game_id`.
+- `identity_key`: string. `id + source.game_id`.
 - `source_case`: Curated Social Game Case.
 - `prompt_pack`: Prompt Pack.
-- `model_name`: string. DeepSeek model identifier for the run.
-- `retry_index`: integer. Current attempt number for the row.
+- `model_name`: string. Chat model identifier.
+- `retry_index`: integer. Attempt number for the row.
 
 Validation rules:
 - `identity_key` must be unique within a run.
-- `retry_index` starts at 0 and increments only for row-level retries.
+- `retry_index` starts at `0` and increases only for row-level retries.
+
+## Beauty Contest Scenario Row
+
+Purpose: Normalized output row intended to instantiate through `BeautyContestScenario`.
+
+Fields:
+- `scenario`: string.
+- `description`: string.
+- `participants`: list[object] with participant `name`.
+- `behavior_choices`: object with `commit_0`, `commit_1`, `commit_2`, `commit_3`.
+- `previous_actions`: list[object]. Optional round-history records accepted by `BeautyContestScenario`.
+- `game_name`: string. Canonical value `Beauty_Contest`.
+- `game_category`: string | null. Optional mechanism label preserved from the transform.
+- `provenance`: object with source identifiers and source-location metadata.
+- `payoff_matrix`: object. Injected deterministic field, currently empty/default-compatible for this game.
+
+Validation rules:
+- Must instantiate successfully as `BeautyContestScenario`.
+- If `previous_actions` is present, every entry must satisfy that scenario class’s round-history rules.
+
+## Escalation Game Scenario Row
+
+Purpose: Normalized output row intended to instantiate through `EscalationGameScenario`.
+
+Fields:
+- `scenario`: string.
+- `description`: string.
+- `participants`: list[object] with participant `name`.
+- `behavior_choices`: object with `escalate`, `withdraw`.
+- `previous_actions`: optional explicit prior-history representation.
+- `previous_actions_length`: optional integer fallback history representation.
+- `game_name`: string. Canonical value `Escalation_Game`.
+- `provenance`: object with source identifiers and source-location metadata.
+- `payoff_matrix`: object. Injected deterministic escalation payoff matrix.
+
+Validation rules:
+- Must instantiate successfully as `EscalationGameScenario`.
+- `previous_actions` is optional.
+- `previous_actions_length` is optional.
+- If `previous_actions` is present, it is the canonical history representation.
+- If both `previous_actions` and `previous_actions_length` are present, then `previous_actions_length` must equal `len(previous_actions)`.
+- If explicit `previous_actions` is absent, `previous_actions_length` may be used as fallback input.
 
 ## Transformed Game Scenario Case
 
-Purpose: Represents one validated output row suitable for the Beauty Contest game loader.
+Purpose: Union of the per-game success-row shapes written to the success dataset.
 
-Fields:
-- `scenario`: string. Short title.
-- `description`: string. Natural-language scenario description.
-- `participants`: list[object]. Participant entries with `name`.
-- `behavior_choices`: object. Exactly `commit_0`, `commit_1`, `commit_2`, `commit_3`.
-- `previous_actions`: list[object]. Optional per-round history records.
-- `game_name`: string. Expected target game name.
-- `game_category`: string. Mechanism category carried into the transformed row.
-- `provenance`: object. Source identifiers and prompt/run references.
+Variants:
+- Beauty Contest Scenario Row
+- Escalation Game Scenario Row
 
-Validation rules:
-- Must instantiate successfully as the target scenario class, `scenario_class(**data)`, which is `BeautyContestScenario` in V1.
-- If `previous_actions` is present, every entry must satisfy the scenario class constraints for `time`, `participant_actions`, and optional `round_summary`.
-- Participant names must be consistent across `description`, `participants`, and `previous_actions`.
-
-## Success Dataset
-
-Purpose: Main dataset consumed by downstream loaders and experiments.
-
-Fields:
-- ordered list of `Transformed Game Scenario Case`
-
-Validation rules:
-- Contains only validated successful cases.
-- Must exclude failed and skipped rows entirely.
-- Each row must preserve provenance back to the source identity pair.
+Shared rules:
+- Every success row carries provenance for the source identity pair.
+- Every success row must pass direct scenario-constructor validation for the mapped target game.
+- Deterministic structural fields are injected from code/config, not trusted to the model.
 
 ## Failure Record
 
 Purpose: Captures one unsuccessful transformation attempt or invalid source row.
 
 Fields:
-- `identity_key`: string.
-- `id`: string or null.
-- `source_game_id`: string or null.
-- `stage`: string. Example: `input_validation`, `prompt_call`, `response_parse`, `schema_validation`, `scenario_load`.
+- `identity_key`: string | null.
+- `id`: string | null.
+- `source_game_id`: string | null.
+- `stage`: string. Typical values include `input_validation`, `transform`, `scenario_load`.
 - `error_type`: string.
 - `message`: string.
 - `source_snapshot`: object. Minimal diagnostic subset of the source row.
-- `timestamp`: string.
+- `timestamp`: string. UTC ISO timestamp.
 
 Validation rules:
-- Every failed or skipped row must produce exactly one terminal failure/skipped record in the run artifacts.
+- Failure records are machine-readable.
+- Invalid or unsuccessful rows must not enter the success dataset.
+- Every finalized failed row remains traceable to the source identity when available.
+
+## Skipped Record
+
+Purpose: Captures one row skipped due to resume bookkeeping.
+
+Fields:
+- `identity_key`: string.
+- `stage`: string. Canonical value `resume_skip`.
+- `message`: string.
+- `timestamp`: string. UTC ISO timestamp.
+
+Validation rules:
+- Skipped rows are written only to the skipped artifact, never to the success dataset.
 
 ## Run Metadata
 
@@ -114,27 +158,30 @@ Fields:
 - `model_name`: string.
 - `rubric_path`: path.
 - `few_shot_path`: path.
-- `started_at`: string.
-- `completed_at`: string.
-- `counts`: object with `total`, `success`, `failed`, `skipped`.
+- `completed_identities`: list[string].
+- `counts.total`: integer.
+- `counts.success`: integer.
+- `counts.failed`: integer.
+- `counts.skipped`: integer.
 
 Validation rules:
-- Count totals must reconcile to the number of processed source rows.
-- Output paths must point to artifacts generated by the run.
+- Count totals must reconcile to processed rows.
+- `completed_identities` must reflect terminal success/failure rows used for resume decisions.
 
 ## State Transitions
 
 ```text
 Source Row
-  -> Rejected As Invalid Source
+  -> Invalid Source Row
   -> Queued For Transformation
-      -> Prompt Call Failed
-      -> Response Parse Failed
-      -> Schema Validation Failed
-      -> Scenario Load Failed
+      -> Transform Failure
+      -> Scenario Contract Failure
       -> Success Dataset Entry
+
+Prior Artifact + Matching Identity
+  -> Resume Skip Entry
 ```
 
 Rules:
-- A row may reach exactly one terminal state per finalized run artifact.
-- Resume uses terminal states to skip already handled identities unless the operator requests a full rerun.
+- A processed row reaches exactly one terminal artifact state in a finalized run.
+- Resume logic uses terminal identities from prior success and failure artifacts plus run metadata.

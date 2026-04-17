@@ -312,6 +312,8 @@ Every time you are going to commit a change, review the document markdown or cla
 - Local files: source JSONL input, success dataset JSON, failure/skipped artifact JSONL or JSON, run metadata JSON (002-social-game-transform)
 - Python 3.10+ in the repository conda environment used for data-generation scripts (`llm` on the current machine) + Standard library (`argparse`, `json`, `pathlib`, `concurrent.futures`, `datetime`), `python-dotenv`, OpenAI-compatible `openai` client stack already used in-repo, existing `games/beauty_contest.py` scenario class (002-social-game-transform)
 - Local files: source JSONL input, success dataset JSON, failure/skipped artifact JSONL, run metadata JSON (002-social-game-transform)
+- Python 3.10+ in the repository conda environment + standard library (`argparse`, `json`, `pathlib`, `datetime`, `concurrent.futures`), `pydantic`, `openai`, `python-dotenv`, in-repo game modules under `games/` (002-social-game-transform)
+- Local files only: JSONL source input, JSON success dataset, JSONL failure/skipped artifacts, JSON run metadata, Markdown prompt assets (002-social-game-transform)
 
 ## Recent Changes
 - 002-social-game-transform: Added Python 3.x in the repository conda environment (`llm_behav`) + Standard library (`argparse`, `json`, `pathlib`, `concurrent.futures`), `pydantic`, `python-dotenv`, `openai`-compatible client stack already used in-repo
