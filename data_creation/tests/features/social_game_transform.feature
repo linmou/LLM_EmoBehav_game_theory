@@ -15,6 +15,14 @@ Feature: Social game transform pipeline
     Then it writes an escalation success dataset with only loadable rows
     And it writes separate escalation failure and metadata artifacts
 
+  Scenario: Build per-row few-shot packs from run-present variants only
+    Given a same-game few-shot asset with multiple variants
+    And a run whose input rows expose the variants present in that batch
+    When the transform CLI builds per-row prompt packs
+    Then each row keeps at least one same-variant example
+    And each multi-variant row adds exactly 2 cross-variant examples
+    And examples from variants absent from the run never enter the eligible pool
+
   Scenario: Reject unsupported social games loudly
     Given a curated input file
     When the transform CLI runs with an unsupported social game
