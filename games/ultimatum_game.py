@@ -62,9 +62,40 @@ class UltimatumGameScenario(SequentialGameScenario):
     participants: list[dict]
     proposer_behavior_choices: UGProposerChoices
     responder_behavior_choices: UGResponderChoices
-    previous_actions_length: int
+    previous_actions_data: list[tuple[str, str]] = Field(
+        default_factory=list,
+        alias="previous_actions",
+        serialization_alias="previous_actions",
+    )
+    previous_actions_length: Optional[int] = None
     payoff_matrix: Dict[tuple[str, str], Any]
     game_name: str = "Ultimatum_Game"
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_previous_action_lengths(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+
+        has_explicit_previous_actions = (
+            "previous_actions" in data or "previous_actions_data" in data
+        )
+        data["_explicit_previous_actions_provided"] = has_explicit_previous_actions
+        previous_actions = data.get("previous_actions", data.get("previous_actions_data"))
+        previous_actions_length = data.get("previous_actions_length")
+
+        if has_explicit_previous_actions:
+            explicit_actions = previous_actions or []
+            if previous_actions_length is not None and previous_actions_length != len(explicit_actions):
+                raise ValueError(
+                    "previous_actions_length must match len(previous_actions) when both are provided"
+                )
+            data["previous_actions_length"] = len(explicit_actions)
+            return data
+
+        if previous_actions_length is None:
+            data["previous_actions_length"] = 0
+        return data
 
     def get_scenario_info(self) -> dict:
         return {"scenario": self.scenario, "description": self.description}
@@ -115,11 +146,38 @@ class UltimatumGameScenario(SequentialGameScenario):
 
         return self
 
+    @model_validator(mode="after")
+    def _validate_previous_actions(self) -> "UltimatumGameScenario":
+        participant_names = {participant["name"] for participant in self.participants}
+        valid_decisions = set(self.proposer_behavior_choices.get_choices()) | set(
+            self.responder_behavior_choices.get_choices()
+        )
+        normalized_actions: list[tuple[str, str]] = []
+
+        for action in self.previous_actions_data:
+            if not isinstance(action, (list, tuple)) or len(action) != 2:
+                raise ValueError(
+                    "previous_actions must contain [participant_name, action_description] pairs"
+                )
+            actor, decision = action
+            if not isinstance(actor, str) or actor not in participant_names:
+                raise ValueError("previous_actions actor must match a participant name")
+            if not isinstance(decision, str) or decision not in valid_decisions:
+                raise ValueError("previous_actions decision must match a behavior choice")
+            normalized_actions.append((actor, decision))
+
+        self.previous_actions_data = normalized_actions
+        if self.previous_actions_data and self.previous_actions_length != len(self.previous_actions_data):
+            raise ValueError(
+                "previous_actions_length must match len(previous_actions) when both are provided"
+            )
+        return self
+
     @property
     def previous_actions(self) -> list:  # type: ignore[override]
-        assert (
-            self.previous_actions_length == 0
-        ), "Currently ultimatum game does not have previous actions"
+        if getattr(self, "_explicit_previous_actions_provided", False):
+            return self.previous_actions_data
+        assert self.previous_actions_length == 0, "Proposer view should not derive prior actions"
         return []
 
     @property
@@ -197,6 +255,14 @@ class UltimatumGameScenario(SequentialGameScenario):
 
 
 class UltimatumGameProposerScenario(UltimatumGameScenario):
+    @model_validator(mode="after")
+    def _reject_non_empty_previous_actions(self) -> "UltimatumGameProposerScenario":
+        if self.previous_actions_data:
+            raise ValueError(
+                "Proposer scenario cannot include non-empty previous_actions"
+            )
+        return self
+
     def get_scenario_info(self) -> Dict:
         return {
             "scenario": self.scenario,
@@ -214,7 +280,35 @@ class UltimatumGameProposerScenario(UltimatumGameScenario):
 
 
 class UltimatumGameResponderScenario(UltimatumGameScenario):
-    previous_offer_level: int = Field(ge=0, le=2)
+    previous_offer_level: Optional[int] = Field(default=None, ge=0, le=2)
+
+    @model_validator(mode="after")
+    def _validate_previous_offer_level_consistency(self) -> "UltimatumGameResponderScenario":
+        if not self.previous_actions_data or self.previous_offer_level is None:
+            return self
+
+        proposer_actions = [
+            decision
+            for actor, decision in self.previous_actions_data
+            if actor == self.proposer_name
+        ]
+        if not proposer_actions:
+            raise ValueError(
+                "previous_offer_level requires a proposer action in previous_actions"
+            )
+
+        expected_action = (
+            self.proposer_behavior_choices.offer_low
+            if self.previous_offer_level == 0
+            else self.proposer_behavior_choices.offer_medium
+            if self.previous_offer_level == 1
+            else self.proposer_behavior_choices.offer_high
+        )
+        if proposer_actions[-1] != expected_action:
+            raise ValueError(
+                "previous_offer_level must match the last proposer action in previous_actions"
+            )
+        return self
 
     def get_scenario_info(self) -> Dict:
         return {
@@ -233,6 +327,12 @@ class UltimatumGameResponderScenario(UltimatumGameScenario):
 
     @property
     def previous_actions(self) -> list:  # type: ignore[override]
+        if getattr(self, "_explicit_previous_actions_provided", False):
+            return self.previous_actions_data
+        if self.previous_offer_level is None:
+            raise ValueError(
+                "previous_offer_level is required when explicit previous_actions are absent"
+            )
         if self.previous_offer_level == 0:
             return [(self.proposer_name, self.proposer_behavior_choices.offer_low)]
         elif self.previous_offer_level == 1:
