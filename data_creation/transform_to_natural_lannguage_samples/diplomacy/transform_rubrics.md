@@ -11,6 +11,6 @@ You should following these rules:
 6.3 - do not fabricate exact provinces or exact support origins unless that detail is part of the decision framing
 7. Avoid explicit game-mechanism jargon such as “beauty contest,” “bid,” “variant,” or “payoff matrix”
 8.  Keep participant naming consistent across `description`, `participants`, and `previous_actions`
-9. In multi-turn cases, each previous round may include an optional `round_summary`, but the core content must be the
-  per-participant canonical action descriptions.
- 
+9. In multi-turn cases, each previous round should include`round_summary`, but the core content must be the per-participant canonical action descriptions.
+10. Keep behavior choices as close as possible. Do not use explicit semantic different wording like "Do" vs "Do not" , keep different at slight level. and do not reflect any emotional wording. 
+11. In multvior choices for multi-turn cases, do not reflect previous turn decisions e.g. 'xxx like before' which is forbidden. 

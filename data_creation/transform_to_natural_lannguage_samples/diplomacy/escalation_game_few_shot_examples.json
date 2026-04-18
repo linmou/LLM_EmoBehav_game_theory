@@ -1,0 +1,1828 @@
+[
+  {
+    "input": {
+      "confidence_breakdown": {
+        "escalation_bonus": 0.1,
+        "participant_bonus": 0.1
+      },
+      "confidence_score": 0.75,
+      "episode_type": "ESCALATION_GAME",
+      "event_center": "BEL",
+      "events": [
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "MAO",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "SEV",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "MOS",
+            "supporter_loc": "WAR",
+            "unit_origin": "SEV"
+          },
+          "phase": "F1933M",
+          "recipient": "RUSSIA",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "CON",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "CON",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "MUN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "SER",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "BER",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "BEL",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "BRE",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "ARM",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1933M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "BER",
+            "fleet_loc": "CON",
+            "unit_origin": "BUD"
+          },
+          "phase": "F1933M",
+          "recipient": "FRANCE",
+          "type": "CONVOY"
+        }
+      ],
+      "game_name": "ESCALATION_GAME",
+      "id": "sg_0102421fa618",
+      "id_basis": {
+        "episode_type": "ESCALATION_GAME",
+        "event_center": "BEL",
+        "game_id": "HecBOxyt4-XXshlA",
+        "game_name": "ESCALATION_GAME",
+        "mechanism_name": null,
+        "phase_sequence": ["F1933M"],
+        "players": ["ENGLAND", "FRANCE"],
+        "variant_name": "TWO_AGENTS_SINGLE_TURN",
+        "victim": null
+      },
+      "labels": {
+        "round_outcome": "ESCALATE_ESCALATE",
+        "winner": null
+      },
+      "metrics": {
+        "focal_commitments": {
+          "ENGLAND": ["A PIC - BEL"],
+          "FRANCE": ["A BUR - BEL"]
+        },
+        "num_escalators": 2,
+        "yield_sets": {
+          "ENGLAND": ["CLY", "DEN", "EDI", "ENG", "HOL", "KIE", "LON", "LVP", "NTH", "NWY", "PIC", "PIE", "RUH", "STP", "SWE", "TUS", "WAL", "YOR"],
+          "FRANCE": ["BUR", "CLY", "GAS", "MAR", "NAF", "NAP", "PIE", "POR", "ROM", "SPA", "TUN", "TUS", "WAL", "YOR"]
+        }
+      },
+      "phases": ["F1933M"],
+      "players": ["ENGLAND", "FRANCE"],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "HecBOxyt4-XXshlA",
+        "line_number": 17905
+      },
+      "variant_name": "TWO_AGENTS_SINGLE_TURN"
+    },
+    "output": {
+      "scenario": "Belgium Frontier Standoff",
+      "description": "You are a England commander. Belgium has become the key corridor between your frontier and the French line, and both staffs know that the first force to enter can claim a short-lived positional edge. If you keep your army outside Belgium, you avoid the cost of an immediate clash and preserve strength for later operations, but you also risk allowing France to take the province uncontested. If you push into Belgium while France stays back, you gain a forward position and stronger leverage over the surrounding front, while France loses room to maneuver and must react from a weaker posture. Yet if both sides press forward at once, the contest turns into a costly deadlock that drains supplies, fixes troops in place, and leaves neither side with secure control.",
+      "participants": [
+        {"name": "England"},
+        {"name": "France"}
+      ],
+      "behavior_choices": {
+        "escalate": "Order an immediate advance into Belgium this season.",
+        "withdraw": "Keep your current line outside Belgium this season."
+      },
+      "previous_actions": [],
+      "payoff_matrix": {},
+      "game_name": "Escalation_Game"
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "mean_round_confidence": 0.75,
+        "repetition_bonus": 0.1
+      },
+      "confidence_score": 0.85,
+      "episode_type": "ESCALATION_GAME",
+      "event_center": "SER",
+      "events": [
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "ROM",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "SIL",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "TUN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "ION",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "GAL",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "PRU",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "LVN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "VEN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "BUD",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "TYS",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "BER",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "SER",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1916M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "VEN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "NAP",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "GRE",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "UKR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "BER",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "MOS",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "MUN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "ION",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "TRI",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "SER",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1916M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "delta": 1,
+            "from_phase": "F1916M",
+            "to_phase": "S1917M"
+          },
+          "phase": "F1916M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "delta": -1,
+            "from_phase": "F1916M",
+            "to_phase": "S1917M"
+          },
+          "phase": "F1916M",
+          "type": "SC_DELTA"
+        }
+      ],
+      "game_name": "ESCALATION_GAME",
+      "id": "sg_002c0cc0143c",
+      "id_basis": {
+        "episode_type": "ESCALATION_GAME",
+        "event_center": "SER",
+        "game_id": "BiI_RotCuI-UN764",
+        "game_name": "ESCALATION_GAME",
+        "mechanism_name": null,
+        "phase_sequence": ["S1916M", "F1916M"],
+        "players": ["AUSTRIA", "RUSSIA"],
+        "variant_name": "TWO_AGENTS_MULTI_TURN",
+        "victim": null
+      },
+      "labels": {
+        "episode_outcome": "ALL_ESCALATE_ESCALATE",
+        "round_outcome": "ESCALATE_ESCALATE",
+        "round_sequence": ["ESCALATE_ESCALATE", "ESCALATE_ESCALATE"]
+      },
+      "metrics": {
+        "counts": {
+          "ESCALATE_ESCALATE": 2,
+          "ESCALATE_YIELD": 0,
+          "YIELD_ESCALATE": 0,
+          "YIELD_YIELD": 0
+        },
+        "num_rounds": 2,
+        "yield_sets": {
+          "AUSTRIA": ["ALB", "BUD", "TRI"],
+          "RUSSIA": ["ALB", "BUL", "GRE", "RUM"]
+        }
+      },
+      "phases": ["S1916M", "F1916M"],
+      "players": ["AUSTRIA", "RUSSIA"],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "BiI_RotCuI-UN764",
+        "line_number": 19153
+      },
+      "variant_name": "TWO_AGENTS_MULTI_TURN"
+    },
+    "output": {
+      "scenario": "Serbia Border Campaign",
+      "description": "You are a Austria commander. Serbia sits at the center of an extended border campaign with Russia, and another round of pressure there could shift the balance of the surrounding theater. If you keep your forces outside Serbia now, you reduce the immediate cost in men, transport, and ammunition, but you also concede initiative if Russia continues to push. If you renew the advance while Russia pauses, you can tighten your grip on the frontier and improve your bargaining position for the next season, while Russia absorbs the strategic setback of yielding the ground. But this dispute has already carried over from the previous round, and another mutual advance would deepen the campaign into a more expensive stalemate in which both sides commit more resources without securing a clean advantage.",
+      "participants": [
+        {"name": "Austria"},
+        {"name": "Russia"}
+      ],
+      "behavior_choices": {
+        "escalate": "Renew the pressure on Serbia this season.",
+        "withdraw": "Hold your current line outside Serbia this season."
+      },
+      "previous_rounds": [
+        {
+          "time": "S1916M",
+          "participant_actions": [
+            ["Austria", "Renew the pressure on Serbia this season."],
+            ["Russia", "Renew the pressure on Serbia this season."]
+          ],
+          "round_summary": "Both Austria and Russia pressed into the Serbian theater in the previous round, so neither side yielded initiative and the frontier remained expensive and unresolved."
+        }
+      ],
+      "previous_actions": [
+        ["Austria", "Renew the pressure on Serbia this season."],
+        ["Russia", "Renew the pressure on Serbia this season."]
+      ],
+      "payoff_matrix": {},
+      "game_name": "Escalation_Game"
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "escalation_bonus": 0.15,
+        "participant_bonus": 0.3
+      },
+      "confidence_score": 1.0,
+      "episode_type": "ESCALATION_GAME",
+      "event_center": "GAS",
+      "events": [
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "PAR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1902M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "WAR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1902M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "SEV",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1902M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        }
+      ],
+      "game_name": "ESCALATION_GAME",
+      "id": "sg_7668dc5e1e1a",
+      "id_basis": {
+        "episode_type": "ESCALATION_GAME",
+        "event_center": "GAS",
+        "game_id": "snR9g6pez72vSx2R",
+        "game_name": "ESCALATION_GAME",
+        "mechanism_name": null,
+        "phase_sequence": ["S1902M"],
+        "players": ["AUSTRIA", "ENGLAND", "FRANCE", "GERMANY", "ITALY", "RUSSIA"],
+        "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN",
+        "victim": null
+      },
+      "labels": {
+        "round_outcome": "YIELD_ESCALATE_ESCALATE_YIELD_ESCALATE_YIELD",
+        "winner": null
+      },
+      "metrics": {
+        "focal_commitments": {
+          "AUSTRIA": [],
+          "ENGLAND": ["F BRE - GAS"],
+          "FRANCE": ["A SPA - GAS"],
+          "GERMANY": [],
+          "ITALY": ["A MAR - GAS"],
+          "RUSSIA": []
+        },
+        "num_escalators": 3,
+        "yield_sets": {
+          "AUSTRIA": ["ALB", "APU", "GRE", "NAF", "TUS"],
+          "ENGLAND": ["ALB", "APU", "BEL", "BRE", "CLY", "EDI", "LON", "LVP", "MAO", "NAF", "PIC", "TUS", "WAL", "YOR"],
+          "FRANCE": ["ALB", "APU", "CLY", "MAO", "NAF", "PIC", "POR", "SPA", "TUS", "WAL", "YOR"],
+          "GERMANY": ["BUR", "CLY", "DEN", "HOL", "KIE", "NAF", "PIC", "WAL", "YOR"],
+          "ITALY": ["ALB", "APU", "CLY", "MAR", "NAF", "NAP", "PIC", "PIE", "ROM", "TUN", "TUS", "WAL", "YOR"],
+          "RUSSIA": ["CLY", "NAF", "NWY", "PIC", "STP", "SWE", "WAL", "YOR"]
+        }
+      },
+      "phases": ["S1902M"],
+      "players": ["AUSTRIA", "ENGLAND", "FRANCE", "GERMANY", "ITALY", "RUSSIA"],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "snR9g6pez72vSx2R",
+        "line_number": 7428
+      },
+      "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"
+    },
+    "output": {
+      "scenario": "Gascony Corridor Crisis",
+      "description": "You are an Austria commander. Gascony has become a contested corridor where England, France, Germany, Italy, Russia, and your own command are all deciding whether to enter the province this season. If you keep your forces outside Gascony, you avoid the immediate cost of joining an already unstable contest and preserve strength for other fronts, but you also surrender direct influence over whatever settlement the others create there. If you commit forces into Gascony while only a few other powers do the same, you increase your leverage over the corridor and improve your chance of shaping the local balance in your favor. But if many commanders enter Gascony at once, the province turns into an overcrowded struggle in which supplies are wasted, coordination collapses, and no participant can secure a stable advantage despite the extra commitment.",
+      "participants": [
+        {"name": "Austria"},
+        {"name": "England"},
+        {"name": "France"},
+        {"name": "Germany"},
+        {"name": "Italy"},
+        {"name": "Russia"}
+      ],
+      "behavior_choices": {
+        "escalate": "Commit forces into Gascony this season.",
+        "withdraw": "Keep forces out of Gascony this season."
+      },
+      "previous_actions": [],
+      "payoff_matrix": {},
+      "game_name": "Escalation_Game"
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "mean_round_confidence": 0.9,
+        "repetition_bonus": 0.1
+      },
+      "confidence_score": 1.0,
+      "episode_type": "ESCALATION_GAME",
+      "event_center": "TUS",
+      "events": [
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "NWY",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1906M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "MUN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1906M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "SWE",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1906M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "HOL",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1906M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "RUM",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1906M",
+          "recipient": "TURKEY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "SEV",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1906M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "delta": 1,
+            "from_phase": "F1906M",
+            "to_phase": "S1907M"
+          },
+          "phase": "F1906M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "delta": 1,
+            "from_phase": "F1906M",
+            "to_phase": "S1907M"
+          },
+          "phase": "F1906M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "delta": -2,
+            "from_phase": "F1906M",
+            "to_phase": "S1907M"
+          },
+          "phase": "F1906M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "RUM",
+            "supporter_loc": "BUD",
+            "unit_origin": "GAL"
+          },
+          "phase": "S1907M",
+          "recipient": "RUSSIA",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "RUM",
+            "supported_power": "RUSSIA"
+          },
+          "phase": "S1907M",
+          "recipient": "TURKEY",
+          "type": "SUPPORT_ATTACK"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "BER",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1907M",
+          "recipient": "GERMANY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "MUN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1907M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "NWY",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1907M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "HOL",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1907M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "NWY",
+            "supporter_loc": "STP",
+            "unit_origin": "SWE"
+          },
+          "phase": "S1907M",
+          "recipient": "GERMANY",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "NWY",
+            "supported_power": "GERMANY"
+          },
+          "phase": "S1907M",
+          "recipient": "ENGLAND",
+          "type": "SUPPORT_ATTACK"
+        }
+      ],
+      "game_name": "ESCALATION_GAME",
+      "id": "sg_0b520bb4058a",
+      "id_basis": {
+        "episode_type": "ESCALATION_GAME",
+        "event_center": "TUS",
+        "game_id": "e-PA1DOPNUaQK4cJ",
+        "game_name": "ESCALATION_GAME",
+        "mechanism_name": null,
+        "phase_sequence": ["F1906M", "S1907M"],
+        "players": ["AUSTRIA", "FRANCE", "GERMANY", "ITALY", "TURKEY"],
+        "variant_name": "OVER_TWO_AGENTS_MULTI_TURN",
+        "victim": null
+      },
+      "labels": {
+        "episode_outcome": "ALL_YIELD_ESCALATE_ESCALATE_YIELD_YIELD",
+        "round_outcome": "YIELD_ESCALATE_ESCALATE_YIELD_YIELD",
+        "round_sequence": ["YIELD_ESCALATE_ESCALATE_YIELD_YIELD", "YIELD_ESCALATE_ESCALATE_YIELD_YIELD"]
+      },
+      "metrics": {
+        "counts": {
+          "YIELD_ESCALATE_ESCALATE_YIELD_YIELD": 2
+        },
+        "num_rounds": 2,
+        "yield_sets": {
+          "AUSTRIA": ["ALB", "APU", "NAF", "SYR", "TRI"],
+          "FRANCE": ["ALB", "APU", "BEL", "BRE", "CLY", "GAS", "LYO", "MAR", "NAF", "PIC", "PIE", "POR", "SPA", "SYR", "TUN", "TYS", "WAL"],
+          "GERMANY": ["ALB", "APU", "CLY", "GAS", "NAF", "NAP", "PIC", "ROM", "SYR", "TYS", "WAL"],
+          "ITALY": ["ALB", "APU", "NAF", "SYR", "VEN"],
+          "TURKEY": ["ALB", "APU", "BUL", "CON", "GAS", "GRE", "NAF", "SMY", "SYR"]
+        }
+      },
+      "phases": ["F1906M", "S1907M"],
+      "players": ["AUSTRIA", "FRANCE", "GERMANY", "ITALY", "TURKEY"],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "e-PA1DOPNUaQK4cJ",
+        "line_number": 31317
+      },
+      "variant_name": "OVER_TWO_AGENTS_MULTI_TURN"
+    },
+    "output": {
+      "scenario": "Tuscan Pressure Campaign",
+      "description": "You are an Austria commander. Tuscany has turned into a recurring pressure point where Austria, France, Germany, Italy, and Turkey are testing how much force to commit across successive seasons. If you keep your forces outside Tuscany, you avoid opening another costly line of operation and preserve strength for nearby fronts, but you also leave the contest to the powers that are already leaning forward. If you enter Tuscany while others hold back, you gain a larger voice over the province and can improve your regional position, while those who stay out surrender influence over the settlement. But this pattern has already repeated across earlier turns: when France and Germany keep pressing while others hesitate, the campaign becomes more expensive for everyone around it, and another crowded move risks prolonging a draining struggle rather than producing a decisive result.",
+      "participants": [
+        {"name": "Austria"},
+        {"name": "France"},
+        {"name": "Germany"},
+        {"name": "Italy"},
+        {"name": "Turkey"}
+      ],
+      "behavior_choices": {
+        "escalate": "Commit forces into Tuscany this season.",
+        "withdraw": "Keep forces out of Tuscany this season."
+      },
+      "previous_rounds": [
+        {
+          "time": "F1906M",
+          "participant_actions": [
+            ["Austria", "Keep forces out of Tuscany this season."],
+            ["France", "Commit forces into Tuscany this season."],
+            ["Germany", "Commit forces into Tuscany this season."],
+            ["Italy", "Keep forces out of Tuscany this season."],
+            ["Turkey", "Keep forces out of Tuscany this season."]
+          ],
+          "round_summary": "France and Germany carried the pressure on the Tuscan front in the previous round while Austria, Italy, and Turkey stayed back, leaving the dispute active but unevenly shared."
+        }
+      ],
+      "previous_actions": [
+        ["Austria", "Keep forces out of Tuscany this season."],
+        ["France", "Commit forces into Tuscany this season."],
+        ["Germany", "Commit forces into Tuscany this season."],
+        ["Italy", "Keep forces out of Tuscany this season."],
+        ["Turkey", "Keep forces out of Tuscany this season."]
+      ],
+      "payoff_matrix": {},
+      "game_name": "Escalation_Game"
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "escalation_bonus": 0.1,
+        "participant_bonus": 0.1
+      },
+      "confidence_score": 0.75,
+      "episode_type": "ESCALATION_GAME",
+      "event_center": "SWE",
+      "events": [
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "SWE",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1912M",
+          "recipient": "GERMANY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "NWY",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1912M",
+          "recipient": "GERMANY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "MUN",
+            "supporter_loc": "BER",
+            "unit_origin": "BUR"
+          },
+          "phase": "F1912M",
+          "recipient": "FRANCE",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "MUN",
+            "supported_power": "FRANCE"
+          },
+          "phase": "F1912M",
+          "recipient": "GERMANY",
+          "type": "SUPPORT_ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "MUN",
+            "supporter_loc": "SIL",
+            "unit_origin": "BUR"
+          },
+          "phase": "F1912M",
+          "recipient": "FRANCE",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "MUN",
+            "supported_power": "FRANCE"
+          },
+          "phase": "F1912M",
+          "recipient": "GERMANY",
+          "type": "SUPPORT_ATTACK"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "MUN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1912M",
+          "recipient": "GERMANY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "IRI",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1912M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "ENG",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1912M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ITALY",
+          "details": {
+            "dest": "VIE",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1912M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ITALY",
+          "details": {
+            "dest": "CON",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1912M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ITALY",
+          "details": {
+            "dest": "TRI",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1912M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ITALY",
+          "details": {
+            "dest": "GRE",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1912M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "delta": -2,
+            "from_phase": "F1912M",
+            "to_phase": "S1913M"
+          },
+          "phase": "F1912M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "delta": 1,
+            "from_phase": "F1912M",
+            "to_phase": "S1913M"
+          },
+          "phase": "F1912M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "delta": -3,
+            "from_phase": "F1912M",
+            "to_phase": "S1913M"
+          },
+          "phase": "F1912M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "ITALY",
+          "details": {
+            "delta": 4,
+            "from_phase": "F1912M",
+            "to_phase": "S1913M"
+          },
+          "phase": "F1912M",
+          "type": "SC_DELTA"
+        }
+      ],
+      "game_name": "ESCALATION_GAME",
+      "id": "sg_004a9f07ddbc",
+      "id_basis": {
+        "episode_type": "ESCALATION_GAME",
+        "event_center": "SWE",
+        "game_id": "pfi1bEhXss7n4Dih",
+        "game_name": "ESCALATION_GAME",
+        "mechanism_name": null,
+        "phase_sequence": ["F1912M"],
+        "players": ["AUSTRIA", "GERMANY"],
+        "variant_name": "TWO_AGENTS_SINGLE_TURN",
+        "victim": null
+      },
+      "labels": {
+        "round_outcome": "ESCALATE_ESCALATE",
+        "winner": null
+      },
+      "metrics": {
+        "focal_commitments": {
+          "AUSTRIA": ["A FIN - SWE"],
+          "GERMANY": ["F SKA - SWE"]
+        },
+        "num_escalators": 2,
+        "yield_sets": {
+          "AUSTRIA": ["BAL", "BOT", "CLY", "FIN", "GAS", "LVN", "NAF", "PRU", "STP", "WAL", "YOR"],
+          "GERMANY": ["BAL", "CLY", "DEN", "GAS", "HOL", "KIE", "LON", "LVP", "NAF", "NWY", "SKA", "WAL", "YOR"]
+        }
+      },
+      "phases": ["F1912M"],
+      "players": ["AUSTRIA", "GERMANY"],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "pfi1bEhXss7n4Dih",
+        "line_number": 16449
+      },
+      "variant_name": "TWO_AGENTS_SINGLE_TURN"
+    },
+    "output": {
+      "scenario": "Sweden Sea Lane Crisis",
+      "description": "You are an Austria commander. Sweden has become the critical northern prize in a naval confrontation with Germany, and whichever side keeps moving first can seize a temporary advantage in the Baltic approach. If you refrain from pressing farther toward Sweden, you avoid the immediate cost of a clash at sea and preserve strength for other fronts, but you also leave Germany with more room to shape the northern balance. If you continue driving toward Sweden while Germany pauses, you improve your hold on the approach and force Germany to react from a weaker position. But if both commands keep pressing into Sweden at the same time, the struggle becomes a costly deadlock that fixes both sides in place without giving either one secure control.",
+      "participants": [
+        {"name": "Austria"},
+        {"name": "Germany"}
+      ],
+      "behavior_choices": {
+        "escalate": "Keep pushing forces into Sweden this season.",
+        "withdraw": "Advance no further into Sweden this season."
+      },
+      "previous_actions": [],
+      "payoff_matrix": {},
+      "game_name": "Escalation_Game"
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "mean_round_confidence": 0.75,
+        "repetition_bonus": 0.1
+      },
+      "confidence_score": 0.85,
+      "episode_type": "ESCALATION_GAME",
+      "event_center": "MAR",
+      "events": [
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "NAF",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "SPA",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "ITALY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "WAR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "TURKEY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "MAR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "ITALY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "SPA",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "ITALY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "TUN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "SIL",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "MAR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "ITALY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "LVN",
+            "supporter_loc": "BAL",
+            "unit_origin": "STP"
+          },
+          "phase": "F1908M",
+          "recipient": "ENGLAND",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "CON",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "RUM",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "delta": -1,
+            "from_phase": "F1908M",
+            "to_phase": "S1909M"
+          },
+          "phase": "F1908M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "ITALY",
+          "details": {
+            "delta": 1,
+            "from_phase": "F1908M",
+            "to_phase": "S1909M"
+          },
+          "phase": "F1908M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "MOS",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1909M",
+          "recipient": "TURKEY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "MAR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1909M",
+          "recipient": "ITALY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "ANK",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1909M",
+          "recipient": "TURKEY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "SPA",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1909M",
+          "recipient": "ITALY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "TUN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1909M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "MAR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1909M",
+          "recipient": "ITALY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "LVN",
+            "supporter_loc": "BAL",
+            "unit_origin": "STP"
+          },
+          "phase": "S1909M",
+          "recipient": "ENGLAND",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "CON",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1909M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "UKR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1909M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "ARM",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1909M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        }
+      ],
+      "game_name": "ESCALATION_GAME",
+      "id": "sg_00604a707ba1",
+      "id_basis": {
+        "episode_type": "ESCALATION_GAME",
+        "event_center": "MAR",
+        "game_id": "0SWnpIB1ioXsXkG9",
+        "game_name": "ESCALATION_GAME",
+        "mechanism_name": null,
+        "phase_sequence": ["F1908M", "S1909M"],
+        "players": ["AUSTRIA", "GERMANY"],
+        "variant_name": "TWO_AGENTS_MULTI_TURN",
+        "victim": null
+      },
+      "labels": {
+        "episode_outcome": "ALL_ESCALATE_ESCALATE",
+        "round_outcome": "ESCALATE_ESCALATE",
+        "round_sequence": ["ESCALATE_ESCALATE", "ESCALATE_ESCALATE"]
+      },
+      "metrics": {
+        "counts": {
+          "ESCALATE_ESCALATE": 2,
+          "ESCALATE_YIELD": 0,
+          "YIELD_ESCALATE": 0,
+          "YIELD_YIELD": 0
+        },
+        "num_rounds": 2,
+        "yield_sets": {
+          "AUSTRIA": ["ALB", "APU", "BUL", "CLY", "CON", "GAS", "GRE", "NAP", "PIC", "PIE", "ROM", "SMY", "SYR", "TRI", "TUN", "TUS", "VEN", "WAL"],
+          "GERMANY": ["BEL", "BUR", "GAS", "PIC"]
+        }
+      },
+      "phases": ["F1908M", "S1909M"],
+      "players": ["AUSTRIA", "GERMANY"],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "0SWnpIB1ioXsXkG9",
+        "line_number": 27394
+      },
+      "variant_name": "TWO_AGENTS_MULTI_TURN"
+    },
+    "output": {
+      "scenario": "Marseilles Campaign Pressure",
+      "description": "You are an Austria commander. Marseilles remains the focal point of a running campaign with Germany, and both commands are again deciding whether to keep the struggle active this season. If you decline to press farther toward Marseilles now, you avoid another round of costly commitment and preserve strength for nearby fronts, but you also yield initiative if Germany continues the contest. If you stay committed to the advance while Germany pauses, you improve your leverage over the western front and force Germany to answer from a weaker position. But this pressure has already carried across earlier rounds, and if both sides continue the contest again, the campaign around Marseilles becomes a prolonged and expensive stalemate without a decisive result.",
+      "participants": [
+        {"name": "Austria"},
+        {"name": "Germany"}
+      ],
+      "behavior_choices": {
+        "escalate": "Stay committed to the advance into Marseilles this season.",
+        "withdraw": "Commit no forces to Marseilles this season."
+      },
+      "previous_rounds": [
+        {
+          "time": "F1908M",
+          "participant_actions": [
+            ["Austria", "Stay committed to the advance into Marseilles this season."],
+            ["Germany", "Stay committed to the advance into Marseilles this season."]
+          ],
+          "round_summary": "Austria and Germany both kept the pressure on Marseilles in the previous round, so the campaign remained active and neither side gave up initiative."
+        }
+      ],
+      "previous_actions": [
+        ["Austria", "Stay committed to the advance into Marseilles this season."],
+        ["Germany", "Stay committed to the advance into Marseilles this season."]
+      ],
+      "payoff_matrix": {},
+      "game_name": "Escalation_Game"
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "escalation_bonus": 0.15,
+        "participant_bonus": 0.3
+      },
+      "confidence_score": 1.0,
+      "episode_type": "ESCALATION_GAME",
+      "event_center": "GAS",
+      "events": [
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "MAO",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1903M",
+          "recipient": "ITALY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "MAO",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1903M",
+          "recipient": "ITALY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "WAR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1903M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ITALY",
+          "details": {
+            "dest": "MAR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1903M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "ITALY",
+          "details": {
+            "dest": "SPA",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1903M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "LVN",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1903M",
+          "recipient": "GERMANY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "RUSSIA",
+          "details": {
+            "dest": "ARM",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1903M",
+          "recipient": "TURKEY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "SEV",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1903M",
+          "recipient": "RUSSIA",
+          "type": "ATTACK"
+        }
+      ],
+      "game_name": "ESCALATION_GAME",
+      "id": "sg_78682cc91e8e",
+      "id_basis": {
+        "episode_type": "ESCALATION_GAME",
+        "event_center": "GAS",
+        "game_id": "McjSBYMLqwhWSbDZ",
+        "game_name": "ESCALATION_GAME",
+        "mechanism_name": null,
+        "phase_sequence": ["S1903M"],
+        "players": ["AUSTRIA", "ENGLAND", "FRANCE", "GERMANY", "ITALY", "RUSSIA"],
+        "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN",
+        "victim": null
+      },
+      "labels": {
+        "round_outcome": "YIELD_ESCALATE_ESCALATE_ESCALATE_YIELD_YIELD",
+        "winner": null
+      },
+      "metrics": {
+        "focal_commitments": {
+          "AUSTRIA": [],
+          "ENGLAND": ["A PAR - GAS"],
+          "FRANCE": ["A SPA - GAS"],
+          "GERMANY": ["A BUR - GAS"],
+          "ITALY": [],
+          "RUSSIA": []
+        },
+        "num_escalators": 3,
+        "yield_sets": {
+          "AUSTRIA": ["ALB", "GRE", "NAF", "TUS"],
+          "ENGLAND": ["ALB", "BRE", "CLY", "EDI", "LON", "LVP", "NAF", "NWY", "PAR", "TUS", "WAL", "YOR"],
+          "FRANCE": ["ALB", "CLY", "MAR", "NAF", "POR", "SPA", "TUS", "WAL", "YOR"],
+          "GERMANY": ["BEL", "BUR", "CLY", "DEN", "HOL", "KIE", "NAF", "PIC", "SWE", "TUS", "WAL", "YOR"],
+          "ITALY": ["ALB", "APU", "CLY", "NAF", "NAP", "PIE", "ROM", "TUN", "TUS", "WAL"],
+          "RUSSIA": ["CLY", "NAF", "STP", "WAL", "YOR"]
+        }
+      },
+      "phases": ["S1903M"],
+      "players": ["AUSTRIA", "ENGLAND", "FRANCE", "GERMANY", "ITALY", "RUSSIA"],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "McjSBYMLqwhWSbDZ",
+        "line_number": 19646
+      },
+      "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"
+    },
+    "output": {
+      "scenario": "Gascony Entry Contest",
+      "description": "You are an Austria commander. Gascony has become a shared point of decision where Austria, England, France, Germany, Italy, and Russia are all weighing whether to enter the province this season. If you stay out of the contest, you avoid the immediate cost of joining an unstable crowd and preserve your strength for other fronts, but you also surrender direct influence over a struggle that other powers may shape without you. If you remain active in the contest while only a limited number of other commands do the same, you gain more leverage over the corridor and improve your chance of affecting the local balance. But if too many powers enter Gascony at once, the province becomes overcrowded, coordination breaks down, and no participant secures a stable advantage despite the added commitment.",
+      "participants": [
+        {"name": "Austria"},
+        {"name": "England"},
+        {"name": "France"},
+        {"name": "Germany"},
+        {"name": "Italy"},
+        {"name": "Russia"}
+      ],
+      "behavior_choices": {
+        "escalate": "Remain in the contest for Gascony this season.",
+        "withdraw": "Enter no claim on Gascony this season."
+      },
+      "previous_actions": [],
+      "payoff_matrix": {},
+      "game_name": "Escalation_Game"
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "mean_round_confidence": 0.9,
+        "repetition_bonus": 0.1
+      },
+      "confidence_score": 1.0,
+      "episode_type": "ESCALATION_GAME",
+      "event_center": "PIE",
+      "events": [
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "RUM",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1909M",
+          "recipient": "TURKEY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "VIE",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1909M",
+          "recipient": "TURKEY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "LVP",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1909M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "PIC",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1909M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "SER",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1909M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "TRI",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1909M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "delta": -2,
+            "from_phase": "F1909M",
+            "to_phase": "S1910M"
+          },
+          "phase": "F1909M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "delta": -1,
+            "from_phase": "F1909M",
+            "to_phase": "S1910M"
+          },
+          "phase": "F1909M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "delta": 1,
+            "from_phase": "F1909M",
+            "to_phase": "S1910M"
+          },
+          "phase": "F1909M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "delta": 2,
+            "from_phase": "F1909M",
+            "to_phase": "S1910M"
+          },
+          "phase": "F1909M",
+          "type": "SC_DELTA"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "PIC",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1910M",
+          "recipient": "GERMANY",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "BUR",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1910M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "BRE",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1910M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "GERMANY",
+          "details": {
+            "dest": "LON",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1910M",
+          "recipient": "ENGLAND",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "LYO",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1910M",
+          "recipient": "FRANCE",
+          "type": "ATTACK"
+        },
+        {
+          "actor": "TURKEY",
+          "details": {
+            "dest": "VIE",
+            "reason": "unit_or_sc"
+          },
+          "phase": "S1910M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        }
+      ],
+      "game_name": "ESCALATION_GAME",
+      "id": "sg_0f4e4ee0e233",
+      "id_basis": {
+        "episode_type": "ESCALATION_GAME",
+        "event_center": "PIE",
+        "game_id": "0fFGgSBbG8a4DSGy",
+        "game_name": "ESCALATION_GAME",
+        "mechanism_name": null,
+        "phase_sequence": ["F1909M", "S1910M"],
+        "players": ["ENGLAND", "FRANCE", "GERMANY", "ITALY", "TURKEY"],
+        "variant_name": "OVER_TWO_AGENTS_MULTI_TURN",
+        "victim": null
+      },
+      "labels": {
+        "episode_outcome": "ALL_YIELD_ESCALATE_ESCALATE_YIELD_YIELD",
+        "round_outcome": "YIELD_ESCALATE_ESCALATE_YIELD_YIELD",
+        "round_sequence": ["YIELD_ESCALATE_ESCALATE_YIELD_YIELD", "YIELD_ESCALATE_ESCALATE_YIELD_YIELD"]
+      },
+      "metrics": {
+        "counts": {
+          "YIELD_ESCALATE_ESCALATE_YIELD_YIELD": 2
+        },
+        "num_rounds": 2,
+        "yield_sets": {
+          "ENGLAND": ["GAS", "LON", "LVP", "NAF", "TUS", "WAL"],
+          "FRANCE": ["APU", "BRE", "GAS", "LYO", "MAR", "NAF", "PIC", "POR", "SPA", "SYR", "TUN", "TUS", "WAL"],
+          "GERMANY": ["BEL", "CLY", "GAS", "NAF", "TUS", "TYR", "WAL"],
+          "ITALY": ["APU", "NAF", "SYR", "TUS", "VEN"],
+          "TURKEY": ["ALB", "APU", "BUL", "CON", "GAS", "NAF", "NAP", "ROM", "SMY", "SYR", "TUS"]
+        }
+      },
+      "phases": ["F1909M", "S1910M"],
+      "players": ["ENGLAND", "FRANCE", "GERMANY", "ITALY", "TURKEY"],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "0fFGgSBbG8a4DSGy",
+        "line_number": 16918
+      },
+      "variant_name": "OVER_TWO_AGENTS_MULTI_TURN"
+    },
+    "output": {
+      "scenario": "Piedmont Repeated Contest",
+      "description": "You are an England commander. Piedmont has become a repeated point of contention where England, France, Germany, Italy, and Turkey are again deciding whether to add their weight to the campaign this season. If you remain outside the contest, you avoid another costly commitment and preserve strength for nearby fronts, but you also leave the shape of the struggle to the powers that keep pressing forward. If you keep adding pressure while only a limited number of other powers do the same, you strengthen your leverage over the campaign and improve your chance of influencing the local balance. But this same crowd pattern has already appeared in earlier rounds, and if several commands keep entering the contest together, the struggle around Piedmont grows more expensive without producing a decisive settlement.",
+      "participants": [
+        {"name": "England"},
+        {"name": "France"},
+        {"name": "Germany"},
+        {"name": "Italy"},
+        {"name": "Turkey"}
+      ],
+      "behavior_choices": {
+        "escalate": "Keep adding pressure on Piedmont this season.",
+        "withdraw": "Commit only to positions outside Piedmont this season."
+      },
+      "previous_rounds": [
+        {
+          "time": "F1909M",
+          "participant_actions": [
+            ["England", "Commit only to positions outside Piedmont this season."],
+            ["France", "Keep adding pressure on Piedmont this season."],
+            ["Germany", "Keep adding pressure on Piedmont this season."],
+            ["Italy", "Commit only to positions outside Piedmont this season."],
+            ["Turkey", "Commit only to positions outside Piedmont this season."]
+          ],
+          "round_summary": "France and Germany pressed the contest around Piedmont in the previous round while England, Italy, and Turkey stayed outside, so the crowd pattern remained uneven but unresolved."
+        }
+      ],
+      "previous_actions": [
+        ["England", "Commit only to positions outside Piedmont this season."],
+        ["France", "Keep adding pressure on Piedmont this season."],
+        ["Germany", "Keep adding pressure on Piedmont this season."],
+        ["Italy", "Commit only to positions outside Piedmont this season."],
+        ["Turkey", "Commit only to positions outside Piedmont this season."]
+      ],
+      "payoff_matrix": {},
+      "game_name": "Escalation_Game"
+    }
+  }
+]

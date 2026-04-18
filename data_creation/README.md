@@ -30,14 +30,20 @@ For `escalation_game`, the scenario contract now accepts optional explicit
 `previous_actions` while still allowing fallback `previous_actions_length`. When both
 are present, the length must match the explicit history or validation fails.
 
+Few-shot selection is now constrained by the selected same-game asset file:
+
+- the first example pool is the full selected `--few-shot-path` file
+- the runtime pool is filtered to variants present in the current input run
+- each row must keep at least one same-variant example in its prompt pack
+- multi-variant runs fail with an explicit `few_shot_selection` failure record when the filtered pool cannot supply the required cross-variant examples for a row
+- `run_metadata.json` records the run-present variant set so the filtered few-shot pool can be reconstructed later
+
 Example:
 
 ```bash
 python -m data_creation.transform_social_game_cases \
   --social-game beauty_contest \
   --input-path /home/jjl7137/diplomacy_cicero/social_game_outputs/beauty_contest/curated_cases/beauty_contest_cases.jsonl \
-  --few-shot-path /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/beauty_contest_few_shot_examples.json \
-  --rubric-path /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/transform_rubrics.md \
   --output-dir /tmp/beauty_contest_transform_run
 ```
 
@@ -47,10 +53,15 @@ Escalation example:
 python -m data_creation.transform_social_game_cases \
   --social-game escalation_game \
   --input-path /home/jjl7137/diplomacy_cicero/social_game_outputs/escalation_game/curated_cases/escalation_game_cases.jsonl \
-  --few-shot-path /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/beauty_contest_few_shot_examples.json \
-  --rubric-path /home/jjl7137/LLM_EmoBehav_game_theory_real_flexible_dataset/transform_rubrics.md \
   --output-dir /tmp/escalation_game_transform_run
 ```
+
+Default prompt assets now live under:
+
+- `data_creation/transform_to_natural_lannguage_samples/diplomacy/transform_rubrics.md`
+- `data_creation/transform_to_natural_lannguage_samples/diplomacy/<game_name>_few_shot_examples.json`
+
+Override `--few-shot-path` or `--rubric-path` only when you intentionally want non-default prompt assets.
 
 Artifacts:
 
