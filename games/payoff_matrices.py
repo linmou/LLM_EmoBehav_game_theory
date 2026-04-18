@@ -69,6 +69,13 @@ class PayoffMatrix(BaseModel):
         default_factory=dict
     )
 
+    @staticmethod
+    def _normalize_payoff_leaves(payoff_leaves: List[PayoffLeaf | Dict[str, Any]]) -> List[PayoffLeaf]:
+        return [
+            leaf if isinstance(leaf, PayoffLeaf) else PayoffLeaf.model_validate(leaf)
+            for leaf in payoff_leaves
+        ]
+
     @model_validator(mode="before")
     def build_ranks(self):
         """
@@ -77,7 +84,8 @@ class PayoffMatrix(BaseModel):
         """
         # Handle dict input case during validation
         if isinstance(self, dict):
-            payoffs: List[PayoffLeaf] = self["payoff_leaves"]
+            payoffs = PayoffMatrix._normalize_payoff_leaves(self["payoff_leaves"])
+            self["payoff_leaves"] = payoffs
             game_type = self.get("game_type", GameType.SIMULTANEOUS)
             player_num: int | None = self.get("player_num")
 
@@ -154,6 +162,7 @@ class PayoffMatrix(BaseModel):
         result.append("Game Payoffs:")
         for leaf in self.payoff_leaves:
             p1_action, p2_action = leaf.actions
+            assert leaf.payoffs is not None
             p1_payoff, p2_payoff = leaf.payoffs
 
             description = f"When {players[0]} chooses '{p1_action}' and {players[1]} chooses '{p2_action}', "
@@ -167,6 +176,7 @@ class PayoffMatrix(BaseModel):
     def _get_sequential_description(self, players: List[str]):
         result = []
         result.append("Game Payoffs:")
+        assert self.player_num is not None
         for leaf in self.payoff_leaves:
             path_description = []
             for i, action in enumerate(leaf.actions):
@@ -174,6 +184,7 @@ class PayoffMatrix(BaseModel):
                 player_name = players[player_index]
                 path_description.append(f"{player_name} chooses '{action}'")
 
+            assert leaf.payoffs is not None
             description = f"If {' then '.join(path_description)}, "
             description += f"the outcome is a payoff of {leaf.payoffs[0]} for {players[0]} and {leaf.payoffs[1]} for {players[1]}."
             result.append(description)

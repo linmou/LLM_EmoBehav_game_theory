@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import threading
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -95,8 +97,22 @@ def prompt_assets(tmp_path: Path) -> tuple[Path, Path]:
         fewshot,
         [
             {
-                "input": {"episode_type": "BEAUTY_CONTEST"},
+                "input": {"episode_type": "BEAUTY_CONTEST", "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"},
                 "output": _sample_transformed_row(),
+            },
+            {
+                "input": {"episode_type": "BEAUTY_CONTEST", "variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {
+                    **_sample_transformed_row(),
+                    "description": "A parallel bargaining channel changes how one extra commitment is interpreted.",
+                },
+            },
+            {
+                "input": {"episode_type": "BEAUTY_CONTEST", "variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {
+                    **_sample_transformed_row(),
+                    "description": "A narrow bilateral contest makes every additional commitment more legible.",
+                },
             }
         ],
     )
@@ -104,13 +120,28 @@ def prompt_assets(tmp_path: Path) -> tuple[Path, Path]:
 
 
 def test_main_requires_social_game_and_paths(tmp_path: Path):
-    # data_creation/transform_social_game_cases.py: validate required CLI arguments.
+    # data_creation/transform_social_game_cases.py: validate the minimal required CLI arguments.
     from data_creation.transform_social_game_cases import main
 
     with pytest.raises(SystemExit) as excinfo:
         main([])
 
     assert excinfo.value.code == 2
+
+
+def test_default_prompt_asset_paths_follow_diplomacy_transform_samples_layout():
+    # data_creation/transform_social_game_cases.py: derive default prompt assets from data_creation/transform_to_natural_lannguage_samples/diplomacy/.
+    from data_creation.transform_social_game_cases import default_few_shot_path, DEFAULT_RUBRIC_PATH
+
+    assert str(default_few_shot_path("beauty_contest")).endswith(
+        "data_creation/transform_to_natural_lannguage_samples/diplomacy/beauty_contest_few_shot_examples.json"
+    )
+    assert str(default_few_shot_path("escalation_game")).endswith(
+        "data_creation/transform_to_natural_lannguage_samples/diplomacy/escalation_game_few_shot_examples.json"
+    )
+    assert str(DEFAULT_RUBRIC_PATH).endswith(
+        "data_creation/transform_to_natural_lannguage_samples/diplomacy/transform_rubrics.md"
+    )
 
 
 def test_transform_run_writes_success_only_outputs(tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch):
@@ -157,6 +188,69 @@ def test_transform_run_writes_success_only_outputs(tmp_path: Path, prompt_assets
     assert len(success_rows) == 2
     assert failure_rows == []
     assert metadata["counts"] == {"total": 2, "success": 2, "failed": 0, "skipped": 0}
+
+
+def test_transform_run_uses_default_prompt_assets_when_paths_are_omitted(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: default to repo-owned diplomacy prompt assets when CLI paths are omitted.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "beauty_contest_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(input_path, [_sample_source_row("sg_case_1", "game_1")])
+
+    asset_root = tmp_path / "data_creation" / "transform_to_natural_lannguage_samples" / "diplomacy"
+    asset_root.mkdir(parents=True)
+    rubric = asset_root / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = asset_root / "beauty_contest_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"episode_type": "BEAUTY_CONTEST", "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"},
+                "output": _sample_transformed_row(),
+            },
+            {
+                "input": {"episode_type": "BEAUTY_CONTEST", "variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {
+                    **_sample_transformed_row(),
+                    "description": "A bilateral signal changes the value of one extra commitment.",
+                },
+            },
+            {
+                "input": {"episode_type": "BEAUTY_CONTEST", "variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {
+                    **_sample_transformed_row(),
+                    "description": "A single rival reads every extra commitment as a sharper signal.",
+                },
+            }
+        ],
+    )
+
+    monkeypatch.setattr(module, "DEFAULT_RUBRIC_PATH", rubric)
+    monkeypatch.setattr(module, "default_few_shot_path", lambda social_game: asset_root / f"{social_game}_few_shot_examples.json")
+    monkeypatch.setattr(module, "transform_source_row", lambda *args, **kwargs: _sample_transformed_row("sg_case_1", "game_1"))
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "beauty_contest",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+        ]
+    )
+
+    assert exit_code == 0
+    success_rows = json.loads((output_dir / "beauty_contest.success.json").read_text(encoding="utf-8"))
+    assert len(success_rows) == 1
 
 
 def test_transform_run_separates_invalid_rows_into_failure_artifacts(tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch):
@@ -295,6 +389,574 @@ def test_load_prompt_pack_supports_escalation_game_with_explicit_mapping(
 
     assert prompt_pack["target_game_name"] == "Escalation_Game"
     assert prompt_pack["scenario_class"] is EscalationGameScenario
+
+
+def test_run_transform_filters_few_shot_examples_to_run_present_variants(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: derive the runtime few-shot pool from the selected file, then drop variants absent from the current run input.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(
+        input_path,
+        [
+            {
+                **_sample_source_row("sg_case_1", "game_1"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN",
+            },
+            {
+                **_sample_source_row("sg_case_2", "game_2"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "ONE_VS_ONE_SINGLE_TURN",
+            }
+        ],
+    )
+
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = tmp_path / "escalation_game_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"},
+                "output": {"description": "same variant"},
+            },
+            {
+                "input": {"variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"},
+                "output": {"description": "same variant two"},
+            },
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {"description": "present cross one"},
+            },
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {"description": "present cross two"},
+            },
+            {
+                "input": {"variant_name": "THREE_AGENT_MULTI_TURN"},
+                "output": {"description": "absent variant"},
+            },
+        ],
+    )
+
+    captured_prompt_packs: list[dict] = []
+
+    def fake_transform_candidates(*args, **kwargs):
+        captured_prompt_packs.append(kwargs["prompt_pack"])
+        return [_sample_escalation_transformed_row("sg_case_1", "game_1")]
+
+    monkeypatch.setattr(module, "transform_source_row_candidates", fake_transform_candidates)
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(captured_prompt_packs) == 2
+    assert {
+        example["input"]["variant_name"]
+        for prompt_pack in captured_prompt_packs
+        for example in prompt_pack["few_shot_examples"]
+    } == {"OVER_TWO_AGENTS_SINGLE_TURN", "ONE_VS_ONE_SINGLE_TURN"}
+
+
+def test_run_transform_fails_when_few_shot_pool_cannot_supply_two_cross_variant_examples(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: fail loudly when a multi-variant run cannot supply the required two cross-variant examples for a row.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(
+        input_path,
+        [
+            {
+                **_sample_source_row("sg_case_1", "game_1"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN",
+            },
+            {
+                **_sample_source_row("sg_case_2", "game_2"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "ONE_VS_ONE_SINGLE_TURN",
+            },
+        ],
+    )
+
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = tmp_path / "escalation_game_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"},
+                "output": {"description": "over-two same one"},
+            },
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {"description": "one-vs-one same one"},
+            },
+        ],
+    )
+    monkeypatch.setattr(
+        module,
+        "transform_source_row_candidates",
+        lambda *args, **kwargs: [
+            _sample_escalation_transformed_row(
+                kwargs["source_row"]["id"],
+                kwargs["source_row"]["source"]["game_id"],
+            )
+        ],
+    )
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    success_rows = json.loads((output_dir / "escalation_game.success.json").read_text(encoding="utf-8"))
+    failure_rows = [json.loads(line) for line in (output_dir / "escalation_game.failures.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
+
+    assert success_rows == []
+    assert len(failure_rows) == 2
+    assert {row["stage"] for row in failure_rows} == {"few_shot_selection"}
+
+
+def test_run_transform_fails_when_few_shot_pool_cannot_supply_same_variant_examples(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: fail loudly when a row's own variant is absent from the eligible few-shot pool.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(
+        input_path,
+        [
+            {
+                **_sample_source_row("sg_case_1", "game_1"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN",
+            },
+            {
+                **_sample_source_row("sg_case_2", "game_2"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "ONE_VS_ONE_SINGLE_TURN",
+            },
+        ],
+    )
+
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = tmp_path / "escalation_game_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {"description": "one-vs-one same one"},
+            },
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {"description": "one-vs-one same two"},
+            },
+        ],
+    )
+    monkeypatch.setattr(
+        module,
+        "transform_source_row_candidates",
+        lambda *args, **kwargs: [
+            _sample_escalation_transformed_row(
+                kwargs["source_row"]["id"],
+                kwargs["source_row"]["source"]["game_id"],
+            )
+        ],
+    )
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    failure_rows = [
+        json.loads(line)
+        for line in (output_dir / "escalation_game.failures.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+
+    assert any(
+        "same-variant example" in row["message"]
+        for row in failure_rows
+    )
+
+
+def test_run_metadata_records_run_variants_for_few_shot_pool_reproducibility(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: persist the run-present variant set in run_metadata.json so few-shot pool derivation is reproducible.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(
+        input_path,
+        [
+            {
+                **_sample_source_row("sg_case_1", "game_1"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN",
+            },
+            {
+                **_sample_source_row("sg_case_2", "game_2"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "ONE_VS_ONE_SINGLE_TURN",
+            },
+        ],
+    )
+
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = tmp_path / "escalation_game_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"},
+                "output": {"description": "over-two same one"},
+            },
+            {
+                "input": {"variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"},
+                "output": {"description": "over-two same two"},
+            },
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {"description": "one-vs-one same one"},
+            },
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {"description": "one-vs-one same two"},
+            },
+        ],
+    )
+
+    monkeypatch.setattr(
+        module,
+        "transform_source_row_candidates",
+        lambda *args, **kwargs: [
+            _sample_escalation_transformed_row(
+                kwargs["source_row"]["id"],
+                kwargs["source_row"]["source"]["game_id"],
+            )
+        ],
+    )
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    metadata = json.loads((output_dir / "run_metadata.json").read_text(encoding="utf-8"))
+    assert metadata["run_variants"] == ["ONE_VS_ONE_SINGLE_TURN", "OVER_TWO_AGENTS_SINGLE_TURN"]
+
+
+def test_run_transform_builds_row_specific_few_shot_packs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: build a separate same-variant-plus-two-cross-variant few-shot pack for each row.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(
+        input_path,
+        [
+            {
+                **_sample_source_row("sg_case_1", "game_1"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN",
+            },
+            {
+                **_sample_source_row("sg_case_2", "game_2"),
+                "episode_type": "ESCALATION_GAME",
+                "variant_name": "ONE_VS_ONE_SINGLE_TURN",
+            },
+        ],
+    )
+
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = tmp_path / "escalation_game_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"},
+                "output": {
+                    "description": "over-two same one",
+                    "behavior_choices": {"escalate": "a1", "withdraw": "a2"},
+                },
+            },
+            {
+                "input": {"variant_name": "OVER_TWO_AGENTS_SINGLE_TURN"},
+                "output": {
+                    "description": "over-two same two",
+                    "behavior_choices": {"escalate": "a3", "withdraw": "a4"},
+                },
+            },
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {
+                    "description": "one-vs-one same one",
+                    "behavior_choices": {"escalate": "b1", "withdraw": "b2"},
+                },
+            },
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {
+                    "description": "one-vs-one same two",
+                    "behavior_choices": {"escalate": "b3", "withdraw": "b4"},
+                },
+            },
+            {
+                "input": {"variant_name": "THREE_AGENT_MULTI_TURN"},
+                "output": {
+                    "description": "absent variant",
+                    "behavior_choices": {"escalate": "c1", "withdraw": "c2"},
+                },
+            },
+        ],
+    )
+
+    prompt_variants_by_row: dict[str, list[str]] = {}
+
+    def fake_transform_candidates(*args, **kwargs):
+        source_row = kwargs["source_row"]
+        prompt_pack = kwargs["prompt_pack"]
+        prompt_variants_by_row[source_row["id"]] = [
+            example["input"]["variant_name"] for example in prompt_pack["few_shot_examples"]
+        ]
+        return [
+            _sample_escalation_transformed_row(
+                source_row["id"],
+                source_row["source"]["game_id"],
+            )
+        ]
+
+    monkeypatch.setattr(module, "transform_source_row_candidates", fake_transform_candidates)
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    assert prompt_variants_by_row["sg_case_1"] == [
+        "OVER_TWO_AGENTS_SINGLE_TURN",
+        "OVER_TWO_AGENTS_SINGLE_TURN",
+        "ONE_VS_ONE_SINGLE_TURN",
+        "ONE_VS_ONE_SINGLE_TURN",
+    ]
+    assert prompt_variants_by_row["sg_case_2"] == [
+        "ONE_VS_ONE_SINGLE_TURN",
+        "ONE_VS_ONE_SINGLE_TURN",
+        "OVER_TWO_AGENTS_SINGLE_TURN",
+        "OVER_TWO_AGENTS_SINGLE_TURN",
+    ]
+
+
+def test_rank_examples_by_ngram_gain_uses_behavior_choices_in_lexical_surface():
+    # data_creation/transform_social_game_cases.py: rank few-shot examples on description plus behavior_choices, not description alone.
+    from data_creation.transform_social_game_cases import rank_examples_by_ngram_gain
+
+    ranked = rank_examples_by_ngram_gain(
+        [
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {
+                    "description": "shared description",
+                    "behavior_choices": {
+                        "escalate": "repeat signal",
+                        "withdraw": "repeat signal",
+                    },
+                },
+            },
+            {
+                "input": {"variant_name": "ONE_VS_ONE_SINGLE_TURN"},
+                "output": {
+                    "description": "shared description",
+                    "behavior_choices": {
+                        "escalate": "fresh leverage phrase",
+                        "withdraw": "fresh de-escalation phrase",
+                    },
+                },
+            },
+        ]
+    )
+
+    assert ranked[0]["output"]["behavior_choices"]["escalate"] == "fresh leverage phrase"
+
+
+def test_inject_game_fields_overrides_empty_escalation_payoff_matrix_from_model_output():
+    # data_creation/transform_social_game_cases.py: replace model-emitted empty payoff_matrix with runtime game contract.
+    from data_creation.transform_social_game_cases import inject_game_fields, social_game_config
+
+    prompt_pack = social_game_config("escalation_game")
+    payload = inject_game_fields(
+        {
+            "scenario": "Border Canal Water Standoff",
+            "description": "You and a neighboring district are deciding whether to escalate.",
+            "participants": [{"name": "You"}, {"name": "Neighbor"}],
+            "behavior_choices": {
+                "escalate": "Pump more water from the shared canal.",
+                "withdraw": "Keep to the normal pumping level.",
+            },
+            "previous_actions": [],
+            "payoff_matrix": {},
+        },
+        prompt_pack,
+    )
+
+    assert payload["payoff_matrix"] == prompt_pack["payoff_matrix"]
+
+
+def test_write_json_serializes_pydantic_runtime_payoff_matrix(tmp_path: Path):
+    # data_creation/transform_social_game_cases.py: serialize runtime PayoffMatrix objects when writing success artifacts.
+    from data_creation.transform_social_game_cases import social_game_config, write_json
+
+    output_path = tmp_path / "artifact.json"
+    prompt_pack = social_game_config("escalation_game")
+
+    write_json(
+        output_path,
+        [
+            {
+                "scenario": "Border Canal Water Standoff",
+                "payoff_matrix": prompt_pack["payoff_matrix"],
+            }
+        ],
+    )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload[0]["payoff_matrix"]["payoff_leaves"]
+
+
+def test_write_json_round_trips_escalation_success_rows_through_saved_artifact(tmp_path: Path):
+    # data_creation/transform_social_game_cases.py: save escalation success artifacts in a shape that still reloads via EscalationGameScenario.
+    from data_creation.transform_social_game_cases import inject_game_fields, social_game_config, write_json
+    from games.escalation_game import EscalationGameScenario
+
+    output_path = tmp_path / "artifact.json"
+    expected_row = inject_game_fields(
+        _sample_escalation_transformed_row("sg_case_1", "game_1"),
+        social_game_config("escalation_game"),
+    )
+
+    write_json(output_path, [expected_row])
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    EscalationGameScenario(**payload[0])
+
+
+def test_write_jsonl_serializes_pydantic_runtime_payoff_matrix(tmp_path: Path):
+    # data_creation/transform_social_game_cases.py: serialize runtime PayoffMatrix objects when writing candidate JSONL artifacts.
+    from data_creation.transform_social_game_cases import social_game_config, write_jsonl
+
+    output_path = tmp_path / "artifact.jsonl"
+    prompt_pack = social_game_config("escalation_game")
+
+    write_jsonl(
+        output_path,
+        [
+            {
+                "scenario": "Border Canal Water Standoff",
+                "payoff_matrix": prompt_pack["payoff_matrix"],
+            }
+        ],
+    )
+
+    payload = [json.loads(line) for line in output_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert payload[0]["payoff_matrix"]["payoff_leaves"]
 
 
 def test_social_game_config_derives_runtime_contract_from_game_configs():
@@ -450,3 +1112,151 @@ def test_transform_source_row_uses_game_constructor_as_contract(monkeypatch: pyt
 
     assert transformed["game_name"] == "Beauty_Contest"
     assert transformed["provenance"]["id"] == "sg_case_1"
+
+
+def test_run_transform_uses_multiple_workers_when_requested(
+    tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: dispatch independent transforms concurrently when num-workers > 1.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(
+        input_path,
+        [
+            _sample_source_row("sg_case_1", "game_1"),
+            _sample_source_row("sg_case_2", "game_2"),
+            _sample_source_row("sg_case_3", "game_3"),
+            _sample_source_row("sg_case_4", "game_4"),
+        ],
+    )
+    rubric, fewshot = prompt_assets
+
+    active = 0
+    peak_active = 0
+    lock = threading.Lock()
+
+    def fake_transform_row(*args, **kwargs):
+        nonlocal active, peak_active
+        source_row = kwargs["source_row"]
+        with lock:
+            active += 1
+            peak_active = max(peak_active, active)
+        time.sleep(0.05)
+        with lock:
+            active -= 1
+        return _sample_escalation_transformed_row(source_row["id"], source_row["source"]["game_id"])
+
+    monkeypatch.setattr(module, "transform_source_row", fake_transform_row)
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+            "--num-workers",
+            "4",
+        ]
+    )
+
+    assert exit_code == 0
+    assert peak_active > 1
+
+
+def test_run_transform_with_num_candidates_selects_lower_overlap_description_and_writes_artifacts(
+    tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: generate multiple valid candidates, select lower-overlap descriptions, and write candidate/diversity artifacts.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(
+        input_path,
+        [
+            _sample_source_row("sg_case_1", "game_1"),
+            _sample_source_row("sg_case_2", "game_2"),
+        ],
+    )
+    rubric, fewshot = prompt_assets
+
+    repeated_1 = _sample_escalation_transformed_row("sg_case_1", "game_1")
+    repeated_1["description"] = (
+        "You are a You commander. The border canal is unstable. "
+        "A costly deadlock can follow if both sides keep pressing."
+    )
+    repeated_2 = _sample_escalation_transformed_row("sg_case_2", "game_2")
+    repeated_2["description"] = (
+        "You are a You commander. The border canal is unstable. "
+        "A costly deadlock can follow if both sides keep pressing."
+    )
+    diverse_2 = _sample_escalation_transformed_row("sg_case_2", "game_2")
+    diverse_2["description"] = (
+        "You are a You commander. The shared canal has become a crowded bargaining point, "
+        "and stepping back now yields initiative without ending the dispute."
+    )
+
+    def fake_transform_candidates(*args, **kwargs):
+        source_row = kwargs["source_row"]
+        if source_row["id"] == "sg_case_1":
+            return [repeated_1]
+        return [repeated_2, diverse_2]
+
+    monkeypatch.setattr(module, "transform_source_row_candidates", fake_transform_candidates)
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+            "--num-candidates",
+            "2",
+        ]
+    )
+
+    assert exit_code == 0
+    success_rows = json.loads((output_dir / "escalation_game.success.json").read_text(encoding="utf-8"))
+    candidates = [json.loads(line) for line in (output_dir / "escalation_game.candidates.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
+    diversity_report = json.loads((output_dir / "diversity_report.json").read_text(encoding="utf-8"))
+
+    selected_by_id = {row["provenance"]["id"]: row for row in success_rows}
+    assert len(candidates) == 3
+    assert selected_by_id["sg_case_2"]["description"] == diverse_2["description"]
+    assert diversity_report["candidate_counts"] == {"generated": 3, "selected": 2}
+    assert diversity_report["selected_description_metrics"]["distinct_2"] > 0
+
+
+def test_compute_description_diversity_report_tracks_repeated_ngrams_and_distinct_scores():
+    # data_creation/transform_social_game_cases.py: report classic n-gram diversity metrics for selected descriptions.
+    from data_creation.transform_social_game_cases import compute_description_diversity_report
+
+    report = compute_description_diversity_report(
+        [
+            "alpha beta gamma delta",
+            "alpha beta gamma epsilon",
+            "theta iota kappa lambda",
+        ]
+    )
+
+    assert report["description_count"] == 3
+    assert report["selected_description_metrics"]["distinct_1"] > 0
+    assert report["selected_description_metrics"]["distinct_2"] > 0
+    assert report["repeated_3grams"][0]["ngram"] == "alpha beta gamma"
+    assert report["repeated_3grams"][0]["count"] == 2
