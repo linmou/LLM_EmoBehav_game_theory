@@ -79,11 +79,10 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         augmentation = self.config.augmentation_config or {}
         scenario_fields = getattr(scenario_class, "model_fields", {})
         config_fields = self._game_config
-        # Always shuffle options; allow deterministic control via behavior_ratio.
-        behavior_ratio = self._game_config.get("behavior_ratio")
+        shuffle_options_seed = self._game_config.get("shuffle_options_seed")
         shuffle_rng = (
-            random.Random(behavior_ratio)
-            if behavior_ratio is not None
+            random.Random(shuffle_options_seed)
+            if shuffle_options_seed is not None
             else random
         )
         shuffle_options = bool(self._game_config.get("shuffle_options", True))
@@ -204,8 +203,8 @@ class GameTheoryDataset(BaseBenchmarkDataset):
                 scenario_info = {}
             if isinstance(scenario_info, dict):
                 metadata.update(scenario_info)
-            if shuffle_options and behavior_ratio is not None:
-                metadata["behavior_ratio_used"] = behavior_ratio
+            if shuffle_options and shuffle_options_seed is not None:
+                metadata["shuffle_options_seed_used"] = shuffle_options_seed
 
             if isinstance(scenario, SequentialGameScenario):
                 previous_attr = getattr(scenario, "previous_actions", None)

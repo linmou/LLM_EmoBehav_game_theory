@@ -142,6 +142,62 @@ def test_dataset_shuffles_order_when_seed_changes(monkeypatch: pytest.MonkeyPatc
     assert len(seen_mappings) >= 2
 
 
+def test_dataset_shuffle_options_seed_controls_order_without_global_random(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """[US1] GameTheoryDataset should use an explicit shuffle_options_seed instead of unrelated config fields."""
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.get_game_config",
+        lambda task_type: _stub_game_config_with_scenario(),
+    )
+
+    cfg = BenchmarkConfig(
+        name="game_theory",
+        task_type="DummyGame",
+        data_path=None,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config={"shuffle_options": True, "shuffle_options_seed": 17},
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=1.0,
+        llm_eval_config=None,
+    )
+
+    random.seed(0)
+    first = GameTheoryDataset(config=cfg, prompt_wrapper=None, answer_wrapper=None)
+    first_mapping = tuple(
+        sorted((opt["behavior"], opt["id"]) for opt in first.items[0].metadata["options"])  # type: ignore[index]
+    )
+
+    random.seed(999)
+    second = GameTheoryDataset(config=cfg, prompt_wrapper=None, answer_wrapper=None)
+    second_mapping = tuple(
+        sorted((opt["behavior"], opt["id"]) for opt in second.items[0].metadata["options"])  # type: ignore[index]
+    )
+
+    assert first_mapping == second_mapping
+    assert first.items[0].metadata.get("shuffle_options_seed_used") == 17
+
+
+def test_dataset_behavior_ratio_no_longer_drives_shuffle_seed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """[US1] behavior_ratio is metric semantics, not option-shuffle seeding semantics."""
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.get_game_config",
+        lambda task_type: {
+            **_stub_game_config_with_scenario(),
+            "behavior_ratio": 0.25,
+        },
+    )
+
+    cfg = _make_benchmark_config()
+    dataset = GameTheoryDataset(config=cfg, prompt_wrapper=None, answer_wrapper=None)
+
+    assert "behavior_ratio_used" not in dataset.items[0].metadata
+
+
 def test_round_trip_options_and_decision_metadata(monkeypatch: pytest.MonkeyPatch) -> None:
     """[US3] Round-trip options metadata and a simulated decision via ResultRecord-like fields."""
     monkeypatch.setattr(

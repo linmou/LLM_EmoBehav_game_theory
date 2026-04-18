@@ -204,6 +204,22 @@ python -m emotion_experiment_engine.resource_recursive_workflow run-recursive \
   --max-resource-gpus 4
 ```
 
+Game-theory option shuffle reproducibility:
+- For `game_theory` and `game_theory_decision` benchmarks, set `augmentation_config.shuffle_options_seed` to make option order reproducible across runs.
+- `shuffle_options: true` enables shuffling; `shuffle_options_seed` controls the RNG for that shuffle.
+- `behavior_ratio` is result-analysis semantics and is not used as an option-shuffle seed.
+
+Example:
+
+```yaml
+benchmarks:
+  - name: "game_theory_decision"
+    task_type: "Prisoners_Dilemma"
+    augmentation_config:
+      shuffle_options: true
+      shuffle_options_seed: 123
+```
+
 Pipeline behavior:
 - the runner can stop scheduling later same-model experiments in a round after the first failure when `series_config.stop_model_on_failure` is enabled
 - failed-model work is promoted by resource tier, not by error-message heuristics

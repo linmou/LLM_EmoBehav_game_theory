@@ -238,6 +238,11 @@ memory_prompt_wrapper_partial = partial(
 )
 ```
 
+Game-theory dataset note:
+- `augmentation_config` is merged into the task-specific game config before `GameTheoryDataset` builds options.
+- Use `augmentation_config.shuffle_options_seed` for deterministic option order when `shuffle_options` is enabled.
+- Do not overload `behavior_ratio` as a seed. It belongs to downstream behavior-ratio analysis, not option shuffling.
+
 #### **Integration with neuro_manipulation Framework**
 ```python
 class MemoryPromptWrapper(PromptWrapper):

@@ -15,16 +15,23 @@ loadable scenario datasets for downstream game classes.
 2. Prepare the input data in JSON format.
 3. Call the `annotate_stimulus` function with the appropriate parameters.
 
+# Transform Social game cases
+
+## supportive docs for .agents/skills/diplomacy-social-game-transform
+
+ data_creation/ransform_to_natural_lannguage_samples storages rubrics and fewshot examples 
+
 ### Social Game Transform CLI
 
 The `transform_social_game_cases.py` CLI converts curated social game JSONL cases into a
 success-only dataset that can be loaded by the corresponding game class while writing
 failures, skips, and run metadata as separate machine-readable artifacts.
 
-Supported first-release social games:
+Supported first-release social games (will support all social games):
 
 - `beauty_contest` -> validates through `BeautyContestScenario`
 - `escalation_game` -> validates through `EscalationGameScenario`
+- `trust` -> validates through `TrustGameTrusteeScenario`
 
 For `escalation_game`, the scenario contract now accepts optional explicit
 `previous_actions` while still allowing fallback `previous_actions_length`. When both
@@ -65,10 +72,8 @@ Override `--few-shot-path` or `--rubric-path` only when you intentionally want n
 
 Artifacts:
 
-- `beauty_contest.success.json`: loadable transformed rows only
-- `beauty_contest.failures.jsonl`: invalid or unsuccessful rows
-- `beauty_contest.skipped.jsonl`: resumed rows skipped because they were already finalized
 - `escalation_game.success.json`: loadable transformed rows only
 - `escalation_game.failures.jsonl`: invalid or unsuccessful rows
 - `escalation_game.skipped.jsonl`: resumed rows skipped because they were already finalized
+
 - `run_metadata.json`: counts, input/output paths, and completed identities
