@@ -30,7 +30,42 @@ SUPPORTED_SOCIAL_GAMES = {
         "failure_file": "escalation_game.failures.jsonl",
         "skip_file": "escalation_game.skipped.jsonl",
         "prompt_target": "Escalation Game scenario",
-    }
+    },
+    "prisoners_dilemma": {
+        "game_name": GameNames.PRISONERS_DILEMMA,
+        "success_file": "prisoners_dilemma.success.json",
+        "failure_file": "prisoners_dilemma.failures.jsonl",
+        "skip_file": "prisoners_dilemma.skipped.jsonl",
+        "prompt_target": "Prisoners' Dilemma scenario",
+    },
+    "trust_game_trustor": {
+        "game_name": GameNames.TRUST_GAME_TRUSTOR,
+        "success_file": "trust_game_trustor.success.json",
+        "failure_file": "trust_game_trustor.failures.jsonl",
+        "skip_file": "trust_game_trustor.skipped.jsonl",
+        "prompt_target": "Trust Game trustor scenario",
+    },
+    "trust_game_trustee": {
+        "game_name": GameNames.TRUST_GAME_TRUSTEE,
+        "success_file": "trust_game_trustee.success.json",
+        "failure_file": "trust_game_trustee.failures.jsonl",
+        "skip_file": "trust_game_trustee.skipped.jsonl",
+        "prompt_target": "Trust Game trustee scenario",
+    },
+    "ultimatum_game_proposer": {
+        "game_name": GameNames.ULTIMATUM_GAME_PROPOSER,
+        "success_file": "ultimatum_game_proposer.success.json",
+        "failure_file": "ultimatum_game_proposer.failures.jsonl",
+        "skip_file": "ultimatum_game_proposer.skipped.jsonl",
+        "prompt_target": "Ultimatum Game proposer scenario",
+    },
+    "ultimatum_game_responder": {
+        "game_name": GameNames.ULTIMATUM_GAME_RESPONDER,
+        "success_file": "ultimatum_game_responder.success.json",
+        "failure_file": "ultimatum_game_responder.failures.jsonl",
+        "skip_file": "ultimatum_game_responder.skipped.jsonl",
+        "prompt_target": "Ultimatum Game responder scenario",
+    },
 }
 DEFAULT_TRANSFORM_SAMPLE_ROOT = (
     Path(__file__).resolve().parent / "transform_to_natural_lannguage_samples" / "diplomacy"
@@ -57,6 +92,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-retries", type=int, default=0)
     parser.add_argument("--num-candidates", type=int, default=1)
     parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--request-timeout-seconds", type=float, default=None)
     return parser
 
 
@@ -430,6 +466,145 @@ def inject_game_fields(row: dict[str, Any], prompt_pack: dict[str, Any]) -> dict
     return payload
 
 
+def _participant_choice_sets(payload: dict[str, Any]) -> dict[str, dict[str, str]]:
+    participants = payload.get("participants")
+    if not isinstance(participants, list):
+        return {}
+
+    shared_choices = payload.get("behavior_choices")
+    if isinstance(shared_choices, dict):
+        choice_sets: dict[str, dict[str, str]] = {}
+        for participant in participants:
+            if not isinstance(participant, dict):
+                continue
+            name = participant.get("name")
+            if isinstance(name, str) and name:
+                choice_sets[name] = shared_choices
+        return choice_sets
+
+    role_choice_sets: dict[str, dict[str, str]] = {}
+    for role, field_name in (
+        ("Trustor", "trustor_behavior_choices"),
+        ("Trustee", "trustee_behavior_choices"),
+        ("Proposer", "proposer_behavior_choices"),
+        ("Responder", "responder_behavior_choices"),
+    ):
+        choices = payload.get(field_name)
+        if isinstance(choices, dict):
+            role_choice_sets[role] = choices
+
+    choice_sets = {}
+    for participant in participants:
+        if not isinstance(participant, dict):
+            continue
+        name = participant.get("name")
+        participant_role = participant.get("role")
+        if (
+            isinstance(name, str)
+            and name
+            and isinstance(participant_role, str)
+            and participant_role in role_choice_sets
+        ):
+            choice_sets[name] = role_choice_sets[participant_role]
+    return choice_sets
+
+
+def _behavior_marker_score(key: str, text: str) -> int:
+    marker_groups = {
+        "none": ("0", "0%", "zero", "none", "nothing", "no"),
+        "low": ("30", "30%", "low", "limited", "light", "modest", "moderate"),
+        "medium": ("40", "40-50", "40-50%", "40%", "45%", "medium", "moderate", "limited"),
+        "high": ("80", "80%", "high", "generous", "substantial", "strong", "major"),
+        "withdraw": ("normal", "hold", "steady", "stay", "remain", "keep"),
+        "escalate": ("escalate", "increase", "advance", "push", "pump", "attack"),
+        "accept": ("accept", "agree", "take"),
+        "reject": ("reject", "decline", "refuse"),
+    }
+    score = 0
+    lower_key = key.lower()
+    lower_text = text.lower()
+    for marker_key, markers in marker_groups.items():
+        if marker_key in lower_key:
+            score += sum(1 for marker in markers if marker in lower_text)
+    return score
+
+
+def _canonicalize_behavior_choice(action_text: str, choices: dict[str, str]) -> str | None:
+    if action_text in choices.values():
+        return action_text
+
+    action_tokens = set(_word_tokens(action_text))
+    ranked: list[tuple[int, int, str]] = []
+    for key, choice_text in choices.items():
+        choice_tokens = set(_word_tokens(choice_text))
+        overlap = len(action_tokens & choice_tokens)
+        marker_score = _behavior_marker_score(key, action_text)
+        ranked.append((marker_score, overlap, choice_text))
+
+    ranked.sort(key=lambda item: (-item[0], -item[1], item[2]))
+    best_marker, best_overlap, best_choice = ranked[0]
+    if best_marker == 0 and best_overlap == 0:
+        return None
+    if len(ranked) > 1 and ranked[1][:2] == (best_marker, best_overlap):
+        return None
+    return best_choice
+
+
+def canonicalize_previous_actions_against_behavior_choices(payload: dict[str, Any]) -> dict[str, Any]:
+    previous_actions = payload.get("previous_actions")
+    if not isinstance(previous_actions, list) or not previous_actions:
+        return payload
+
+    choice_sets = _participant_choice_sets(payload)
+    if not choice_sets:
+        return payload
+
+    normalized_previous_actions: list[Any] = []
+    for action in previous_actions:
+        if isinstance(action, dict):
+            round_actions = action.get("actions")
+            if not isinstance(round_actions, list):
+                normalized_previous_actions.append(action)
+                continue
+            normalized_round_actions: list[dict[str, Any]] = []
+            for round_action in round_actions:
+                if not isinstance(round_action, dict):
+                    normalized_round_actions.append(round_action)
+                    continue
+                participant = round_action.get("participant")
+                decision = round_action.get("action")
+                if (
+                    isinstance(participant, str)
+                    and isinstance(decision, str)
+                    and participant in choice_sets
+                ):
+                    canonical = _canonicalize_behavior_choice(decision, choice_sets[participant])
+                    if canonical is not None:
+                        normalized_round_actions.append(
+                            {**round_action, "action": canonical}
+                        )
+                        continue
+                normalized_round_actions.append(round_action)
+            normalized_previous_actions.append({**action, "actions": normalized_round_actions})
+            continue
+
+        if isinstance(action, (list, tuple)) and len(action) == 2:
+            participant, decision = action
+            if (
+                isinstance(participant, str)
+                and isinstance(decision, str)
+                and participant in choice_sets
+            ):
+                canonical = _canonicalize_behavior_choice(decision, choice_sets[participant])
+                if canonical is not None:
+                    normalized_previous_actions.append((participant, canonical))
+                    continue
+        normalized_previous_actions.append(action)
+
+    payload["previous_actions"] = normalized_previous_actions
+    return payload
+
+
 def validate_loadable_with_game_contract(row: dict[str, Any], prompt_pack: dict[str, Any]) -> None:
     scenario_payload = dict(row)
     prompt_pack["scenario_class"](**scenario_payload)
@@ -442,6 +617,7 @@ def transform_source_row(
     model_name: str,
     max_retries: int = 0,
     temperature: float = 0.0,
+    request_timeout_seconds: float | None = None,
 ) -> dict[str, Any]:
     system_prompt = build_system_prompt(prompt_pack)
     user_prompt = (
@@ -459,8 +635,10 @@ def transform_source_row(
                     {"role": "user", "content": user_prompt},
                 ],
                 temperature=temperature,
+                timeout=request_timeout_seconds,
             )
             payload = inject_game_fields(parse_json_text(extract_response_text(response)), prompt_pack)
+            payload = canonicalize_previous_actions_against_behavior_choices(payload)
             payload.setdefault("provenance", {})
             payload["provenance"]["id"] = source_row["id"]
             payload["provenance"]["source_game_id"] = source_row["source"]["game_id"]
@@ -482,6 +660,7 @@ def transform_source_row_candidates(
     max_retries: int = 0,
     num_candidates: int = 1,
     temperature: float = 0.0,
+    request_timeout_seconds: float | None = None,
 ) -> list[dict[str, Any]]:
     return [
         transform_source_row(
@@ -490,6 +669,7 @@ def transform_source_row_candidates(
             model_name=model_name,
             max_retries=max_retries,
             temperature=temperature,
+            request_timeout_seconds=request_timeout_seconds,
         )
         for _ in range(max(1, num_candidates))
     ]
@@ -687,6 +867,7 @@ def run_transform(args: argparse.Namespace) -> int:
                 max_retries=args.max_retries,
                 num_candidates=args.num_candidates,
                 temperature=args.temperature,
+                request_timeout_seconds=args.request_timeout_seconds,
             ): (index, identity_key, source_row)
             for index, identity_key, source_row in pending_rows
         }
@@ -743,6 +924,7 @@ def run_transform(args: argparse.Namespace) -> int:
         "model_name": args.model,
         "num_candidates": args.num_candidates,
         "temperature": args.temperature,
+        "request_timeout_seconds": args.request_timeout_seconds,
         "rubric_path": str(resolved_rubric_path.resolve()),
         "few_shot_path": str(resolved_few_shot_path.resolve()),
         "run_variants": sorted(run_variants),

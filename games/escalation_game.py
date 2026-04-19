@@ -38,7 +38,7 @@ class EscalationGameScenario(SequentialGameScenario):
     description: str
     participants: list[dict]
     behavior_choices: EGBehaviorChoices
-    previous_actions_data: list[tuple[str, str]] = Field(
+    previous_actions_data: list[Any] = Field(
         default_factory=list,
         alias="previous_actions",
         serialization_alias="previous_actions",
@@ -99,19 +99,55 @@ class EscalationGameScenario(SequentialGameScenario):
     @model_validator(mode="after")
     def _validate_previous_actions(self) -> "EscalationGameScenario":
         participant_names = self.get_participant_names()
-        normalized_actions: list[tuple[str, str]] = []
+        normalized_actions: list[Any] = []
 
         for action in self.previous_actions_data:
-            if not isinstance(action, (list, tuple)) or len(action) != 2:
-                raise ValueError(
-                    "previous_actions must contain [participant_name, action_description] pairs"
+            if isinstance(action, dict):
+                round_index = action.get("round")
+                if not isinstance(round_index, int) or round_index < 1:
+                    raise ValueError("previous_actions round must be a positive integer")
+                round_summary = action.get("round_summary")
+                if round_summary is not None and (
+                    not isinstance(round_summary, str) or not round_summary.strip()
+                ):
+                    raise ValueError(
+                        "previous_actions round_summary must be a non-empty string when present"
+                    )
+                round_actions = action.get("actions")
+                if not isinstance(round_actions, list) or not round_actions:
+                    raise ValueError("previous_actions actions must be a non-empty list")
+                normalized_round_actions: list[dict[str, str]] = []
+                for round_action in round_actions:
+                    if not isinstance(round_action, dict):
+                        raise ValueError("previous_actions actions must contain dictionaries")
+                    actor = round_action.get("participant")
+                    decision = round_action.get("action")
+                    if not isinstance(actor, str) or actor not in participant_names:
+                        raise ValueError("previous_actions actor must match a participant name")
+                    if not isinstance(decision, str) or not self.get_behavior_choices().is_valid_choice(decision):
+                        raise ValueError("previous_actions decision must match a behavior choice")
+                    normalized_round_actions.append({"participant": actor, "action": decision})
+                normalized_actions.append(
+                    {
+                        "round": round_index,
+                        "round_summary": round_summary,
+                        "actions": normalized_round_actions,
+                    }
                 )
-            actor, decision = action
-            if not isinstance(actor, str) or actor not in participant_names:
-                raise ValueError("previous_actions actor must match a participant name")
-            if not isinstance(decision, str) or not self.get_behavior_choices().is_valid_choice(decision):
-                raise ValueError("previous_actions decision must match a behavior choice")
-            normalized_actions.append((actor, decision))
+                continue
+
+            if isinstance(action, (list, tuple)) and len(action) == 2:
+                actor, decision = action
+                if not isinstance(actor, str) or actor not in participant_names:
+                    raise ValueError("previous_actions actor must match a participant name")
+                if not isinstance(decision, str) or not self.get_behavior_choices().is_valid_choice(decision):
+                    raise ValueError("previous_actions decision must match a behavior choice")
+                normalized_actions.append((actor, decision))
+                continue
+
+            raise ValueError(
+                "previous_actions must contain round dictionaries or [participant_name, action_description] pairs"
+            )
 
         self.previous_actions_data = normalized_actions
         if self.previous_actions_data and self.previous_actions_length != len(self.previous_actions_data):
@@ -121,7 +157,7 @@ class EscalationGameScenario(SequentialGameScenario):
         return self
 
     @property
-    def previous_actions(self) -> list[tuple[str, str]]:
+    def previous_actions(self) -> list[Any]:
         if getattr(self, "_explicit_previous_actions_provided", False):
             return self.previous_actions_data
 

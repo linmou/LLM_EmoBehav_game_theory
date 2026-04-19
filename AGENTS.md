@@ -314,6 +314,8 @@ Every time you are going to commit a change, review the document markdown or cla
 - Local files: source JSONL input, success dataset JSON, failure/skipped artifact JSONL, run metadata JSON (002-social-game-transform)
 - Python 3.10+ in the repository conda environment + standard library (`argparse`, `json`, `pathlib`, `datetime`, `concurrent.futures`), `pydantic`, `openai`, `python-dotenv`, in-repo game modules under `games/` (002-social-game-transform)
 - Local files only: JSONL source input, JSON success dataset, JSONL failure/skipped artifacts, JSON run metadata, Markdown prompt assets (002-social-game-transform)
+- Python 3.11.x in the repository Python environmen + Standard library (`argparse`, `json`, `pathlib`, `concurrent.futures`, `datetime`, `re`), `openai`, `python-dotenv`, in-repo game contracts from `games.game_configs` and scenario classes under `games/` (002-social-game-transform)
+- Local Markdown, JSON, and JSONL files for prompt assets, success artifacts, failure/skipped artifacts, candidate artifacts, diversity reports, and run metadata (002-social-game-transform)
 
 ## Recent Changes
 - 002-social-game-transform: Added Python 3.x in the repository conda environment (`llm_behav`) + Standard library (`argparse`, `json`, `pathlib`, `concurrent.futures`), `pydantic`, `python-dotenv`, `openai`-compatible client stack already used in-repo

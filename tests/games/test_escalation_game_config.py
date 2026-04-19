@@ -51,6 +51,38 @@ def test_escalation_game_scenario_uses_explicit_previous_actions_when_present():
     assert "Neighbor" in str(scenario)
 
 
+def test_escalation_game_scenario_uses_structured_previous_action_rounds_when_present():
+    scenario = EscalationGameScenario(
+        **_base_escalation_payload(),
+        previous_actions=[
+            {
+                "round": 1,
+                "round_summary": "Neighbor increased pumping and you observed the escalation.",
+                "actions": [
+                    {
+                        "participant": "Neighbor",
+                        "action": "Pump more water from the shared canal.",
+                    }
+                ],
+            }
+        ],
+        previous_actions_length=1,
+    )
+
+    assert scenario.previous_actions == [
+        {
+            "round": 1,
+            "round_summary": "Neighbor increased pumping and you observed the escalation.",
+            "actions": [
+                {
+                    "participant": "Neighbor",
+                    "action": "Pump more water from the shared canal.",
+                }
+            ],
+        }
+    ]
+
+
 def test_escalation_game_scenario_falls_back_to_previous_actions_length_when_history_absent():
     scenario = EscalationGameScenario(
         **_base_escalation_payload(),

@@ -50,9 +50,8 @@ def iter_labeled_choices(payload) -> list[tuple[str, str]]:
         if not isinstance(choice_block, dict):
             continue
 
-        for label in ("escalate", "withdraw"):
-            value = choice_block.get(label)
-            if isinstance(value, str) and value.strip():
+        for label, value in choice_block.items():
+            if isinstance(label, str) and label.strip() and isinstance(value, str) and value.strip():
                 rows.append((normalize_text(value), label))
 
     if not rows:

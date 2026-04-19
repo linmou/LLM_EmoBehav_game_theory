@@ -42,16 +42,20 @@ def test_trust_game_config():
     assert config["decision_class"] is TrustGameDecision
 
 
-def test_trust_game_trustor_rejects_non_empty_explicit_previous_actions():
-    with pytest.raises(ValueError, match="Trustor"):
-        TrustGameTrustorScenario(
-            **_base_trust_payload(),
-            previous_actions=[
-                ["Austria", "commit about 30% of Austria's available operational support to England"],
-                ["England", "return about 40-50% of England's resulting operational support to Austria"],
-            ],
-            previous_actions_length=2,
-        )
+def test_trust_game_trustor_accepts_non_empty_explicit_previous_actions():
+    scenario = TrustGameTrustorScenario(
+        **_base_trust_payload(),
+        previous_actions=[
+            ["Austria", "commit about 30% of Austria's available operational support to England"],
+            ["England", "return about 40-50% of England's resulting operational support to Austria"],
+        ],
+        previous_actions_length=2,
+    )
+
+    assert scenario.previous_actions == [
+        ("Austria", "commit about 30% of Austria's available operational support to England"),
+        ("England", "return about 40-50% of England's resulting operational support to Austria"),
+    ]
 
 
 def test_trust_game_trustee_uses_explicit_previous_actions_when_present():
@@ -68,6 +72,46 @@ def test_trust_game_trustee_uses_explicit_previous_actions_when_present():
         ("Austria", "commit about 30% of Austria's available operational support to England"),
     ]
     assert "Austria" in str(scenario)
+
+
+def test_trust_game_trustee_uses_structured_previous_action_rounds_when_present():
+    scenario = TrustGameTrusteeScenario(
+        **_base_trust_payload(),
+        previous_actions=[
+            {
+                "round": 1,
+                "round_summary": "Austria invested support and England made a limited return response.",
+                "actions": [
+                    {
+                        "participant": "Austria",
+                        "action": "commit about 30% of Austria's available operational support to England",
+                    },
+                    {
+                        "participant": "England",
+                        "action": "return about 40-50% of England's resulting operational support to Austria",
+                    },
+                ],
+            }
+        ],
+        previous_actions_length=1,
+    )
+
+    assert scenario.previous_actions == [
+        {
+            "round": 1,
+            "round_summary": "Austria invested support and England made a limited return response.",
+            "actions": [
+                {
+                    "participant": "Austria",
+                    "action": "commit about 30% of Austria's available operational support to England",
+                },
+                {
+                    "participant": "England",
+                    "action": "return about 40-50% of England's resulting operational support to Austria",
+                },
+            ],
+        }
+    ]
 
 
 def test_trust_game_trustee_explicit_previous_actions_do_not_require_previous_trust_level():
@@ -120,3 +164,40 @@ def test_trust_game_trustee_rejects_previous_trust_level_that_conflicts_with_exp
             previous_actions_length=1,
             previous_trust_level=1,
         )
+
+
+def test_trust_game_trustor_adds_focal_prefix_without_rewriting_description_body():
+    payload = _base_trust_payload()
+    payload["description"] = (
+        "Austria must decide how much support to send, and England will later decide "
+        "how much value to return after Austria's investment."
+    )
+    scenario = TrustGameTrustorScenario(
+        **payload,
+        previous_actions_length=0,
+    )
+
+    rendered = scenario.get_scenario_info()["description"]
+
+    assert rendered.startswith("You are Austria. ")
+    assert "Austria must decide how much support to send" in rendered
+    assert "England will later decide" in rendered
+
+
+def test_trust_game_trustee_adds_focal_prefix_without_rewriting_description_body():
+    payload = _base_trust_payload()
+    payload["description"] = (
+        "Austria has already committed support, and England must now decide how much "
+        "value to return after using Austria's help."
+    )
+    scenario = TrustGameTrusteeScenario(
+        **payload,
+        previous_actions_length=1,
+        previous_trust_level=1,
+    )
+
+    rendered = scenario.get_scenario_info()["description"]
+
+    assert rendered.startswith("You are England. ")
+    assert "Austria has already committed support" in rendered
+    assert "England must now decide" in rendered

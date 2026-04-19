@@ -85,6 +85,127 @@ def _sample_escalation_transformed_row(case_id: str = "sg_case_1", game_id: str 
     }
 
 
+def _sample_prisoners_dilemma_source_row(
+    case_id: str = "sg_pd_1",
+    game_id: str = "pd_game_1",
+) -> dict:
+    return {
+        "id": case_id,
+        "episode_type": "PRISONERS_DILEMMA",
+        "variant_name": "TWO_AGENTS_SINGLE_TURN",
+        "players": ["ENGLAND", "FRANCE"],
+        "phases": ["F1912M"],
+        "events": [
+            {
+                "actor": "ENGLAND",
+                "recipient": "FRANCE",
+                "type": "ATTACK",
+                "phase": "F1912M",
+                "details": {"dest": "BEL", "reason": "unit_or_sc"},
+            }
+        ],
+        "labels": {"round_outcome": "CD"},
+        "metrics": {"dyad": ["BEL", "MAR"], "num_rounds": 1},
+        "source": {"dataset": "standard_no_press.jsonl", "game_id": game_id, "line_number": 77},
+    }
+
+
+def _sample_prisoners_dilemma_transformed_row(
+    case_id: str = "sg_pd_1",
+    game_id: str = "pd_game_1",
+) -> dict:
+    return {
+        "scenario": "Belgium Corridor Choice",
+        "description": (
+            "You are the England commander. Belgium has become a tempting opening between you "
+            "and the commander of France, but either side can turn that opening into a costly struggle."
+        ),
+        "participants": [
+            {"name": "You", "profile": "Commander of England"},
+            {"name": "France", "profile": "Commander of France"},
+        ],
+        "behavior_choices": {
+            "cooperate": "Leave the Belgium corridor outside your main effort this season.",
+            "defect": "Leave the Belgium corridor inside your main effort this season.",
+        },
+        "game_name": "Prisoners_Dilemma",
+        "provenance": {
+            "id": case_id,
+            "source_game_id": game_id,
+        },
+    }
+
+
+def _sample_trust_source_row(case_id: str = "sg_trust_1", game_id: str = "trust_game_1") -> dict:
+    return {
+        "id": case_id,
+        "episode_type": "TRUST",
+        "variant_name": "TWO_AGENTS_MULTI_TURN",
+        "players": ["AUSTRIA", "ENGLAND"],
+        "phases": ["S1915M", "S1916M"],
+        "events": [
+            {
+                "actor": "AUSTRIA",
+                "recipient": "ENGLAND",
+                "type": "SUPPORT_MOVE",
+                "phase": "S1915M",
+                "details": {"dest": "BER", "supporter_loc": "SIL", "unit_origin": "PRU"},
+            },
+            {
+                "actor": "AUSTRIA",
+                "recipient": "ENGLAND",
+                "type": "SUPPORT_MOVE",
+                "phase": "F1915M",
+                "details": {"dest": "BER", "supporter_loc": "SIL", "unit_origin": "PRU"},
+            },
+            {
+                "actor": "ENGLAND",
+                "recipient": "AUSTRIA",
+                "type": "CONVOY",
+                "phase": "S1916M",
+                "details": {"dest": "PAR", "fleet_loc": "MAO", "unit_origin": "VIE"},
+            },
+        ],
+        "labels": {"trust_outcome": "RECIPROCATED"},
+        "metrics": {"num_investment_events": 2, "num_rounds": 2, "window_movement_phases": 6},
+        "source": {"dataset": "standard_no_press.jsonl", "game_id": game_id, "line_number": 12311},
+    }
+
+
+def _sample_trustee_transformed_row(case_id: str = "sg_trust_1", game_id: str = "trust_game_1") -> dict:
+    return {
+        "scenario": "Berlin Corridor Return Decision",
+        "description": (
+            "You are England commander. Berlin has become a more favorable point of pressure "
+            "for your side, but the central line is still unstable and other powers can exploit "
+            "any slackening of force there."
+        ),
+        "participants": [
+            {"name": "Austria", "profile": "Trustor_Power", "role": "Trustor"},
+            {"name": "England", "profile": "Trustee_Power", "role": "Trustee"},
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "commit 0% of Austria's available operational support to England",
+            "trust_low": "commit about 30% of Austria's available operational support to England",
+            "trust_high": "commit more than 80% of Austria's available operational support to England",
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0% of England's resulting operational support to Austria",
+            "return_medium": "return about 40-50% of England's resulting operational support to Austria",
+            "return_high": "return more than 80% of England's resulting operational support to Austria",
+        },
+        "previous_actions": [
+            ["Austria", "commit more than 80% of Austria's available operational support to England"],
+        ],
+        "previous_actions_length": 1,
+        "game_name": "Trust_Game_Trustee",
+        "provenance": {
+            "id": case_id,
+            "source_game_id": game_id,
+        },
+    }
+
+
 @pytest.fixture
 def prompt_assets(tmp_path: Path) -> tuple[Path, Path]:
     rubric = tmp_path / "transform_rubrics.md"
@@ -139,9 +260,78 @@ def test_default_prompt_asset_paths_follow_diplomacy_transform_samples_layout():
     assert str(default_few_shot_path("escalation_game")).endswith(
         "data_creation/transform_to_natural_lannguage_samples/diplomacy/escalation_game_few_shot_examples.json"
     )
+    assert str(default_few_shot_path("trust_game_trustee")).endswith(
+        "data_creation/transform_to_natural_lannguage_samples/diplomacy/trust_game_trustee_few_shot_examples.json"
+    )
     assert str(DEFAULT_RUBRIC_PATH).endswith(
         "data_creation/transform_to_natural_lannguage_samples/diplomacy/transform_rubrics.md"
     )
+
+
+def test_load_prompt_pack_supports_trust_game_trustee_with_direct_target_mapping(
+    tmp_path: Path,
+):
+    # data_creation/transform_social_game_cases.py: support trust_game_trustee directly as a target game-role mapping.
+    from data_creation.transform_social_game_cases import load_prompt_pack
+    from games.trust_game import TrustGameTrusteeScenario
+
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = tmp_path / "trust_game_trustee_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"episode_type": "TRUST", "variant_name": "TWO_AGENTS_MULTI_TURN"},
+                "output": _sample_trustee_transformed_row(),
+            }
+        ],
+    )
+
+    prompt_pack = load_prompt_pack(
+        social_game="trust_game_trustee",
+        rubric_path=rubric,
+        few_shot_path=fewshot,
+    )
+
+    assert prompt_pack["target_game_name"] == "Trust_Game_Trustee"
+    assert prompt_pack["scenario_class"] is TrustGameTrusteeScenario
+
+
+def test_load_prompt_pack_supports_prisoners_dilemma_with_direct_target_mapping(
+    tmp_path: Path,
+):
+    # data_creation/transform_social_game_cases.py: support prisoners_dilemma directly as a target game mapping.
+    from data_creation.transform_social_game_cases import load_prompt_pack
+    from games.prisoner_delimma import PrisonerDilemmaScenario
+
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = tmp_path / "prisoners_dilemma_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"episode_type": "PRISONERS_DILEMMA", "variant_name": "TWO_AGENTS_SINGLE_TURN"},
+                "output": _sample_prisoners_dilemma_transformed_row(),
+            }
+        ],
+    )
+
+    prompt_pack = load_prompt_pack(
+        social_game="prisoners_dilemma",
+        rubric_path=rubric,
+        few_shot_path=fewshot,
+    )
+
+    assert prompt_pack["target_game_name"] == "Prisoners_Dilemma"
+    assert prompt_pack["scenario_class"] is PrisonerDilemmaScenario
 
 
 def test_transform_run_writes_success_only_outputs(tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch):
@@ -325,6 +515,69 @@ def test_transform_run_writes_success_only_outputs_for_escalation_game(
     success_rows = json.loads((output_dir / "escalation_game.success.json").read_text(encoding="utf-8"))
     assert len(success_rows) == 1
     assert success_rows[0]["game_name"] == "Escalation_Game"
+
+
+def test_transform_run_writes_success_only_outputs_for_prisoners_dilemma(
+    tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: write only loadable Prisoners' Dilemma rows to the success dataset.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "prisoners_dilemma_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(input_path, [_sample_prisoners_dilemma_source_row("sg_pd_1", "pd_game_1")])
+    rubric, _ = prompt_assets
+    fewshot = tmp_path / "prisoners_dilemma_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"episode_type": "PRISONERS_DILEMMA", "variant_name": "TWO_AGENTS_SINGLE_TURN"},
+                "output": _sample_prisoners_dilemma_transformed_row("sg_pd_1", "pd_game_1"),
+            },
+            {
+                "input": {"episode_type": "PRISONERS_DILEMMA", "variant_name": "TWO_AGENTS_MULTI_TURN"},
+                "output": {
+                    **_sample_prisoners_dilemma_transformed_row("sg_pd_2", "pd_game_2"),
+                    "description": "The same frontier has become a repeated dilemma across consecutive seasons.",
+                },
+            },
+            {
+                "input": {"episode_type": "PRISONERS_DILEMMA", "variant_name": "TWO_AGENTS_MULTI_TURN"},
+                "output": {
+                    **_sample_prisoners_dilemma_transformed_row("sg_pd_3", "pd_game_3"),
+                    "description": "The corridor remains useful, but a repeated standoff has made every shift more legible.",
+                },
+            },
+        ],
+    )
+
+    monkeypatch.setattr(
+        module,
+        "transform_source_row",
+        lambda *args, **kwargs: _sample_prisoners_dilemma_transformed_row("sg_pd_1", "pd_game_1"),
+    )
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "prisoners_dilemma",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    success_rows = json.loads((output_dir / "prisoners_dilemma.success.json").read_text(encoding="utf-8"))
+    assert len(success_rows) == 1
+    assert success_rows[0]["game_name"] == "Prisoners_Dilemma"
 
 
 def test_main_rejects_unsupported_social_game(tmp_path: Path, prompt_assets: tuple[Path, Path]):
@@ -1114,6 +1367,190 @@ def test_transform_source_row_uses_game_constructor_as_contract(monkeypatch: pyt
     assert transformed["provenance"]["id"] == "sg_case_1"
 
 
+def test_transform_source_row_passes_explicit_request_timeout_to_model_client(
+    monkeypatch: pytest.MonkeyPatch,
+    prompt_assets,
+):
+    # data_creation/transform_social_game_cases.py: pass explicit request timeout through to the model client call so stalled reads do not hang forever.
+    from data_creation import transform_social_game_cases as module
+
+    source_row = _sample_source_row("sg_case_1", "game_1")
+    rubric, fewshot = prompt_assets
+    prompt_pack = module.load_prompt_pack(
+        social_game="beauty_contest",
+        rubric_path=rubric,
+        few_shot_path=fewshot,
+    )
+    response_payload = _sample_transformed_row("sg_case_1", "game_1")
+    response = SimpleNamespace(
+        choices=[
+            SimpleNamespace(
+                message=SimpleNamespace(content=json.dumps(response_payload))
+            )
+        ]
+    )
+    seen_kwargs: dict[str, Any] = {}
+
+    def fake_create(**kwargs):
+        seen_kwargs.update(kwargs)
+        return response
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(create=fake_create)
+        )
+    )
+
+    monkeypatch.setattr(module, "build_openai_client", lambda: fake_client)
+
+    module.transform_source_row(
+        source_row=source_row,
+        prompt_pack=prompt_pack,
+        model_name="deepseek-chat",
+        request_timeout_seconds=17.5,
+    )
+
+    assert seen_kwargs["timeout"] == 17.5
+
+
+def test_transform_source_row_canonicalizes_structured_trustee_previous_actions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: canonicalize trustee previous_actions onto declared behavior choices before scenario validation.
+    from data_creation import transform_social_game_cases as module
+
+    source_row = _sample_trust_source_row()
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text("Transform structured data into a historical decision-making scenario.", encoding="utf-8")
+    fewshot = tmp_path / "trust_game_trustee_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": _sample_trust_source_row(),
+                "output": _sample_trustee_transformed_row(),
+            }
+        ],
+    )
+    prompt_pack = module.load_prompt_pack(
+        social_game="trust_game_trustee",
+        rubric_path=rubric,
+        few_shot_path=fewshot,
+        run_variants={"TWO_AGENTS_MULTI_TURN"},
+    )
+    response_payload = {
+        "scenario": "Berlin Corridor Return Decision",
+        "description": (
+            "You are England commander. Berlin has become a more favorable point of pressure for your "
+            "side, but the central line is still unstable and other powers can exploit any slackening of force there."
+        ),
+        "participants": [
+            {
+                "name": "Austria",
+                "profile": "Central power that repeatedly invested support",
+                "role": "Trustor",
+            },
+            {
+                "name": "England",
+                "profile": "Partner power deciding whether to reciprocate",
+                "role": "Trustee",
+            },
+        ],
+        "previous_actions": [
+            {
+                "round": 1,
+                "round_summary": "Austria provided support for England's Berlin campaign, and England made a limited return response.",
+                "actions": [
+                    {
+                        "participant": "Austria",
+                        "action": "provide a moderate level of operational support for England's advance toward Berlin",
+                    },
+                    {
+                        "participant": "England",
+                        "action": "return a limited level of operational support to Austria after benefiting from the campaign",
+                    },
+                ],
+            },
+            {
+                "round": 2,
+                "round_summary": "Austria again provided support for England's Berlin campaign, and England made another return response.",
+                "actions": [
+                    {
+                        "participant": "Austria",
+                        "action": "provide a high level of operational support for England's Berlin campaign",
+                    },
+                    {
+                        "participant": "England",
+                        "action": "return a moderate level of operational support to Austria after benefiting again from the campaign",
+                    },
+                ],
+            },
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "commit 0% of Austria's available operational support to England's Berlin campaign",
+            "trust_low": "commit about 30% of Austria's available operational support to England's Berlin campaign",
+            "trust_high": "commit more than 80% of Austria's available operational support to England's Berlin campaign",
+        },
+        "trustee_behavior_choices": {
+            "return_none": "return 0% of England's resulting operational support to Austria",
+            "return_medium": "return about 40-50% of England's resulting operational support to Austria",
+            "return_high": "return more than 80% of England's resulting operational support to Austria",
+        },
+    }
+
+    response = SimpleNamespace(
+        choices=[
+            SimpleNamespace(
+                message=SimpleNamespace(content=json.dumps(response_payload))
+            )
+        ]
+    )
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(create=lambda **kwargs: response)
+        )
+    )
+
+    monkeypatch.setattr(module, "build_openai_client", lambda: fake_client)
+
+    transformed = module.transform_source_row(
+        source_row=source_row,
+        prompt_pack=prompt_pack,
+        model_name="deepseek-chat",
+    )
+
+    assert transformed["previous_actions"] == [
+        {
+            "round": 1,
+            "round_summary": "Austria provided support for England's Berlin campaign, and England made a limited return response.",
+            "actions": [
+                {
+                    "participant": "Austria",
+                    "action": "commit about 30% of Austria's available operational support to England's Berlin campaign",
+                },
+                {
+                    "participant": "England",
+                    "action": "return about 40-50% of England's resulting operational support to Austria",
+                },
+            ],
+        },
+        {
+            "round": 2,
+            "round_summary": "Austria again provided support for England's Berlin campaign, and England made another return response.",
+            "actions": [
+                {
+                    "participant": "Austria",
+                    "action": "commit more than 80% of Austria's available operational support to England's Berlin campaign",
+                },
+                {
+                    "participant": "England",
+                    "action": "return about 40-50% of England's resulting operational support to Austria",
+                },
+            ],
+        },
+    ]
+
+
 def test_run_transform_uses_multiple_workers_when_requested(
     tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch
 ):
@@ -1241,6 +1678,53 @@ def test_run_transform_with_num_candidates_selects_lower_overlap_description_and
     assert selected_by_id["sg_case_2"]["description"] == diverse_2["description"]
     assert diversity_report["candidate_counts"] == {"generated": 3, "selected": 2}
     assert diversity_report["selected_description_metrics"]["distinct_2"] > 0
+
+
+def test_run_transform_passes_request_timeout_to_candidate_generation(
+    tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: forward CLI request timeout into candidate generation so hung model calls fail on the configured bound.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "escalation_game_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(
+        input_path,
+        [
+            _sample_source_row("sg_case_1", "game_1"),
+            _sample_source_row("sg_case_2", "game_2"),
+        ],
+    )
+    rubric, fewshot = prompt_assets
+    seen_timeouts: list[float | None] = []
+
+    def fake_transform_candidates(*args, **kwargs):
+        seen_timeouts.append(kwargs.get("request_timeout_seconds"))
+        source_row = kwargs["source_row"]
+        return [_sample_escalation_transformed_row(source_row["id"], source_row["source"]["game_id"])]
+
+    monkeypatch.setattr(module, "transform_source_row_candidates", fake_transform_candidates)
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "escalation_game",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+            "--request-timeout-seconds",
+            "17.5",
+        ]
+    )
+
+    assert exit_code == 0
+    assert seen_timeouts == [17.5, 17.5]
 
 
 def test_compute_description_diversity_report_tracks_repeated_ngrams_and_distinct_scores():
