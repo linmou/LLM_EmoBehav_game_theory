@@ -10,6 +10,12 @@ from pathlib import Path
 
 import pytest
 
+if "api_configs" not in sys.modules:
+    sys.modules["api_configs"] = types.SimpleNamespace(
+        OAI_CONFIG={},
+        GEMINI_CONFIG={},
+    )
+
 from emotion_experiment_engine.benchmark_component_registry import (
     create_benchmark_components,
 )
@@ -256,6 +262,290 @@ def test_trustee_previous_actions_visible(monkeypatch: pytest.MonkeyPatch) -> No
     assert previous_actions, "Expected previous actions metadata to be populated"
     assert previous_actions[0][0] == "Alex"
     assert "Invest a smaller amount" in previous_actions[0][1]
+
+
+def test_trustee_root_all_samples_dataset_loads_with_default_game_config() -> None:
+    # Test for games/game_configs.py and emotion_experiment_engine/datasets/games.py:
+    # Trust_Game_Trustee should load the root all-samples dataset using canonical game config defaults.
+    config = BenchmarkConfig(
+        name="game_theory",
+        task_type="Trust_Game_Trustee",
+        data_path="data_creation/scenario_creation/langgraph_creation/Trust_Game_Trustor_all_data_samples.json",
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=1.0,
+        llm_eval_config=None,
+    )
+
+    dataset = GameTheoryDataset(config=config, prompt_wrapper=None, answer_wrapper=None)
+    assert len(dataset) > 0
+    item = dataset[0]["item"]
+    assert item.metadata is not None
+    assert item.metadata.get("previous_actions_length") == 1
+    previous_actions = item.metadata.get("previous_actions")
+    assert isinstance(previous_actions, list)
+    assert len(previous_actions) == 1
+
+
+def test_ultimatum_proposer_explicit_history_overrides_config_previous_actions_length(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Test for emotion_experiment_engine/datasets/games.py:
+    # explicit previous_actions must take precedence over injected proposer defaults.
+    scenario_record = {
+        "id": "ug-proposer-history-1",
+        "scenario": "Berlin split with history",
+        "description": "Austria proposes terms and England decides whether they settle the turn.",
+        "participants": [
+            {"role": "Proposer", "name": "Austria", "profile": "Attacker"},
+            {"role": "Responder", "name": "England", "profile": "Defender"},
+        ],
+        "proposer_behavior_choices": {
+            "offer_low": "Offer England 20% of the resulting gain",
+            "offer_medium": "Offer England 40% of the resulting gain",
+            "offer_high": "Offer England 50% of the resulting gain",
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the proposed split",
+            "reject": "Reject the proposed split",
+        },
+        "previous_actions": [
+            {
+                "round": 1,
+                "round_summary": "Austria made a low offer and England rejected it.",
+                "actions": [
+                    {
+                        "participant": "Austria",
+                        "action": "Offer England 20% of the resulting gain",
+                    },
+                    {
+                        "participant": "England",
+                        "action": "Reject the proposed split",
+                    },
+                ],
+            },
+            {
+                "round": 2,
+                "round_summary": "Austria raised the offer and England accepted it.",
+                "actions": [
+                    {
+                        "participant": "Austria",
+                        "action": "Offer England 40% of the resulting gain",
+                    },
+                    {
+                        "participant": "England",
+                        "action": "Accept the proposed split",
+                    },
+                ],
+            },
+        ],
+        "payoff_matrix": {},
+    }
+
+    stub_config = {
+        "scenario_class": UltimatumGameProposerScenario,
+        "payoff_matrix": {},
+        "previous_actions_length": 0,
+        "scenarios": [scenario_record],
+    }
+
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.get_game_config",
+        lambda _: stub_config,
+    )
+
+    config = BenchmarkConfig(
+        name="game_theory",
+        task_type="Ultimatum_Game_Proposer",
+        data_path=None,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=1.0,
+        llm_eval_config=None,
+    )
+
+    dataset = GameTheoryDataset(config=config, prompt_wrapper=None, answer_wrapper=None)
+    item = dataset[0]["item"]
+    assert item.metadata is not None
+    assert item.metadata.get("previous_actions_length") == 2
+    previous_actions = item.metadata.get("previous_actions")
+    assert isinstance(previous_actions, list)
+    assert len(previous_actions) == 2
+
+
+def test_ultimatum_responder_explicit_history_overrides_config_history_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Test for emotion_experiment_engine/datasets/games.py:
+    # explicit previous_actions must override responder auto-composition defaults.
+    scenario_record = {
+        "id": "ug-responder-history-1",
+        "scenario": "Berlin reply with history",
+        "description": "Austria proposes terms and England decides whether they settle the turn.",
+        "participants": [
+            {"role": "Proposer", "name": "Austria", "profile": "Attacker"},
+            {"role": "Responder", "name": "England", "profile": "Defender"},
+        ],
+        "proposer_behavior_choices": {
+            "offer_low": "Offer England 20% of the resulting gain",
+            "offer_medium": "Offer England 40% of the resulting gain",
+            "offer_high": "Offer England 50% of the resulting gain",
+        },
+        "responder_behavior_choices": {
+            "accept": "Accept the proposed split",
+            "reject": "Reject the proposed split",
+        },
+        "previous_actions": [
+            {
+                "round": 1,
+                "round_summary": "Austria made a low offer and England rejected it.",
+                "actions": [
+                    {
+                        "participant": "Austria",
+                        "action": "Offer England 20% of the resulting gain",
+                    },
+                    {
+                        "participant": "England",
+                        "action": "Reject the proposed split",
+                    },
+                ],
+            },
+            {
+                "round": 2,
+                "round_summary": "Austria raised the offer and England accepted it.",
+                "actions": [
+                    {
+                        "participant": "Austria",
+                        "action": "Offer England 40% of the resulting gain",
+                    },
+                    {
+                        "participant": "England",
+                        "action": "Accept the proposed split",
+                    },
+                ],
+            },
+        ],
+        "payoff_matrix": {},
+    }
+
+    stub_config = {
+        "scenario_class": UltimatumGameResponderScenario,
+        "payoff_matrix": {},
+        "previous_actions_length": 1,
+        "previous_offer_level": 1,
+        "scenarios": [scenario_record],
+    }
+
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.get_game_config",
+        lambda _: stub_config,
+    )
+
+    config = BenchmarkConfig(
+        name="game_theory",
+        task_type="Ultimatum_Game_Responder",
+        data_path=None,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=1.0,
+        llm_eval_config=None,
+    )
+
+    dataset = GameTheoryDataset(config=config, prompt_wrapper=None, answer_wrapper=None)
+    item = dataset[0]["item"]
+    assert item.metadata is not None
+    assert item.metadata.get("previous_actions_length") == 2
+    previous_actions = item.metadata.get("previous_actions")
+    assert isinstance(previous_actions, list)
+    assert len(previous_actions) == 2
+
+
+def test_trustee_explicit_history_overrides_config_history_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Test for emotion_experiment_engine/datasets/games.py:
+    # explicit previous_actions must override trustee auto-composition defaults.
+    scenario_record = {
+        "id": "trust-history-1",
+        "scenario": "Trust history override",
+        "description": "Alex and Casey have already played two rounds.",
+        "participants": [
+            {"role": "Trustor", "name": "Alex", "profile": "Investor"},
+            {"role": "Trustee", "name": "Casey", "profile": "Caretaker"},
+        ],
+        "trustor_behavior_choices": {
+            "trust_none": "Do not invest",
+            "trust_low": "Invest a smaller amount",
+            "trust_high": "Invest everything",
+        },
+        "trustee_behavior_choices": {
+            "return_none": "Keep all funds",
+            "return_medium": "Return half of funds",
+            "return_high": "Return full amount",
+        },
+        "previous_actions": [
+            {
+                "round": 1,
+                "round_summary": "Alex invested a smaller amount and Casey returned half.",
+                "actions": [
+                    {"participant": "Alex", "action": "Invest a smaller amount"},
+                    {"participant": "Casey", "action": "Return half of funds"},
+                ],
+            },
+            {
+                "round": 2,
+                "round_summary": "Alex invested everything and Casey returned full amount.",
+                "actions": [
+                    {"participant": "Alex", "action": "Invest everything"},
+                    {"participant": "Casey", "action": "Return full amount"},
+                ],
+            },
+        ],
+        "payoff_matrix": {},
+    }
+
+    stub_config = {
+        "scenario_class": TrustGameTrusteeScenario,
+        "payoff_matrix": {},
+        "previous_actions_length": 1,
+        "previous_trust_level": 0,
+        "scenarios": [scenario_record],
+    }
+
+    monkeypatch.setattr(
+        "emotion_experiment_engine.datasets.games.get_game_config",
+        lambda _: stub_config,
+    )
+
+    config = BenchmarkConfig(
+        name="game_theory",
+        task_type="Trust_Game_Trustee",
+        data_path=None,
+        base_data_dir=None,
+        sample_limit=None,
+        augmentation_config=None,
+        enable_auto_truncation=False,
+        truncation_strategy="right",
+        preserve_ratio=1.0,
+        llm_eval_config=None,
+    )
+
+    dataset = GameTheoryDataset(config=config, prompt_wrapper=None, answer_wrapper=None)
+    item = dataset[0]["item"]
+    assert item.metadata is not None
+    assert item.metadata.get("previous_actions_length") == 2
+    previous_actions = item.metadata.get("previous_actions")
+    assert isinstance(previous_actions, list)
+    assert len(previous_actions) == 2
 
 
 def test_trustor_previous_actions_not_bound_method(monkeypatch: pytest.MonkeyPatch) -> None:

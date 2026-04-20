@@ -90,10 +90,19 @@ class GameTheoryDataset(BaseBenchmarkDataset):
         items: List[BenchmarkItem] = []
         for idx, record in enumerate(raw_items):
             enriched = dict(record)
+            has_explicit_previous_actions = (
+                "previous_actions" in enriched or "previous_actions_data" in enriched
+            )
             if "payoff_matrix" not in enriched:
                 enriched["payoff_matrix"] = payoff_matrix
 
             for field_name in scenario_fields:
+                if has_explicit_previous_actions and field_name in {
+                    "previous_actions_length",
+                    "previous_offer_level",
+                    "previous_trust_level",
+                }:
+                    continue
                 if field_name in augmentation and field_name not in enriched:
                     enriched[field_name] = augmentation[field_name]
                 elif field_name in config_fields and field_name not in enriched:

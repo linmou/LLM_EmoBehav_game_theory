@@ -110,6 +110,7 @@ GAME_CONFIGS = {
         "scenario_class": TrustGameTrusteeScenario,
         "decision_class": TrustGameDecision,
         "previous_actions_length": 1, 
+        "previous_trust_level": 0,
         "payoff_matrix": dict(),
         "data_path": data_path_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
         "data_folder": data_folder_format.format(GameNames.TRUST_GAME_TRUSTOR.value),
