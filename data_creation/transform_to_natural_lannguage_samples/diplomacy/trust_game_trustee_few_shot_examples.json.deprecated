@@ -1,0 +1,591 @@
+[
+  {
+    "input": {
+      "confidence_breakdown": {
+        "convoy_bonus": 0.0,
+        "minimum_span_penalty": -0.1,
+        "reciprocity_bonus": 0.2,
+        "success_bonus": 0.15
+      },
+      "confidence_score": 0.8,
+      "episode_type": "TRUST",
+      "event_center": "BER",
+      "events": [
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "BER",
+            "supporter_loc": "SIL",
+            "unit_origin": "PRU"
+          },
+          "phase": "S1915M",
+          "recipient": "ENGLAND",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "BER",
+            "supporter_loc": "SIL",
+            "unit_origin": "PRU"
+          },
+          "phase": "F1915M",
+          "recipient": "ENGLAND",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "PAR",
+            "fleet_loc": "MAO",
+            "unit_origin": "VIE"
+          },
+          "phase": "S1916M",
+          "recipient": "AUSTRIA",
+          "type": "CONVOY"
+        }
+      ],
+      "game_name": "TRUST",
+      "id": "sg_872e6f356f9a",
+      "id_basis": {
+        "episode_type": "TRUST",
+        "event_center": "BER",
+        "game_id": "7DZglHWq3I9lUTWh",
+        "game_name": "TRUST",
+        "mechanism_name": null,
+        "phase_sequence": [
+          "S1915M",
+          "S1916M"
+        ],
+        "players": [
+          "AUSTRIA",
+          "ENGLAND"
+        ],
+        "variant_name": "TWO_AGENTS_MULTI_TURN",
+        "victim": null
+      },
+      "labels": {
+        "trust_outcome": "RECIPROCATED"
+      },
+      "metrics": {
+        "num_investment_events": 2,
+        "num_rounds": 2,
+        "window_movement_phases": 6
+      },
+      "phases": [
+        "S1915M",
+        "S1916M"
+      ],
+      "players": [
+        "AUSTRIA",
+        "ENGLAND"
+      ],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "7DZglHWq3I9lUTWh",
+        "line_number": 12311
+      },
+      "variant_name": "TWO_AGENTS_MULTI_TURN"
+    },
+    "output": {
+      "scenario": "Berlin Corridor Return Decision",
+      "description": "You are England commander. Berlin has become a more favorable point of pressure for your side, but the central line is still unstable and other powers can exploit any slackening of force there. Austria, having spent strength to keep this opening alive, now looks to England for a return commitment. A generous response would help keep the partnership firm and the front coordinated, while a thinner response would leave England with more independent flexibility at the cost of Austria's future trust.",
+      "participants": [
+        {
+          "name": "Austria",
+          "profile": "Central power that repeatedly invested support",
+          "role": "Trustor"
+        },
+        {
+          "name": "England",
+          "profile": "Partner power deciding whether to reciprocate",
+          "role": "Trustee"
+        }
+      ],
+      "previous_actions": [
+        {
+          "round": 1,
+          "round_summary": "Austria provided support for England's Berlin campaign, and England made a limited return response.",
+          "actions": [
+            {
+              "participant": "Austria",
+              "action": "provide a moderate level of operational support for England's advance toward Berlin"
+            },
+            {
+              "participant": "England",
+              "action": "return a limited level of operational support to Austria after benefiting from the campaign"
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "round_summary": "Austria again provided support for England's Berlin campaign, and England made another return response.",
+          "actions": [
+            {
+              "participant": "Austria",
+              "action": "provide a high level of operational support for England's Berlin campaign"
+            },
+            {
+              "participant": "England",
+              "action": "return a moderate level of operational support to Austria after benefiting again from the campaign"
+            }
+          ]
+        }
+      ],
+      "trustor_behavior_choices": {
+        "trust_none": "commit 0% of Austria's available operational support to England's Berlin campaign",
+        "trust_low": "commit about 30% of Austria's available operational support to England's Berlin campaign",
+        "trust_high": "commit more than 80% of Austria's available operational support to England's Berlin campaign"
+      },
+      "trustee_behavior_choices": {
+        "return_none": "return 0% of England's resulting operational support to Austria",
+        "return_medium": "return about 40-50% of England's resulting operational support to Austria",
+        "return_high": "return more than 80% of England's resulting operational support to Austria"
+      }
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "convoy_bonus": 0.0,
+        "minimum_span_penalty": 0.0,
+        "reciprocity_bonus": 0.2,
+        "success_bonus": 0.15
+      },
+      "confidence_score": 0.9,
+      "episode_type": "TRUST",
+      "event_center": "KIE",
+      "events": [
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "KIE",
+            "supporter_loc": "MUN",
+            "unit_origin": "DEN"
+          },
+          "phase": "F1905M",
+          "recipient": "ENGLAND",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "KIE",
+            "supporter_loc": "MUN",
+            "unit_origin": "DEN"
+          },
+          "phase": "F1906M",
+          "recipient": "ENGLAND",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "ENGLAND",
+          "details": {
+            "dest": "RUH",
+            "supporter_loc": "KIE",
+            "unit_origin": "MUN"
+          },
+          "phase": "S1907M",
+          "recipient": "AUSTRIA",
+          "type": "SUPPORT_MOVE"
+        }
+      ],
+      "game_name": "TRUST",
+      "id": "sg_2694e2fb1595",
+      "id_basis": {
+        "episode_type": "TRUST",
+        "event_center": "KIE",
+        "game_id": "zXb1wMJbVxl7mBQ9",
+        "game_name": "TRUST",
+        "mechanism_name": null,
+        "phase_sequence": [
+          "F1905M",
+          "S1907M"
+        ],
+        "players": [
+          "AUSTRIA",
+          "ENGLAND"
+        ],
+        "variant_name": "TWO_AGENTS_MULTI_TURN",
+        "victim": null
+      },
+      "labels": {
+        "trust_outcome": "RECIPROCATED"
+      },
+      "metrics": {
+        "num_investment_events": 2,
+        "num_rounds": 2,
+        "window_movement_phases": 6
+      },
+      "phases": [
+        "F1905M",
+        "S1907M"
+      ],
+      "players": [
+        "AUSTRIA",
+        "ENGLAND"
+      ],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "zXb1wMJbVxl7mBQ9",
+        "line_number": 12819
+      },
+      "variant_name": "TWO_AGENTS_MULTI_TURN"
+    },
+    "output": {
+      "scenario": "Kiel Access Reciprocation",
+      "description": "You are England commander. Around Kiel, the balance has shifted enough to give England room to act, yet the northern theater remains crowded and no gain there is safe from renewed pressure. Austria has already invested in creating this position and now expects some benefit to flow back. If you answer with a stronger return, you help lock in Austrian cooperation on this front; if you answer weakly, England keeps more of the immediate initiative but may find Austria far less reliable when the northern contest tightens again.",
+      "participants": [
+        {
+          "name": "Austria",
+          "profile": "Power that front-loaded cooperative support",
+          "role": "Trustor"
+        },
+        {
+          "name": "England",
+          "profile": "Power holding the reciprocation decision",
+          "role": "Trustee"
+        }
+      ],
+      "previous_actions": [
+        {
+          "round": 1,
+          "round_summary": "Austria provided support for England's move around Kiel, and England made a limited return response.",
+          "actions": [
+            {
+              "participant": "Austria",
+              "action": "provide a moderate level of operational support for England's position around Kiel"
+            },
+            {
+              "participant": "England",
+              "action": "send back a limited level of operational support to Austria after benefiting from the campaign"
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "round_summary": "Austria again provided support for England's position around Kiel, and England made another return response.",
+          "actions": [
+            {
+              "participant": "Austria",
+              "action": "provide a high level of operational support for England's position around Kiel"
+            },
+            {
+              "participant": "England",
+              "action": "send back a moderate level of operational support to Austria after benefiting again from the campaign"
+            }
+          ]
+        }
+      ],
+      "trustor_behavior_choices": {
+        "trust_none": "allocate 0% of Austria's usable support capacity to England's position around Kiel",
+        "trust_low": "allocate about 30% of Austria's usable support capacity to England's position around Kiel",
+        "trust_high": "allocate more than 80% of Austria's usable support capacity to England's position around Kiel"
+      },
+      "trustee_behavior_choices": {
+        "return_none": "send back 0% of England's resulting operational support to Austria",
+        "return_medium": "send back about 40-50% of England's resulting operational support to Austria",
+        "return_high": "send back more than 80% of England's resulting operational support to Austria"
+      }
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "convoy_bonus": 0.2,
+        "minimum_span_penalty": 0.0,
+        "reciprocity_bonus": 0.0,
+        "success_bonus": 0.15
+      },
+      "confidence_score": 0.9,
+      "episode_type": "TRUST",
+      "event_center": "BUR",
+      "events": [
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "BUR",
+            "fleet_loc": "NAF",
+            "unit_origin": "SPA"
+          },
+          "phase": "F1915M",
+          "recipient": "FRANCE",
+          "type": "CONVOY"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "BUR",
+            "fleet_loc": "NAF",
+            "unit_origin": "TUS"
+          },
+          "phase": "S1916M",
+          "recipient": "FRANCE",
+          "type": "CONVOY"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "TUN",
+            "supporter_loc": "WES",
+            "unit_origin": "NAF"
+          },
+          "phase": "S1916M",
+          "recipient": "AUSTRIA",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "HOL",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1917M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        }
+      ],
+      "game_name": "TRUST",
+      "id": "sg_9f363e0bfac4",
+      "id_basis": {
+        "episode_type": "TRUST",
+        "event_center": "BUR",
+        "game_id": "IUXXbTqi2RGKGPxO",
+        "game_name": "TRUST",
+        "mechanism_name": null,
+        "phase_sequence": [
+          "F1915M",
+          "F1917M"
+        ],
+        "players": [
+          "AUSTRIA",
+          "FRANCE"
+        ],
+        "variant_name": "TWO_AGENTS_MULTI_TURN",
+        "victim": null
+      },
+      "labels": {
+        "trust_outcome": "DEFECTED"
+      },
+      "metrics": {
+        "num_investment_events": 2,
+        "num_rounds": 2,
+        "window_movement_phases": 6
+      },
+      "phases": [
+        "F1915M",
+        "F1917M"
+      ],
+      "players": [
+        "AUSTRIA",
+        "FRANCE"
+      ],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "IUXXbTqi2RGKGPxO",
+        "line_number": 19284
+      },
+      "variant_name": "TWO_AGENTS_MULTI_TURN"
+    },
+    "output": {
+      "scenario": "Burgundy Convoy Debt",
+      "description": "You are France commander. The western front around Burgundy is open enough for further pressure, but it is still a crowded theater where rivals can contest any advance that is not properly supported. Austria expects repayment for the help that helped create this opening and is vulnerable if France simply banks the gain. Sending back a larger share of support would steady the relationship and make coordinated western operations easier, whereas holding most of the advantage for yourself preserves French freedom of action but invites Austrian resentment and future non-cooperation.",
+      "participants": [
+        {
+          "name": "Austria",
+          "profile": "Power that invested convoy access for a partner",
+          "role": "Trustor"
+        },
+        {
+          "name": "France",
+          "profile": "Power choosing whether to repay that investment",
+          "role": "Trustee"
+        }
+      ],
+      "previous_actions": [
+        {
+          "round": 1,
+          "round_summary": "Austria provided convoy help for France's western move, and France made a limited return response.",
+          "actions": [
+            {
+              "participant": "Austria",
+              "action": "provide a moderate level of convoy support for France's move toward Burgundy"
+            },
+            {
+              "participant": "France",
+              "action": "return a limited level of operational support to Austria after benefiting from the campaign"
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "round_summary": "Austria again provided convoy help for France's western move, and France made another return response.",
+          "actions": [
+            {
+              "participant": "Austria",
+              "action": "provide a high level of convoy support for France's western operation"
+            },
+            {
+              "participant": "France",
+              "action": "return a moderate level of operational support to Austria after benefiting again from the campaign"
+            }
+          ]
+        }
+      ],
+      "trustor_behavior_choices": {
+        "trust_none": "devote 0% of Austria's convoy and support leverage to France's operation",
+        "trust_low": "devote about 30% of Austria's convoy and support leverage to France's operation",
+        "trust_high": "devote more than 80% of Austria's convoy and support leverage to France's operation"
+      },
+      "trustee_behavior_choices": {
+        "return_none": "return 0% of France's resulting campaign leverage to Austria",
+        "return_medium": "return about 40-50% of France's resulting campaign leverage to Austria",
+        "return_high": "return more than 80% of France's resulting campaign leverage to Austria"
+      }
+    }
+  },
+  {
+    "input": {
+      "confidence_breakdown": {
+        "convoy_bonus": 0.2,
+        "minimum_span_penalty": -0.1,
+        "reciprocity_bonus": 0.0,
+        "success_bonus": 0.15
+      },
+      "confidence_score": 0.8,
+      "episode_type": "TRUST",
+      "event_center": "GRE",
+      "events": [
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "GRE",
+            "supporter_loc": "ALB",
+            "unit_origin": "APU"
+          },
+          "phase": "S1908M",
+          "recipient": "FRANCE",
+          "type": "SUPPORT_MOVE"
+        },
+        {
+          "actor": "AUSTRIA",
+          "details": {
+            "dest": "GRE",
+            "fleet_loc": "ION",
+            "unit_origin": "APU"
+          },
+          "phase": "S1908M",
+          "recipient": "FRANCE",
+          "type": "CONVOY"
+        },
+        {
+          "actor": "FRANCE",
+          "details": {
+            "dest": "ION",
+            "reason": "unit_or_sc"
+          },
+          "phase": "F1908M",
+          "recipient": "AUSTRIA",
+          "type": "ATTACK"
+        }
+      ],
+      "game_name": "TRUST",
+      "id": "sg_a4117e1f5f28",
+      "id_basis": {
+        "episode_type": "TRUST",
+        "event_center": "GRE",
+        "game_id": "Vsy3dZL2YI56lC7x",
+        "game_name": "TRUST",
+        "mechanism_name": null,
+        "phase_sequence": [
+          "S1908M",
+          "F1908M"
+        ],
+        "players": [
+          "AUSTRIA",
+          "FRANCE"
+        ],
+        "variant_name": "TWO_AGENTS_MULTI_TURN",
+        "victim": null
+      },
+      "labels": {
+        "trust_outcome": "DEFECTED"
+      },
+      "metrics": {
+        "num_investment_events": 2,
+        "num_rounds": 2,
+        "window_movement_phases": 6
+      },
+      "phases": [
+        "S1908M",
+        "F1908M"
+      ],
+      "players": [
+        "AUSTRIA",
+        "FRANCE"
+      ],
+      "source": {
+        "dataset": "standard_no_press.jsonl",
+        "game_id": "Vsy3dZL2YI56lC7x",
+        "line_number": 7446
+      },
+      "variant_name": "TWO_AGENTS_MULTI_TURN"
+    },
+    "output": {
+      "scenario": "Ionian Passage Repayment Choice",
+      "description": "You are France commander. Greece and the Ionian Sea now offer France a stronger foothold, but the southeastern waters remain fluid and nearby powers can still disturb any position that is only lightly held. Austria wants a visible return after helping create this access and has left itself more exposed in the process. Repaying that help more fully would strengthen the partnership and stabilize your southeastern flank, while a narrower return would let France keep more immediate leverage at the risk of turning Austria into a reluctant or hostile neighbor.",
+      "participants": [
+        {
+          "name": "Austria",
+          "profile": "Power that exposed itself to create a partner's opening",
+          "role": "Trustor"
+        },
+        {
+          "name": "France",
+          "profile": "Power now holding the payoff from that opening",
+          "role": "Trustee"
+        }
+      ],
+      "previous_actions": [
+        {
+          "round": 1,
+          "round_summary": "Austria provided support for France's move toward Greece, and France made a limited return response.",
+          "actions": [
+            {
+              "participant": "Austria",
+              "action": "provide a moderate level of operational support for France's move toward Greece"
+            },
+            {
+              "participant": "France",
+              "action": "give back a limited level of operational support to Austria after benefiting from the campaign"
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "round_summary": "Austria provided convoy help for France's move through the Ionian approach, and France made another return response.",
+          "actions": [
+            {
+              "participant": "Austria",
+              "action": "provide a high level of convoy support for France's southeastern operation"
+            },
+            {
+              "participant": "France",
+              "action": "give back a moderate level of operational support to Austria after benefiting again from the campaign"
+            }
+          ]
+        }
+      ],
+      "trustor_behavior_choices": {
+        "trust_none": "use 0% of Austria's available coordination resources for France",
+        "trust_low": "use about 30% of Austria's available coordination resources for France",
+        "trust_high": "use more than 80% of Austria's available coordination resources for France"
+      },
+      "trustee_behavior_choices": {
+        "return_none": "give back 0% of France's resulting advantage to Austria",
+        "return_medium": "give back about 40-50% of France's resulting advantage to Austria",
+        "return_high": "give back more than 80% of France's resulting advantage to Austria"
+      }
+    }
+  }
+]

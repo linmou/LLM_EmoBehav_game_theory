@@ -1,6 +1,6 @@
 ---
 name: diplomacy-social-game-transform
-description: Build, review, and scale diplomacy social-game transformation corpora that convert curated raw cases into loadable game-class scenarios. Use when adding a new social game, extending an existing transformation workflow, designing or reviewing few-shot examples, running `data_creation/transform_social_game_cases.py`, auditing generated descriptions or behavior choices, or checking lexical shortcuts in option wording with first-token or first-two-token accuracy.
+description: Build, review, and scale diplomacy social-game transformation corpora that convert curated raw cases into loadable game-class scenarios. Use when adding a new social game, extending an existing transformation workflow, designing or reviewing few-shot examples, running `data_creation/transform_social_game_cases.py`, auditing generated descriptions or behavior choices, or checking lexical shortcuts in option wording with normalized prefix and first-divergence accuracy.
 ---
 
 # Diplomacy Social Game Transform
@@ -27,29 +27,37 @@ Keep the workflow brief in the skill body and make each owned file self-explaina
 
 7. Start with a small run, inspect `<output_dir>/<game_name>.success.json`, `<output_dir>/<game_name>.failures.jsonl`, `<output_dir>/<game_name>.skipped.jsonl`, and `<output_dir>/run_metadata.json`, and fix the prompt assets before scaling, because failures are usually more informative than successful rows at this stage.
 
-8. Before any example-by-example review of a few-shot file, compute and show description diversity metrics `distinct_1`, `distinct_2`, and `distinct_3`, then compute and show first-token and first-two-token shortcut accuracy with `scripts/evaluate_prefix_shortcuts.py`, because the human should see corpus-level signals before spending time on row-level edits.
+8. Before any example-by-example review of a few-shot file, compute and show description diversity metrics `distinct_1`, `distinct_2`, and `distinct_3`, then compute and show both ordinary prefix shortcut accuracy (`prefix1_acc`, `prefix2_acc`) and first-divergence shortcut accuracy (`divergence1_acc`, `divergence2_acc`) after normalizing number wording to a shared placeholder such as `[x]` and collapsing participant-line phrases such as `your line` or `Italy's line` into a shared placeholder such as `[player's] line`, because the human should see corpus-level signals before spending time on row-level edits.
 
-9. Stop after reporting those metrics and ask the human to review few-shot examples one by one; do not continue into bulk rewrites or automatic per-example review of the few-shot file without explicit human feedback, because few-shot curation is a human-involved process in this workflow.
+9. If any of `prefix1_acc`, `prefix2_acc`, `divergence1_acc`, or `divergence2_acc` is above `0.85`, stop the workflow at the few-shot stage; do not hand the file to the human, do not launch a transform run, and do not scale anything yet. Refine the few-shot examples first, preserve the semantic meaning of every option while reducing lexical leakage, and recompute the metrics, because high shortcut accuracy means the wording is still leaking the label.
 
-10. For transformed corpora beyond the few-shot file, default to metric-level review only: inspect diversity metrics, shortcut metrics, artifact counts, and validation/failure rates, and do not switch into row-by-row human review unless the human explicitly asks for it.
+10. Only after all four shortcut metrics are below `0.85` should you stop and ask the human to review few-shot examples one by one, because human review should happen on a file that already cleared the coarse shortcut gate.
 
-11. Review descriptions as a corpus rather than row by row by looking for repeated sentence skeletons, repeated warning endings, repeated phrase bundles, and collapse of multi-turn or over-two-agent variants into bilateral single-turn prose.
+11. For transformed corpora beyond the few-shot file, default to metric-level review only: inspect diversity metrics, shortcut metrics, artifact counts, and validation/failure rates, and do not switch into row-by-row human review unless the human explicitly asks for it.
 
-12. Review `behavior_choices` as a classification surface and deliberately reduce lexical shortcuts by avoiding stable mappings like `advance/join/commit -> escalate` and `stay/keep/remain -> withdraw`; mix action families across examples and include anti-shortcut pairs where the first word is misleading unless the full phrase is read.
+12. Review descriptions as a corpus rather than row by row by looking for repeated sentence skeletons, repeated warning endings, repeated phrase bundles, and collapse of multi-turn or over-two-agent variants into bilateral single-turn prose.
 
-13. Use `scripts/evaluate_prefix_shortcuts.py` in this skill when you want a quick lexical-shortcut check, and treat first-token and first-two-token accuracy as the default sufficient metric unless a specific project needs something more complex.
+13. Review `behavior_choices` as a classification surface and deliberately reduce lexical shortcuts by avoiding stable mappings like `advance/join/commit -> escalate` and `stay/keep/remain -> withdraw`; mix action families across examples and include anti-shortcut pairs where the first word is misleading unless the full phrase is read, and do not assume a shared opening fixes leakage unless the first divergence words are also uninformative.
 
-14. Stop and discuss with the human before changing any script code, including `data_creation/transform_social_game_cases.py` and any helper under `scripts/`, because script changes expand scope beyond prompt-asset curation and should not be made silently in this workflow.
+14. Use `scripts/evaluate_prefix_shortcuts.py` in this skill when you want a quick lexical-shortcut check, but also compute first-divergence metrics after stripping the longest common prefix within each local choice set; once anti-shortcut common prefixes are introduced, treat `divergence1_acc` and `divergence2_acc` as the more meaningful signal and keep ordinary prefix metrics as a coarse baseline.
 
-15. Scale only after the small run is clean, the descriptions still reflect the source variant structure, the `behavior_choices` do not collapse into cheap lexical labels, and every successful row remains loadable through `scenario_class`.
+15. Stop and discuss with the human before changing any script code, including `data_creation/transform_social_game_cases.py` and any helper under `scripts/`, because script changes expand scope beyond prompt-asset curation and should not be made silently in this workflow.
+
+16. Scale only after the small run is clean, the descriptions still reflect the source variant structure, the `behavior_choices` do not collapse into cheap lexical labels, and every successful row remains loadable through `scenario_class`.
 
 ## Lexical Shortcut Rule
 
-Use first-token and first-two-token accuracy as the default shortcut metric.
+Use both ordinary prefix metrics and divergence metrics.
 
-- Low accuracy is good: the label cannot be guessed from a prefix.
+- `prefix1_acc` and `prefix2_acc` measure whether labels can be guessed from the literal first one or two tokens.
+- `divergence1_acc` and `divergence2_acc` measure whether labels can be guessed from the first one or two tokens that remain after removing the shared leading prefix inside each local choice set.
+- Before scoring, replace literal numbers and common number words with a shared placeholder such as `[x]` so amount mentions do not act as cheap lexical labels.
+- Before scoring, also collapse participant-specific line phrases such as `your line`, `Italy's line`, or another participant name from the row's `participants` field into one shared placeholder such as `[player's] line`, so role wording does not become a cheap lexical label.
+- Low accuracy is good: the label cannot be guessed from the surface.
 - High accuracy is bad: the option wording is leaking the label.
-- For a small few-shot file, the metric is a warning signal rather than a hard benchmark, so inspect the top predictive prefixes together with the score.
+- Treat `0.85` as a hard retry threshold for both ordinary prefix metrics and divergence metrics; if any one of the four metrics exceeds it, stop at the few-shot stage, refine the few-shot wording, keep the option semantics intact, and measure again before handing the file to a human reviewer or running the transform pipeline.
+- Once common prefixes are intentionally aligned across options, prioritize divergence metrics over ordinary prefix metrics.
+- For a small few-shot file, the metric is a warning signal rather than a hard benchmark, so inspect the top predictive divergence prefixes together with the score.
 
 Good anti-shortcut examples:
 

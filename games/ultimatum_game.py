@@ -62,7 +62,7 @@ class UltimatumGameScenario(SequentialGameScenario):
     participants: list[dict]
     proposer_behavior_choices: UGProposerChoices
     responder_behavior_choices: UGResponderChoices
-    previous_actions_data: list[tuple[str, str]] = Field(
+    previous_actions_data: list[Any] = Field(
         default_factory=list,
         alias="previous_actions",
         serialization_alias="previous_actions",
@@ -152,19 +152,55 @@ class UltimatumGameScenario(SequentialGameScenario):
         valid_decisions = set(self.proposer_behavior_choices.get_choices()) | set(
             self.responder_behavior_choices.get_choices()
         )
-        normalized_actions: list[tuple[str, str]] = []
+        normalized_actions: list[Any] = []
 
-        for action in self.previous_actions_data:
-            if not isinstance(action, (list, tuple)) or len(action) != 2:
-                raise ValueError(
-                    "previous_actions must contain [participant_name, action_description] pairs"
+        for index, action in enumerate(self.previous_actions_data, start=1):
+            if isinstance(action, dict):
+                round_index = action.get("round", index)
+                if not isinstance(round_index, int) or round_index < 1:
+                    raise ValueError("previous_actions round must be a positive integer")
+                round_summary = action.get("round_summary")
+                if round_summary is not None and (
+                    not isinstance(round_summary, str) or not round_summary.strip()
+                ):
+                    raise ValueError(
+                        "previous_actions round_summary must be a non-empty string when present"
+                    )
+                round_actions = action.get("actions")
+                if not isinstance(round_actions, list) or not round_actions:
+                    raise ValueError("previous_actions actions must be a non-empty list")
+                normalized_round_actions: list[dict[str, str]] = []
+                for round_action in round_actions:
+                    if not isinstance(round_action, dict):
+                        raise ValueError("previous_actions actions must contain dictionaries")
+                    actor = round_action.get("participant")
+                    decision = round_action.get("action")
+                    if not isinstance(actor, str) or actor not in participant_names:
+                        raise ValueError("previous_actions actor must match a participant name")
+                    if not isinstance(decision, str) or decision not in valid_decisions:
+                        raise ValueError("previous_actions decision must match a behavior choice")
+                    normalized_round_actions.append({"participant": actor, "action": decision})
+                normalized_actions.append(
+                    {
+                        "round": round_index,
+                        "round_summary": round_summary,
+                        "actions": normalized_round_actions,
+                    }
                 )
-            actor, decision = action
-            if not isinstance(actor, str) or actor not in participant_names:
-                raise ValueError("previous_actions actor must match a participant name")
-            if not isinstance(decision, str) or decision not in valid_decisions:
-                raise ValueError("previous_actions decision must match a behavior choice")
-            normalized_actions.append((actor, decision))
+                continue
+
+            if isinstance(action, (list, tuple)) and len(action) == 2:
+                actor, decision = action
+                if not isinstance(actor, str) or actor not in participant_names:
+                    raise ValueError("previous_actions actor must match a participant name")
+                if not isinstance(decision, str) or decision not in valid_decisions:
+                    raise ValueError("previous_actions decision must match a behavior choice")
+                normalized_actions.append((actor, decision))
+                continue
+
+            raise ValueError(
+                "previous_actions must contain round dictionaries or [participant_name, action_description] pairs"
+            )
 
         self.previous_actions_data = normalized_actions
         if self.previous_actions_data and self.previous_actions_length != len(self.previous_actions_data):
@@ -255,18 +291,10 @@ class UltimatumGameScenario(SequentialGameScenario):
 
 
 class UltimatumGameProposerScenario(UltimatumGameScenario):
-    @model_validator(mode="after")
-    def _reject_non_empty_previous_actions(self) -> "UltimatumGameProposerScenario":
-        if self.previous_actions_data:
-            raise ValueError(
-                "Proposer scenario cannot include non-empty previous_actions"
-            )
-        return self
-
     def get_scenario_info(self) -> Dict:
         return {
             "scenario": self.scenario,
-            "description": self.description.replace(self.proposer_name, "You"),
+            "description": f"You are {self.proposer_name}. {self.description}",
         }
 
     def get_behavior_choices(self) -> UGProposerChoices:
@@ -287,11 +315,16 @@ class UltimatumGameResponderScenario(UltimatumGameScenario):
         if not self.previous_actions_data or self.previous_offer_level is None:
             return self
 
-        proposer_actions = [
-            decision
-            for actor, decision in self.previous_actions_data
-            if actor == self.proposer_name
-        ]
+        proposer_actions: list[str] = []
+        for action in self.previous_actions_data:
+            if isinstance(action, dict):
+                for round_action in action.get("actions", []):
+                    if round_action.get("participant") == self.proposer_name:
+                        proposer_actions.append(round_action.get("action", ""))
+                continue
+            actor, decision = action
+            if actor == self.proposer_name:
+                proposer_actions.append(decision)
         if not proposer_actions:
             raise ValueError(
                 "previous_offer_level requires a proposer action in previous_actions"
@@ -313,7 +346,7 @@ class UltimatumGameResponderScenario(UltimatumGameScenario):
     def get_scenario_info(self) -> Dict:
         return {
             "scenario": self.scenario,
-            "description": self.description.replace(self.responder_name, "You"),
+            "description": f"You are {self.responder_name}. {self.description}",
         }
 
     def get_behavior_choices(self) -> UGResponderChoices:

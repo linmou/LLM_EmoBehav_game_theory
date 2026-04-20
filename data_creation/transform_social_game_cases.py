@@ -38,6 +38,13 @@ SUPPORTED_SOCIAL_GAMES = {
         "skip_file": "prisoners_dilemma.skipped.jsonl",
         "prompt_target": "Prisoners' Dilemma scenario",
     },
+    "stag_hunt": {
+        "game_name": GameNames.STAG_HUNT,
+        "success_file": "stag_hunt.success.json",
+        "failure_file": "stag_hunt.failures.jsonl",
+        "skip_file": "stag_hunt.skipped.jsonl",
+        "prompt_target": "Stag Hunt scenario",
+    },
     "trust_game_trustor": {
         "game_name": GameNames.TRUST_GAME_TRUSTOR,
         "success_file": "trust_game_trustor.success.json",
@@ -66,6 +73,13 @@ SUPPORTED_SOCIAL_GAMES = {
         "skip_file": "ultimatum_game_responder.skipped.jsonl",
         "prompt_target": "Ultimatum Game responder scenario",
     },
+    "sealed_bid_auction": {
+        "game_name": GameNames.SEALED_AUCTION,
+        "success_file": "sealed_bid_auction.success.json",
+        "failure_file": "sealed_bid_auction.failures.jsonl",
+        "skip_file": "sealed_bid_auction.skipped.jsonl",
+        "prompt_target": "Sealed Auction scenario",
+    },
 }
 DEFAULT_TRANSFORM_SAMPLE_ROOT = (
     Path(__file__).resolve().parent / "transform_to_natural_lannguage_samples" / "diplomacy"
@@ -86,7 +100,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--few-shot-path", default=None)
     parser.add_argument("--rubric-path", default=str(DEFAULT_RUBRIC_PATH))
     parser.add_argument("--model", default="deepseek-chat")
-    parser.add_argument("--num-workers", type=int, default=1)
+    parser.add_argument("--num-workers", type=int, default=16)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--rerun", action="store_true")
     parser.add_argument("--max-retries", type=int, default=0)

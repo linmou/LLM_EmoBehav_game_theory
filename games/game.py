@@ -66,11 +66,15 @@ class GameScenario(BaseModel, ABC):
 
     def __str__(self):
         info = self.get_scenario_info()
+        previous_actions = getattr(self, "previous_actions", None)
+        previous_actions_line = (
+            f"\n        Previous Actions: {previous_actions}" if previous_actions else ""
+        )
         return f"""
         Scenario: {info.get('scenario', 'Unnamed')}
         Description: {info.get('description', 'No description')}
         Participants: {self.get_participants()}
-        Behavior Choices: {self.get_behavior_choices().get_choices()}
+        Behavior Choices: {self.get_behavior_choices().get_choices()}{previous_actions_line}
         """
 
 

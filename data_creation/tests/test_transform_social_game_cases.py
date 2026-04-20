@@ -8,6 +8,7 @@ import threading
 import time
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -129,6 +130,122 @@ def _sample_prisoners_dilemma_transformed_row(
             "defect": "Leave the Belgium corridor inside your main effort this season.",
         },
         "game_name": "Prisoners_Dilemma",
+        "provenance": {
+            "id": case_id,
+            "source_game_id": game_id,
+        },
+    }
+
+
+def _sample_stag_hunt_source_row(
+    case_id: str = "sg_stag_1",
+    game_id: str = "stag_game_1",
+) -> dict:
+    return {
+        "id": case_id,
+        "episode_type": "STAG_HUNT",
+        "variant_name": "TWO_AGENTS_SINGLE_TURN",
+        "players": ["AUSTRIA", "FRANCE"],
+        "phases": ["F1907M"],
+        "events": [
+            {
+                "actor": "AUSTRIA",
+                "recipient": "FRANCE",
+                "type": "SUPPORT_MOVE",
+                "phase": "F1907M",
+                "details": {"dest": "BEL", "supporter_loc": "RUH", "unit_origin": "BUR"},
+            }
+        ],
+        "labels": {"round_outcome": "STAG_STAG"},
+        "metrics": {"dyad": ["BEL", "RUH"], "num_rounds": 1},
+        "source": {"dataset": "standard_no_press.jsonl", "game_id": game_id, "line_number": 91},
+    }
+
+
+def _sample_stag_hunt_transformed_row(
+    case_id: str = "sg_stag_1",
+    game_id: str = "stag_game_1",
+) -> dict:
+    return {
+        "scenario": "Belgium Coordination Window",
+        "description": (
+            "Belgium only opens cleanly if you and France commit at the same moment, "
+            "so the richer result depends on matching effort rather than solo initiative."
+        ),
+        "participants": [
+            {"name": "You", "profile": "Commander of Austria"},
+            {"name": "France", "profile": "Commander of France"},
+        ],
+        "behavior_choices": {
+            "cooperate": "Commit your force to the shared Belgium operation with France this season.",
+            "defect": "Keep to the safer separate line instead of the shared Belgium operation this season.",
+        },
+        "game_name": "Stag_Hunt",
+        "provenance": {
+            "id": case_id,
+            "source_game_id": game_id,
+        },
+    }
+
+
+def _sample_sealed_bid_auction_source_row(
+    case_id: str = "sg_sba_1",
+    game_id: str = "sba_game_1",
+) -> dict:
+    return {
+        "id": case_id,
+        "episode_type": "SEALED_BID_AUCTION",
+        "variant_name": "TWO_AGENTS_SINGLE_TURN",
+        "players": ["AUSTRIA", "ENGLAND"],
+        "phases": ["F1908M"],
+        "event_center": "BEL",
+        "events": [
+            {
+                "actor": "AUSTRIA",
+                "recipient": "ENGLAND",
+                "type": "ATTACK",
+                "phase": "F1908M",
+                "details": {"dest": "BEL", "reason": "unit_or_sc"},
+            },
+            {
+                "actor": "ENGLAND",
+                "recipient": "AUSTRIA",
+                "type": "ATTACK",
+                "phase": "F1908M",
+                "details": {"dest": "HOL", "reason": "unit_or_sc"},
+            },
+        ],
+        "labels": {"allocation": "RETAINED", "winner": "ENGLAND"},
+        "metrics": {"bids": {"AUSTRIA": 1, "ENGLAND": 2}, "total_bid": 3},
+        "source": {
+            "dataset": "standard_no_press.jsonl",
+            "game_id": game_id,
+            "line_number": 123,
+        },
+    }
+
+
+def _sample_sealed_bid_auction_transformed_row(
+    case_id: str = "sg_sba_1",
+    game_id: str = "sba_game_1",
+) -> dict:
+    return {
+        "scenario": "Belgium Hidden Commitment",
+        "description": (
+            "You are a Austria commander. Belgium will be decided by simultaneous hidden "
+            "commitments, and every order tied there is spent whether or not the center changes hands."
+        ),
+        "participants": [
+            {"name": "Austria"},
+            {"name": "England"},
+        ],
+        "behavior_choices": {
+            "devote_low": "Commit only a probing order strength toward claiming Belgium this phase.",
+            "devote_medium": "Commit a measured order strength toward claiming Belgium this phase.",
+            "devote_high": "Commit a forceful order strength toward claiming Belgium this phase.",
+        },
+        "game_category": "SEALED_BID_AUCTION_TWO_PLAYER",
+        "game_name": "Sealed_Auction",
         "provenance": {
             "id": case_id,
             "source_game_id": game_id,
@@ -332,6 +449,39 @@ def test_load_prompt_pack_supports_prisoners_dilemma_with_direct_target_mapping(
 
     assert prompt_pack["target_game_name"] == "Prisoners_Dilemma"
     assert prompt_pack["scenario_class"] is PrisonerDilemmaScenario
+
+
+def test_load_prompt_pack_supports_stag_hunt_with_direct_target_mapping(
+    tmp_path: Path,
+):
+    # data_creation/transform_social_game_cases.py: support stag_hunt directly as a target game mapping.
+    from data_creation.transform_social_game_cases import load_prompt_pack
+    from games.stag_hunt import StagHuntScenario
+
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = tmp_path / "stag_hunt_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"episode_type": "STAG_HUNT", "variant_name": "TWO_AGENTS_SINGLE_TURN"},
+                "output": _sample_stag_hunt_transformed_row(),
+            }
+        ],
+    )
+
+    prompt_pack = load_prompt_pack(
+        social_game="stag_hunt",
+        rubric_path=rubric,
+        few_shot_path=fewshot,
+    )
+
+    assert prompt_pack["target_game_name"] == "Stag_Hunt"
+    assert prompt_pack["scenario_class"] is StagHuntScenario
 
 
 def test_transform_run_writes_success_only_outputs(tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch):
@@ -578,6 +728,146 @@ def test_transform_run_writes_success_only_outputs_for_prisoners_dilemma(
     success_rows = json.loads((output_dir / "prisoners_dilemma.success.json").read_text(encoding="utf-8"))
     assert len(success_rows) == 1
     assert success_rows[0]["game_name"] == "Prisoners_Dilemma"
+
+
+def test_transform_run_writes_success_only_outputs_for_stag_hunt(
+    tmp_path: Path, prompt_assets, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: write only loadable Stag Hunt rows to the success dataset.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "stag_hunt_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(input_path, [_sample_stag_hunt_source_row("sg_stag_1", "stag_game_1")])
+    rubric, _ = prompt_assets
+    fewshot = tmp_path / "stag_hunt_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {"episode_type": "STAG_HUNT", "variant_name": "TWO_AGENTS_SINGLE_TURN"},
+                "output": _sample_stag_hunt_transformed_row("sg_stag_1", "stag_game_1"),
+            },
+            {
+                "input": {"episode_type": "STAG_HUNT", "variant_name": "TWO_AGENTS_MULTI_TURN"},
+                "output": {
+                    **_sample_stag_hunt_transformed_row("sg_stag_2", "stag_game_2"),
+                    "description": "Repeated coordination on Bulgaria still pays more than either side's safer solo fallback.",
+                },
+            },
+            {
+                "input": {"episode_type": "STAG_HUNT", "variant_name": "TWO_AGENTS_MULTI_TURN"},
+                "output": {
+                    **_sample_stag_hunt_transformed_row("sg_stag_3", "stag_game_3"),
+                    "description": "The corridor remains valuable, but only if both commands keep matching commitment.",
+                },
+            },
+        ],
+    )
+
+    monkeypatch.setattr(
+        module,
+        "transform_source_row",
+        lambda *args, **kwargs: _sample_stag_hunt_transformed_row("sg_stag_1", "stag_game_1"),
+    )
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "stag_hunt",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    success_rows = json.loads((output_dir / "stag_hunt.success.json").read_text(encoding="utf-8"))
+    assert len(success_rows) == 1
+    assert success_rows[0]["game_name"] == "Stag_Hunt"
+
+
+def test_transform_run_writes_success_only_outputs_for_sealed_bid_auction(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    # data_creation/transform_social_game_cases.py: write only loadable Sealed Auction rows to the success dataset.
+    from data_creation import transform_social_game_cases as module
+
+    input_path = tmp_path / "sealed_bid_auction_cases.jsonl"
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    _write_jsonl(input_path, [_sample_sealed_bid_auction_source_row("sg_sba_1", "sba_game_1")])
+
+    rubric = tmp_path / "transform_rubrics.md"
+    rubric.write_text(
+        "Transform structured data into a historical decision-making scenario.",
+        encoding="utf-8",
+    )
+    fewshot = tmp_path / "sealed_bid_auction_few_shot_examples.json"
+    _write_json(
+        fewshot,
+        [
+            {
+                "input": {
+                    "episode_type": "SEALED_BID_AUCTION",
+                    "variant_name": "TWO_AGENTS_SINGLE_TURN",
+                },
+                "output": _sample_sealed_bid_auction_transformed_row("sg_sba_1", "sba_game_1"),
+            },
+            {
+                "input": {
+                    "episode_type": "SEALED_BID_AUCTION",
+                    "variant_name": "TWO_AGENTS_MULTI_TURN",
+                },
+                "output": {
+                    **_sample_sealed_bid_auction_transformed_row("sg_sba_2", "sba_game_2"),
+                    "description": "Kiel returns to decision over repeated hidden commitments.",
+                },
+            },
+            {
+                "input": {
+                    "episode_type": "SEALED_BID_AUCTION",
+                    "variant_name": "OVER_TWO_AGENTS_SINGLE_TURN",
+                },
+                "output": {
+                    **_sample_sealed_bid_auction_transformed_row("sg_sba_3", "sba_game_3"),
+                    "description": "Munich draws concealed claims from several powers at once.",
+                },
+            },
+        ],
+    )
+
+    monkeypatch.setattr(
+        module,
+        "transform_source_row",
+        lambda *args, **kwargs: _sample_sealed_bid_auction_transformed_row("sg_sba_1", "sba_game_1"),
+    )
+
+    exit_code = module.main(
+        [
+            "--social-game",
+            "sealed_bid_auction",
+            "--input-path",
+            str(input_path),
+            "--output-dir",
+            str(output_dir),
+            "--few-shot-path",
+            str(fewshot),
+            "--rubric-path",
+            str(rubric),
+        ]
+    )
+
+    assert exit_code == 0
+    success_rows = json.loads((output_dir / "sealed_bid_auction.success.json").read_text(encoding="utf-8"))
+    assert len(success_rows) == 1
+    assert success_rows[0]["game_name"] == "Sealed_Auction"
 
 
 def test_main_rejects_unsupported_social_game(tmp_path: Path, prompt_assets: tuple[Path, Path]):

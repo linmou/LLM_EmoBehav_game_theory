@@ -68,7 +68,9 @@ Before reviewing few-shot examples one by one:
 
 1. Show `distinct_1`, `distinct_2`, and `distinct_3` from `diversity_report.json` or from the current selected descriptions.
 2. Show first-token and first-two-token accuracy from `scripts/evaluate_prefix_shortcuts.py`.
-3. Stop and ask the human to review examples one by one.
+3. If any few-shot shortcut metric is above `0.85`, stop there; do not launch a transform run, do not scale, and do not switch to row-by-row human review yet.
+4. Alleviate the superficial correlations in the few-shot `behavior_choices`, preserve the option semantics, and recompute the metrics.
+5. Only after all four shortcut metrics are at or below `0.85` should you ask the human to review examples one by one or proceed to generation.
 
 This gate is for the few-shot file only.
 
